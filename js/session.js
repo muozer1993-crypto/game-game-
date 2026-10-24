@@ -2,7 +2,11 @@
 // The same class drives single-phone (mode 'local') and online (mode 'online') play.
 //
 // Online rule: every move is applied locally and sent to the other device with a
-// sequence number; both devices apply the same public moves in the same order.
+// per-sender sequence number; each device applies its own moves immediately and the
+// other device's moves as they arrive. The two devices may therefore see concurrent
+// moves in different orders, which is safe only when such moves commute (e.g. each
+// player choosing their own secret). Everything else is turn-based by the game rules,
+// so only one device can make a legal move at a time.
 // A move may carry a `secret` field (e.g. the secret word) which is never sent.
 import { showHandoff } from './ui/handoff.js';
 import { toast } from './ui/dom.js';
@@ -42,7 +46,10 @@ export class Session {
     this.onChange = opts.onChange || (() => {});
     this.state = null;
     this.log = [];
+    this.sent = 0;      // moves sent to the other device
+    this.received = 0;  // moves received from the other device
     this.ended = false;
+    this.destroyed = false;
     this.result = null;
     this.lastTurn = null;
     this.lastViewer = null;
@@ -53,6 +60,8 @@ export class Session {
   start(initialState) {
     this.state = initialState ?? this.game.setup(this.options, this.ctx);
     this.log = [];
+    this.sent = 0;
+    this.received = 0;
     this.ended = false;
     this.result = null;
     this.lastTurn = null;
@@ -68,8 +77,10 @@ export class Session {
     return this.mode === 'local' || this.self === player;
   }
 
+  // Moves are still accepted after the result is known (e.g. revealing the secret word);
+  // the game's applyMove decides what is legal at that point.
   apply(player, move, { remote = false } = {}) {
-    if (this.ended || !this.state) return false;
+    if (this.destroyed || !this.state) return false;
     let next;
     try {
       next = this.game.applyMove(this.state, player, move, this.ctx);
@@ -83,7 +94,7 @@ export class Session {
     const publicMove = stripSecret(move);
     this.log.push({ player, move: publicMove });
     if (!remote && this.mode === 'online' && this.transport) {
-      this.transport.send({ t: 'move', seq: this.log.length - 1, player, move: publicMove });
+      this.transport.send({ t: 'move', seq: this.sent++, player, move: publicMove });
     }
     return true;
   }
@@ -111,13 +122,14 @@ export class Session {
     }
   }
 
-  /** A message from the other device. Returns false when the sequence does not match. */
+  /** A message from the other device. Returns false when it is not a move for this session. */
   receive(msg) {
     if (!msg || msg.t !== 'move') return false;
-    if (msg.seq !== this.log.length) {
-      console.warn(`Hamle sırası uyuşmuyor (gelen ${msg.seq}, beklenen ${this.log.length})`);
-      return false;
+    if (typeof msg.seq === 'number' && msg.seq !== this.received) {
+      console.warn(`Hamle sırası uyuşmuyor (gelen ${msg.seq}, beklenen ${this.received})`);
     }
+    this.received = (typeof msg.seq === 'number' ? msg.seq : this.received) + 1;
+    if (this.self !== null && msg.player === this.self) return false; // never accept moves "from us"
     const move = { ...msg.move };
     // Timers are based on the local clock: stamp remote moves with our own time.
     if (typeof move.at === 'number') move.at = Date.now();
@@ -178,6 +190,6 @@ export class Session {
       try { this.cleanup(); } catch { /* ignore */ }
       this.cleanup = null;
     }
-    this.ended = true;
+    this.destroyed = true;
   }
 }

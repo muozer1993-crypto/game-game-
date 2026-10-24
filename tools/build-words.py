@@ -170,13 +170,17 @@ def main():
         if 'Verb' in poss and (lemma.endswith('mak') or lemma.endswith('mek')):
             stems.add(lemma[:-3])
 
-    # blocklist
+    # words never used as secrets: profanity (blocklist.txt) + reviewed exclusions (common-exclude.txt)
     block = set()
-    with open(os.path.join(HERE, 'blocklist.txt'), encoding='utf-8') as f:
-        for line in f:
-            w = line.strip()
-            if w and not w.startswith('#'):
-                block.add(fold(tr_lower(w)))
+    for name in ('blocklist.txt', 'common-exclude.txt'):
+        path = os.path.join(HERE, name)
+        if not os.path.exists(path):
+            continue
+        with open(path, encoding='utf-8') as f:
+            for line in f:
+                w = line.strip()
+                if w and not w.startswith('#'):
+                    block.add(fold(tr_lower(w)))
 
     # frequency data
     freq = {}
@@ -227,7 +231,7 @@ def main():
     for length, target in zip((4, 5, 6), targets):
         cands = []
         for w, r in rank.items():
-            if len(w) != length or r > args.max_rank or w in block or w not in master_pos:
+            if len(w) != length or r > args.max_rank or w not in master_pos:
                 continue
             poss = master_pos[w]
             if poss & {'Verb', 'Punc', 'Interj', 'Dup', 'Ques', 'Conj', 'Postp'}:
@@ -236,7 +240,9 @@ def main():
                 continue
             cands.append((r, w))
         cands.sort()
-        common[str(length)] = [w for _, w in cands[:target]]
+        # take the top `target` first, then drop blocked words, so that reviewed
+        # exclusions shrink the list instead of pulling in unreviewed rarer words
+        common[str(length)] = [w for _, w in cands[:target] if w not in block]
 
     out_common = os.path.join(args.out, 'common-tr.json')
     with open(out_common, 'w', encoding='utf-8') as f:
