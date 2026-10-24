@@ -1,0 +1,183 @@
+// A game session: holds the state, applies moves, runs automatic moves, and renders.
+// The same class drives single-phone (mode 'local') and online (mode 'online') play.
+//
+// Online rule: every move is applied locally and sent to the other device with a
+// sequence number; both devices apply the same public moves in the same order.
+// A move may carry a `secret` field (e.g. the secret word) which is never sent.
+import { showHandoff } from './ui/handoff.js';
+import { toast } from './ui/dom.js';
+
+export function stripSecret(move) {
+  if (move && typeof move === 'object' && 'secret' in move) {
+    const { secret, ...rest } = move; // eslint-disable-line no-unused-vars
+    return rest;
+  }
+  return move;
+}
+
+export class Session {
+  /**
+   * @param {object} opts
+   * @param {object} opts.game          game module (see games/README in PLAN.md)
+   * @param {object} opts.options       game options (from meta.settings)
+   * @param {string[]} opts.players     two player names
+   * @param {HTMLElement} opts.container
+   * @param {'local'|'online'} [opts.mode]
+   * @param {0|1|null} [opts.self]      which player this device is (online only)
+   * @param {{send(msg: object): void}|null} [opts.transport]
+   * @param {object} [opts.ctx]         extra context for the game (dict, common, questions, ...)
+   * @param {(result: object, state: object) => void} [opts.onEnd]
+   * @param {(state: object) => void} [opts.onChange]
+   */
+  constructor(opts) {
+    this.game = opts.game;
+    this.options = opts.options || {};
+    this.players = opts.players;
+    this.container = opts.container;
+    this.mode = opts.mode || 'local';
+    this.self = opts.self ?? null;
+    this.transport = opts.transport || null;
+    this.ctx = { ...(opts.ctx || {}), players: this.players, mode: this.mode, self: this.self, options: this.options };
+    this.onEnd = opts.onEnd || (() => {});
+    this.onChange = opts.onChange || (() => {});
+    this.state = null;
+    this.log = [];
+    this.ended = false;
+    this.result = null;
+    this.lastTurn = null;
+    this.lastViewer = null;
+    this.cleanup = null;
+  }
+
+  /** Start with a fresh state (or a given initial state received from the host). */
+  start(initialState) {
+    this.state = initialState ?? this.game.setup(this.options, this.ctx);
+    this.log = [];
+    this.ended = false;
+    this.result = null;
+    this.lastTurn = null;
+    this.lastViewer = null;
+    this.runAuto();
+    this.checkEnd();
+    this.render();
+    return this.state;
+  }
+
+  /** Does this device act for the given player? */
+  controls(player) {
+    return this.mode === 'local' || this.self === player;
+  }
+
+  apply(player, move, { remote = false } = {}) {
+    if (this.ended || !this.state) return false;
+    let next;
+    try {
+      next = this.game.applyMove(this.state, player, move, this.ctx);
+    } catch (err) {
+      if (remote) console.warn('Karşı cihazdan gelen hamle reddedildi:', err);
+      else toast(err && err.message ? err.message : 'Geçersiz hamle', { kind: 'error' });
+      return false;
+    }
+    if (!next || next === this.state) return false;
+    this.state = next;
+    const publicMove = stripSecret(move);
+    this.log.push({ player, move: publicMove });
+    if (!remote && this.mode === 'online' && this.transport) {
+      this.transport.send({ t: 'move', seq: this.log.length - 1, player, move: publicMove });
+    }
+    return true;
+  }
+
+  /** Apply a move for a player, then run automatic moves, check the result and re-render. */
+  dispatch(player, move, opts) {
+    if (this.apply(player, move, opts)) {
+      this.runAuto();
+      this.checkEnd();
+      this.render();
+    }
+  }
+
+  /** Let the game emit moves this device must make on its own (e.g. scoring a guess). */
+  runAuto() {
+    if (!this.game.autoMove) return;
+    for (let guard = 0; guard < 50; guard++) {
+      let did = false;
+      for (const p of [0, 1]) {
+        if (!this.controls(p)) continue;
+        const move = this.game.autoMove(this.state, p, this.ctx);
+        if (move && this.apply(p, move)) { did = true; break; }
+      }
+      if (!did) return;
+    }
+  }
+
+  /** A message from the other device. Returns false when the sequence does not match. */
+  receive(msg) {
+    if (!msg || msg.t !== 'move') return false;
+    if (msg.seq !== this.log.length) {
+      console.warn(`Hamle sırası uyuşmuyor (gelen ${msg.seq}, beklenen ${this.log.length})`);
+      return false;
+    }
+    const move = { ...msg.move };
+    // Timers are based on the local clock: stamp remote moves with our own time.
+    if (typeof move.at === 'number') move.at = Date.now();
+    this.dispatch(msg.player, move, { remote: true });
+    return true;
+  }
+
+  checkEnd() {
+    if (this.ended) return;
+    const result = this.game.getResult(this.state);
+    if (result) {
+      this.ended = true;
+      this.result = result;
+      this.onEnd(result, this.state);
+    }
+  }
+
+  currentTurn() {
+    return this.game.getTurn ? this.game.getTurn(this.state) : null;
+  }
+
+  render() {
+    if (this.cleanup) {
+      try { this.cleanup(); } catch (err) { console.warn(err); }
+      this.cleanup = null;
+    }
+    const turn = this.currentTurn();
+    let viewer;
+    if (this.mode === 'online') {
+      viewer = this.self;
+    } else {
+      viewer = turn && turn.player != null ? turn.player : (this.lastViewer ?? 0);
+      if (!this.ended && turn && turn.player != null) {
+        const first = !this.lastTurn && turn.private;
+        const changed = this.lastTurn && this.lastTurn.player !== turn.player && (turn.private || this.lastTurn.private);
+        if (first || changed) {
+          this.lastTurn = turn;
+          this.lastViewer = viewer;
+          showHandoff(this.container, {
+            name: this.players[turn.player],
+            note: this.game.meta.handoffNote || null,
+            onReady: () => this.render(),
+          });
+          return;
+        }
+      }
+    }
+    this.lastTurn = turn;
+    this.lastViewer = viewer;
+    const send = (move) => this.dispatch(viewer, move);
+    const out = this.game.render(this.state, viewer, this.container, send, this.ctx);
+    if (typeof out === 'function') this.cleanup = out;
+    this.onChange(this.state);
+  }
+
+  destroy() {
+    if (this.cleanup) {
+      try { this.cleanup(); } catch { /* ignore */ }
+      this.cleanup = null;
+    }
+    this.ended = true;
+  }
+}
