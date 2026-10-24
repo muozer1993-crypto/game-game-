@@ -7,7 +7,7 @@
 // owner's device by autoMove(), which sends only the result.
 import { el, render as draw } from '../js/ui/dom.js';
 import { createKeyboard } from '../js/ui/keyboard.js';
-import { normalizeWord, isTurkishWord, upperTR } from '../js/lib/tr.js';
+import { normalizeWord, isTurkishWord, upperTR, nameSuffix } from '../js/lib/tr.js';
 
 // ----------------------------------------------------------------- scoring
 /** Wordle marks with the standard rule for repeated letters. */
@@ -332,7 +332,7 @@ export function createGame(cfg) {
       draw(container,
         el('div', { class: 'status-line' }, el('strong', {}, lines.join(' '))),
         el('div', { class: 'reveal' },
-          el('div', { class: 'muted' }, `${players[opp]}'nin tuttuğu ${isNumber ? 'sayı' : 'kelime'} (senin aradığın):`),
+          el('div', { class: 'muted' }, `${nameSuffix(players[opp], 'in')} tuttuğu ${isNumber ? 'sayı' : 'kelime'} (senin aradığın):`),
           el('div', { class: 'word' }, oppSecret ? show(oppSecret) : '…'),
           el('div', { class: 'muted', style: { marginTop: '8px' } }, `Senin tuttuğun:`),
           el('div', { class: 'word' }, mySecret ? show(mySecret) : '…'),
