@@ -36,11 +36,17 @@ Testler: `http://localhost:8000/tests/` sayfasını aç (ya da terminalden `node
 
 ## GitHub Pages'e yayınlama
 
-1. Depoyu GitHub'a gönderin (ana dal `main`).
-2. GitHub'da **Settings → Pages** bölümüne girin.
-3. **Build and deployment → Source** olarak **Deploy from a branch** seçin; dal `main`, klasör `/ (root)`.
-4. Kaydedin. Bir iki dakika sonra site `https://<kullanıcı>.github.io/<depo-adı>/` adresinde yayında olur.
-5. Telefonda bu adresi açın, tarayıcı menüsünden **Ana ekrana ekle** deyin.
+Depoda hazır bir iş akışı var: `.github/workflows/pages.yml`. Her `git push` sonrasında
+siteyi GitHub Pages'e yayınlar; ilk çalışmada Pages'i de kendisi açmayı dener.
+
+1. Depoyu GitHub'a gönderin (`git push`). **Actions** sekmesinde "GitHub Pages" iş akışı çalışır.
+2. Yeşil olunca site `https://<kullanıcı>.github.io/<depo-adı>/` adresinde yayındadır
+   (bu depo için `https://muozer1993-crypto.github.io/game-game-/`).
+3. İş akışı Pages'i açamazsa (izin hatası) bir kez elle açın: **Settings → Pages →
+   Build and deployment → Source: GitHub Actions**. Sonra iş akışını yeniden çalıştırın.
+4. İş akışı istemiyorsanız klasik yol da olur: **Settings → Pages → Source: Deploy from a branch**,
+   dal `main`, klasör `/ (root)`.
+5. Telefonda adresi açın, tarayıcı menüsünden **Ana ekrana ekle** deyin.
 
 Bütün yollar göreli (`./`) olduğu için alt klasörde (`/game-game-/`) yayınlanması sorun çıkarmaz.
 Online mod için HTTPS gerekir; GitHub Pages bunu zaten sağlar.
