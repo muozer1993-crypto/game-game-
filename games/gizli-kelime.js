@@ -91,7 +91,9 @@ export function createGame(cfg) {
       if (word[0] === '0') fail('Sayı 0 ile başlayamaz');
     } else {
       if (!isTurkishWord(word)) fail('Yalnızca Türkçe harfler kullanılabilir');
-      if (ctx.dict && !ctx.dict.has(word)) fail(what === 'secret' ? 'Bu kelime listede yok; listeden bir kelime seç' : 'Kelime listesinde yok');
+      // The sending device validated against its own list; do not re-check remote moves,
+      // so that two devices with different list versions never diverge.
+      if (ctx.dict && !ctx.remote && !ctx.dict.has(word)) fail(what === 'secret' ? 'Bu kelime listede yok; listeden bir kelime seç' : 'Kelime listesinde yok');
     }
     return word;
   }
@@ -156,6 +158,8 @@ export function createGame(cfg) {
         if (state.phase !== 'play') fail('Şu anda tahmin yapılamaz');
         if (player !== whoseTurn(state)) fail('Sıra sende değil');
         if (pendingOf(state, player) >= 0) fail('Önceki tahmin puanlanıyor');
+        if (pendingOf(state, 1 - player) >= 0) fail('Rakibin tahmini puanlanıyor');
+        if (state.maxGuesses > 0 && state.guesses[player].length >= state.maxGuesses) fail('Tahmin hakkın bitti');
         const word = validateWord(state, move.word, ctx, 'guess');
         if (state.guesses[player].some((g) => g.word === word)) fail('Bunu zaten denedin');
         const guesses = state.guesses.map((l) => l.slice());
@@ -182,6 +186,7 @@ export function createGame(cfg) {
       }
       case 'giveup': {
         if (state.phase !== 'play') fail('Şu anda pes edilemez');
+        if (player !== whoseTurn(state)) fail('Sıra sende değil');
         return { ...state, phase: 'over', gaveUp: player };
       }
       case 'reveal': {
@@ -249,15 +254,21 @@ export function createGame(cfg) {
   const unit = isNumber ? 'rakam' : 'harf';
   const show = (w) => (isNumber ? w : upperTR(w));
 
+  const MARK_TEXT = { correct: 'doğru yerde', present: 'var ama yeri yanlış', absent: 'yok' };
+
   function tileRow(word, result, length, { small = false, pending = false } = {}) {
     const chars = [...(word || '')];
     const tiles = [];
     for (let i = 0; i < length; i++) {
       const ch = chars[i] || '';
       const mark = Array.isArray(result) ? result[i] : '';
-      tiles.push(el('span', { class: `tile ${small ? 'small' : ''} ${ch ? 'filled' : ''} ${mark}` }, show(ch)));
+      tiles.push(el('span', {
+        class: `tile ${small ? 'small' : ''} ${ch ? 'filled' : ''} ${mark}`,
+        'aria-label': ch ? `${show(ch)}${mark ? `, ${MARK_TEXT[mark]}` : ''}` : null,
+      }, show(ch)));
     }
-    const row = el('div', { class: `tile-row ${small ? 'compact' : ''} ${pending ? 'pending-row' : ''}` }, tiles);
+    const hasPm = (result && !Array.isArray(result)) || (pending && currentFeedback === 'plusminus');
+    const row = el('div', { class: `tile-row ${small ? 'compact' : ''} ${pending ? 'pending-row' : ''} ${hasPm ? 'with-pm' : ''}` }, tiles);
     if (result && !Array.isArray(result)) {
       row.append(el('span', { class: 'pm' },
         el('span', { class: 'pm-plus' }, `+${result.plus}`), ' ',
@@ -268,7 +279,10 @@ export function createGame(cfg) {
     return row;
   }
 
+  let currentFeedback = 'wordle'; // set by render()/board() so tileRow can size +/- rows
+
   function board(guesses, state, opts = {}) {
+    currentFeedback = state.feedback;
     const rows = guesses.map((g) => tileRow(g.word, g.result, state.length, { small: opts.small, pending: g.result == null }));
     if (!rows.length) rows.push(el('p', { class: 'hint' }, 'Henüz tahmin yok.'));
     return el('div', { class: 'tiles' }, rows);
@@ -280,6 +294,7 @@ export function createGame(cfg) {
     const opp = 1 - viewer;
     const cleanups = [];
     const you = (p) => (p === viewer ? 'Sen' : players[p]);
+    currentFeedback = state.feedback;
 
     // ---- secret phase
     if (state.phase === 'secret') {
@@ -292,7 +307,7 @@ export function createGame(cfg) {
         return null;
       }
       if (state.secretMode === 'random') {
-        draw(container, el('p', { class: 'hint' }, `Yaygın ${unit} listesi yüklenemediği için gizli ${isNumber ? 'sayı' : 'kelime'} seçilemedi. Ayarlardan "kendim yazayım" seçeneğini dene.`));
+        draw(container, el('p', { class: 'hint' }, 'Yaygın kelime listesi yüklenemediği için gizli kelime seçilemedi. Ayarlardan "Rakip için kendim yazayım" seçeneğini dene.'));
         return null;
       }
       let typed = '';
@@ -377,17 +392,33 @@ export function createGame(cfg) {
     else if (mine) status = el('strong', {}, `Sıra sende, ${players[viewer]}: ${myGuesses.length + 1}. tahmin${left != null ? ` (${left} hak)` : ''}`);
     else status = el('span', { class: 'muted' }, `${players[turn]} tahmin ediyor…`);
 
+    // On a shared phone the previous player's scored row would otherwise vanish the moment
+    // the turn passes, so show the opponent's last guess (and the "solved" warning) up top.
+    const lastOpp = oppGuesses.length ? oppGuesses[oppGuesses.length - 1] : null;
+    const oppSolved = state.solved[opp] != null;
+    const mySolved = state.solved[viewer] != null;
+    const notices = [];
+    if (oppSolved && !mySolved && mine) notices.push(el('p', { class: 'hint notice' }, `${players[opp]} kelimeyi buldu. Bu son tahminin: bulursan berabere, bulamazsan kaybedersin.`));
+    if (mySolved && !mine) notices.push(el('p', { class: 'hint notice' }, `Buldun! ${players[opp]} son tahminini yapıyor…`));
+    const lastOppView = !online && lastOpp && lastOpp.result
+      ? el('div', { class: 'last-opp' },
+        el('div', { class: 'col-title' }, `${nameSuffix(players[opp], 'in')} son tahmini`),
+        el('div', { class: 'tiles' }, tileRow(lastOpp.word, lastOpp.result, state.length, { small: true })))
+      : null;
+
     const oppDetails = el('details', { class: 'rules' },
-      el('summary', {}, `${online ? players[opp] : players[opp]} — tahminleri (${oppGuesses.length})`),
+      el('summary', {}, `${players[opp]} — tahminleri (${oppGuesses.length})`),
       board(oppGuesses, state, { small: true }),
     );
 
     draw(container,
       el('div', { class: 'status-line' }, status),
+      notices,
+      lastOppView,
       el('p', { class: 'hint' }, state.feedback === 'wordle'
         ? 'Yeşil: doğru harf doğru yerde · Sarı: harf var, yeri yanlış · Gri: yok'
         : `+ doğru ${unit} doğru yerde · − doğru ${unit} yanlış yerde`),
-      el('div', { class: 'col-title active' }, `${players[viewer]} — ${isNumber ? 'tahminlerin' : 'tahminlerin'}`),
+      el('div', { class: 'col-title active' }, `${players[viewer]} — tahminlerin`),
       board(myGuesses, state),
       currentRow,
       kbBox,

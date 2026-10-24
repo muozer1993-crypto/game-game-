@@ -2,7 +2,7 @@ import { test, assert } from './runner.js';
 import game, { nextRequired } from '../games/son-hece.js';
 import { dictionaryFrom } from '../js/lib/words.js';
 
-const dict = dictionaryFrom(['kitap', 'tapınak', 'nakış', 'kışla', 'kağıt', 'yoğurt', 'ıtır', 'anne', 'nehir', 'at', 'ata']);
+const dict = dictionaryFrom(['kitap', 'tapınak', 'nakış', 'kışla', 'kağıt', 'yoğurt', 'ıtır', 'anne', 'nehir', 'at', 'ata', 'saat']);
 const ctx = { dict };
 const T = 1000;
 
@@ -51,6 +51,39 @@ test('son hece: yanlış hece, tekrar, sıra dışı hamle reddedilir', () => {
   r = game.applyMove(r, 1, { type: 'word', word: 'ata', at: T }, ctx);
   assert.equal(r.required, 'ta');
   assert.throws(() => game.applyMove(r, 0, { type: 'word', word: 'at', at: T }, ctx), 'ile başlamalı');
+});
+
+test('son hece: hecenin kendisi sözlükte bir kelimeyse kabul edilir (sa-at → at)', () => {
+  let s = start();
+  s = game.applyMove(s, 0, { type: 'word', word: 'saat', at: T }, ctx);
+  assert.equal(s.required, 'at');
+  s = game.applyMove(s, 1, { type: 'word', word: 'at', at: T }, ctx); // "at" is in the dictionary
+  assert.equal(s.words[1].word, 'at');
+  assert.equal(s.required, 'at');
+  // a bare syllable that is not a word is treated as "finish the word"
+  let r = start();
+  r = game.applyMove(r, 0, { type: 'word', word: 'kitap', at: T }, ctx);
+  assert.throws(() => game.applyMove(r, 1, { type: 'word', word: 'tap', at: T }, ctx), 'tamamla');
+});
+
+test('son hece: ünlüsüz "kelime" reddedilir, gönderenin known kararı geçerlidir', () => {
+  let s = start();
+  assert.throws(() => game.applyMove(s, 0, { type: 'word', word: 'kdv', at: T }, ctx), 'ünlü');
+  // the sender's device says the word is unknown although our list has it: goes to challenge
+  const c = game.applyMove(s, 0, { type: 'word', word: 'kitap', at: T, known: false }, ctx);
+  assert.equal(c.phase, 'challenge');
+  // and the other way round: the sender vouches for a word our list lacks
+  const k = game.applyMove(s, 0, { type: 'word', word: 'zebra', at: T, known: true }, ctx);
+  assert.equal(k.phase, 'play');
+  assert.equal(k.required, 'ra');
+  // after a rejection the player sees which word was refused; it clears on the next accepted word
+  let r = start();
+  r = game.applyMove(r, 0, { type: 'word', word: 'kitap', at: T }, ctx);
+  r = game.applyMove(r, 1, { type: 'word', word: 'tapir', at: T }, ctx);
+  r = game.applyMove(r, 0, { type: 'reject', at: T }, ctx);
+  assert.equal(r.rejected, 'tapir');
+  r = game.applyMove(r, 1, { type: 'word', word: 'tapınak', at: T }, ctx);
+  assert.equal(r.rejected, null);
 });
 
 test('son hece: aynı kelime iki kez kullanılamaz', () => {

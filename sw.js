@@ -1,6 +1,6 @@
 // Minimal service worker: precache the app shell, serve cache-first, fall back to network.
 // Bump VERSION whenever files change so that old caches are dropped.
-const VERSION = 'v1';
+const VERSION = 'v2';
 const CACHE = `oyun-gecesi-${VERSION}`;
 const SHELL = [
   './',
@@ -33,12 +33,25 @@ const SHELL = [
   './icons/icon.svg',
   './icons/icon-192.png',
   './icons/icon-512.png',
+  './README.md',
+  './tests/index.html',
+  './tests/runner.js',
+  './tests/all.js',
+  './tests/node.mjs',
+  './tests/tr.test.js',
+  './tests/syllabify.test.js',
+  './tests/rng.test.js',
+  './tests/session.test.js',
+  './tests/son-hece.test.js',
+  './tests/gizli-kelime.test.js',
+  './tests/beni-tani.test.js',
 ];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE)
-      .then((cache) => cache.addAll(SHELL))
+      // cache: 'reload' bypasses the HTTP cache so a VERSION bump really fetches new files
+      .then((cache) => cache.addAll(SHELL.map((url) => new Request(url, { cache: 'reload' }))))
       .then(() => self.skipWaiting()),
   );
 });
@@ -66,7 +79,10 @@ self.addEventListener('fetch', (event) => {
         }
         return response;
       }).catch(() => {
-        if (request.mode === 'navigate') return caches.match('./index.html');
+        // Offline and not cached: only the app shell itself falls back to index.html.
+        const scope = new URL('./', self.registration.scope).pathname;
+        const path = url.pathname;
+        if (request.mode === 'navigate' && (path === scope || path === `${scope}index.html`)) return caches.match('./index.html');
         return Response.error();
       });
     }),

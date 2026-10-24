@@ -3,7 +3,7 @@ import { el, render as draw } from '../js/ui/dom.js';
 import { createKeyboard } from '../js/ui/keyboard.js';
 import { createTimer } from '../js/ui/timer.js';
 import { syllabify, lastSyllable } from '../js/lib/syllabify.js';
-import { normalizeWord, isTurkishWord, upperTR } from '../js/lib/tr.js';
+import { normalizeWord, isTurkishWord, upperTR, nameSuffix, VOWELS } from '../js/lib/tr.js';
 
 export const meta = {
   name: 'Son Hece',
@@ -40,6 +40,7 @@ export function setup(options = {}) {
     required: '',
     deadline: null,
     challenge: null, // { player, word, remainingMs }
+    rejected: null,  // last word refused by the opponent (shown to the player who said it)
     loser: null,
     reason: null,   // timeout | giveup
   };
@@ -69,8 +70,11 @@ function acceptWord(state, player, word, at, challenged) {
     turn: 1 - player,
     deadline: at + state.turnMs,
     challenge: null,
+    rejected: null,
   };
 }
+
+const hasVowel = (w) => [...w].some((ch) => VOWELS.includes(ch));
 
 export function applyMove(state, player, move, ctx = {}) {
   if (!move || typeof move !== 'object') fail('Geçersiz hamle');
@@ -87,15 +91,18 @@ export function applyMove(state, player, move, ctx = {}) {
       const word = normalizeWord(move.word || '');
       if (!word) fail('Bir kelime yaz');
       if (!isTurkishWord(word)) fail('Yalnızca Türkçe harfler kullanılabilir');
+      if (!hasVowel(word)) fail('Kelimede en az bir ünlü olmalı');
       if (state.required && !word.startsWith(state.required)) {
         fail(`Kelime "${state.required}" ile başlamalı`);
       }
-      if (word === state.required) fail('Yalnızca hece yazdın, kelimeyi tamamla');
+      // The device that typed the word decides whether it is in the list (move.known), so
+      // that two devices with different list versions never disagree; otherwise look it up.
+      const known = typeof move.known === 'boolean' ? move.known : (ctx.dict ? ctx.dict.has(word) : true);
+      if (word === state.required && !known) fail('Yalnızca hece yazdın, kelimeyi tamamla');
       if (state.words.some((w) => w.word === word)) fail('Bu kelime daha önce söylendi');
       if (nextRequired(word, state.ghRule) === null) {
         fail(`Son hecesi ğ ile başlıyor (${syllabify(word).join('-')}); bu ayarda yasak`);
       }
-      const known = ctx.dict ? ctx.dict.has(word) : true;
       if (known) return acceptWord(state, player, word, at, false);
       const remainingMs = state.deadline == null ? state.turnMs : Math.max(0, state.deadline - at);
       return { ...state, phase: 'challenge', deadline: null, challenge: { player, word, remainingMs } };
@@ -108,7 +115,7 @@ export function applyMove(state, player, move, ctx = {}) {
     case 'reject': {
       if (state.phase !== 'challenge') fail('Bekleyen itiraz yok');
       if (player !== 1 - state.challenge.player) fail('Bunu rakip karar verir');
-      return { ...state, phase: 'play', deadline: at + state.challenge.remainingMs, challenge: null };
+      return { ...state, phase: 'play', deadline: at + state.challenge.remainingMs, challenge: null, rejected: state.challenge.word };
     }
     case 'timeout': {
       if (state.phase !== 'play') return state; // late timer: ignore
@@ -146,7 +153,8 @@ function chainView(state) {
     const parts = syl.map((s, k) => el('span', { class: isLast && k === syl.length - 1 ? 'syl-last' : 'syl' }, s));
     const joined = [];
     parts.forEach((p, k) => { if (k) joined.push('·'); joined.push(p); });
-    return el('span', { class: `chain-word p${w.player} ${w.challenged ? 'challenged' : ''}`, title: w.challenged ? 'Kabul edilen kelime' : '' }, joined);
+    return el('span', { class: `chain-word p${w.player} ${w.challenged ? 'challenged' : ''}`, title: w.challenged ? 'Rakibin kabul ettiği kelime' : '' },
+      joined, w.challenged ? el('span', { class: 'accepted-mark', 'aria-label': 'kabul edildi' }, ' ✓') : null);
   });
   const box = el('div', { class: 'chain' }, items);
   queueMicrotask(() => { box.scrollTop = box.scrollHeight; });
@@ -180,7 +188,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       el('p', { class: 'hint' }, `Tur süresi ${state.turnMs / 1000} saniye. ${state.ghRule === 'skip' ? 'ğ ile başlayan son hecede ğ atlanır.' : 'Son hecesi ğ ile başlayan kelimeler yasak.'}`),
       mine
         ? el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block', onClick: () => sendMove({ type: 'start', at: Date.now() }) }, 'Başla')
-        : el('p', { class: 'hint' }, `${players[state.turn]} başlatmayı bekliyor…`),
+        : el('p', { class: 'hint' }, `${nameSuffix(players[state.turn], 'in')} başlatması bekleniyor…`),
     );
     return null;
   }
@@ -233,7 +241,8 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const submit = () => {
     if (!mine) return;
     const word = state.required + typed;
-    sendMove({ type: 'word', word, at: Date.now() });
+    const known = ctx.dict ? ctx.dict.has(word) : true;
+    sendMove({ type: 'word', word, known, at: Date.now() });
   };
 
   const kbBox = el('div');
@@ -249,9 +258,14 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     ? el('div', { class: 'status-line' }, el('span', { class: 'muted' }, 'Kelime '), el('strong', {}, `"${upperTR(state.required)}"`), el('span', { class: 'muted' }, ' ile başlamalı'))
     : el('div', { class: 'status-line' }, el('strong', {}, 'İlk kelime serbest'));
 
+  const rejectedNote = state.rejected && mine
+    ? el('p', { class: 'hint rejected-note' }, `"${upperTR(state.rejected)}" reddedildi — kalan sürede yeni bir kelime dene.`)
+    : null;
+
   draw(container,
     el('div', { class: 'status-line' }, mine ? el('strong', {}, `Sıra sende, ${players[viewer]}!`) : el('span', { class: 'muted' }, `${players[state.turn]} düşünüyor…`)),
     timerBox,
+    rejectedNote,
     chainView(state),
     requiredText,
     typedView,

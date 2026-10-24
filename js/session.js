@@ -83,7 +83,7 @@ export class Session {
     if (this.destroyed || !this.state) return false;
     let next;
     try {
-      next = this.game.applyMove(this.state, player, move, this.ctx);
+      next = this.game.applyMove(this.state, player, move, remote ? { ...this.ctx, remote: true } : this.ctx);
     } catch (err) {
       if (remote) console.warn('Karşı cihazdan gelen hamle reddedildi:', err);
       else toast(err && err.message ? err.message : 'Geçersiz hamle', { kind: 'error' });

@@ -171,10 +171,26 @@ test('gizli kelime: +/− modunda sonuç sayıdır ve tekrar tahmin yasak', () =
   assert.throws(() => game.applyMove(s, 0, { type: 'guess', word: 'kitap' }, ctx), 'zaten denedin');
 });
 
-test('gizli kelime: pes eden kaybeder', () => {
+test('gizli kelime: pes eden kaybeder, yalnızca sırası gelen pes edebilir', () => {
   let s = playReady();
+  assert.throws(() => game.applyMove(s, 1, { type: 'giveup' }, ctx), 'Sıra sende değil');
   s = game.applyMove(s, 0, { type: 'giveup' }, ctx);
   assert.deepEqual(game.getResult(s), { winner: 1 });
+});
+
+test('gizli kelime: rakibin tahmini puanlanmadan tahmin yapılamaz, hak bitince tahmin yok', () => {
+  let s = playReady({ maxGuesses: 1 });
+  s = game.applyMove(s, 0, { type: 'guess', word: 'kitap' }, ctx);
+  assert.throws(() => game.applyMove(s, 1, { type: 'guess', word: 'kitap' }, ctx), 'Rakibin tahmini puanlanıyor');
+  s = runAuto(game, s, [1]);
+  s = game.applyMove(s, 1, { type: 'guess', word: 'kitap' }, ctx);
+  s = runAuto(game, s, [0]);
+  assert.equal(s.phase, 'over');
+  // remote moves are not re-validated against the local list
+  const t = playReady();
+  const r = game.applyMove(t, 0, { type: 'guess', word: 'zebra' }, { ...ctx, remote: true });
+  assert.equal(r.guesses[0][0].word, 'zebra');
+  assert.throws(() => game.applyMove(t, 0, { type: 'guess', word: 'zebra' }, ctx), 'listesinde yok');
 });
 
 test('gizli kelime: geçersiz puan reddedilir', () => {

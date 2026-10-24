@@ -3,10 +3,12 @@
 import { el, clear } from './dom.js';
 import { lowerTR, LETTERS } from '../lib/tr.js';
 
+// Turkish Q layout minus q/w/x, which no Turkish word uses: that keeps the keys wide
+// enough to hit on a 360px-wide phone.
 export const TR_ROWS = [
-  ['q', 'w', 'e', 'r', 't', 'y', 'u', 'ı', 'o', 'p', 'ğ', 'ü'],
+  ['e', 'r', 't', 'y', 'u', 'ı', 'o', 'p', 'ğ', 'ü'],
   ['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'ş', 'i'],
-  ['enter', 'z', 'x', 'c', 'v', 'b', 'n', 'm', 'ö', 'ç', 'backspace'],
+  ['enter', 'z', 'c', 'v', 'b', 'n', 'm', 'ö', 'ç', 'backspace'],
 ];
 
 export const DIGIT_ROWS = [
@@ -57,10 +59,12 @@ export function createKeyboard(container, opts) {
   }
   clear(container).append(root);
 
+  const INTERACTIVE = new Set(['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON', 'A', 'SUMMARY']);
   const onKeydown = (e) => {
     if (e.ctrlKey || e.metaKey || e.altKey) return;
     const target = e.target;
-    if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')) return;
+    // Let focused controls (buttons, links, inputs) handle their own keys.
+    if (target && INTERACTIVE.has(target.tagName)) return;
     if (e.key === 'Enter') { e.preventDefault(); press('enter'); return; }
     if (e.key === 'Backspace') { e.preventDefault(); press('backspace'); return; }
     if (e.key.length !== 1) return;
@@ -91,5 +95,5 @@ export function createKeyboard(container, opts) {
 
 /** Allowed characters for the given layout (used by games to validate key input). */
 export function allowedKeys(layout) {
-  return layout === 'digits' ? '0123456789' : LETTERS + 'qwx';
+  return layout === 'digits' ? '0123456789' : LETTERS;
 }

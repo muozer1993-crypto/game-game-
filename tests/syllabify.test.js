@@ -25,19 +25,21 @@ for (const [word, expected] of Object.entries(cases)) {
 test('syllabify: daha uzun kelimeler', () => {
   assert.deepEqual(syllabify('tapınak'), ['ta', 'pı', 'nak']);
   assert.deepEqual(syllabify('nakış'), ['na', 'kış']);
-  assert.deepEqual(syllabify('elektrik'), ['e', 'lek', 'trik']);
-  assert.deepEqual(syllabify('kontrol'), ['kon', 'trol']);
+  assert.deepEqual(syllabify('elektrik'), ['e', 'lekt', 'rik']); // brief rule, applied uniformly
+  assert.deepEqual(syllabify('kontrol'), ['kont', 'rol']);
   assert.deepEqual(syllabify('istanbul'), ['is', 'tan', 'bul']);
   assert.deepEqual(syllabify('öğretmen'), ['öğ', 'ret', 'men']);
   assert.deepEqual(syllabify('şiir'), ['şi', 'ir']);
   assert.deepEqual(syllabify('aile'), ['a', 'i', 'le']);
 });
 
-test('syllabify: üç ünsüzde tr/pl kümesi birlikte kalır, iki ünsüz ayrılır', () => {
-  assert.deepEqual(syllabify('santral'), ['san', 'tral']);
-  assert.deepEqual(syllabify('sürpriz'), ['sür', 'priz']);
-  assert.deepEqual(syllabify('kompleks'), ['kom', 'pleks']);
-  assert.deepEqual(syllabify('ekspres'), ['eks', 'pres']);
+test('syllabify: ekli kelimelerde yalnızca son ünsüz sonraki heceye geçer', () => {
+  assert.deepEqual(syllabify('Türkler'), ['Türk', 'ler']);
+  assert.deepEqual(syllabify('renkli'), ['renk', 'li']);
+  assert.deepEqual(syllabify('dertli'), ['dert', 'li']);
+  assert.deepEqual(syllabify('harfler'), ['harf', 'ler']);
+  assert.deepEqual(syllabify('çiftlik'), ['çift', 'lik']);
+  assert.deepEqual(syllabify('kurtlar'), ['kurt', 'lar']);
   assert.deepEqual(syllabify('ibret'), ['ib', 'ret']);
   assert.deepEqual(syllabify('kartpostal'), ['kart', 'pos', 'tal']);
   assert.deepEqual(syllabify('yurttaş'), ['yurt', 'taş']);

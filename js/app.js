@@ -63,13 +63,25 @@ function setScreen(name, cleanupFn) {
   if (teardown) { try { teardown(); } catch (err) { console.warn(err); } }
   teardown = cleanupFn || null;
   currentScreen = name;
-  if (location.hash !== `#${name}`) history.pushState(null, '', `#${name}`);
+  if (location.hash !== `#${name}`) {
+    // The menu replaces the current entry so the history does not grow round after round.
+    if (name === 'menu') history.replaceState(null, '', '#menu');
+    else history.pushState(null, '', `#${name}`);
+  }
   window.scrollTo(0, 0);
 }
 
 window.addEventListener('popstate', () => {
-  // Back button: anything other than the menu goes back to the menu.
-  if (currentScreen !== 'menu') showMenu();
+  // Browser / Android back button.
+  if (currentScreen === 'menu') return;
+  if (currentScreen === 'play') {
+    if (activeSession && !activeSession.ended && !confirm('Oyundan çıkılsın mı?')) {
+      history.pushState(null, '', '#play');
+      return;
+    }
+    if (online.transport) { showOnlineLobby({ notify: true }); return; }
+  }
+  showMenu();
 });
 
 function header(title, { onBack, right } = {}) {
@@ -82,7 +94,7 @@ function header(title, { onBack, right } = {}) {
 
 // ---------------------------------------------------------------- menu
 export function showMenu() {
-  if (online.transport) leaveOnline({ silent: true });
+  if (online.transport) leaveOnline(); // tells the other device we left
   setScreen('menu');
   const themeSelect = el('select', { class: 'select', 'aria-label': 'Tema', onChange: (e) => applyTheme(e.target.value) },
     el('option', { value: 'auto' }, 'Tema: Sistem'),
@@ -120,7 +132,11 @@ function settingsForm(game) {
   const stored = load(`settings:${game.id}`, {});
   const values = {};
   const fields = (game.meta.settings || []).map((s) => {
-    const value = stored[s.key] !== undefined ? stored[s.key] : s.default;
+    let value = stored[s.key] !== undefined ? stored[s.key] : s.default;
+    // settings saved by an older version may no longer match the options
+    if (s.type === 'select' && !s.options.some((o) => String(o.value) === String(value))) value = s.default;
+    if (s.type === 'number') value = clamp(Number(value), s);
+    if (s.type === 'toggle') value = !!value;
     values[s.key] = value;
     let input;
     if (s.type === 'select') {
@@ -133,7 +149,7 @@ function settingsForm(game) {
     } else {
       input = el('input', {
         type: 'number', class: 'input', id: `set-${s.key}`, min: s.min, max: s.max, step: s.step || 1, inputmode: 'numeric',
-        onChange: (e) => { values[s.key] = clamp(Number(e.target.value), s); e.target.value = values[s.key]; },
+        onChange: (e) => { values[s.key] = e.target.value === '' ? s.default : clamp(Number(e.target.value), s); e.target.value = values[s.key]; },
       });
       input.value = value;
     }
@@ -304,14 +320,28 @@ export function showPlay(p) {
 }
 
 function showRulesOverlay(game) {
-  const overlay = el('div', { class: 'overlay', onClick: (e) => { if (e.target === overlay) overlay.remove(); } },
-    el('div', { class: 'card overlay-card' },
+  const opener = document.activeElement;
+  const close = () => {
+    overlay.remove();
+    window.removeEventListener('keydown', onKey, true);
+    if (opener && opener.focus) opener.focus();
+  };
+  const onKey = (e) => {
+    // Swallow keys while the dialog is open (the game keyboard listens on window too).
+    e.stopPropagation();
+    if (e.key === 'Escape') { e.preventDefault(); close(); }
+  };
+  const okBtn = el('button', { type: 'button', class: 'btn btn-primary btn-block', onClick: close }, 'Tamam');
+  const overlay = el('div', { class: 'overlay', onClick: (e) => { if (e.target === overlay) close(); } },
+    el('div', { class: 'card overlay-card', role: 'dialog', 'aria-modal': 'true', 'aria-label': `${game.meta.name} kuralları`, tabindex: '-1' },
       el('h2', {}, `${game.meta.name} — Kurallar`),
       rulesBody(game),
-      el('button', { type: 'button', class: 'btn btn-primary btn-block', onClick: () => overlay.remove() }, 'Tamam'),
+      okBtn,
     ),
   );
+  window.addEventListener('keydown', onKey, true);
   document.body.append(overlay);
+  okBtn.focus();
 }
 
 // ---------------------------------------------------------------- online
@@ -321,8 +351,9 @@ const online = {
   self: null,       // 0 host, 1 guest
   players: null,
   session: null,
-  queue: [],        // messages that arrived before the session was ready
+  queue: [],        // moves that arrived while the guest was still loading the game
   busy: false,      // guest is loading data for a 'start'
+  round: 0,         // bumped on every 'start'/'lobby' so stale loads and moves are dropped
   ctxCache: {},
 };
 
@@ -338,6 +369,7 @@ function leaveOnline({ silent = false } = {}) {
   online.session = null;
   online.queue = [];
   online.busy = false;
+  online.round++;
 }
 
 export function showOnline() {
@@ -366,7 +398,7 @@ export function showOnline() {
       online.transport = await createHost(code, { onStatus: (s) => { status.textContent = s; } });
       online.role = 'host'; online.self = 0;
       wireTransport(myName);
-      showOnlineWaiting(code);
+      showOnlineWaiting(online.transport.code);
     } catch (err) {
       console.error(err);
       status.textContent = '';
@@ -385,7 +417,7 @@ export function showOnline() {
       online.transport = await joinRoom(code, { onStatus: (s) => { status.textContent = s; } });
       online.role = 'guest'; online.self = 1;
       wireTransport(myName);
-      showOnlineWaiting(code);
+      showOnlineWaiting(online.transport.code);
     } catch (err) {
       console.error(err);
       status.textContent = '';
@@ -497,21 +529,28 @@ async function handleOnlineMessage(msg) {
       if (online.role !== 'guest') return;
       const game = findGame(msg.gameId);
       if (!game) { toast('Bu oyun bu sürümde yok', { kind: 'error' }); return; }
+      const round = ++online.round;   // moves of an earlier round must not reach the new session
+      online.queue = [];
       online.busy = true;
       online.session = null;
+      if (activeSession) { activeSession.destroy(); activeSession = null; }
       try {
         const ctx = online.ctxCache[game.id] || (online.ctxCache[game.id] = await loadGameData(game));
+        if (round !== online.round || !online.transport) return; // a newer start/lobby/leave won
         online.busy = false;
         showPlay({ game, options: msg.options, players: msg.players || online.players, ctx, mode: 'online', self: 1, initialState: msg.state0, scores: msg.scores });
       } catch (err) {
+        if (round !== online.round) return;
         online.busy = false;
+        online.queue = [];
         console.error(err);
         toast(err.message || 'Veri yüklenemedi', { kind: 'error', duration: 4000 });
       }
       return;
     }
     case 'move': {
-      if (online.busy || !online.session) { online.queue.push(msg); return; }
+      if (online.busy) { online.queue.push(msg); return; }
+      if (!online.session) return; // no game on this device: drop it
       online.session.receive(msg);
       return;
     }
@@ -520,7 +559,10 @@ async function handleOnlineMessage(msg) {
       return;
     }
     case 'lobby': {
-      if (currentScreen === 'play') {
+      online.round++;        // cancels a start that is still loading
+      online.queue = [];
+      online.busy = false;
+      if (currentScreen !== 'online-lobby') {
         toast('Rakip oyundan ayrıldı', { duration: 3000 });
         showOnlineLobby();
       }
@@ -541,6 +583,13 @@ async function handleOnlineMessage(msg) {
 if ('serviceWorker' in navigator && location.protocol !== 'file:') {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register(new URL('../sw.js', import.meta.url)).catch((err) => console.warn('SW kaydı başarısız', err));
+  });
+  // A new version has installed and taken over: reload on the menu, otherwise tell the user.
+  let hadController = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!hadController) { hadController = true; return; } // first install, nothing to refresh
+    if (currentScreen === 'menu' && !online.transport) location.reload();
+    else toast('Yeni sürüm hazır: ana menüye dönünce sayfa yenilenecek', { duration: 4000 });
   });
 }
 

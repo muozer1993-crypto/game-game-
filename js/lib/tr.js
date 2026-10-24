@@ -58,6 +58,7 @@ const DIGIT_ENDS_WITH_VOWEL = { 2: true, 6: true, 7: true };
  *   nameSuffix('Ahmet', 'de') -> "Ahmet'te"
  *   nameSuffix('Ayşe', 'e')   -> "Ayşe'ye"      (dative: -e/-a/-ye/-ya)
  *   nameSuffix('Ali', 'in')   -> "Ali'nin"      (genitive: -in/-ın/-un/-ün/-nin...)
+ *   nameSuffix('Ali', 'i')    -> "Ali'yi"       (accusative: -i/-ı/-u/-ü/-yi...)
  */
 export function nameSuffix(name, kind) {
   const n = String(name).trim();
@@ -86,6 +87,11 @@ export function nameSuffix(name, kind) {
     const lv = lastVowel(n, isDigit, last);
     const v = ({ a: 'ı', ı: 'ı', o: 'u', u: 'u', e: 'i', i: 'i', ö: 'ü', ü: 'ü' })[lv] || 'i';
     return `${n}'${endsWithVowel ? 'n' : ''}${v}n`;
+  }
+  if (kind === 'i') {
+    const lv = lastVowel(n, isDigit, last);
+    const v = ({ a: 'ı', ı: 'ı', o: 'u', u: 'u', e: 'i', i: 'i', ö: 'ü', ü: 'ü' })[lv] || 'i';
+    return `${n}'${endsWithVowel ? 'y' : ''}${v}`;
   }
   return n;
 }

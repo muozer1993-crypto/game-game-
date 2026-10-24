@@ -51,6 +51,19 @@ test('tr: yönelme eki (-e/-a/-ye/-ya)', () => {
   assert.equal(nameSuffix('Burak', 'e'), "Burak'a");
 });
 
+test('tr: belirtme eki (-i/-ı/-u/-ü, -yi...)', () => {
+  assert.equal(nameSuffix('Ahmet', 'i'), "Ahmet'i");
+  assert.equal(nameSuffix('Ayşe', 'i'), "Ayşe'yi");
+  assert.equal(nameSuffix('Ali', 'i'), "Ali'yi");
+  assert.equal(nameSuffix('Burak', 'i'), "Burak'ı");
+  assert.equal(nameSuffix('Umut', 'i'), "Umut'u");
+  assert.equal(nameSuffix('Gül', 'i'), "Gül'ü");
+  assert.equal(nameSuffix('Oyuncu 1', 'i'), "Oyuncu 1'i");
+  assert.equal(nameSuffix('Oyuncu 2', 'i'), "Oyuncu 2'yi");
+  assert.equal(nameSuffix('Oyuncu 3', 'i'), "Oyuncu 3'ü");
+  assert.equal(nameSuffix('Oyuncu 6', 'i'), "Oyuncu 6'yı");
+});
+
 test('tr: ilgi eki (-in/-ın/-un/-ün, -nin...)', () => {
   assert.equal(nameSuffix('Ali', 'in'), "Ali'nin");
   assert.equal(nameSuffix('Ayşe', 'in'), "Ayşe'nin");

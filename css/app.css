@@ -11,10 +11,10 @@
   --secondary-fg: #1b1d24;
   --key: #d9dee8;
   --key-fg: #1b1d24;
-  --correct: #4caf50;
-  --present: #d9a62b;
-  --absent: #6f7480;
-  --danger: #e5484d;
+  --correct: #2e7d32;
+  --present: #9a6700;
+  --absent: #5f6470;
+  --danger: #c62828;
   --tile-border: #b9c0cf;
   --radius: 14px;
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
@@ -33,9 +33,10 @@
     --secondary-fg: #ecedf1;
     --key: #3a3f4b;
     --key-fg: #ecedf1;
-    --correct: #4caf50;
-    --present: #c9a227;
+    --correct: #2f8a35;
+    --present: #a8761a;
     --absent: #4a4f5a;
+    --danger: #ff6b6b;
     --tile-border: #3f4452;
     --shadow: none;
     color-scheme: dark;
@@ -53,9 +54,10 @@
   --secondary-fg: #ecedf1;
   --key: #3a3f4b;
   --key-fg: #ecedf1;
-  --correct: #4caf50;
-  --present: #c9a227;
+  --correct: #2f8a35;
+  --present: #a8761a;
   --absent: #4a4f5a;
+  --danger: #ff6b6b;
   --tile-border: #3f4452;
   --shadow: none;
   color-scheme: dark;
@@ -214,8 +216,8 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .timer.paused .timer-fill { background: var(--muted); }
 
 /* keyboard */
-.keyboard { margin: 10px 0 0; user-select: none; -webkit-user-select: none; }
-.kb-row { display: flex; justify-content: center; gap: 4px; margin-bottom: 6px; }
+.keyboard { margin: 10px -10px 0; user-select: none; -webkit-user-select: none; } /* bleeds into the gutter for wider keys */
+.kb-row { display: flex; justify-content: center; gap: 3px; margin-bottom: 6px; }
 .key {
   flex: 1 1 0;
   max-width: 44px;
@@ -261,7 +263,8 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .tile.absent { background: var(--absent); border-color: var(--absent); color: #fff; }
 .tile.small { width: 32px; height: 32px; font-size: 1rem; border-width: 1px; }
 .tile-row.compact { gap: 4px; }
-.tile-row .pm { align-self: center; margin-left: 8px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.tile-row .pm { align-self: center; margin-left: 6px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; min-width: 3.2em; }
+.tile-row.with-pm .tile:not(.small) { width: 40px; height: 40px; font-size: 1.2rem; }
 .pm-plus { color: var(--correct); }
 .pm-minus { color: var(--present); }
 .pending-row { opacity: 0.6; }
@@ -271,6 +274,10 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .chain-word { padding: 4px 10px; border-radius: 999px; background: var(--secondary); color: var(--secondary-fg); font-size: 0.95rem; }
 .chain-word.p1 { background: var(--primary); color: var(--primary-fg); }
 .chain-word.challenged { outline: 2px dashed var(--present); }
+.chain-word .accepted-mark { font-weight: 800; }
+.rejected-note { color: var(--danger); }
+.notice { color: var(--fg); font-weight: 600; }
+.last-opp { margin: 4px 0 8px; }
 .chain-word .syl { opacity: 0.75; }
 .chain-word .syl-last { font-weight: 800; opacity: 1; text-decoration: underline; }
 .required { font-size: 1.6rem; font-weight: 800; letter-spacing: 0.05em; text-align: center; }
@@ -342,7 +349,11 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 /* reveal */
 .reveal { text-align: center; margin: 10px 0; }
 .reveal .word { font-size: 1.4rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
-.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: start; }
+.two-col { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; align-items: start; }
+.two-col > div { min-width: 0; overflow-x: auto; }
+@media (max-width: 480px) {
+  .two-col { grid-template-columns: minmax(0, 1fr); }
+}
 .col-title { font-size: 0.9rem; color: var(--muted); text-align: center; margin-bottom: 4px; }
 .col-title.active { color: var(--fg); font-weight: 700; }
 

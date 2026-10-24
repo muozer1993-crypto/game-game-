@@ -6,12 +6,10 @@
 //  - Two adjacent vowels split (sa-at).
 //  - A consonant cluster at the start of the word stays in the first syllable (spor, tren),
 //    trailing consonants stay in the last syllable (Türk).
-//  - Refinement for loanwords: with three or more consonants between vowels, a final
-//    consonant + r/l cluster moves together (e-lek-trik, kon-trol, san-tral, sür-priz).
-//    Two consonants always split (ib-ret, an-ne), as in standard Turkish.
-import { isVowel, lowerTR } from './tr.js';
-
-const CLUSTER_RE = /^[bdfgkpt][rl]$/;
+// The rule is applied uniformly, also to loanwords (e-lekt-rik, kont-rol): a "keep the
+// tr/pl cluster together" exception would wrongly split native suffixed words such as
+// Türk-ler, renk-li, dert-li, harf-ler, which matters for Son Hece.
+import { isVowel } from './tr.js';
 
 /**
  * @param {string} word  a single word (letters only; case is preserved in the output)
@@ -31,10 +29,8 @@ export function syllabify(word) {
     const v2 = vowelIdx[k + 1];
     const consonants = v2 - v1 - 1;
     // 0 consonants: split between the vowels; otherwise the last consonant
-    // before the next vowel starts the next syllable (a trailing "tr"/"pl"-style
-    // cluster of a 3+ consonant run moves as a whole).
-    let cut = consonants === 0 ? v2 : v2 - 1;
-    if (consonants >= 3 && CLUSTER_RE.test(lowerTR(chars[v2 - 2] + chars[v2 - 1]))) cut = v2 - 2;
+    // before the next vowel starts the next syllable.
+    const cut = consonants === 0 ? v2 : v2 - 1;
     syllables.push(chars.slice(start, cut).join(''));
     start = cut;
   }

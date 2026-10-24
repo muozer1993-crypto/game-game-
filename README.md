@@ -32,7 +32,8 @@ Testler: `http://localhost:8000/tests/` sayfasını aç (ya da terminalden `node
 
 > Service worker dosyaları önbelleğe alır. Geliştirirken değişikliği görmek için tarayıcının
 > "Application → Service Workers → Update on reload" seçeneğini açın ya da sert yenileyin.
-> Yayınlarken `sw.js` içindeki `VERSION` değerini artırın; eski önbellek böylece atılır.
+> Yayınlarken `sw.js` içindeki `VERSION` değerini artırın; yeni sürüm kurulunca ana menüdeki
+> sayfalar kendiliğinden yenilenir, oyun ortasındakiler menüye dönünce yenilenir.
 
 ## GitHub Pages'e yayınlama
 
@@ -130,6 +131,7 @@ Bkz. [PLAN.md](PLAN.md).
 ## Heceleme kuralları
 
 `js/lib/syllabify.js`: her hecede tek ünlü; iki ünlü arasındaki tek ünsüz sonraki heceye (ki-tap);
-iki ya da daha çok ünsüzde sonuncusu sonraki heceye (an-ne, kar-deş, Türk-çe); yan yana ünlüler
-ayrılır (sa-at); baştaki ünsüz kümesi ilk hecede kalır (spor, tren). Yabancı kökenli kelimeler için
-tek ek: üç ya da daha çok ünsüzde sondaki "tr/pl/kr…" kümesi birlikte geçer (e-lek-trik, kon-trol).
+iki ya da daha çok ünsüzde sonuncusu sonraki heceye (an-ne, kar-deş, Türk-çe, Türk-ler, renk-li);
+yan yana ünlüler ayrılır (sa-at); baştaki ünsüz kümesi ilk hecede kalır (spor, tren). Kural
+yabancı kökenli kelimelere de aynen uygulanır (e-lekt-rik, kont-rol); "tr/pl kümesini birlikte
+tut" gibi bir istisna, ekli Türkçe kelimeleri (Türk-ler → tür-kler) bozduğu için bilerek yok.

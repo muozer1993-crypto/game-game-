@@ -40,8 +40,11 @@ test('beni tanı: kurulum — aynı tohum aynı soruları seçer, turlar farklı
 
 test('beni tanı: özel sorular önce gelir / karışır / kullanılmaz', () => {
   const custom = [{ id: 'x1', type: 'open', text: 'Özel 1?' }, { id: 'x2', type: 'choice', text: 'Özel 2?', options: ['1', '2'] }];
-  const [r0] = pickQuestions(pool, custom, 5, 'first', 3);
-  assert.deepEqual(r0.slice(0, 2).map((q) => q.id).sort(), ['x1', 'x2']);
+  const [r0, r1] = pickQuestions(pool, custom, 5, 'first', 3);
+  // own questions are dealt to both rounds so that both players get asked them
+  assert.deepEqual([r0[0].id, r1[0].id].sort(), ['x1', 'x2']);
+  assert.equal(r0.length, 5);
+  assert.equal(r1.length, 5);
   const none = pickQuestions(pool, custom, 5, 'none', 3).flat();
   assert.ok(!none.some((q) => q.id.startsWith('x')));
   const mixed = pickQuestions(pool, custom, 5, 'mix', 3).flat();
@@ -99,6 +102,10 @@ test('beni tanı: cevap → tahmin → karar → roller değişir → sonuç', (
   const expected = (choiceIdx.length - 1) * 1 + (openIdx.length - 1) * 1 + 0.5;
   assert.equal(points(s)[1], expected, 'player 1 scored as guesser of round 0');
   s = game.applyMove(s, 0, { type: 'continue' });
+  assert.equal(s.phase, 'review', 'the guesser gets to look at the comparison');
+  assert.deepEqual(game.getTurn(s), { player: 1, private: true });
+  assert.throws(() => game.applyMove(s, 0, { type: 'continue' }), 'Sıra sende değil');
+  s = game.applyMove(s, 1, { type: 'continue' });
   assert.equal(s.round, 1);
   assert.equal(s.phase, 'answer');
   assert.deepEqual(game.getTurn(s), { player: 1, private: true });
@@ -111,6 +118,8 @@ test('beni tanı: cevap → tahmin → karar → roller değişir → sonuç', (
   q1.forEach((q, i) => { if (q.type === 'open') s = game.applyMove(s, 1, { type: 'judge', index: i, verdict: 'miss' }); });
   assert.equal(points(s)[0], 0);
   s = game.applyMove(s, 1, { type: 'continue' });
+  assert.equal(s.phase, 'review');
+  s = game.applyMove(s, 0, { type: 'continue' });
   assert.equal(s.phase, 'over');
   assert.deepEqual(game.getResult(s), { winner: 1 });
   assert.equal(game.getTurn(s), null);
@@ -129,6 +138,13 @@ test('beni tanı: online — tahmin eden cihaz cevapları görmeden ilerler, rev
   s = game.applyMove(s, 0, { type: 'reveal', answers });
   assert.deepEqual(s.answers[0], answers);
   s.questions[0].forEach((q, i) => { if (q.type === 'choice') assert.equal(s.judgments[0][i], 'match'); });
+});
+
+test('beni tanı: prototip anahtarı karar olarak kabul edilmez', () => {
+  let s = fresh();
+  s = { ...s, phase: 'judge', revealed: [true, false] };
+  const openIdx = s.questions[0].findIndex((q) => q.type === 'open');
+  assert.throws(() => game.applyMove(s, 0, { type: 'judge', index: openIdx, verdict: 'constructor' }), 'Geçersiz karar');
 });
 
 test('beni tanı: berabere ve puan biçimi', () => {
