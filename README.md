@@ -17,6 +17,7 @@ Tek telefonda elden ele ya da iki telefonda oda koduyla oynanır. Ana ekrana ekl
 | **Tabu** | Yasaklı beş kelimeyi söylemeden anlat, eşin tahmin etsin; 220+ kart, roller her turda değişir. |
 | **Beni Ne Kadar Tanıyorsun?** | Aynı sorular ikinize; önce kendi cevabın, sonra rakibin tahmini; karşılaştırma otomatik. Hazır havuz + kendi sorularınız. |
 | **Genel Kültür Düellosu** | Aynı sorular ikinize; doğru sayısı, eşitlikte hız. 240+ soruluk havuz. |
+| **Hesap Yarışı** | Aynı aritmetik işlemler ikinize (kolay/orta/zor); doğru sayısı, eşitlikte hız. |
 | **Amiral Battı** | Gemilerini gizle, rakibin denizine ateş et; atışlar gemi sahibinin cihazında değerlendirilir. |
 | **Satranç** | Klasik satranç: rok, geçerken alma, terfi seçimi, şah mat, pat, yetersiz materyal, elli hamle, üç tekrar. |
 | **Tavla** | Klasik tavla; kırma, bardan giriş, toplama, mars (2 puan), geri al. |

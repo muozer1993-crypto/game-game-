@@ -24,3 +24,4 @@ import './harf-avi.test.js';
 import './tabu.test.js';
 import './refleks.test.js';
 import './satranc.test.js';
+import './hesap-yarisi.test.js';
