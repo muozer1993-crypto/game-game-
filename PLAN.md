@@ -28,7 +28,7 @@ js/net/transport.js     Bağlantı arayüzü (send / onMessage)
 js/net/peer.js          PeerJS adaptörü (oda kodu = peer id)
 js/version.js           Uygulama sürümü (sw.js VERSION ile birlikte artırılır; iki telefon karşılaştırır)
 games/index.js          Oyun kaydı (yeni oyun = yeni dosya + bir import satırı)
-games/*.js              35 oyun, her biri tek dosya (aşağıdaki liste)
+games/*.js              36 oyun, her biri tek dosya (aşağıdaki liste)
 data/words-tr.txt       Büyük kelime listesi (doğrulama)
 data/common-tr.json     4/5/6 harfli yaygın kelimeler (gizli kelime seçimi)
 data/questions.json     Beni Ne Kadar Tanıyorsun soru havuzu
@@ -85,11 +85,11 @@ export default {
 - Testler: `node tests/node.mjs` (saf mantık, 140+ test) ve `tests/index.html` (aynı testler
   tarayıcıda). Tarayıcı akış testleri geliştirme sırasında Playwright ile koşuldu (depoda değil).
 
-## Oyunlar (35)
+## Oyunlar (36)
 Faz 1: Son Hece, Gizli Kelime, Gizli Sayı, Beni Ne Kadar Tanıyorsun? (`data/questions.json`).
 Faz 2: Genel Kültür Düellosu (`data/trivia.json`), Amiral Battı, Tavla, Dama, Mangala, Bilardo,
 Dört Bağlantı, Noktalar ve Kutular, Hafıza, XOX, Taş Kağıt Makas, Adam Asmaca, Harf Avı,
 Kelime Türetme, Kelime Tahtası, İsim Şehir, Tabu (`data/tabu.json`), Reversi, Beş Taş, Hex, Dokuz Taş,
-Refleks, Satranç, Pişti, Durak, Yalancı Zar, Hesap Yarışı, Renk Tuzağı, Hafıza Dizisi, Mayın Tarlası,
+Refleks, Satranç, Pişti, Durak, Yalancı Zar, Zar Pokeri, Hesap Yarışı, Renk Tuzağı, Hafıza Dizisi, Mayın Tarlası,
 Sudoku Düellosu — her biri `games/` altında tek dosya; `games/index.js` kaydı ve `sw.js`
 önbellek listesi. Ana menü `meta.group` ile bölümlere ayrılır (kelime / soru-cevap / masa).

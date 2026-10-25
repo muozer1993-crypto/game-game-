@@ -877,3 +877,21 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .yz-face.selected { outline: 3px solid var(--primary); outline-offset: -3px; }
 .yz-actions { display: flex; gap: 8px; margin: 12px 0; }
 .yz-actions .btn { flex: 1; }
+
+/* ---- Zar Pokeri */
+.zp-dice { display: flex; gap: 8px; justify-content: center; margin: 6px 0 8px; }
+.zp-die { font: inherit; font-size: 2.4rem; line-height: 1; min-width: 56px; min-height: 60px; padding: 4px; border-radius: 12px; border: 2px solid var(--border); background: var(--card); color: var(--fg); cursor: pointer; }
+.zp-die:disabled { cursor: default; opacity: 0.85; }
+.zp-die.held { border-color: var(--primary); background: var(--secondary); box-shadow: inset 0 0 0 2px var(--primary); }
+.zp-die.held::after { content: 'tut'; display: block; font-size: 0.65rem; font-weight: 700; color: var(--primary); line-height: 1; margin-top: 2px; }
+.zp-sheet { padding: 4px 8px; margin-top: 10px; }
+.zp-row { display: grid; grid-template-columns: 1fr 64px 64px; align-items: center; gap: 4px; min-height: 36px; padding: 2px 6px; border: 0; border-bottom: 1px solid var(--border); border-radius: 0; font: inherit; text-align: left; color: inherit; background: none; width: 100%; }
+.zp-row:last-child { border-bottom: 0; }
+.zp-row.zp-head { font-weight: 700; font-size: 0.85rem; color: var(--muted); }
+.zp-row.can { background: var(--secondary); border-radius: 8px; cursor: pointer; min-height: 44px; margin: 2px 0; }
+.zp-row.zp-bonus, .zp-row.zp-total { background: var(--bg); font-size: 0.9rem; }
+.zp-row.zp-total { font-size: 1rem; }
+.zp-cat { font-weight: 600; }
+.zp-val { text-align: center; }
+.zp-val.can { color: var(--primary); font-weight: 700; }
+.zp-val.used { font-weight: 600; }
