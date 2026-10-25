@@ -54,7 +54,8 @@ test('zar pokeri: atış, tutma, hane yazma, sıra, bitiş', () => {
   assert.equal(s.rollsLeft, 3);
   s = game.applyMove(s, 1, { type: 'roll' });
   const t1 = game.applyMove(s, 1, { type: 'score', cat: 'chance' });
-  assert.equal(t1.sheets[1].chance, t1.sheets[1].chance, 'each player has an own sheet');
+  assert.equal(t1.sheets[1].chance, s.dice.reduce((a, b) => a + b, 0), 'player 1 scores its own dice');
+  assert.equal(t1.sheets[0].chance, chance, 'player 0 sheet untouched');
   assert.equal(t1.turn, 0);
   // play to the end: one roll each, first free category
   let guard = 0;

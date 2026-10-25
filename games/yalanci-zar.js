@@ -194,14 +194,14 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     faceBtns.forEach((b, i) => b.classList.toggle('selected', i + 2 === draft.f));
     const ok = isRaise(state.bid, draft.q, draft.f, total);
     bidBtn.disabled = !ok;
-    bidBtn.textContent = `Teklif: en az ${draft.q} × ${FACES[draft.f]}`;
+    bidBtn.textContent = min ? `Teklif: en az ${draft.q} × ${FACES[draft.f]}` : 'Teklif yükseltilemez';
   };
   update();
   draw(container,
     el('div', { class: 'status-line' }, el('strong', {}, `${players[viewer]}, sıra sende`)),
     current,
     ...myDice,
-    el('p', { class: 'hint' }, `Masada toplam ${total} zar var.${state.wild ? ' Birler joker.' : ''}${state.bid ? ' Teklifi yükselt ya da "Yalan!" de.' : ''}`),
+    el('p', { class: 'hint' }, min ? `Masada toplam ${total} zar var.${state.wild ? ' Birler joker.' : ''}${state.bid ? ' Teklifi yükselt ya da "Yalan!" de.' : ''}` : 'Teklif en üst düzeyde: tek seçenek "Yalan!" demek.'),
     el('div', { class: 'yz-controls' },
       el('div', { class: 'yz-qty' },
         el('button', { type: 'button', class: 'btn btn-secondary', 'aria-label': 'azalt', onClick: () => { if (draft.q > 1) { draft.q -= 1; update(); } } }, '−'),

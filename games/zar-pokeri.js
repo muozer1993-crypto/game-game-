@@ -183,20 +183,28 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     return null;
   }
 
+  // the hold draft belongs to one roll: before the first roll of a turn there is nothing to hold
   const key = `${state.id}:${state.rollCount}`;
-  const held = drafts.get(key) || state.held.slice();
-  drafts.set(key, held);
+  const held = rolled ? (drafts.get(key) || state.held.slice()) : [false, false, false, false, false];
+  if (rolled) drafts.set(key, held);
   const dieBtns = state.dice.map((d, i) => el('button', {
     type: 'button', class: `zp-die ${held[i] ? 'held' : ''}`, disabled: !mine || !rolled || state.rollsLeft === 0,
     'aria-label': d ? `zar ${d}${held[i] ? ', tutuluyor' : ''}` : 'zar',
-    onClick: () => { held[i] = !held[i]; dieBtns[i].classList.toggle('held', held[i]); dieBtns[i].setAttribute('aria-label', `zar ${d}${held[i] ? ', tutuluyor' : ''}`); },
+    onClick: () => { held[i] = !held[i]; dieBtns[i].classList.toggle('held', held[i]); dieBtns[i].setAttribute('aria-label', `zar ${d}${held[i] ? ', tutuluyor' : ''}`); syncRoll(); },
   }, d ? FACES[d] : '·'));
   const rollBtn = mine && state.rollsLeft > 0
     ? el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block', onClick: () => { if (rolled && held.every(Boolean)) return; sendMove({ type: 'roll', held: held.slice() }); } },
       rolled ? `Tekrar at (${state.rollsLeft} hak)` : 'Zar at')
     : null;
+  const syncRoll = () => { // holding all five leaves nothing to roll: say so instead of a dead button
+    if (!rollBtn) return;
+    const all = rolled && held.every(Boolean);
+    rollBtn.disabled = all;
+    rollBtn.textContent = all ? 'En az bir zarı bırak' : rolled ? `Tekrar at (${state.rollsLeft} hak)` : 'Zar at';
+  };
+  syncRoll();
   draw(container,
-    el('div', { class: 'status-line' }, el('strong', {}, mine ? (rolled ? `${players[p]}: zarları tut, tekrar at ya da bir hane seç` : `${players[p]}, zar at`) : `${players[p]} oynuyor…`)),
+    el('div', { class: 'status-line' }, el('strong', {}, mine ? (rolled ? (state.rollsLeft > 0 ? `${players[p]}: zarları tut, tekrar at ya da bir hane seç` : `${players[p]}: bir hane seç`) : `${players[p]}, zar at`) : `${players[p]} oynuyor…`)),
     el('div', { class: 'zp-dice' }, dieBtns),
     rolled && mine && state.rollsLeft > 0 ? el('p', { class: 'hint' }, 'Tutmak istediğin zara dokun.') : null,
     rollBtn,
