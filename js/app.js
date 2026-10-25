@@ -111,6 +111,7 @@ export function showMenu() {
   render(app,
     header('Oyun Gecesi', { right: themeSelect }),
     el('p', { class: 'lead' }, 'İki kişilik oyunlar. Tek telefonda elden ele ya da iki telefonda oda koduyla.'),
+    quickRow((game) => showSetup(game)),
     gameSections((game) => showSetup(game)),
     el('section', { class: 'section' },
       el('button', { type: 'button', class: 'btn btn-secondary btn-block', onClick: showOnline }, '📶 İki telefonda oyna (oda kodu)'),
@@ -123,6 +124,16 @@ export function showMenu() {
 }
 
 /** Game cards grouped into sections (used by the menu and the online lobby). */
+/** Shortcuts above the list: the game played last and a random pick. */
+function quickRow(onPick) {
+  const last = findGame(load('last-game', null));
+  const random = () => onPick(games[Math.floor(Math.random() * games.length)]);
+  return el('div', { class: 'quick-row' },
+    last ? el('button', { type: 'button', class: 'btn btn-secondary btn-small quick-last', onClick: () => onPick(last) }, `${last.meta.icon || '🎲'} Son oynanan: ${last.meta.name}`) : null,
+    el('button', { type: 'button', class: 'btn btn-secondary btn-small quick-random', onClick: random }, '🎲 Rastgele oyun'),
+  );
+}
+
 function gameSections(onPick) {
   const card = (game) => el('button', { type: 'button', class: 'card game-card', onClick: () => onPick(game) },
     el('div', { class: 'game-icon', 'aria-hidden': 'true' }, game.meta.icon || '🎲'),
@@ -221,6 +232,7 @@ export function showSetup(game, { onlineHost = false } = {}) {
     const players = onlineHost ? online.players : names.map((n, i) => n.trim() || DEFAULT_PLAYERS[i]);
     if (!onlineHost) { prefs.players = players; save('players', players); }
     save(`settings:${game.id}`, values);
+    save('last-game', game.id);
     startBtn.disabled = true;
     startBtn.textContent = 'Yükleniyor…';
     try {

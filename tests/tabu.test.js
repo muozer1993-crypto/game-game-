@@ -16,6 +16,8 @@ test('tabu: kurulum — tohumlu deste, kart yoksa hata', () => {
   assert.deepEqual(game.getTurn(s), { player: 0, private: true });
   assert.throws(() => game.setup({ seed: 1 }, {}), 'kartları yüklenemedi');
   assert.equal(cardAt(s, ctx), cards[s.deck[0]]);
+  assert.equal(s.mode, 'tabu');
+  assert.equal(fresh({ mode: 'mime' }).mode, 'mime', 'sessiz sinema mode');
 });
 
 test('tabu: tur akışı — başla, kartlar, puan, bitir, roller değişir, sonuç', () => {

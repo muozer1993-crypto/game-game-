@@ -9,15 +9,20 @@ export const meta = {
   group: 'kelime',
   name: 'Tabu',
   icon: '🤐',
-  description: 'Karttaki kelimeyi yasaklı beş kelimeyi söylemeden anlat; eşin tahmin etsin. Roller her turda değişir.',
+  description: 'Karttaki kelimeyi yasaklı beş kelimeyi söylemeden anlat (ya da sessiz sinema: hiç konuşmadan canlandır); eşin tahmin etsin.',
   rules: [
     'Anlatan karttaki kelimeyi, altındaki beş yasaklı kelimeyi (ve türevlerini) söylemeden anlatır; tahmin eden yüksek sesle tahmin eder.',
     'Bilinen kart +1, pas 0, yasaklı kelime kaçarsa anlatan "Tabu" der ve −1. Süre dolunca tur biter, roller değişir.',
     'Tek telefonda kartı yalnızca anlatan görür; iki telefonda tahmin edenin ekranında kart görünmez. Yasaklı kelime denetimi anlatanın dürüstlüğüne kalır.',
+    'Sessiz sinema türünde yasaklı kelime yoktur: anlatan hiç konuşmadan canlandırır; konuşursa "Konuştu" ile el yanar (−1).',
   ].join('\n'),
   data: ['tabu'],
   handoffNote: 'Kartı yalnızca anlatan görmeli.',
   settings: [
+    {
+      key: 'mode', label: 'Oyun türü', type: 'select', default: 'tabu',
+      options: [{ value: 'tabu', label: 'Tabu (yasaklı kelimeler var)' }, { value: 'mime', label: 'Sessiz sinema (konuşmadan canlandır)' }],
+    },
     { key: 'rounds', label: 'Tur sayısı', type: 'select', default: 4, options: [{ value: 2, label: '2 (birer tur)' }, { value: 4, label: '4 (ikişer tur)' }, { value: 6, label: '6 (üçer tur)' }] },
     { key: 'seconds', label: 'Tur süresi', type: 'select', default: 60, options: [{ value: 45, label: '45 sn' }, { value: 60, label: '60 sn' }, { value: 90, label: '90 sn' }] },
   ],
@@ -38,6 +43,7 @@ export function setup(options = {}, ctx = {}) {
   const rng = createRng(Number(options.seed) || 1);
   return {
     id: String(options.seed ?? ''),
+    mode: options.mode === 'mime' ? 'mime' : 'tabu',
     rounds,
     seconds,
     deck: shuffle(rng, [...cards.keys()]), // card indexes in play order, shared by both devices
@@ -113,10 +119,10 @@ const starts = new Map(); // `${id}:${round}` -> Date.now() when this device saw
 const MARK = { ok: '✓', pass: '→', taboo: '✗' };
 const LABEL = { ok: 'Bildi', pass: 'Pas', taboo: 'Tabu' };
 
-function cardView(card) {
+function cardView(card, mime) {
   return el('div', { class: 'tb-card card' },
     el('div', { class: 'tb-word' }, upperTR(card.word)),
-    el('div', { class: 'tb-taboo' }, card.taboo.map((t) => el('span', { class: 'tb-no' }, t))),
+    mime ? el('p', { class: 'hint' }, 'Konuşmadan canlandır.') : el('div', { class: 'tb-taboo' }, card.taboo.map((t) => el('span', { class: 'tb-no' }, t))),
   );
 }
 
@@ -127,6 +133,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const d = state.describer;
   const g = 1 - d;
   const isDescriber = viewer === d;
+  const mime = state.mode === 'mime';
   const entries = state.log[state.round] || [];
   const tally = (r) => entries.filter((e) => e.result === r).length;
   const score = el('div', { class: 'c4-legend' }, el('span', {}, `${players[0]}: ${state.scores[0]}`), el('span', {}, `${players[1]}: ${state.scores[1]}`), el('span', { class: 'muted' }, `${Math.min(state.round + 1, state.rounds)}. tur / ${state.rounds}`));
@@ -147,7 +154,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
 
   if (state.phase === 'summary') {
     draw(container,
-      el('div', { class: 'status-line' }, el('strong', {}, `${state.round + 1}. tur bitti: ${nameSuffix(players[d], 'in')} anlattığı ${tally('ok')} kart bilindi${tally('taboo') ? `, ${tally('taboo')} tabu` : ''}${tally('pass') ? `, ${tally('pass')} pas` : ''}. Tur puanı ${roundScore(entries) > 0 ? '+' : ''}${roundScore(entries)}.`)),
+      el('div', { class: 'status-line' }, el('strong', {}, `${state.round + 1}. tur bitti: ${nameSuffix(players[d], 'in')} ${mime ? 'canlandırdığı' : 'anlattığı'} ${tally('ok')} kart bilindi${tally('taboo') ? `, ${tally('taboo')} ${mime ? 'konuştu' : 'tabu'}` : ''}${tally('pass') ? `, ${tally('pass')} pas` : ''}. Tur puanı ${roundScore(entries) > 0 ? '+' : ''}${roundScore(entries)}.`)),
       score,
       el('div', { class: 'tb-list' }, entries.map((e) => el('span', { class: `tb-chip ${e.result}` }, `${MARK[e.result]} ${cards[e.card] ? cards[e.card].word : '?'}`))),
       el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block', style: { marginTop: '12px' }, onClick: () => sendMove({ type: 'next' }) },
@@ -159,14 +166,14 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   if (state.phase === 'ready') {
     if (isDescriber) {
       draw(container,
-        el('div', { class: 'status-line' }, el('strong', {}, `${players[viewer]}, bu turda sen anlatıyorsun`)),
-        el('p', { class: 'hint' }, `${state.seconds} saniyen var. Kartı ${players[g]} görmemeli. Yasaklı kelimelerden birini söylersen "Tabu"ya bas.`),
+        el('div', { class: 'status-line' }, el('strong', {}, `${players[viewer]}, bu turda sen ${mime ? 'canlandırıyorsun' : 'anlatıyorsun'}`)),
+        el('p', { class: 'hint' }, `${state.seconds} saniyen var. Kartı ${players[g]} görmemeli. ${mime ? 'Hiç konuşma; konuşursan "Konuştu"ya bas.' : 'Yasaklı kelimelerden birini söylersen "Tabu"ya bas.'}`),
         el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block', style: { marginTop: '12px' }, onClick: () => sendMove({ type: 'start' }) }, 'Başla'),
         score,
       );
     } else {
       draw(container,
-        el('div', { class: 'status-line' }, el('span', { class: 'muted' }, `${players[d]} anlatmaya hazırlanıyor…`)),
+        el('div', { class: 'status-line' }, el('span', { class: 'muted' }, `${players[d]} ${mime ? 'canlandırmaya' : 'anlatmaya'} hazırlanıyor…`)),
         el('p', { class: 'hint' }, 'Bu turda sen tahmin ediyorsun: tahminlerini yüksek sesle söyle.'),
         el('div', { class: 'spinner', 'aria-hidden': 'true' }),
         score,
@@ -188,7 +195,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   if (!isDescriber) {
     draw(container,
       timerBox,
-      el('div', { class: 'status-line' }, el('strong', {}, `${players[d]} anlatıyor, sen tahmin et!`)),
+      el('div', { class: 'status-line' }, el('strong', {}, `${players[d]} ${mime ? 'canlandırıyor' : 'anlatıyor'}, sen tahmin et!`)),
       counts,
       el('p', { class: 'hint' }, online ? 'Kart yalnızca anlatanın ekranında.' : 'Telefona bakma; tahminlerini yüksek sesle söyle.'),
       score,
@@ -200,13 +207,13 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const mark = (result) => sendMove({ type: 'card', card: cardIdx, result });
   draw(container,
     timerBox,
-    el('div', { class: 'status-line' }, el('strong', {}, `Anlat, ${players[viewer]}!`)),
+    el('div', { class: 'status-line' }, el('strong', {}, `${mime ? 'Canlandır' : 'Anlat'}, ${players[viewer]}!`)),
     counts,
-    card ? cardView(card) : el('p', { class: 'hint' }, 'Kart yüklenemedi.'),
+    card ? cardView(card, mime) : el('p', { class: 'hint' }, 'Kart yüklenemedi.'),
     el('div', { class: 'tb-actions' },
       el('button', { type: 'button', class: 'btn btn-secondary btn-big', onClick: () => mark('pass') }, 'Pas'),
       el('button', { type: 'button', class: 'btn btn-primary btn-big', onClick: () => mark('ok') }, 'Bildi ✓'),
-      el('button', { type: 'button', class: 'btn btn-danger btn-big', onClick: () => mark('taboo') }, 'Tabu ✗'),
+      el('button', { type: 'button', class: 'btn btn-danger btn-big', onClick: () => mark('taboo') }, mime ? 'Konuştu ✗' : 'Tabu ✗'),
     ),
     el('div', { class: 'row', style: { justifyContent: 'center', marginTop: '10px' } },
       el('button', { type: 'button', class: 'btn btn-small', onClick: () => { if (confirm('Süre dolmadan tur bitirilsin mi?')) end(); } }, 'Turu bitir'),
