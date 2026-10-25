@@ -1,6 +1,6 @@
 # Oyun Gecesi
 
-İki kişilik, Türkçe arayüzlü, telefonda rahat oynanan oyun koleksiyonu: 32 oyun (kelime, soru-cevap, masa).
+İki kişilik, Türkçe arayüzlü, telefonda rahat oynanan oyun koleksiyonu: 33 oyun (kelime, soru-cevap, masa).
 Düz HTML + CSS + JavaScript (ES modules); framework yok, build adımı yok, npm yok.
 Tek telefonda elden ele ya da iki telefonda oda koduyla oynanır. Ana ekrana eklenebilir
 (manifest + service worker) ve bir kez yüklendikten sonra tek telefon modu çevrimdışı çalışır.
@@ -15,6 +15,7 @@ Tek telefonda elden ele ya da iki telefonda oda koduyla oynanır. Ana ekrana ekl
 | **Adam Asmaca** | Biri kelimeyi tutar (ya da rastgele gelir), öbürü harf harf bulur; roller her kelimede değişir, kalan can kadar puan. |
 | **Harf Avı** | Aynı 4×4/5×5 harf tablosunda süreye karşı komşu harflerden kelime çıkar; ortak kelimeler puan getirmez. |
 | **Kelime Türetme** | Aynı 7–9 harften süreye karşı kelime türet; uzun kelime çok puan, ortak kelimeler puan getirmez. |
+| **Kelime Tahtası** | Scrabble benzeri: 11×11 tahta, katlı kareler, yedişer harf, sözlük denetimi, pas/değiştirme. |
 | **Tabu** | Yasaklı beş kelimeyi söylemeden anlat, eşin tahmin etsin; 220+ kart, roller her turda değişir. |
 | **Beni Ne Kadar Tanıyorsun?** | Aynı sorular ikinize; önce kendi cevabın, sonra rakibin tahmini; karşılaştırma otomatik. Hazır havuz + kendi sorularınız. |
 | **Genel Kültür Düellosu** | Aynı sorular ikinize; doğru sayısı, eşitlikte hız. 240+ soruluk havuz. |

@@ -34,3 +34,4 @@ import './bes-tas.test.js';
 import './renk-tuzagi.test.js';
 import './hafiza-dizisi.test.js';
 import './hex.test.js';
+import './kelime-tahtasi.test.js';
