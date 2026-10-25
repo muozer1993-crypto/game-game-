@@ -104,7 +104,9 @@ function dealHand(state, handNo) {
   };
   // a blind that already put a short stack all-in leaves no decision: the other side's uncovered
   // part goes back and the board runs out
-  const short = stacks[0] === 0 ? 0 : stacks[1] === 0 ? 1 : -1;
+  // only when nobody has a decision: the small blind is all-in, or the big blind is all-in for no
+  // more than the small blind's post (a bigger all-in big blind leaves the small blind a call/fold)
+  const short = stacks[dealer] === 0 ? dealer : (stacks[1 - dealer] === 0 && bets[1 - dealer] <= bets[dealer]) ? 1 - dealer : -1;
   if (short >= 0) {
     const other = 1 - short;
     const back = Math.max(0, bets[other] - bets[short]);

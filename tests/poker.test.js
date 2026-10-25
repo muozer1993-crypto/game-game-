@@ -118,6 +118,17 @@ test('poker: körler, bekle/gör/yükselt/pas, sokaklar, rest ve iade, bitiş', 
   assert.ok(ss.phase === 'handOver' || ss.phase === 'over');
   assert.equal(ss.stacks[0] + ss.stacks[1], 2000);
   assert.ok(ss.result.winner == null ? ss.result.amount === 8 : ss.result.amount === 16, 'pot is twice the short blind: ' + ss.result.amount);
+  // a big blind all-in for more than the small blind: the small blind still decides (call 10 or fold)
+  let bb = game.applyMove({ ...s, stacks: [1000, 20], phase: 'handOver', result: { winner: 0 } }, 0, { type: 'next' });
+  assert.equal(bb.phase, 'play', 'small blind has a decision');
+  assert.equal(bb.turn, 0);
+  assert.deepEqual(bb.bets, [10, 20]);
+  const bbCall = game.applyMove(bb, 0, { type: 'call' });
+  assert.ok(bbCall.phase === 'handOver' || bbCall.phase === 'over', 'the call runs out the board');
+  assert.equal(bbCall.stacks[0] + bbCall.stacks[1], 1020);
+  assert.ok(bbCall.result.amount === 40, 'pot 40: ' + bbCall.result.amount);
+  const bbFold = game.applyMove(bb, 0, { type: 'fold' });
+  assert.deepEqual(bbFold.stacks, [990, 30]);
   // a matched call that puts the caller all-in needs no further action from the other side
   let m = { ...s, stacks: [40, 500], bets: [0, 0], invested: [0, 0], pot: 0, street: 1, turn: 1, acted: [false, false], lastRaise: BB };
   m = game.applyMove(m, 1, { type: 'raise', to: 60 });
