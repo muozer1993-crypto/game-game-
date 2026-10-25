@@ -1,5 +1,5 @@
 import { test, assert } from './runner.js';
-import game, { simulate, W, H, R, aimFromPointer, predictContact, CANCEL_R, PULL_FULL } from '../games/bilardo.js';
+import game, { simulate, W, H, R, aimFromPointer, predictContact, CANCEL_R, PULL_FULL, MIN_POWER } from '../games/bilardo.js';
 
 test('bilardo: diziliş ve deterministik simülasyon', () => {
   const s = game.setup({ balls: 9, seed: 0 });
@@ -93,4 +93,25 @@ test('bilardo: nişan çizgisi ilk değilen topu ve banda çarpmayı bulur', () 
   assert.equal(miss.ball, null);
   // pocketed balls are ignored: the path continues past where ball 3 was
   assert.ok(predictContact([balls[0], balls[3]], 100, 300, 0, -1).y < 100);
+});
+
+test('bilardo: güç parmağın konduğu yerden ölçülür — uzağa dokunup kaymak vurmaz; değmekte olan top çizgide', () => {
+  const cue = { x: 100, y: 200 };
+  const start = { x: 100, y: 315 }; // finger far behind the ball
+  const still = aimFromPointer(cue, start, start);
+  assert.equal(still.power, 0, 'no pull yet');
+  assert.ok(Math.abs(still.dy + 1) < 1e-9, 'already aiming away from the finger');
+  const slip = aimFromPointer(cue, { x: 104, y: 319 }, start);
+  assert.ok(slip.power < MIN_POWER, 'a few units of slip is no shot');
+  const pulled = aimFromPointer(cue, { x: 100, y: 315 + PULL_FULL / 2 }, start);
+  assert.ok(Math.abs(pulled.power - 0.5) < 1e-9, 'half the full pull = half power');
+  const toward = aimFromPointer(cue, { x: 100, y: 280 }, start);
+  assert.equal(toward.power, 0, 'moving towards the ball never adds power');
+  // the cue ball resting against ball 1 and aiming into it: contact at once; aiming away: not in the way
+  const balls = [{ id: 0, x: 100, y: 128, pocketed: false }, { id: 1, x: 100, y: 112.001, pocketed: false }, { id: 2, x: 100, y: 60, pocketed: false }];
+  const into = predictContact(balls, 100, 128, 0, -1);
+  assert.equal(into.ball && into.ball.id, 1);
+  assert.ok(Math.abs(into.y - 128) < 1e-9);
+  const away = predictContact(balls, 100, 128, 0, 1);
+  assert.equal(away.ball, null);
 });

@@ -12,7 +12,7 @@ export const meta = {
   icon: '🎱',
   description: 'Istakayı geri çeker gibi nişan al ve vur; topu cebe sokan puan alır ve devam eder. Çok top ceplayan kazanır.',
   rules: [
-    'Istakayı geri çeker gibi nişan al: parmağını beyaz topun arkasına koy ve topu göndermek istediğin yönün tersine doğru çek. Top parmağının tersi yönüne gider; ne kadar geri çekersen o kadar sert vurur. Kesik çizgi topun yolunu ve ilk değeceği topu gösterir. Bırakınca vuruş yapılır; vazgeçmek için parmağını beyaz topun üstüne geri getirip bırak.',
+    'Istakayı geri çeker gibi nişan al: parmağını beyaz topun arkasına koy ve topu göndermek istediğin yönün tersine doğru çek. Top parmağının tersi yönüne gider; parmağını koyduğun yerden ne kadar geri çekersen o kadar sert vurur. Kesik çizgi topun yolunu, sarı çizgi değeceği topun gideceği yönü gösterir. Bırakınca vuruş yapılır; vazgeçmek için parmağını başladığın yere ya da beyaz topun üstüne geri getirip bırak.',
     'Bir topu cebe sokan 1 puan alır ve bir daha vurur. Top girmezse ya da beyaz top cebe düşerse sıra rakibe geçer (beyaz top başlangıç noktasına konur).',
     'Masadaki bütün toplar bitince çok topu olan kazanır.',
   ].join('\n'),
@@ -36,9 +36,9 @@ const MAX_STEPS = 4000;
 const COLORS = ['#ffffff', '#f4c20d', '#1e5bc6', '#d72c2c', '#5b2d90', '#f07b1f', '#1a7f37', '#8b1a1a', '#111111', '#f4c20d', '#1e5bc6', '#d72c2c', '#5b2d90', '#f07b1f', '#1a7f37', '#8b1a1a'];
 const SUB = 4; // sub-steps per step so that a fast ball never skips over another ball
 // pull-back aiming: the finger behind the cue ball is the cue; the ball goes the other way
-export const CANCEL_R = R * 1.6;   // finger back on the ball: no shot
-export const PULL_FULL = 100;      // pull this far beyond CANCEL_R for full power
-export const MIN_POWER = 0.06;
+export const CANCEL_R = R * 1.6;   // finger on the ball: no direction, no shot
+export const PULL_FULL = 80;       // pull back this far from where the finger went down for full power
+export const MIN_POWER = 0.08;     // = a 6.4-unit pull: a tap or a small slip never shoots
 
 function fail(msg) {
   throw new Error(msg);
@@ -150,15 +150,17 @@ export function simulate(balls0, shot, withFrames = false) {
 
 /**
  * Pull-back aiming: the shot goes from the finger through the cue ball and onwards, i.e. away
- * from the finger, and the further the finger is from the ball, the harder. null = cancelled
- * (finger back on the ball).
+ * from the finger. The power is how far the finger has been pulled back (away from the ball)
+ * since it went down at `start`, so where you first touch does not matter and a slip does not
+ * shoot. null = no direction (finger on the ball).
  */
-export function aimFromPointer(cue, p) {
+export function aimFromPointer(cue, p, start = cue) {
   const dx = cue.x - p.x;
   const dy = cue.y - p.y;
   const d = Math.sqrt(dx * dx + dy * dy);
   if (d < CANCEL_R) return null;
-  return { dx: dx / d, dy: dy / d, power: Math.min(1, (d - CANCEL_R) / PULL_FULL) };
+  const d0 = Math.max(CANCEL_R, Math.hypot(cue.x - start.x, cue.y - start.y));
+  return { dx: dx / d, dy: dy / d, power: Math.min(1, Math.max(0, (d - d0) / PULL_FULL)) };
 }
 
 /**
@@ -175,11 +177,14 @@ export function predictContact(balls, x0, y0, dx, dy) {
     const fy = y0 - b.y;
     const fd = fx * dx + fy * dy;
     const c = fx * fx + fy * fy - 4 * R * R;
-    if (c <= 0) continue; // already touching
+    if (c <= 0) { // already touching: hit at once if aiming into it, otherwise it is not in the way
+      if (fd < 0 && best > 0) { best = 0; hit = b; }
+      continue;
+    }
     const disc = fd * fd - c;
     if (disc < 0) continue;
     const t = -fd - Math.sqrt(disc);
-    if (t > 0 && t < best) { best = t; hit = b; }
+    if (t >= 0 && t < best) { best = t; hit = b; }
   }
   const tx = dx > 0 ? (W - R - x0) / dx : dx < 0 ? (R - x0) / dx : Infinity;
   const ty = dy > 0 ? (H - R - y0) / dy : dy < 0 ? (R - y0) / dy : Infinity;
@@ -263,7 +268,8 @@ function drawTable(ctxc, scale, balls, aim) {
     c.fillStyle = '#111';
     c.fill();
   }
-  if (aim && !aim.cancel) drawAimPath(c, balls, aim);
+  const contact = aim && !aim.cancel && aim.power >= MIN_POWER ? predictContact(balls, aim.x0, aim.y0, aim.dx, aim.dy) : null;
+  if (contact) drawAimPath(c, aim, contact);
   for (const b of balls) {
     if (b.pocketed) continue;
     c.beginPath();
@@ -287,16 +293,20 @@ function drawTable(ctxc, scale, balls, aim) {
       c.fillText(String(b.id), b.x, b.y + 0.5);
     }
   }
+  if (contact) drawContact(c, aim, contact);
   if (aim && !aim.cancel) drawCue(c, aim);
-  if (aim) drawPower(c, aim);
+  if (aim) drawPower(c, aim, contact);
   c.restore();
 }
 
-/** Power gauge at the top of the table while aiming (or "no shot" with the finger on the ball). */
-function drawPower(c, aim) {
+/** Power gauge in the end band of the table away from the action (or "pull back" while there is no shot yet). */
+function drawPower(c, aim, contact) {
   const w = 96;
   const x = (W - w) / 2;
-  const y = 10;
+  // the top or the bottom band, whichever is further from the cue ball and the contact point
+  const ys = [aim.y0, contact ? contact.y : aim.y0];
+  const top = Math.min(...ys.map((v) => Math.abs(v - 20))) >= Math.min(...ys.map((v) => Math.abs(v - (H - 20))));
+  const y = top ? 10 : H - 30;
   c.save();
   c.fillStyle = 'rgba(0,0,0,0.55)';
   c.beginPath();
@@ -307,7 +317,7 @@ function drawPower(c, aim) {
   c.textBaseline = 'middle';
   if (aim.cancel || aim.power < MIN_POWER) {
     c.fillStyle = '#fff';
-    c.fillText(aim.cancel ? 'Vuruş yok (geri çek)' : 'Biraz daha geri çek', W / 2, y + 8);
+    c.fillText(aim.cancel ? 'Parmağını topun arkasına çek' : 'Geri çek…', W / 2, y + 8);
   } else {
     c.fillStyle = 'rgba(255,255,255,0.2)';
     c.fillRect(x, y + 10, w, 5);
@@ -319,9 +329,8 @@ function drawPower(c, aim) {
   c.restore();
 }
 
-/** Dashed path of the cue ball up to its first contact, a ghost ball there and the struck ball's direction. */
-function drawAimPath(c, balls, aim) {
-  const hit = predictContact(balls, aim.x0, aim.y0, aim.dx, aim.dy);
+/** Dashed path of the cue ball up to its first contact (drawn under the balls). */
+function drawAimPath(c, aim, hit) {
   c.save();
   c.strokeStyle = 'rgba(255,255,255,0.85)';
   c.lineWidth = 1.5;
@@ -330,10 +339,16 @@ function drawAimPath(c, balls, aim) {
   c.moveTo(aim.x0 + aim.dx * R, aim.y0 + aim.dy * R);
   c.lineTo(hit.x, hit.y);
   c.stroke();
-  c.setLineDash([]);
+  c.restore();
+}
+
+/** Ghost ball at the contact and the direction the struck ball will take (drawn over the balls). */
+function drawContact(c, aim, hit) {
+  c.save();
   c.beginPath();
   c.arc(hit.x, hit.y, R, 0, Math.PI * 2);
-  c.strokeStyle = 'rgba(255,255,255,0.7)';
+  c.strokeStyle = 'rgba(255,255,255,0.8)';
+  c.lineWidth = 1.5;
   c.stroke();
   if (hit.ball) {
     const nx = hit.ball.x - hit.x;
@@ -341,9 +356,13 @@ function drawAimPath(c, balls, aim) {
     const n = Math.sqrt(nx * nx + ny * ny) || 1;
     const len = 18 + aim.power * 42;
     c.beginPath();
-    c.moveTo(hit.ball.x + (nx / n) * R, hit.ball.y + (ny / n) * R);
+    c.moveTo(hit.ball.x, hit.ball.y);
     c.lineTo(hit.ball.x + (nx / n) * (R + len), hit.ball.y + (ny / n) * (R + len));
-    c.strokeStyle = 'rgba(255,235,59,0.9)';
+    c.strokeStyle = 'rgba(0,0,0,0.45)';
+    c.lineWidth = 3.5;
+    c.lineCap = 'round';
+    c.stroke();
+    c.strokeStyle = '#ffeb3b';
     c.lineWidth = 2;
     c.stroke();
   }
@@ -429,34 +448,28 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   let dragging = false;
   let pointerId = null;
   let start = null;
-  let moved = false;
   const aimAt = (p) => {
     const q = cue();
-    const a = aimFromPointer(q, p);
+    const a = aimFromPointer(q, p, start);
     // while the finger is down the table shows the cue and the power (drawn on the canvas, so
     // nothing around the table changes size and moves under the finger)
-    aim = a ? { x0: q.x, y0: q.y, ...a } : { cancel: true };
+    aim = a ? { x0: q.x, y0: q.y, ...a } : { cancel: true, x0: q.x, y0: q.y };
     paint();
   };
+  // the touch area reaches a little past the table, so a ball resting on a cushion can still be
+  // grabbed from behind
+  const pad = el('div', { class: 'pool-hit', 'aria-hidden': 'true' });
   const onDown = (e) => {
     if (!mine || animating || dragging) return;
     dragging = true;
     pointerId = e.pointerId;
     start = toTable(e);
-    moved = false;
-    try { canvas.setPointerCapture(e.pointerId); } catch { /* ignore */ }
+    try { pad.setPointerCapture(e.pointerId); } catch { /* ignore */ }
     aimAt(start);
   };
   const onMove = (e) => {
     if (!dragging || e.pointerId !== pointerId) return;
-    const p = toTable(e);
-    // a plain tap must not shoot: require a real drag first
-    if (!moved) {
-      const mx = p.x - start.x;
-      const my = p.y - start.y;
-      if (mx * mx + my * my >= 36) moved = true;
-    }
-    aimAt(p);
+    aimAt(toTable(e));
   };
   const onCancel = (e) => {
     if (!dragging || e.pointerId !== pointerId) return;
@@ -467,22 +480,23 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const onUp = (e) => {
     if (!dragging || e.pointerId !== pointerId) return;
     dragging = false;
-    if (moved && aim && !aim.cancel && aim.power >= MIN_POWER) {
+    // power is measured from where the finger went down, so a tap or a small slip stays below MIN_POWER
+    if (aim && !aim.cancel && aim.power >= MIN_POWER) {
       const dx = Math.round(aim.dx * 10000) / 10000;
       const dy = Math.round(aim.dy * 10000) / 10000;
       const n = Math.sqrt(dx * dx + dy * dy) || 1;
-      sendMove({ type: 'shot', dx: Math.round((dx / n) * 10000) / 10000, dy: Math.round((dy / n) * 10000) / 10000, power: Math.max(0.01, Math.round(aim.power * 100) / 100) });
+      sendMove({ type: 'shot', dx: Math.round((dx / n) * 10000) / 10000, dy: Math.round((dy / n) * 10000) / 10000, power: Math.round(aim.power * 100) / 100 });
     }
     aim = null;
     paint();
   };
-  canvas.addEventListener('pointerdown', onDown);
-  canvas.addEventListener('pointermove', onMove);
-  canvas.addEventListener('pointerup', onUp);
-  canvas.addEventListener('pointercancel', onCancel);
+  pad.addEventListener('pointerdown', onDown);
+  pad.addEventListener('pointermove', onMove);
+  pad.addEventListener('pointerup', onUp);
+  pad.addEventListener('pointercancel', onCancel);
 
   // while the shot is still rolling, show the numbers from before the shot (no spoilers)
-  const noteOf = (l) => (l ? `${players[l.by]}: ${l.pocketed.length ? `${l.pocketed.length} top cepledi` : 'top giremedi'}${l.scratch ? ', beyaz top cebe düştü' : ''}.` : 'Parmağını beyaz topun arkasına koy, geri çek ve bırak: top parmağının tersi yönüne gider; ne kadar çekersen o kadar sert.');
+  const noteOf = (l) => (l ? `${players[l.by]}: ${l.pocketed.length ? `${l.pocketed.length} top cepledi` : 'top giremedi'}${l.scratch ? ', beyaz top cebe düştü' : ''}.` : 'Topun arkasından geri çek ve bırak: top ters yöne gider, çektikçe sertleşir.');
   const legend = el('div', { class: 'c4-legend' });
   const lastNote = el('p', { class: 'hint' });
   const drawInfo = () => {
@@ -496,7 +510,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const refresh = () => { baseSetStatus(); drawInfo(); };
   refresh();
   paint();
-  draw(container, info, legend, el('div', { class: 'pool-wrap' }, canvas), lastNote);
+  draw(container, info, legend, el('div', { class: 'pool-wrap' }, canvas, pad), lastNote);
   if (willAnimate) {
     // when the animation ends, the completion branch calls setStatus(); refresh the numbers too
     const check = () => { if (animating) { raf2 = requestAnimationFrame(check); } else drawInfo(); };

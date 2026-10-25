@@ -482,7 +482,8 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .mem-card.matched.p0 { border-color: #e53935; }
 .mem-card.matched.p1 { border-color: var(--primary); }
 .mem-card:disabled { cursor: default; }
-.pool-wrap { max-width: min(300px, calc((100vh - 300px) / 2)); margin: 8px auto; }
+.pool-wrap { position: relative; max-width: min(300px, calc((100vh - 300px) / 2)); margin: 8px auto; }
+.pool-hit { position: absolute; inset: -28px -16px; z-index: 1; touch-action: none; } /* grab a ball on a cushion from behind */
 .pool-canvas { width: 100%; height: auto; display: block; border-radius: 8px; touch-action: none; }
 .dab-wrap { position: relative; max-width: 420px; margin: 8px auto; }
 .dab-board { position: relative; width: 100%; height: auto; display: block; color: var(--fg); touch-action: manipulation; }
