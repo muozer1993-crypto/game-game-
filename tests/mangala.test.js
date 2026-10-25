@@ -138,7 +138,7 @@ test('mangala: hamle yolu kaydedilir, tekrar oynatma kareleri son duruma varır'
   let d = game.setup({ seed: 0 });
   d.pits = d.pits.slice(); d.pits[0] = 2; d.pits[1] = 0;
   d = game.applyMove(d, 0, { type: 'sow', pit: 0 });
-  assert.deepEqual(d.last.takes, [{ pit: 11, count: 4 }, { pit: 1, count: 1 }]);
+  assert.deepEqual(d.last.takes, [{ pit: 1, count: 1 }, { pit: 11, count: 4 }]);
   assert.deepEqual(replayFrames(d).slice(-1)[0].pits, d.pits);
   // the game end collection is replayed too
   let e = game.setup({ seed: 0 });
@@ -164,4 +164,52 @@ test('mangala: hamle yolu kaydedilir, tekrar oynatma kareleri son duruma varır'
       assert.ok(st.over, 'random game ends');
     }
   }
+});
+
+test('mangala: Bantumi türü (Nokia) — sonraki kuyudan başla, çift alma yok, boş kuyu yakalaması, kalanlar sahibine', () => {
+  let s = game.setup({ seed: 0, variant: 'bantumi', firstStone: 'back', leftovers: 'emptier' }); // the house-rule menus are ignored
+  assert.equal(s.variant, 'bantumi');
+  assert.equal(s.firstStone, 'next');
+  assert.equal(s.leftovers, 'owner');
+  assert.equal(s.evenCapture, false);
+  // 4 beans from pot 2 -> 3, 4, 5 and the store: extra turn
+  s = game.applyMove(s, 0, { type: 'sow', pit: 2 });
+  assert.deepEqual(s.pits.slice(0, 7), [4, 4, 0, 5, 5, 5, 1]);
+  assert.equal(s.turn, 0);
+  // no even capture: last bean makes an opponent pot even and nothing is taken
+  let e = game.setup({ seed: 0, variant: 'bantumi' });
+  e.pits = e.pits.slice(); e.pits[5] = 2; e.pits[7] = 3;
+  e = game.applyMove(e, 0, { type: 'sow', pit: 5 }); // -> store, pot 7 (3 -> 4)
+  assert.equal(e.pits[7], 4);
+  assert.equal(e.last.captured, 0);
+  // own empty pot capture: the bean and the opposite pot go to the store
+  let c = game.setup({ seed: 0, variant: 'bantumi' });
+  c.pits = c.pits.slice(); c.pits[0] = 1; c.pits[1] = 0;
+  c = game.applyMove(c, 0, { type: 'sow', pit: 0 }); // single bean into the empty pot 1; opposite 11 has 4
+  assert.equal(c.pits[1], 0);
+  assert.equal(c.pits[11], 0);
+  assert.equal(c.pits[6], 5);
+  assert.equal(c.turn, 1, 'a capture ends the turn');
+  // opposite pot empty: the lone bean still goes to the store
+  let z = game.setup({ seed: 0, variant: 'bantumi' });
+  z.pits = z.pits.slice(); z.pits[0] = 1; z.pits[1] = 0; z.pits[11] = 0;
+  z = game.applyMove(z, 0, { type: 'sow', pit: 0 });
+  assert.equal(z.pits[1], 0);
+  assert.equal(z.pits[6], 1);
+  assert.equal(z.last.captured, 1);
+  // a full lap (13 beans) passes the emptied pot and ends in it: captures
+  let l = game.setup({ seed: 0, variant: 'bantumi' });
+  l.pits = l.pits.slice(); l.pits[0] = 13;
+  l = game.applyMove(l, 0, { type: 'sow', pit: 0 });
+  assert.equal(l.last.to, 0, '13 beans end in the starting pot');
+  assert.equal(l.pits[13], 0, 'opponent store skipped');
+  assert.equal(l.pits[0], 0, 'the lone bean in the emptied pot was captured');
+  assert.equal(l.pits.reduce((a, b) => a + b, 0), 48 - 4 + 13);
+  // leftovers to their owner at the end
+  let k = game.setup({ seed: 0, variant: 'bantumi' });
+  k.pits = new Array(14).fill(0);
+  k.pits[5] = 1; k.pits[6] = 20; k.pits[13] = 15; k.pits[7] = 3; k.pits[8] = 2;
+  k = game.applyMove(k, 0, { type: 'sow', pit: 5 });
+  assert.equal(k.over, true);
+  assert.deepEqual([k.pits[6], k.pits[13]], [21, 20]);
 });

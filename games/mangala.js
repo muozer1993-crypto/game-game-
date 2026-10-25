@@ -8,29 +8,35 @@ export const meta = {
   group: 'masa',
   name: 'Mangala',
   icon: '🪨',
-  description: 'Türk mangalası: taşları dağıt, çift sayıda yakala, hazneyi doldur.',
+  description: 'Türk mangalası ya da Nokia\'nın Bantumi\'si: taşları dağıt, yakala, hazneyi doldur.',
   rules: [
     'Her oyuncunun 6 kuyusu ve bir haznesi vardır; her kuyuda 4 taş. Ekranda 1. oyuncu alt sırayı oynar ve haznesi sağdadır; 2. oyuncu üst sırayı oynar ve haznesi soldadır. Taşlar alt sırada sağa, üst sırada sola doğru akar (saat yönünün tersine).',
     'Sırası gelen kendi kuyularından birini seçer; resmî kurala göre ilk taşı aldığı kuyuya geri bırakır, kalanını saat yönünün tersine birer birer dağıtır (kendi haznesine de bırakır, rakibin haznesini atlar). Kuyuda tek taş varsa o taş bir sonraki kuyuya gider. Ayarlardan "Sonraki kuyudan başla" seçilirse ilk taş aldığın kuyuya bırakılmaz, dağıtım bir sonraki kuyudan başlar (klasik ev kuralı); 13 ya da daha çok taşla tur dönerse o kuyuya da taş düşer.',
     'Son taş kendi haznene düşerse bir daha oynarsın. Son taş rakibin kuyusuna düşer ve oradaki taş sayısını çift yaparsa o kuyudaki taşların hepsini alırsın. Son taş kendi boş kuyuna düşerse ve karşısındaki rakip kuyusu doluysa oradakileri ve kendi taşını alırsın.',
     'Bir oyuncunun kuyuları boşalınca oyun biter. Resmî kurala göre kuyuları ilk boşalan oyuncu, rakibin kuyularında kalan bütün taşları kendi haznesine alır (ayarlardan "herkes kendi tarafındakini alır" seçilebilir). Haznesinde çok taşı olan kazanır; eşitlikte berabere.',
     'Varsayılanlar Türkiye Akıl ve Zekâ Oyunları Federasyonu (TAZOF) ve MEB zekâ oyunları kurallarıdır.',
+    'Bantumi türü (eski Nokia telefonlarındaki oyun): dağıtım her zaman aldığın kuyudan sonraki kuyudan başlar; rakibin kuyusunu çift yapınca alma yoktur. Son taş haznene düşerse bir hamle daha. Son taş kendi boş kuyuna düşerse o taş ve karşısındaki kuyunun taşları haznene gider (karşısı boşsa yalnız o taş). Oyun bitince herkes kendi tarafındaki taşları alır. Bantumi seçiliyken "İlk taş" ve "Kalan taşlar" ayarları kullanılmaz.',
     'Taşların dağıtılışı adım adım gösterilir; tahtaya dokunarak animasyonu geçebilir, ayarlardan hızını değiştirebilir ya da kapatabilirsin.',
   ].join('\n'),
   data: [],
   settings: [
-    { key: 'firstStone', label: 'İlk taş', type: 'select', default: 'back', options: [{ value: 'back', label: 'Aldığın kuyuya geri bırakılır (resmî)' }, { value: 'next', label: 'Sonraki kuyudan başlanır (klasik ev kuralı)' }] },
-    { key: 'leftovers', label: 'Oyun sonunda kalan taşlar', type: 'select', default: 'emptier', options: [{ value: 'emptier', label: 'Kuyuları ilk boşalan alır (resmî)' }, { value: 'owner', label: 'Herkes kendi tarafındakini alır (ev kuralı)' }] },
+    { key: 'variant', label: 'Oyun türü', type: 'select', default: 'mangala', options: [{ value: 'mangala', label: 'Türk Mangalası (resmî kurallar)' }, { value: 'bantumi', label: 'Bantumi (Nokia klasiği)' }] },
+    { key: 'firstStone', label: 'İlk taş', type: 'select', default: 'back', help: 'Bantumi seçiliyse kullanılmaz.', options: [{ value: 'back', label: 'Aldığın kuyuya geri bırakılır (resmî)' }, { value: 'next', label: 'Sonraki kuyudan başlanır (klasik ev kuralı)' }] },
+    { key: 'leftovers', label: 'Oyun sonunda kalan taşlar', type: 'select', default: 'emptier', help: 'Bantumi seçiliyse kullanılmaz.', options: [{ value: 'emptier', label: 'Kuyuları ilk boşalan alır (resmî)' }, { value: 'owner', label: 'Herkes kendi tarafındakini alır (ev kuralı)' }] },
     { key: 'anim', label: 'Taş animasyonu', type: 'select', default: 'normal', options: [{ value: 'normal', label: 'Normal' }, { value: 'slow', label: 'Yavaş' }, { value: 'fast', label: 'Hızlı' }, { value: 'off', label: 'Kapalı' }] },
   ],
 };
 
-// The rule sets. Every flag is stored in the state so that both phones play the same game.
+// Bantumi (Nokia 3310/3330/3390 era), reconciled from the Nokia 3395 manual, the 3310 firmware
+// help text and the code of several remakes (Bantumi GL, UPM, Pragmatists): Kalah-style sowing,
+// no even capture, the lone last bean is captured even when the opposite pot is empty (the most
+// common reading; the phone's own texts do not say), leftovers go to their owner.
+// Every flag is stored in the state so that both phones play the same game.
 export const BANTUMI = {
-  firstStone: 'next',          // sowing starts in the pit after the emptied one
-  leftovers: 'owner',          // at the end each side keeps the stones on it
-  evenCapture: false,          // no capture by making an opponent pit even
-  emptyCaptureNeedsOpposite: true, // the empty-pit capture only when the opposite pit has stones
+  firstStone: 'next',               // sowing starts in the pot after the emptied one
+  leftovers: 'owner',               // at the end each side keeps the beans on it
+  evenCapture: false,               // no capture by making an opponent pot even
+  emptyCaptureNeedsOpposite: false, // the last bean in an own empty pot always goes to the store
 };
 
 function fail(msg) {
@@ -113,8 +119,8 @@ export function applyMove(state, player, move) {
   } else if (state.evenCapture !== false && ownsPit(1 - player, to) && pits[to] % 2 === 0) {
     takes.push({ pit: to, count: pits[to] });
   } else if (ownsPit(player, to) && pits[to] === 1 && (pits[opposite(to)] > 0 || state.emptyCaptureNeedsOpposite === false)) {
+    takes.push({ pit: to, count: 1 }); // the capturing stone first, then the opposite pit (as the phone does)
     if (pits[opposite(to)] > 0) takes.push({ pit: opposite(to), count: pits[opposite(to)] });
-    takes.push({ pit: to, count: 1 });
   }
   for (const t of takes) { captured += t.count; pits[myStore] += t.count; pits[t.pit] = 0; }
   const n = (state.n || 0) + 1;

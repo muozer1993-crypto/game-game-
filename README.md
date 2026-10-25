@@ -31,7 +31,7 @@ Tek telefonda elden ele ya da iki telefonda oda koduyla oynanır. Ana ekrana ekl
 | **Tavla** | Klasik tavla; kırma, bardan giriş, toplama, mars (2 puan), geri al. |
 | **Kızma Birader** | Klasik zar yarışı: altıyla çık, rakibi ez, yıldızlı kareler güvenli, tam sayıyla eve gir; 2 ya da 4 taş. |
 | **Dama** | Türk daması: ileri/yana, atlayarak alma zorunlu, en çok alan dizi, dama. |
-| **Mangala** | Türk mangalası (TAZOF/MEB kuralları): ilk taşı aldığın kuyuya bırak, dağıt, çift yakala, boş kuyudan karşıyı al; kuyuları ilk boşalan rakibin kalan taşlarını alır. Ayarlardan ev kuralları: sonraki kuyudan başla, kalan taşlar sahibine. Her hamle taş taş canlandırılır (hız ayarlı, dokununca geçer). |
+| **Mangala** | Türk mangalası (TAZOF/MEB kuralları): ilk taşı aldığın kuyuya bırak, dağıt, çift yakala, boş kuyudan karşıyı al; kuyuları ilk boşalan rakibin kalan taşlarını alır. Ayarlardan ev kuralları: sonraki kuyudan başla, kalan taşlar sahibine. Her hamle taş taş canlandırılır (hız ayarlı, dokununca geçer). Oyun türü olarak **Bantumi** (eski Nokia telefonlarındaki Kalah benzeri sürüm) de seçilebilir. |
 | **Domino** | Yedişer taş, uçlardan birine uyanı ekle, yön seç; oynayamazsan kapalıdan çek, bitince pas. Elini bitiren rakibin noktalarını alır, kilitlenince hafif olan farkı. |
 | **Dokuz Taş** | Dokuzar taş koy, sür; üçlü yapan rakibin taşını alır. Üç taşta uçma ayarı. |
 | **Okey (ikili)** | 106 taş, gösterge ve okey, sahte okey; ortadan çek ya da rakibin attığını al, 14 taşı per/seri ya da yedi çifte diz, 15.yi at. Çifte ve okey atarak bitiş ×2. |
