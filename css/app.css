@@ -841,7 +841,7 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 :root[data-theme="dark"] .kb-cell:not(.filled):not(.l2):not(.l3):not(.w2):not(.w3), :root:not([data-theme="light"]) .kb-cell:not(.filled):not(.l2):not(.l3):not(.w2):not(.w3) { background: var(--secondary); }
 
 .search-field { margin: 0 0 10px; }
-.game-card[hidden], section.section[hidden] { display: none; }
+.game-card-wrap[hidden], section.section[hidden] { display: none; }
 
 /* ---- İsim Şehir */
 .is-letter { font-size: 3.2rem; font-weight: 800; text-align: center; line-height: 1.1; margin: 2px 0 10px; letter-spacing: 0.05em; }
@@ -922,3 +922,9 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .pk-amounts { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: center; margin: 8px 0; }
 .pk-hands { display: flex; gap: 12px; justify-content: center; margin: 8px 0; flex-wrap: wrap; }
 .pk-hand { text-align: center; }
+
+/* favourites star on the menu cards */
+.game-card-wrap { position: relative; }
+.game-card-wrap .game-card { padding-right: 46px; }
+.fav-btn { position: absolute; top: 4px; right: 4px; width: 40px; height: 40px; border: 0; background: transparent; font-size: 1.4rem; line-height: 1; color: var(--muted); cursor: pointer; border-radius: 50%; }
+.fav-btn.on { color: #f5b301; }

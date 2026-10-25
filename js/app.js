@@ -21,6 +21,7 @@ const prefs = {
   theme: load('theme', 'auto'),
   onlineName: load('online-name', ''),
   vibrate: load('vibrate', true) !== false, // buzz when it becomes your turn online
+  favorites: (load('favorites', []) || []).filter((id) => typeof id === 'string'), // game ids starred on the menu
 };
 
 // ---------------------------------------------------------------- theme
@@ -267,18 +268,18 @@ function showTournamentResult() {
   );
 }
 
-/** Filters the game cards below by name as you type (33 games are a long list). */
+/** Filters the game cards below by name as you type (38 games are a long list). */
 function searchBox() {
   const input = el('input', {
     type: 'search', class: 'input', id: 'game-search', placeholder: 'Oyun ara…', autocomplete: 'off', 'aria-label': 'Oyun ara',
     onInput: (e) => {
       const q = e.target.value.trim().toLocaleLowerCase('tr-TR');
-      document.querySelectorAll('.game-card').forEach((card) => {
+      document.querySelectorAll('.game-card-wrap').forEach((card) => {
         const name = (card.querySelector('.game-name') || {}).textContent || '';
         card.hidden = !!q && !name.toLocaleLowerCase('tr-TR').includes(q);
       });
       document.querySelectorAll('#app section.section').forEach((sec) => {
-        const cards = sec.querySelectorAll('.game-card');
+        const cards = sec.querySelectorAll('.game-card-wrap');
         if (cards.length) sec.hidden = ![...cards].some((c) => !c.hidden);
       });
     },
@@ -296,23 +297,46 @@ function quickRow(onPick) {
   );
 }
 
+const isFavorite = (game) => prefs.favorites.includes(game.id);
+function toggleFavorite(game) {
+  prefs.favorites = isFavorite(game) ? prefs.favorites.filter((id) => id !== game.id) : prefs.favorites.concat([game.id]);
+  save('favorites', prefs.favorites);
+}
+
+/** Game cards grouped into sections; starred games sit in a "Favoriler" section on top. */
 function gameSections(onPick) {
-  const card = (game) => el('button', { type: 'button', class: 'card game-card', onClick: () => onPick(game) },
-    el('div', { class: 'game-icon', 'aria-hidden': 'true' }, game.meta.icon || '🎲'),
-    el('div', { class: 'game-text' },
-      el('div', { class: 'game-name' }, game.meta.name),
-      el('div', { class: 'game-desc' }, game.meta.description),
-    ));
-  const used = new Set();
-  const sections = groups.map((g) => {
-    const list = games.filter((game) => game.meta.group === g.id);
-    list.forEach((game) => used.add(game.id));
-    if (!list.length) return null;
-    return el('section', { class: 'section' }, el('h2', { class: 'section-title' }, g.title), el('div', { class: 'game-list' }, list.map(card)));
-  });
-  const rest = games.filter((game) => !used.has(game.id));
-  if (rest.length) sections.push(el('section', { class: 'section' }, el('h2', { class: 'section-title' }, 'Diğer'), el('div', { class: 'game-list' }, rest.map(card))));
-  return sections;
+  const wrap = el('div', { class: 'game-sections' });
+  const build = () => {
+    const card = (game) => {
+      const fav = isFavorite(game);
+      return el('div', { class: 'game-card-wrap' },
+        el('button', { type: 'button', class: 'card game-card', onClick: () => onPick(game) },
+          el('div', { class: 'game-icon', 'aria-hidden': 'true' }, game.meta.icon || '🎲'),
+          el('div', { class: 'game-text' },
+            el('div', { class: 'game-name' }, game.meta.name),
+            el('div', { class: 'game-desc' }, game.meta.description),
+          )),
+        el('button', {
+          type: 'button', class: `fav-btn ${fav ? 'on' : ''}`, 'aria-label': fav ? 'Favorilerden çıkar' : 'Favorilere ekle', 'aria-pressed': fav ? 'true' : 'false',
+          onClick: () => { toggleFavorite(game); build(); const q = document.getElementById('game-search'); if (q && q.value) q.dispatchEvent(new Event('input')); },
+        }, fav ? '★' : '☆'),
+      );
+    };
+    const section = (title, list) => el('section', { class: 'section' }, el('h2', { class: 'section-title' }, title), el('div', { class: 'game-list' }, list.map(card)));
+    const favs = games.filter(isFavorite);
+    const used = new Set(favs.map((g) => g.id));
+    const sections = favs.length ? [section('Favoriler', favs)] : [];
+    groups.forEach((g) => {
+      const list = games.filter((game) => game.meta.group === g.id && !used.has(game.id));
+      list.forEach((game) => used.add(game.id));
+      if (list.length) sections.push(section(g.title, list));
+    });
+    const rest = games.filter((game) => !used.has(game.id));
+    if (rest.length) sections.push(section('Diğer', rest));
+    wrap.replaceChildren(...sections);
+  };
+  build();
+  return wrap;
 }
 
 // ---------------------------------------------------------------- setup
