@@ -171,6 +171,12 @@ export class Session {
     let viewer;
     if (this.mode === 'online') {
       viewer = this.self;
+      // a short buzz when the turn passes to this device (not on the first render)
+      const mine = !!(turn && turn.player === this.self && !turn.simultaneous && !this.ended);
+      if (mine && this.lastMine === false && this.ctx.vibrate && typeof navigator !== 'undefined' && typeof navigator.vibrate === 'function') {
+        try { navigator.vibrate(80); } catch { /* ignore */ }
+      }
+      this.lastMine = mine;
     } else {
       viewer = turn && turn.player != null ? turn.player : (this.lastViewer ?? 0);
       if (!this.ended && turn && turn.player != null) {

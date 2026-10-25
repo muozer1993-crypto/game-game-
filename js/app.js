@@ -19,6 +19,7 @@ const prefs = {
   players: load('players', DEFAULT_PLAYERS),
   theme: load('theme', 'auto'),
   onlineName: load('online-name', ''),
+  vibrate: load('vibrate', true) !== false, // buzz when it becomes your turn online
 };
 
 // ---------------------------------------------------------------- theme
@@ -340,7 +341,7 @@ export function showPlay(p) {
     mode: p.mode,
     self: p.self,
     transport: isOnline ? online.transport : null,
-    ctx: p.ctx,
+    ctx: { ...p.ctx, vibrate: prefs.vibrate },
     onChange: updateScore,
     onEnd: (result) => {
       bumpRecord(p.game.id, p.players, result);
@@ -474,6 +475,8 @@ export function showOnline({ code: presetCode = '' } = {}) {
   });
   if (presetCode) codeInput.value = normalizeRoomCode(presetCode);
   const status = el('p', { class: 'muted status' });
+  const vibrateInput = el('input', { type: 'checkbox', id: 'pref-vibrate', onChange: (e) => { prefs.vibrate = e.target.checked; save('vibrate', prefs.vibrate); } });
+  vibrateInput.checked = prefs.vibrate;
   const getName = () => { const n = name.trim() || 'Oyuncu'; prefs.onlineName = n; save('online-name', n); return n; };
 
   const hostBtn = el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block' }, 'Oda kur');
@@ -521,7 +524,12 @@ export function showOnline({ code: presetCode = '' } = {}) {
     el('p', { class: 'lead' }, presetCode
       ? `Davet bağlantısıyla geldin: oda kodu ${normalizeRoomCode(presetCode)}. Adını yaz ve "Odaya katıl"a bas.`
       : 'Biriniz oda kurar, kodu söyler ya da davet bağlantısını gönderir; diğeri katılır. İkiniz de internete bağlı olmalısınız.'),
-    el('section', { class: 'section' }, el('div', { class: 'field' }, el('label', { for: 'online-name' }, 'Adın'), nameInput)),
+    el('section', { class: 'section' },
+      el('div', { class: 'field' }, el('label', { for: 'online-name' }, 'Adın'), nameInput),
+      el('div', { class: 'field field-toggle' },
+        el('label', { for: 'pref-vibrate' }, 'Sıra bana gelince telefon titresin'),
+        vibrateInput),
+    ),
     el('section', { class: 'section card' }, el('h2', { class: 'section-title' }, 'Oda kur'), hostBtn),
     el('section', { class: 'section card' },
       el('h2', { class: 'section-title' }, 'Odaya katıl'),
