@@ -933,7 +933,7 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 /* ---- Kızma Birader */
 .ld-wrap { max-width: 440px; margin: 8px auto; }
 .ld-board { display: block; width: 100%; height: auto; touch-action: manipulation; }
-.ld-piece.movable { cursor: pointer; }
+.ld-piece.movable, .ld-hit { cursor: pointer; }
 .ld-die { font-size: 1.8rem; line-height: 1; margin-left: 10px; vertical-align: middle; }
 
 /* ---- Hedef Sayı */

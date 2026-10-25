@@ -1,5 +1,5 @@
 import { test, assert } from './runner.js';
-import game, { TRACK, START, SAFE, HOME, HOME_COL, absIndex, legalMoves, rollDie } from '../games/kizma-birader.js';
+import game, { TRACK, START, SAFE, HOME, HOME_COL, BASE, absIndex, legalMoves, rollDie } from '../games/kizma-birader.js';
 
 test('kızma birader: pist 52 kare, bitişik ve tek; başlangıç ve güvenli kareler', () => {
   assert.equal(TRACK.length, 52);
@@ -19,6 +19,8 @@ test('kızma birader: pist 52 kare, bitişik ve tek; başlangıç ve güvenli ka
   assert.deepEqual(TRACK[absIndex(0, 50)], [0, 7], 'red leaves the loop next to its home column');
   assert.deepEqual(TRACK[absIndex(1, 50)], [14, 7]);
   assert.deepEqual(HOME_COL[0][0], [1, 7]);
+  // each start square touches its own base block
+  START.forEach((s, p) => { const [c, r] = TRACK[s]; const [bx, by] = BASE[p]; assert.ok(c >= bx && c < bx + 6 && (r === by - 1 || r === by + 6), `start ${p} next to its base`); });
   assert.equal(rollDie(5, 3), rollDie(5, 3));
   assert.ok(rollDie(5, 0) >= 1 && rollDie(5, 0) <= 6);
 });

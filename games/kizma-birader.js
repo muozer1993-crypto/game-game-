@@ -11,8 +11,8 @@ export const meta = {
   icon: '🎯',
   description: 'Altı at, taşını çıkar, rakibini ez, tam sayıyla eve gir. Klasik zar yarışı.',
   rules: [
-    'Taşlar başlangıçta evde bekler; çıkarmak için 6 gerekir. Zar kaç geldiyse bir taşını o kadar ilerletirsin. Altı atan bir daha atar; üst üste üç altı sırayı yakar.',
-    'Rakibin taşının üstüne gelirsen (yıldızlı güvenli kareler hariç) onu başa yollarsın ve bir daha atarsın. Son kareye tam sayıyla girilir; eve giren taş da bir zar daha kazandırır.',
+    'Taşlar başlangıçta kalede bekler; çıkarmak için 6 gerekir. Zar kaç geldiyse bir taşını o kadar ilerletirsin. Altı atan bir daha atar; üst üste üç altı sırayı yakar.',
+    'Rakibin taşının üstüne gelirsen (yıldızlı güvenli kareler hariç) onu kalesine yollarsın ve bir daha atarsın. Son kareye tam sayıyla girilir; eve giren taş da bir zar daha kazandırır.',
     'Bütün taşlarını eve sokan kazanır. Oynanabilir taşın yoksa sıra kendiliğinden geçer.',
   ].join('\n'),
   data: [],
@@ -44,7 +44,7 @@ export const TRACK = [];
 // home columns (relative 51..55) and the centre (56)
 export const HOME_COL = [[[1, 7], [2, 7], [3, 7], [4, 7], [5, 7]], [[13, 7], [12, 7], [11, 7], [10, 7], [9, 7]]];
 const CENTRE = [[6.5, 7], [7.5, 7]];
-const BASE = [[0, 9], [9, 0]]; // top-left corner of each 6×6 base block
+export const BASE = [[0, 0], [9, 9]]; // top-left corner of each 6×6 base block: red above its start (1,6), yellow below (13,8)
 
 function fail(msg) {
   throw new Error(msg);
@@ -156,7 +156,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const board = svg('svg', { class: 'ld-board', viewBox: '0 0 15 15', role: 'img', 'aria-label': 'Kızma Birader tahtası' });
   const rect = (x, y, w, h, fill, extra = {}) => svg('rect', { x, y, width: w, height: h, fill, ...extra });
   // the two corners no player uses, so the board still reads as a Ludo board
-  [[0, 0], [9, 9]].forEach(([bx, by]) => board.append(rect(bx, by, 6, 6, 'var(--secondary)', { rx: 0.4, opacity: 0.6 })));
+  [[0, 9], [9, 0]].forEach(([bx, by]) => board.append(rect(bx, by, 6, 6, 'var(--secondary)', { rx: 0.4, opacity: 0.6 }))); // unused corners
   // bases
   BASE.forEach(([bx, by], q) => {
     board.append(rect(bx, by, 6, 6, LIGHT[q], { rx: 0.4 }));
@@ -182,32 +182,35 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     if (!groups.has(key)) groups.set(key, []);
     groups.get(key).push({ q, i, rel, x, y });
   }));
+  const hits = []; // enlarged transparent tap targets for the movable pieces, drawn on top of everything
   for (const list of groups.values()) {
     list.forEach((pc, k) => {
       const off = list.length > 1 ? (k - (list.length - 1) / 2) * 0.28 : 0;
       const movable = pc.q === p && legal.includes(pc.i);
+      if (movable) hits.push(svg('circle', { cx: (pc.x + off).toFixed(2), cy: pc.y.toFixed(2), r: 0.8, fill: 'transparent', class: 'ld-hit', 'aria-hidden': 'true', onClick: () => sendMove({ type: 'move', piece: pc.i }) }));
       const lastMoved = state.last && state.last.player === pc.q && state.last.to === pc.rel && state.last.event !== 'rolled' && state.last.event !== 'noMove';
       board.append(svg('circle', {
         cx: (pc.x + off).toFixed(2), cy: pc.y.toFixed(2), r: 0.38, fill: COLOURS[pc.q], stroke: movable ? '#111' : lastMoved ? '#fff' : 'rgba(0,0,0,0.35)', 'stroke-width': movable ? 0.12 : 0.06,
         class: `ld-piece p${pc.q} ${movable ? 'movable' : ''}`, role: movable ? 'button' : null, tabindex: movable ? '0' : null,
-        'aria-label': `${players[pc.q]} taş ${pc.i + 1}${pc.rel === -1 ? ' (evde)' : pc.rel === HOME ? ' (bitirdi)' : ''}`,
+        'aria-label': `${players[pc.q]} taş ${pc.i + 1}${pc.rel === -1 ? ' (kalede)' : pc.rel === HOME ? ' (bitirdi)' : ''}`,
         onClick: movable ? () => sendMove({ type: 'move', piece: pc.i }) : null,
       }));
     });
   }
+  hits.forEach((h) => board.append(h));
   const L = state.last;
   let note = null;
   if (L) {
     const who = players[L.player];
     if (L.event === 'threeSixes') note = `${who} üst üste üç altı attı: sıra yandı.`;
     else if (L.event === 'noMove') note = `${who} ${L.die} attı, oynayacak taşı yok.`;
-    else if (L.event === 'capture') note = `${who} ${nameSuffix(players[1 - L.player], 'in')} taşını başa yolladı!`;
+    else if (L.event === 'capture') note = `${who} ${nameSuffix(players[1 - L.player], 'in')} taşını kalesine yolladı!`;
     else if (L.event === 'home') note = `${nameSuffix(who, 'in')} bir taşı eve girdi.`;
   }
   const done = [0, 1].map((q) => state.pieces[q].filter((x) => x === HOME).length);
   const legend = el('div', { class: 'c4-legend' },
-    el('span', { style: { color: COLOURS[0] } }, `● ${players[0]}: ${done[0]}/${state.pieces[0].length} evde`),
-    el('span', { style: { color: '#b8860b' } }, `● ${players[1]}: ${done[1]}/${state.pieces[1].length} evde`));
+    el('span', { style: { color: COLOURS[0] } }, `● ${players[0]}: ${done[0]}/${state.pieces[0].length} bitirdi`),
+    el('span', { style: { color: '#b8860b' } }, `● ${players[1]}: ${done[1]}/${state.pieces[1].length} bitirdi`));
   if (state.phase === 'over') {
     draw(container, el('div', { class: 'status-line' }, el('strong', {}, `${players[state.winner]} bütün taşlarını eve soktu!`)), legend, el('div', { class: 'ld-wrap' }, board));
     return null;
