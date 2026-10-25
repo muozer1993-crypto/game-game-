@@ -843,3 +843,21 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 
 .search-field { margin: 0 0 10px; }
 .game-card[hidden], section.section[hidden] { display: none; }
+
+/* ---- İsim Şehir */
+.is-letter { font-size: 3.2rem; font-weight: 800; text-align: center; line-height: 1.1; margin: 2px 0 10px; letter-spacing: 0.05em; }
+.is-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.is-row label { flex: 0 0 72px; font-weight: 600; }
+.is-row .input { flex: 1; min-width: 0; }
+.input.is-bad { border-color: var(--danger); }
+.is-table { display: grid; grid-template-columns: minmax(58px, auto) 1fr 1fr; gap: 6px; align-items: stretch; margin-top: 8px; }
+.is-head { font-weight: 700; font-size: 0.9rem; padding: 0 4px; overflow-wrap: anywhere; }
+.is-cat { font-weight: 600; font-size: 0.9rem; align-self: center; }
+.is-cell { display: flex; flex-direction: column; gap: 3px; padding: 6px 8px; background: var(--card); border: 1px solid var(--border); border-radius: 10px; min-width: 0; }
+.is-cell.same { border-color: var(--present); }
+.is-cell.vetoed .is-ans { text-decoration: line-through; opacity: 0.6; }
+.is-ans { overflow-wrap: anywhere; }
+.is-pts { font-size: 0.78rem; color: var(--muted); }
+.is-veto { align-self: flex-start; font-size: 0.75rem; padding: 2px 8px; min-height: 28px; }
+.is-rounds { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+.is-round { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; }
