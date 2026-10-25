@@ -7,6 +7,7 @@ import adamAsmaca from './adam-asmaca.js';
 import beniTani from './beni-tani.js';
 import dortBaglanti from './dort-baglanti.js';
 import reversi from './reversi.js';
+import dokuzTas from './dokuz-tas.js';
 import xox from './xox.js';
 import noktalarKutular from './noktalar-kutular.js';
 import amiralBatti from './amiral-batti.js';
@@ -19,7 +20,7 @@ import mangala from './mangala.js';
 import dama from './dama.js';
 import pisti from './pisti.js';
 
-export const games = [sonHece, gizliKelime, gizliSayi, adamAsmaca, beniTani, genelKultur, amiralBatti, tavla, dama, mangala, pisti, bilardo, dortBaglanti, reversi, noktalarKutular, hafiza, xox, tasKagitMakas];
+export const games = [sonHece, gizliKelime, gizliSayi, adamAsmaca, beniTani, genelKultur, amiralBatti, tavla, dama, mangala, dokuzTas, pisti, bilardo, dortBaglanti, reversi, noktalarKutular, hafiza, xox, tasKagitMakas];
 
 /** Menu sections, in display order. A game's meta.group picks its section. */
 export const groups = [
