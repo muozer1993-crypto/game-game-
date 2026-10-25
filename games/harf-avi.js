@@ -108,11 +108,12 @@ export function setup(options = {}) {
   };
 }
 
-function cleanWords(list) {
+/** A finish list from the other device: only deterministic checks (no dictionary, which may differ). */
+function cleanWords(list, cells, size) {
   const out = [];
   for (const w of Array.isArray(list) ? list : []) {
     const n = normalizeWord(w);
-    if (n && isTurkishWord(n) && !out.includes(n)) out.push(n);
+    if (n && isTurkishWord(n) && [...n].length >= MIN_LEN && findPath(cells, size, n) && !out.includes(n)) out.push(n);
   }
   return out;
 }
@@ -157,7 +158,7 @@ export function applyMove(state, player, move, ctx = {}) {
       const finished = state.finished.slice();
       finished[player] = true;
       const words = state.words.map((l) => l.slice());
-      if (Array.isArray(move.words)) words[player] = cleanWords(move.words);
+      if (Array.isArray(move.words)) words[player] = cleanWords(move.words, state.cells, state.size);
       const counts = state.counts.slice();
       counts[player] = words[player].length;
       const next = { ...state, finished, words, counts };

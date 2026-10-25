@@ -42,7 +42,7 @@ test('kelime türetme: başla, kelime, bitir, puanlama, ortak kelimeler', () => 
   s = game.applyMove(s, 1, { type: 'start' });
   s = game.applyMove(s, 1, { type: 'word', secret: { word: 'kale' } }, ctx);
   s = game.applyMove(s, 1, { type: 'word', secret: { word: 'elma' } }, ctx);
-  s = game.applyMove(s, 1, { type: 'finish', words: ['kale', 'elma', 'KALE'] });
+  s = game.applyMove(s, 1, { type: 'finish', words: ['kale', 'elma', 'KALE', 'zzzz', 'ka'] }); // bogus words a tampered client might send are dropped
   assert.equal(s.phase, 'over');
   assert.deepEqual(s.result, { points: [2, 1], shared: ['kale'] }, 'kelam 2 vs elma 1; kale cancels');
   assert.deepEqual(game.getResult(s), { winner: 0 });

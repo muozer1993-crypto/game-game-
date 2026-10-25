@@ -64,7 +64,7 @@ test('harf avı: başla, kelime (gizli), bitir; iki taraf bitince puanlama ve or
   s = game.applyMove(s, 1, { type: 'word', secret: { word: 'kale' } }, ctx);
   s = game.applyMove(s, 1, { type: 'word', secret: { word: 'lale' } }, ctx);
   // the finish move carries the list publicly (the remote device never saw the words)
-  const fromRemote = game.applyMove({ ...s, words: [s.words[0], []] }, 1, { type: 'finish', words: ['kale', 'lale', 'KALE', 'x1'] }, { remote: true });
+  const fromRemote = game.applyMove({ ...s, words: [s.words[0], []] }, 1, { type: 'finish', words: ['kale', 'lale', 'KALE', 'x1', 'kaz', 'ka'] }, { remote: true }); // 'kaz' has no path, 'ka' is too short
   assert.deepEqual(fromRemote.words[1], ['kale', 'lale'], 'cleaned: normalized, deduplicated, letters only');
   assert.equal(fromRemote.phase, 'over');
   assert.deepEqual(fromRemote.result, { points: [2 + 1, 1], shared: ['kale'] }, 'kalem 2 + kal 1 vs lale 1; kale cancels');

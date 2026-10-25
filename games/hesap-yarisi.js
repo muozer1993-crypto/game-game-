@@ -138,13 +138,13 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     const q = state.questions[i];
     let shown = shownAt.get(container);
     if (!shown || shown.viewer !== viewer || shown.index !== i || shown.questions !== state.questions) {
-      shown = { viewer, index: i, questions: state.questions, at: Date.now() };
+      shown = { viewer, index: i, questions: state.questions, at: Date.now(), typed: '' };
       shownAt.set(container, shown);
     }
     const startedAt = shown.at;
     const limitMs = state.timeLimit * 1000;
     let answered = false;
-    let typed = '';
+    let typed = shown.typed || ''; // survives a re-render caused by the opponent's answer online
     const send = (value) => {
       if (answered) return;
       answered = true;
@@ -152,12 +152,10 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     };
     const timerBox = el('div');
     let timer = null;
-    if (limitMs) {
-      if (startedAt + limitMs <= Date.now()) queueMicrotask(() => send(null));
-      else timer = createTimer(timerBox, { deadline: startedAt + limitMs, total: limitMs, onExpire: () => send(null) });
-    }
+    // an already-passed deadline fires onExpire deferred (and cancelled by the cleanup if superseded)
+    if (limitMs) timer = createTimer(timerBox, { deadline: startedAt + limitMs, total: limitMs, onExpire: () => send(null) });
     const answerBox = el('div', { class: 'hy-answer' }, '');
-    const drawAnswer = () => { answerBox.textContent = typed || ' '; answerBox.classList.toggle('empty', !typed); };
+    const drawAnswer = () => { shown.typed = typed; answerBox.textContent = typed || ' '; answerBox.classList.toggle('empty', !typed); };
     drawAnswer();
     const kbBox = el('div');
     const kb = createKeyboard(kbBox, {

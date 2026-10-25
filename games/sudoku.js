@@ -208,9 +208,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   let timer = null;
   if (state.minutes) {
     const total = state.minutes * 60000;
-    const deadline = startedAt + total;
-    if (deadline <= Date.now()) queueMicrotask(() => sendMove({ type: 'finish', ms: total }));
-    else timer = createTimer(timerBox, { deadline, total, onExpire: () => sendMove({ type: 'finish', ms: Date.now() - startedAt }) });
+    timer = createTimer(timerBox, { deadline: startedAt + total, total, onExpire: () => sendMove({ type: 'finish', ms: Math.min(total, Date.now() - startedAt) }) });
   }
   const set = (v) => {
     const i = selected.get(key);
@@ -222,6 +220,8 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     [1, 2, 3, 4, 5, 6, 7, 8, 9].map((v) => el('button', { type: 'button', class: 'btn btn-secondary sd-key', onClick: () => set(v) }, String(v))),
     el('button', { type: 'button', class: 'btn btn-secondary sd-key', onClick: () => set(0) }, 'Sil'),
   );
+  const giveUp = el('div', { class: 'row', style: { justifyContent: 'center', marginTop: '6px' } },
+    el('button', { type: 'button', class: 'btn btn-small', onClick: () => { if (confirm('Çözmeden bitirilsin mi? Doğru dolu kare sayın puanın olur.')) sendMove({ type: 'finish', ms: Date.now() - startedAt }); } }, 'Bitir'));
   redraw();
   draw(container,
     timerBox,
@@ -229,6 +229,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     ctx.mode === 'online' ? el('p', { class: 'hint' }, `${players[opp]}: ${summary(opp)}`) : null,
     boardBox,
     pad,
+    giveUp,
   );
   return () => { if (timer) timer.stop(); };
 }

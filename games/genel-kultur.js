@@ -156,10 +156,8 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     };
     const timerBox = el('div');
     let timer = null;
-    if (limitMs) {
-      if (startedAt + limitMs <= Date.now()) queueMicrotask(() => send(-1)); // already expired while re-rendering
-      else timer = createTimer(timerBox, { deadline: startedAt + limitMs, total: limitMs, onExpire: () => send(-1) });
-    }
+    // an already-passed deadline fires onExpire deferred (and cancelled by the cleanup if superseded)
+    if (limitMs) timer = createTimer(timerBox, { deadline: startedAt + limitMs, total: limitMs, onExpire: () => send(-1) });
     const feedback = prev
       ? el('p', { class: `hint ${prev.choice === prevQ.answer ? 'notice' : 'rejected-note'}` },
         prev.choice === prevQ.answer ? 'Önceki soru: doğru!' : `Önceki soru: ${prev.choice === -1 ? 'süre doldu' : 'yanlış'} — doğru cevap: ${prevQ.options[prevQ.answer]}`)

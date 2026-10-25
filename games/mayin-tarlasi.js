@@ -243,9 +243,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const timerBox = el('div');
   let timer = null;
   if (state.seconds) {
-    const deadline = startedAt + state.seconds * 1000;
-    if (deadline <= Date.now()) queueMicrotask(() => sendMove({ type: 'finish', ms: state.seconds * 1000 }));
-    else timer = createTimer(timerBox, { deadline, total: state.seconds * 1000, onExpire: () => sendMove({ type: 'finish', ms: Date.now() - startedAt }) });
+    timer = createTimer(timerBox, { deadline: startedAt + state.seconds * 1000, total: state.seconds * 1000, onExpire: () => sendMove({ type: 'finish', ms: Math.min(state.seconds * 1000, Date.now() - startedAt) }) });
   }
   const flagBtn = el('button', {
     type: 'button', class: `btn btn-small ${flagMode.get(key) ? 'btn-primary' : 'btn-secondary'}`, 'aria-pressed': flagMode.get(key) ? 'true' : 'false',
@@ -255,7 +253,8 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     timerBox,
     el('div', { class: 'status-line' }, el('strong', {}, `${players[viewer]}: ${b.revealed.length}/${total} · mayın ${state.mines.length}, bayrak ${b.flags.length}`)),
     ctx.mode === 'online' ? el('p', { class: 'hint' }, `${players[opp]}: ${statusText(opp)}`) : null,
-    el('div', { class: 'row', style: { justifyContent: 'center', marginBottom: '6px' } }, flagBtn),
+    el('div', { class: 'row', style: { justifyContent: 'center', marginBottom: '6px', gap: '8px' } }, flagBtn,
+      el('button', { type: 'button', class: 'btn btn-small', onClick: () => { if (confirm('Tarlayı bırakıp bitirilsin mi? Açtığın güvenli kareler puanın olur.')) sendMove({ type: 'finish', ms: Date.now() - startedAt }); } }, 'Bitir')),
     grid(viewer, { interactive: true }),
   );
   return () => { if (timer) timer.stop(); };
