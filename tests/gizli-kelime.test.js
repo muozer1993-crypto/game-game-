@@ -100,6 +100,49 @@ test('gizli kelime: rastgele gizli kelime autoMove ile seçilir', () => {
   assert.ok(s.secrets[0] && s.secrets[1]);
 });
 
+test('gizli kelime: ortak kelime modu — tek kelime, ev sahibi puanlar', () => {
+  let s = game.setup({ length: 5, secretMode: 'shared' });
+  assert.equal(s.shared, true);
+  assert.equal(game.autoMove(s, 1, ctx), null, 'the guest never picks the shared word');
+  assert.throws(() => game.applyMove(s, 1, { type: 'setSecret', secret: { word: 'kalem' } }, ctx), 'oyunu kuran');
+  s = runAuto(game, s, [0]);
+  assert.equal(s.phase, 'play');
+  assert.deepEqual(s.ready, [true, true]);
+  assert.ok(s.secrets[0] && !s.secrets[1]);
+  // the guest device sees only the stripped move
+  let g = game.setup({ length: 5, secretMode: 'shared' });
+  g = game.applyMove(g, 0, { type: 'setSecret' }, ctx);
+  assert.equal(g.phase, 'play');
+  // player 0 guesses and scores its own guess; player 1's guess is scored by player 0 too
+  s = game.applyMove(s, 0, { type: 'guess', word: 'kitap' }, ctx);
+  const fb0 = game.autoMove(s, 0, ctx);
+  assert.equal(fb0.guesser, 0);
+  assert.throws(() => game.applyMove(s, 1, fb0, ctx), 'kelimenin sahibi');
+  s = game.applyMove(s, 0, fb0, ctx);
+  s = game.applyMove(s, 1, { type: 'guess', word: 'kitap' }, ctx);
+  assert.equal(game.autoMove(s, 1, ctx), null);
+  const fb1 = game.autoMove(s, 0, ctx);
+  assert.equal(fb1.guesser, 1);
+  s = game.applyMove(s, 0, fb1, ctx);
+  assert.deepEqual(s.guesses[0][0].result, s.guesses[1][0].result, 'same word, same feedback');
+  // both find it in the same round -> draw
+  s = game.applyMove(s, 0, { type: 'guess', word: s.secrets[0] }, ctx);
+  s = runAuto(game, s, [0]);
+  assert.equal(s.phase, 'play');
+  s = game.applyMove(s, 1, { type: 'guess', word: s.secrets[0] }, ctx);
+  s = runAuto(game, s, [0]);
+  assert.equal(s.phase, 'over');
+  assert.deepEqual(game.getResult(s), { draw: true });
+  assert.equal(s.revealed[0], s.secrets[0]);
+});
+
+test('gizli kelime: varsayılan mod herkes kendi seçer', () => {
+  const s = game.setup({});
+  assert.equal(s.secretMode, 'manual');
+  assert.deepEqual(game.getTurn(s), { player: 0, private: true });
+  assert.equal(sayi.setup({}).secretMode, 'manual');
+});
+
 test('gizli kelime: sıra, puanlama ve kazanan', () => {
   let s = playReady();
   assert.deepEqual(game.getTurn(s), { player: 0, private: false });

@@ -105,7 +105,10 @@ export function createGame(cfg) {
       kind,
       length,
       feedback: isNumber ? 'plusminus' : (options.feedback === 'plusminus' ? 'plusminus' : 'wordle'),
-      secretMode: options.secretMode === 'manual' ? 'manual' : 'random',
+      // manual: each player types a secret for the opponent; random: one random secret each;
+      // shared: both players hunt the same random secret, held by player 0's device
+      secretMode: ['manual', 'random', 'shared'].includes(options.secretMode) ? options.secretMode : 'manual',
+      shared: options.secretMode === 'shared',
       maxGuesses: Number.isFinite(maxGuesses) && maxGuesses > 0 ? maxGuesses : 0,
       phase: 'secret', // secret | play | over
       ready: [false, false],
@@ -116,6 +119,9 @@ export function createGame(cfg) {
       revealed: [null, null],
     };
   }
+
+  /** Which player's device holds the secret that guesser `g` is hunting. */
+  const ownerOf = (state, g) => (state.shared ? 0 : 1 - g);
 
   const pendingOf = (state, p) => {
     const list = state.guesses[p];
@@ -143,12 +149,13 @@ export function createGame(cfg) {
     switch (move.type) {
       case 'setSecret': {
         if (state.phase !== 'secret') fail('Gizli kelime artık değiştirilemez');
+        if (state.shared && player !== 0) fail('Ortak kelimeyi oyunu kuran seçer');
         if (state.ready[player]) fail('Gizli kelimen zaten hazır');
         const secrets = state.secrets.slice();
         if (move.secret && move.secret.word != null) {
           secrets[player] = validateWord(state, move.secret.word, ctx, 'secret');
         }
-        const ready = state.ready.slice();
+        const ready = state.shared ? [true, true] : state.ready.slice();
         ready[player] = true;
         const next = { ...state, secrets, ready };
         if (ready[0] && ready[1]) next.phase = 'play';
@@ -170,7 +177,7 @@ export function createGame(cfg) {
         if (state.phase !== 'play') fail('Oyun bu aşamada değil');
         const g = move.guesser;
         if (g !== 0 && g !== 1) fail('Geçersiz hamle');
-        if (player !== 1 - g) fail('Puanı kelimenin sahibi verir');
+        if (player !== ownerOf(state, g)) fail('Puanı kelimenin sahibi verir');
         const idx = pendingOf(state, g);
         if (idx < 0 || idx !== move.index) fail('Puanlanacak tahmin yok');
         const result = move.result;
@@ -204,7 +211,8 @@ export function createGame(cfg) {
 
   function autoMove(state, player, ctx = {}) {
     if (state.phase === 'secret') {
-      if (state.ready[player] || state.secretMode !== 'random') return null;
+      if (state.ready[player] || state.secretMode === 'manual') return null;
+      if (state.shared && player !== 0) return null;
       let word;
       if (isNumber) word = randomNumberSecret(state.length);
       else {
@@ -215,14 +223,18 @@ export function createGame(cfg) {
       return { type: 'setSecret', secret: { word } };
     }
     if (state.phase === 'play') {
-      const g = 1 - player;
-      const idx = pendingOf(state, g);
-      if (idx < 0 || !state.secrets[player]) return null;
-      const guess = state.guesses[g][idx].word;
-      const result = state.feedback === 'wordle'
-        ? scoreWordle(state.secrets[player], guess)
-        : scorePlusMinus(state.secrets[player], guess);
-      return { type: 'feedback', guesser: g, index: idx, result };
+      if (!state.secrets[player]) return null;
+      for (const g of [0, 1]) {
+        if (ownerOf(state, g) !== player) continue;
+        const idx = pendingOf(state, g);
+        if (idx < 0) continue;
+        const guess = state.guesses[g][idx].word;
+        const result = state.feedback === 'wordle'
+          ? scoreWordle(state.secrets[player], guess)
+          : scorePlusMinus(state.secrets[player], guess);
+        return { type: 'feedback', guesser: g, index: idx, result };
+      }
+      return null;
     }
     if (state.phase === 'over') {
       if (state.revealed[player] == null && state.secrets[player]) return { type: 'reveal', word: state.secrets[player] };
@@ -298,6 +310,13 @@ export function createGame(cfg) {
 
     // ---- secret phase
     if (state.phase === 'secret') {
+      if (state.shared && viewer !== 0) {
+        draw(container,
+          el('div', { class: 'status-line' }, el('span', { class: 'muted' }, `Ortak ${isNumber ? 'sayı' : 'kelime'} seçiliyor…`)),
+          el('div', { class: 'spinner', 'aria-hidden': 'true' }),
+        );
+        return null;
+      }
       if (state.ready[viewer]) {
         draw(container,
           el('div', { class: 'status-line' }, el('strong', {}, 'Gizli kelimen hazır.')),
@@ -306,8 +325,8 @@ export function createGame(cfg) {
         );
         return null;
       }
-      if (state.secretMode === 'random') {
-        draw(container, el('p', { class: 'hint' }, 'Yaygın kelime listesi yüklenemediği için gizli kelime seçilemedi. Ayarlardan "Rakip için kendim yazayım" seçeneğini dene.'));
+      if (state.secretMode !== 'manual') {
+        draw(container, el('p', { class: 'hint' }, 'Yaygın kelime listesi yüklenemediği için gizli kelime seçilemedi. Ayarlardan "Herkes rakibi için kendisi seçsin" seçeneğini dene.'));
         return null;
       }
       let typed = '';
@@ -344,14 +363,19 @@ export function createGame(cfg) {
           lines.push(state.solved[p] != null ? `${players[p]} ${state.solved[p]}. tahminde buldu.` : `${players[p]} bulamadı.`);
         }
       }
+      const sharedSecret = state.secrets[0] || state.revealed[0];
       draw(container,
         el('div', { class: 'status-line' }, el('strong', {}, lines.join(' '))),
-        el('div', { class: 'reveal' },
-          el('div', { class: 'muted' }, `${nameSuffix(players[opp], 'in')} tuttuğu ${isNumber ? 'sayı' : 'kelime'} (senin aradığın):`),
-          el('div', { class: 'word' }, oppSecret ? show(oppSecret) : '…'),
-          el('div', { class: 'muted', style: { marginTop: '8px' } }, `Senin tuttuğun:`),
-          el('div', { class: 'word' }, mySecret ? show(mySecret) : '…'),
-        ),
+        state.shared
+          ? el('div', { class: 'reveal' },
+            el('div', { class: 'muted' }, `Ortak ${isNumber ? 'sayı' : 'kelime'}:`),
+            el('div', { class: 'word' }, sharedSecret ? show(sharedSecret) : '…'))
+          : el('div', { class: 'reveal' },
+            el('div', { class: 'muted' }, `${nameSuffix(players[opp], 'in')} tuttuğu ${isNumber ? 'sayı' : 'kelime'} (senin aradığın):`),
+            el('div', { class: 'word' }, oppSecret ? show(oppSecret) : '…'),
+            el('div', { class: 'muted', style: { marginTop: '8px' } }, 'Senin tuttuğun:'),
+            el('div', { class: 'word' }, mySecret ? show(mySecret) : '…'),
+          ),
         el('div', { class: 'two-col' },
           el('div', {}, el('div', { class: 'col-title' }, `${you(viewer)} (${state.guesses[viewer].length})`), board(state.guesses[viewer], state, { small: true })),
           el('div', {}, el('div', { class: 'col-title' }, `${you(opp)} (${state.guesses[opp].length})`), board(state.guesses[opp], state, { small: true })),
@@ -413,6 +437,7 @@ export function createGame(cfg) {
 
     draw(container,
       el('div', { class: 'status-line' }, status),
+      state.shared ? el('p', { class: 'hint' }, `İkiniz de aynı ${isNumber ? 'sayıyı' : 'kelimeyi'} arıyorsunuz; önce bulan kazanır.`) : null,
       notices,
       lastOppView,
       el('p', { class: 'hint' }, state.feedback === 'wordle'
@@ -438,7 +463,7 @@ export const meta = {
   icon: '🟩',
   description: 'Karşılıklı Wordle: rakibinin tuttuğu kelimeyi ondan önce bul.',
   rules: [
-    'Her oyuncu rakibi için gizli bir kelime tutar (rastgele seçilir ya da kendisi yazar). Sırayla rakibin kelimesi tahmin edilir; önce bulan kazanır.',
+    'Her oyuncu rakibi için gizli bir kelime tutar: kendisi yazar ya da ayarlara göre liste rastgele seçer. "Ortak kelime" seçilirse ikiniz aynı rastgele kelimeyi ararsınız. Sırayla tahmin edilir; önce bulan kazanır.',
     'İki oyuncu aynı turda bulursa berabere sayılır; ilk başlayanın avantajı yoktur.',
     'Renkli mod: yeşil doğru harf doğru yerde, sarı harf var ama yeri yanlış, gri harf yok. Tekrar eden harflerde Wordle kuralı uygulanır.',
     '"+ −" modu: yalnızca sayılar söylenir (+2 −1 gibi), hangi harfin doğru olduğu söylenmez. Daha zordur.',
@@ -446,9 +471,17 @@ export const meta = {
   ].join('\n'),
   data: ['dictionary', 'common'],
   settings: [
+    {
+      key: 'secretMode', label: 'Gizli kelimeyi kim seçsin?', type: 'select', default: 'manual',
+      help: 'Kendiniz seçerseniz her oyuncu rakibi için bir kelime yazar; rastgelede liste seçer.',
+      options: [
+        { value: 'manual', label: 'Herkes rakibi için kendisi seçsin' },
+        { value: 'random', label: 'Rastgele, herkese ayrı kelime' },
+        { value: 'shared', label: 'Ortak rastgele kelime (ikiniz aynı kelimeyi ararsınız)' },
+      ],
+    },
     { key: 'length', label: 'Harf sayısı', type: 'select', default: 5, options: [{ value: 4, label: '4 harf' }, { value: 5, label: '5 harf' }, { value: 6, label: '6 harf' }] },
     { key: 'feedback', label: 'Geri bildirim', type: 'select', default: 'wordle', options: [{ value: 'wordle', label: 'Renkli (Wordle)' }, { value: 'plusminus', label: '+ − sayıları (zor)' }] },
-    { key: 'secretMode', label: 'Gizli kelime', type: 'select', default: 'random', options: [{ value: 'random', label: 'Rastgele yaygın kelime' }, { value: 'manual', label: 'Rakip için kendim yazayım' }] },
     { key: 'maxGuesses', label: 'Tahmin hakkı', type: 'select', default: 8, options: [{ value: 6, label: '6' }, { value: 8, label: '8' }, { value: 10, label: '10' }, { value: 0, label: 'Sınırsız' }] },
   ],
 };

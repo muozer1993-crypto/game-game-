@@ -1,9 +1,10 @@
-// Beni Ne Kadar Tanıyorsun? — one player answers questions about themselves, the other
-// guesses the answers; then roles swap. Multiple-choice answers are compared
-// automatically; for open-ended questions the answer's owner judges: Tuttu / Yakın / Tutmadı.
+// Beni Ne Kadar Tanıyorsun? — both players get the same questions. Each player first
+// answers them about themselves, then guesses the other player's answers. When both are
+// done the comparison appears automatically; open-ended answers are judged by their owner
+// (Tuttu / Yakın / Tutmadı). The player who guessed more wins.
 //
-// Answers travel in the `secret` field of the answer move, so in online mode the
-// guesser's device never holds them until the owner's device reveals them for judging.
+// Answers travel in the `secret` field of the answer move, so in online mode the other
+// device never holds them until the owner's device reveals them for the comparison.
 import { el, render as draw } from '../js/ui/dom.js';
 import { createRng, shuffle } from '../js/lib/rng.js';
 import { nameSuffix } from '../js/lib/tr.js';
@@ -11,17 +12,17 @@ import { nameSuffix } from '../js/lib/tr.js';
 export const meta = {
   name: 'Beni Ne Kadar Tanıyorsun?',
   icon: '💞',
-  description: 'Biri kendisi hakkında cevaplar, öteki tahmin eder; sonra roller değişir.',
+  description: 'Aynı soruları önce kendin için cevapla, sonra rakibin cevaplarını tahmin et.',
   rules: [
-    'Bir tur 10 sorudur (ayarlanabilir). Önce bir oyuncu soruları kendisi hakkında cevaplar, sonra diğeri onun cevaplarını tahmin eder.',
-    'Çoktan seçmeli sorularda eşleşme otomatik sayılır. Açık uçlu sorularda cevabın sahibi karar verir: Tuttu (1 puan), Yakın (yarım puan), Tutmadı.',
-    'Sonra roller değişir. Rakibini daha iyi tanıyan kazanır.',
-    'Sorular hazır havuzdan gelir; ayarlar ekranından kendi sorularınızı da ekleyebilirsiniz.',
+    'İkinize de aynı sorular gelir (varsayılan 10). Her oyuncu önce soruları kendisi hakkında cevaplar, sonra aynı soruları rakibi için tahmin eder.',
+    'İkiniz de bitirince karşılaştırma ekranı kendiliğinden gelir. Çoktan seçmeli sorularda eşleşme otomatik sayılır; açık uçlu sorularda cevabın sahibi karar verir: Tuttu (1 puan), Yakın (yarım puan), Tutmadı.',
+    'Rakibini daha iyi tanıyan kazanır.',
+    'Sorular hazır havuzdan gelir; kurulum ekranındaki "Kendi sorularınız" alanından kendi sorularınızı ekleyebilirsiniz, onlar önce sorulur.',
   ].join('\n'),
   data: ['questions'],
   handoffNote: 'Cevaplar gizli: ekranı yalnızca sırası gelen görmeli.',
   settings: [
-    { key: 'perRound', label: 'Tur başına soru', type: 'select', default: 10, options: [{ value: 5, label: '5' }, { value: 10, label: '10' }, { value: 15, label: '15' }] },
+    { key: 'count', label: 'Soru sayısı', type: 'select', default: 10, options: [{ value: 5, label: '5' }, { value: 10, label: '10' }, { value: 15, label: '15' }] },
     {
       key: 'customMode', label: 'Kendi sorularınız', type: 'select', default: 'first',
       options: [
@@ -47,49 +48,37 @@ function cleanQuestion(q, i) {
   return base;
 }
 
-/** Pick 2 × perRound questions deterministically from the seed. Exported for tests. */
-export function pickQuestions(pool, custom, perRound, customMode, seed) {
+/** Pick `count` questions deterministically from the seed. Exported for tests. */
+export function pickQuestions(pool, custom, count, customMode, seed) {
   const rng = createRng(seed);
   const base = shuffle(rng, (pool || []).map(cleanQuestion).filter(Boolean));
   const own = customMode === 'none' ? [] : shuffle(rng, (custom || []).map(cleanQuestion).filter(Boolean));
   if (!own.length && !base.length) fail('Soru havuzu boş');
-  // Deal the players' own questions alternately to the two rounds so that both players get
-  // asked them; then fill each round from the pool (shuffled in when customMode is 'mix').
-  const rounds = [[], []];
-  own.forEach((q, i) => rounds[i % 2].push(q));
-  const rest = base.slice();
-  let k = 0;
-  for (const r of [0, 1]) {
-    while (rounds[r].length < perRound) {
-      rounds[r].push(rest.length ? rest[k++ % rest.length] : own[k++ % own.length]);
-    }
-    rounds[r] = rounds[r].slice(0, perRound);
-    if (customMode === 'mix') rounds[r] = shuffle(rng, rounds[r]);
-  }
-  return rounds;
+  let order = customMode === 'mix' ? shuffle(rng, own.concat(base)) : own.concat(base);
+  const picked = [];
+  for (let i = 0; picked.length < count; i++) picked.push(order[i % order.length]);
+  return picked;
 }
 
 export function setup(options = {}, ctx = {}) {
-  const perRound = [5, 10, 15].includes(Number(options.perRound)) ? Number(options.perRound) : 10;
+  const count = [5, 10, 15].includes(Number(options.count)) ? Number(options.count) : 10;
   const pool = ctx.questions && Array.isArray(ctx.questions.questions) ? ctx.questions.questions : (Array.isArray(ctx.questions) ? ctx.questions : []);
   const custom = Array.isArray(ctx.customQuestions) ? ctx.customQuestions : [];
-  const questions = pickQuestions(pool, custom, perRound, options.customMode || 'first', Number(options.seed) || 1);
-  const empty = () => [new Array(perRound).fill(null), new Array(perRound).fill(null)];
+  const questions = pickQuestions(pool, custom, count, options.customMode || 'first', Number(options.seed) || 1);
+  const empty = () => [new Array(count).fill(null), new Array(count).fill(null)];
   return {
-    perRound,
-    round: 0,          // round r: player r answers, player 1-r guesses
-    phase: 'answer',   // answer | guess | judge | review | over
+    count,
+    phase: 'play',      // play | compare | over
     questions,
-    answers: empty(),  // known on the answerer's device (and after reveal)
+    answers: empty(),   // answers[p][i]: known on p's device (and everywhere after reveal)
     answered: [0, 0],
-    guesses: empty(),
-    judgments: empty(),
+    guesses: empty(),   // guesses[p][i]: p's guess of the other player's answer (public)
+    guessed: [0, 0],
+    finished: [false, false],
     revealed: [false, false],
+    judgments: empty(), // judgments[owner][i]: verdict for the other player's guess of owner's answer
   };
 }
-
-const answererOf = (state) => state.round;
-const guesserOf = (state) => 1 - state.round;
 
 function validateValue(q, raw) {
   const value = String(raw == null ? '' : raw).trim();
@@ -99,93 +88,86 @@ function validateValue(q, raw) {
   return value;
 }
 
-function autoJudge(state, r) {
+function autoJudge(state, owner) {
   const judgments = state.judgments.map((l) => l.slice());
-  state.questions[r].forEach((q, i) => {
-    if (q.type === 'choice' && judgments[r][i] == null && state.answers[r][i] != null && state.guesses[r][i] != null) {
-      judgments[r][i] = state.answers[r][i] === state.guesses[r][i] ? 'match' : 'miss';
+  state.questions.forEach((q, i) => {
+    if (q.type === 'choice' && judgments[owner][i] == null && state.answers[owner][i] != null && state.guesses[1 - owner][i] != null) {
+      judgments[owner][i] = state.answers[owner][i] === state.guesses[1 - owner][i] ? 'match' : 'miss';
     }
   });
   return judgments;
 }
 
-export function roundPoints(state, r) {
-  return state.judgments[r].reduce((sum, v) => sum + (VERDICT_POINTS[v] || 0), 0);
-}
-
-/** points[p] = how many points player p scored as the guesser. */
+/** points[p] = how well p guessed the other player (sum of the other player's judgments). */
 export function points(state) {
-  return [roundPoints(state, 1), roundPoints(state, 0)];
+  const sum = (owner) => state.judgments[owner].reduce((acc, v) => acc + (VERDICT_POINTS[v] || 0), 0);
+  return [sum(1), sum(0)];
 }
 
-export function applyMove(state, player, move) {
+export function allJudged(state) {
+  return state.revealed[0] && state.revealed[1] && state.judgments.every((l) => l.every((v) => v != null));
+}
+
+export function applyMove(state, player, move, ctx = {}) {
   if (!move || typeof move !== 'object') fail('Geçersiz hamle');
-  const r = state.round;
   switch (move.type) {
     case 'answer': {
-      if (state.phase !== 'answer') fail('Şu anda cevap verilemez');
-      if (player !== answererOf(state)) fail('Sıra sende değil');
+      if (state.phase !== 'play') fail('Cevap aşaması bitti');
+      if (state.finished[player]) fail('Bitirdin');
       const i = move.index;
-      if (i !== state.answered[r]) fail('Sorular sırayla cevaplanır');
+      if (i !== state.answered[player]) fail('Sorular sırayla cevaplanır');
       const answers = state.answers.map((l) => l.slice());
-      if (move.secret && move.secret.value != null) {
-        answers[r][i] = validateValue(state.questions[r][i], move.secret.value);
-      }
+      if (move.secret && move.secret.value != null) answers[player][i] = validateValue(state.questions[i], move.secret.value);
       const answered = state.answered.slice();
-      answered[r] = i + 1;
-      const next = { ...state, answers, answered };
-      if (answered[r] >= state.perRound) next.phase = 'guess';
-      return next;
+      answered[player] = i + 1;
+      return { ...state, answers, answered };
     }
     case 'guess': {
-      if (state.phase !== 'guess') fail('Şu anda tahmin yapılamaz');
-      if (player !== guesserOf(state)) fail('Sıra sende değil');
+      if (state.phase !== 'play') fail('Tahmin aşaması bitti');
+      if (state.finished[player]) fail('Bitirdin');
+      if (state.answered[player] < state.count) fail('Önce kendi cevaplarını ver');
       const i = move.index;
-      const done = state.guesses[r].filter((g) => g != null).length;
-      if (i !== done) fail('Sorular sırayla tahmin edilir');
+      if (i !== state.guessed[player]) fail('Sorular sırayla tahmin edilir');
       const guesses = state.guesses.map((l) => l.slice());
-      guesses[r][i] = validateValue(state.questions[r][i], move.value);
-      const next = { ...state, guesses };
-      if (i + 1 >= state.perRound) next.phase = 'judge';
+      guesses[player][i] = validateValue(state.questions[i], move.value);
+      const guessed = state.guessed.slice();
+      guessed[player] = i + 1;
+      const finished = state.finished.slice();
+      finished[player] = guessed[player] >= state.count;
+      const next = { ...state, guesses, guessed, finished };
+      if (finished[0] && finished[1]) next.phase = 'compare';
       return next;
     }
     case 'reveal': {
-      if (state.phase !== 'judge') fail('Cevaplar bu aşamada açıklanmaz');
-      if (player !== answererOf(state)) fail('Cevapları sahibi açıklar');
-      if (state.revealed[r]) return state;
-      if (!Array.isArray(move.answers) || move.answers.length !== state.perRound) fail('Geçersiz cevap listesi');
+      if (state.phase !== 'compare') fail('Cevaplar bu aşamada açıklanmaz');
+      if (state.revealed[player]) return state;
+      if (!Array.isArray(move.answers) || move.answers.length !== state.count) fail('Geçersiz cevap listesi');
       const answers = state.answers.map((l) => l.slice());
-      answers[r] = move.answers.map((a) => (a == null ? null : String(a)));
+      answers[player] = move.answers.map((a) => (a == null ? null : String(a)));
       const revealed = state.revealed.slice();
-      revealed[r] = true;
+      revealed[player] = true;
       const next = { ...state, answers, revealed };
-      return { ...next, judgments: autoJudge(next, r) };
+      return { ...next, judgments: autoJudge(next, player) };
     }
     case 'judge': {
-      if (state.phase !== 'judge') fail('Şu anda karar verilemez');
-      if (player !== answererOf(state)) fail('Buna cevabın sahibi karar verir');
-      if (!state.revealed[r]) fail('Önce cevaplar açıklanmalı');
-      const i = move.index;
-      const q = state.questions[r][i];
+      if (state.phase !== 'compare') fail('Şu anda karar verilemez');
+      const owner = move.owner;
+      if (owner !== 0 && owner !== 1) fail('Geçersiz hamle');
+      // On one shared phone either player may tap the buttons; online only the owner decides.
+      if (ctx.mode === 'online' && player !== owner) fail('Buna cevabın sahibi karar verir');
+      if (!state.revealed[owner]) fail('Önce cevaplar açıklanmalı');
+      const q = state.questions[move.index];
       if (!q) fail('Geçersiz soru');
       if (q.type !== 'open') fail('Bu soru otomatik puanlanır');
       if (!Object.hasOwn(VERDICT_POINTS, move.verdict)) fail('Geçersiz karar');
       const judgments = state.judgments.map((l) => l.slice());
-      judgments[r][i] = move.verdict;
+      judgments[owner][move.index] = move.verdict;
       return { ...state, judgments };
     }
-    case 'continue': {
-      if (state.phase === 'judge') {
-        if (player !== answererOf(state)) fail('Sıra sende değil');
-        if (!state.revealed[r] || state.judgments[r].some((v) => v == null)) fail('Önce bütün açık uçlu cevaplara karar ver');
-        return { ...state, phase: 'review' }; // the guesser gets to see the comparison too
-      }
-      if (state.phase === 'review') {
-        if (player !== guesserOf(state)) fail('Sıra sende değil');
-        if (r === 0) return { ...state, round: 1, phase: 'answer' };
-        return { ...state, phase: 'over' };
-      }
-      fail('Tur henüz bitmedi');
+    case 'finish': {
+      if (state.phase !== 'compare') fail('Karşılaştırma bitmedi');
+      if (!allJudged(state)) fail('Önce bütün açık uçlu cevaplara karar verilmeli');
+      return { ...state, phase: 'over' };
     }
     default:
       fail(`Bilinmeyen hamle: ${move.type}`);
@@ -194,18 +176,16 @@ export function applyMove(state, player, move) {
 }
 
 export function autoMove(state, player) {
-  const r = state.round;
-  if (state.phase === 'judge' && !state.revealed[r] && player === answererOf(state)) {
-    const answers = state.answers[r];
-    if (answers.every((a) => a != null)) return { type: 'reveal', answers };
+  if (state.phase === 'compare' && !state.revealed[player] && state.answers[player].every((a) => a != null)) {
+    return { type: 'reveal', answers: state.answers[player] };
   }
   return null;
 }
 
 export function getTurn(state) {
-  if (state.phase === 'over') return null;
-  const p = state.phase === 'guess' || state.phase === 'review' ? guesserOf(state) : answererOf(state);
-  return { player: p, private: true };
+  if (state.phase !== 'play') return null; // comparison and result are looked at together
+  const p = state.finished[0] ? (state.finished[1] ? null : 1) : 0;
+  return p == null ? null : { player: p, private: true };
 }
 
 export function getResult(state) {
@@ -247,93 +227,78 @@ const VERDICT_LABEL = { match: 'Tuttu', close: 'Yakın', miss: 'Tutmadı' };
 export function render(state, viewer, container, sendMove, ctx = {}) {
   const players = ctx.players || ['Oyuncu 1', 'Oyuncu 2'];
   const categories = (ctx.questions && ctx.questions.categories) || {};
-  const r = state.round;
-  const answerer = answererOf(state);
-  const guesser = guesserOf(state);
-  const total = state.perRound;
+  const online = ctx.mode === 'online';
+  const total = state.count;
+  const opp = 1 - viewer;
 
-  if (state.phase === 'answer') {
-    if (viewer !== answerer) {
-      draw(container, el('div', { class: 'status-line' }, el('span', { class: 'muted' }, `${players[answerer]} soruları cevaplıyor… (${state.answered[r]}/${total})`)), el('div', { class: 'spinner', 'aria-hidden': 'true' }));
-      return null;
-    }
-    const i = state.answered[r];
-    const q = state.questions[r][i];
-    draw(container,
-      el('div', { class: 'status-line' }, el('strong', {}, `${players[answerer]}, kendin hakkında cevapla`)),
-      questionCard(q, i + 1, total, categories, null),
-      answerInput(q, (value) => sendMove({ type: 'answer', index: i, secret: { value } })),
-    );
-    return null;
-  }
-
-  if (state.phase === 'guess') {
-    if (viewer !== guesser) {
-      const done = state.guesses[r].filter((g) => g != null).length;
-      draw(container, el('div', { class: 'status-line' }, el('span', { class: 'muted' }, `${players[guesser]} tahmin ediyor… (${done}/${total})`)), el('div', { class: 'spinner', 'aria-hidden': 'true' }));
-      return null;
-    }
-    const i = state.guesses[r].filter((g) => g != null).length;
-    const q = state.questions[r][i];
-    draw(container,
-      el('div', { class: 'status-line' }, el('strong', {}, `${players[guesser]}, ${nameSuffix(players[answerer], 'in')} cevabını tahmin et`)),
-      questionCard(q, i + 1, total, categories, `${nameSuffix(players[answerer], 'e')} soruldu — sence ne cevap verdi?`),
-      answerInput(q, (value) => sendMove({ type: 'guess', index: i, value })),
-    );
-    return null;
-  }
-
-  if (state.phase === 'judge' || state.phase === 'review') {
-    const isJudge = viewer === answerer && state.phase === 'judge';
-    const isReview = state.phase === 'review';
-    if (!state.revealed[r]) {
-      draw(container, el('div', { class: 'status-line' }, el('span', { class: 'muted' }, 'Cevaplar karşılaştırılıyor…')), el('div', { class: 'spinner', 'aria-hidden': 'true' }));
-      return null;
-    }
-    const items = state.questions[r].map((q, i) => {
-      const verdict = state.judgments[r][i];
-      const badge = verdict ? el('span', { class: `badge ${verdict}` }, VERDICT_LABEL[verdict]) : null;
-      const buttons = isJudge && q.type === 'open'
-        ? el('div', { class: 'judge-buttons' }, ['match', 'close', 'miss'].map((v) =>
-          el('button', { type: 'button', class: `btn ${verdict === v ? 'btn-primary' : 'btn-secondary'}`, onClick: () => sendMove({ type: 'judge', index: i, verdict: v }) }, VERDICT_LABEL[v])))
-        : null;
-      return el('div', { class: 'compare-item card' },
-        el('div', { class: 'q' }, `${i + 1}. ${q.text}`),
-        el('div', { class: 'ans' }, el('span', { class: 'muted' }, `${players[answerer]}: `), state.answers[r][i] ?? '—'),
-        el('div', { class: 'ans' }, el('span', { class: 'muted' }, `${players[guesser]} tahmini: `), state.guesses[r][i] ?? '—'),
-        badge,
-        buttons,
+  if (state.phase === 'play') {
+    if (state.finished[viewer]) {
+      draw(container,
+        el('div', { class: 'status-line' }, el('strong', {}, 'Bitirdin!')),
+        el('p', { class: 'hint' }, `${players[opp]} devam ediyor… (cevap ${state.answered[opp]}/${total}, tahmin ${state.guessed[opp]}/${total})`),
+        el('div', { class: 'spinner', 'aria-hidden': 'true' }),
       );
-    });
-    const allJudged = state.judgments[r].every((v) => v != null);
-    const score = roundPoints(state, r);
-    let headline;
-    if (isJudge) headline = allJudged ? `${players[guesser]} seni ${total} üzerinden ${formatPoints(score)} tanıyor.` : 'Açık uçlu cevaplara karar ver';
-    else if (isReview) headline = viewer === guesser
-      ? `${nameSuffix(players[answerer], 'i')} ${total} üzerinden ${formatPoints(score)} tanıyorsun.`
-      : `${players[guesser]} sonuçlara bakıyor…`;
-    else headline = `${players[answerer]} cevapları değerlendiriyor…`;
-    const canContinue = (isJudge && allJudged) || (isReview && viewer === guesser);
+      return null;
+    }
+    if (state.answered[viewer] < total) {
+      const i = state.answered[viewer];
+      draw(container,
+        el('div', { class: 'status-line' }, el('strong', {}, `${players[viewer]}, kendin hakkında cevapla`)),
+        el('p', { class: 'hint' }, `1. adım: kendi cevapların (${i + 1}/${total}) · 2. adım: ${nameSuffix(players[opp], 'in')} cevaplarını tahmin et`),
+        questionCard(state.questions[i], i + 1, total, categories, null),
+        answerInput(state.questions[i], (value) => sendMove({ type: 'answer', index: i, secret: { value } })),
+      );
+      return null;
+    }
+    const i = state.guessed[viewer];
     draw(container,
-      el('div', { class: 'status-line' }, el('strong', {}, headline)),
-      el('div', { class: 'compare-list' }, items),
-      canContinue ? el('div', { class: 'section' },
-        el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block', onClick: () => sendMove({ type: 'continue' }) },
-          isJudge ? `Devam: ${players[guesser]} sonuçlara baksın` : (r === 0 ? 'Devam: roller değişsin' : 'Sonucu gör')),
-      ) : null,
+      el('div', { class: 'status-line' }, el('strong', {}, `${players[viewer]}, ${nameSuffix(players[opp], 'in')} cevabını tahmin et`)),
+      el('p', { class: 'hint' }, `2. adım: tahminler (${i + 1}/${total})`),
+      questionCard(state.questions[i], i + 1, total, categories, `${nameSuffix(players[opp], 'e')} de bu soru soruldu — sence ne cevap verdi?`),
+      answerInput(state.questions[i], (value) => sendMove({ type: 'guess', index: i, value })),
     );
     return null;
   }
 
-  // over
+  // compare / over
+  if (!state.revealed[0] || !state.revealed[1]) {
+    draw(container, el('div', { class: 'status-line' }, el('span', { class: 'muted' }, 'Cevaplar karşılaştırılıyor…')), el('div', { class: 'spinner', 'aria-hidden': 'true' }));
+    return null;
+  }
   const pts = points(state);
+  const canJudge = (owner) => state.phase === 'compare' && (!online || viewer === owner);
+  const pairRow = (owner, i) => {
+    const guesser = 1 - owner;
+    const verdict = state.judgments[owner][i];
+    const q = state.questions[i];
+    const badge = verdict ? el('span', { class: `badge ${verdict}` }, VERDICT_LABEL[verdict]) : null;
+    const buttons = q.type === 'open' && canJudge(owner)
+      ? el('div', { class: 'judge-buttons' }, ['match', 'close', 'miss'].map((v) =>
+        el('button', { type: 'button', class: `btn ${verdict === v ? 'btn-primary' : 'btn-secondary'}`, onClick: () => sendMove({ type: 'judge', owner, index: i, verdict: v }) }, VERDICT_LABEL[v])))
+      : (q.type === 'open' && !verdict ? el('div', { class: 'muted', style: { fontSize: '0.9rem' } }, `${players[owner]} karar verecek…`) : null);
+    return el('div', { class: 'pair' },
+      el('div', { class: 'ans' }, el('span', { class: 'muted' }, `${players[owner]}: `), state.answers[owner][i] ?? '—',
+        el('span', { class: 'muted' }, ` · ${nameSuffix(players[guesser], 'in')} tahmini: `), state.guesses[guesser][i] ?? '—', ' ', badge),
+      buttons,
+    );
+  };
+  const items = state.questions.map((q, i) => el('div', { class: 'compare-item card' },
+    el('div', { class: 'q' }, `${i + 1}. ${q.text}`),
+    pairRow(0, i),
+    pairRow(1, i),
+  ));
+  const summary = el('div', { class: 'status-line' },
+    el('div', {}, el('strong', {}, `${players[0]}, ${nameSuffix(players[1], 'i')} ${total} üzerinden ${formatPoints(pts[0])} tanıyor`)),
+    el('div', {}, el('strong', {}, `${players[1]}, ${nameSuffix(players[0], 'i')} ${total} üzerinden ${formatPoints(pts[1])} tanıyor`)),
+  );
+  const done = allJudged(state);
   draw(container,
-    el('div', { class: 'status-line' }, el('strong', {}, 'Tur bitti')),
-    el('div', { class: 'compare-list' },
-      [0, 1].map((p) => el('div', { class: 'card' },
-        el('div', { class: 'q' }, `${players[p]}, ${nameSuffix(players[1 - p], 'i')} ${total} üzerinden ${formatPoints(pts[p])} tanıyor`),
-      )),
-    ),
+    summary,
+    state.phase === 'compare' && !done ? el('p', { class: 'hint' }, 'Açık uçlu cevaplara Tuttu / Yakın / Tutmadı diyerek karar verin.') : null,
+    el('div', { class: 'compare-list' }, items),
+    state.phase === 'compare' ? el('div', { class: 'section' },
+      el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block', disabled: !done, onClick: () => sendMove({ type: 'finish' }) }, 'Sonucu gör'),
+    ) : null,
   );
   return null;
 }
@@ -343,20 +308,22 @@ export function setupExtra(container, storage) {
   const KEY = 'custom-questions';
   let list = storage.load(KEY, []);
   const listBox = el('div', { class: 'custom-q-list' });
-  const typeSel = el('select', { class: 'select', 'aria-label': 'Soru türü' },
+  const typeSel = el('select', { class: 'select', id: 'custom-q-type', 'aria-label': 'Soru türü' },
     el('option', { value: 'choice' }, '4 seçenekli'),
-    el('option', { value: 'open' }, 'Açık uçlu'));
-  const text = el('input', { type: 'text', class: 'input', maxlength: 120, placeholder: 'Soru (sen diliyle: "En sevdiğin … ?")' });
-  const optInputs = [0, 1, 2, 3].map((i) => el('input', { type: 'text', class: 'input', maxlength: 40, placeholder: `${i + 1}. seçenek` }));
+    el('option', { value: 'open' }, 'Açık uçlu (serbest cevap)'));
+  const text = el('input', { type: 'text', class: 'input', id: 'custom-q-text', maxlength: 120, placeholder: 'Örn: En sevdiğin tatlı hangisi?' });
+  const optInputs = [0, 1, 2, 3].map((i) => el('input', { type: 'text', class: 'input', id: `custom-q-opt-${i}`, maxlength: 40, placeholder: `${i + 1}. seçenek` }));
   const optBox = el('div', { class: 'options', style: { marginTop: '8px' } }, optInputs);
   typeSel.addEventListener('change', () => { optBox.style.display = typeSel.value === 'choice' ? '' : 'none'; });
+  const title = el('h2', { class: 'section-title' });
 
   const drawList = () => {
+    title.textContent = `Kendi sorularınız (${list.length})`;
     draw(listBox, list.length
       ? list.map((q, i) => el('div', { class: 'custom-q-item' },
         el('span', {}, `${q.text}${q.type === 'choice' ? ` (${q.options.join(' / ')})` : ' (açık uçlu)'}`),
         el('button', { type: 'button', class: 'btn btn-small', 'aria-label': 'Sil', onClick: () => { list = list.filter((_, k) => k !== i); storage.save(KEY, list); drawList(); } }, '✕')))
-      : el('p', { class: 'muted' }, 'Henüz kendi sorunuz yok.'));
+      : el('p', { class: 'muted' }, 'Henüz kendi sorunuz yok. Aşağıdan ekleyin; eklediğiniz sorular havuzdakilerden önce sorulur.'));
   };
   drawList();
 
@@ -372,17 +339,16 @@ export function setupExtra(container, storage) {
     text.value = '';
     optInputs.forEach((o) => { o.value = ''; });
     drawList();
+    text.focus();
   };
 
-  draw(container, el('details', { class: 'rules' },
-    el('summary', {}, `Kendi sorularınız (${list.length})`),
-    el('div', { class: 'section' },
-      listBox,
-      el('div', { class: 'field', style: { marginTop: '12px' } }, el('label', {}, 'Yeni soru'), text),
-      el('div', { class: 'field' }, typeSel),
-      optBox,
-      el('button', { type: 'button', class: 'btn btn-secondary btn-block', style: { marginTop: '8px' }, onClick: add }, 'Soruyu ekle'),
-    ),
+  draw(container, el('section', { class: 'section card' },
+    title,
+    listBox,
+    el('div', { class: 'field', style: { marginTop: '12px' } }, el('label', { for: 'custom-q-text' }, 'Yeni soru (sen diliyle yaz)'), text),
+    el('div', { class: 'field' }, el('label', { for: 'custom-q-type' }, 'Soru türü'), typeSel),
+    optBox,
+    el('button', { type: 'button', class: 'btn btn-secondary btn-block', style: { marginTop: '8px' }, onClick: add }, '+ Soruyu ekle'),
   ));
 }
 
