@@ -4,10 +4,10 @@ import { APP_VERSION } from './version.js';
 import { Session } from './session.js';
 import { el, render, clear, toast } from './ui/dom.js';
 import { createScoreboard } from './ui/scoreboard.js';
-import { load, save, remove } from './lib/storage.js';
+import { load, save, remove, keys } from './lib/storage.js';
 import { loadDictionary, loadCommonWords } from './lib/words.js';
 import { randomSeed } from './lib/rng.js';
-import { nameSuffix } from './lib/tr.js';
+import { nameSuffix, capitalizeTR } from './lib/tr.js';
 import { generateRoomCode, createHost, joinRoom, normalizeRoomCode } from './net/peer.js';
 
 const app = document.getElementById('app');
@@ -119,6 +119,7 @@ export function showMenu() {
       el('button', { type: 'button', class: 'btn btn-secondary btn-block', onClick: showOnline }, '📶 İki telefonda oyna (oda kodu)'),
     ),
     el('footer', { class: 'footer muted' },
+      el('button', { type: 'button', class: 'linkish', onClick: showRecords }, 'Skor tablosu'), ' · ',
       el('a', { href: 'tests/index.html' }, 'Testler'), ' · ',
       el('a', { href: 'README.md' }, 'Kaynak ve lisanslar'),
     ),
@@ -126,6 +127,41 @@ export function showMenu() {
 }
 
 /** Game cards grouped into sections (used by the menu and the online lobby). */
+/** All-time records between every pair of players, per game. */
+export function showRecords() {
+  setScreen('records');
+  const rows = [];
+  for (const key of keys('record:')) {
+    const m = key.match(/^record:([^:]+):(.*)\|(.*)$/);
+    const rec = load(key, null);
+    if (!m || !rec || !Array.isArray(rec.wins)) continue;
+    rows.push({ key, game: findGame(m[1]), gameId: m[1], names: [capitalizeTR(m[2]), capitalizeTR(m[3])], wins: rec.wins, draws: rec.draws || 0, rounds: rec.rounds || 0 });
+  }
+  const pairs = new Map();
+  for (const r of rows) {
+    const id = r.names.join('|');
+    if (!pairs.has(id)) pairs.set(id, { names: r.names, rows: [], wins: [0, 0], draws: 0, rounds: 0 });
+    const pr = pairs.get(id);
+    pr.rows.push(r);
+    pr.wins[0] += r.wins[0]; pr.wins[1] += r.wins[1]; pr.draws += r.draws; pr.rounds += r.rounds;
+  }
+  const sections = [...pairs.values()].sort((x, y) => y.rounds - x.rounds).map((pr) => el('section', { class: 'section card records-pair' },
+    el('h2', { class: 'section-title' }, `${pr.names[0]} ${pr.wins[0]} – ${pr.wins[1]} ${pr.names[1]}`),
+    el('p', { class: 'muted' }, `${pr.rounds} tur${pr.draws ? `, ${pr.draws} berabere` : ''}`),
+    el('div', { class: 'records-list' }, pr.rows.sort((x, y) => y.rounds - x.rounds).map((r) => el('div', { class: 'records-row' },
+      el('span', { class: 'records-game' }, `${r.game ? `${r.game.meta.icon || ''} ${r.game.meta.name}` : r.gameId}`),
+      el('span', { class: 'records-score' }, `${r.wins[0]} – ${r.wins[1]}${r.draws ? ` (${r.draws} b.)` : ''}`)))),
+    el('button', {
+      type: 'button', class: 'btn btn-small', style: { marginTop: '8px' },
+      onClick: () => { if (confirm(`${pr.names[0]} – ${pr.names[1]} skorları silinsin mi?`)) { pr.rows.forEach((r) => remove(r.key)); showRecords(); } },
+    }, 'Bu çiftin skorlarını sıfırla'),
+  ));
+  render(app,
+    header('Skor tablosu', { onBack: showMenu }),
+    sections.length ? sections : el('p', { class: 'lead' }, 'Henüz kayıtlı skor yok. Bir oyun bitince kazanan burada birikir (oyuncu adlarına göre).'),
+  );
+}
+
 /** Shortcuts above the list: the game played last and a random pick. */
 function quickRow(onPick) {
   const last = findGame(load('last-game', null));

@@ -35,6 +35,8 @@ Tek telefonda elden ele ya da iki telefonda oda koduyla oynanır. Ana ekrana ekl
 | **Taş Kağıt Makas** | Gizli seçim, birlikte açılır; beşte üç. |
 | **Refleks** | Ekran yeşile dönünce ilk dokunan eli alır, erken dokunan kaybeder; tek telefonda iki bölge, iki telefonda kendi süren ölçülür. |
 
+Ana menünün altındaki **Skor tablosu**, oyuncu adlarına göre biriken tüm sonuçları (oyun oyun) gösterir ve çift bazında sıfırlanabilir.
+
 ## Yerelde çalıştırma
 
 ES modülleri `file://` ile açılmaz; küçük bir statik sunucu gerekir.

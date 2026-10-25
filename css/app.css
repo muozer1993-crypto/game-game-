@@ -733,3 +733,8 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .pcard.trump { border-color: var(--present); box-shadow: 0 0 0 1px var(--present); }
 .dk-info .pcard.small { width: 32px; height: 44px; font-size: 0.85rem; vertical-align: middle; }
 .dk-info .pcard.small .suit { font-size: 0.85rem; }
+
+.linkish { background: none; border: 0; padding: 0; color: inherit; text-decoration: underline; cursor: pointer; font: inherit; }
+.records-list { display: grid; gap: 4px; margin-top: 6px; }
+.records-row { display: flex; justify-content: space-between; gap: 8px; }
+.records-score { font-variant-numeric: tabular-nums; font-weight: 700; }

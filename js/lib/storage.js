@@ -25,3 +25,17 @@ export function remove(key) {
     /* ignore */
   }
 }
+
+/** Keys (without the app prefix) that start with `prefix`. */
+export function keys(prefix = '') {
+  try {
+    const out = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith(PREFIX + prefix)) out.push(k.slice(PREFIX.length));
+    }
+    return out;
+  } catch {
+    return [];
+  }
+}
