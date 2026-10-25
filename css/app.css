@@ -726,9 +726,10 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 
 /* ---- Durak */
 .dk-table { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; min-height: 70px; margin: 6px 0; align-items: center; }
-.dk-pair { position: relative; width: 64px; height: 84px; }
+.dk-pair { position: relative; width: 78px; height: 78px; }
 .dk-pair .pcard:first-child { position: absolute; left: 0; top: 0; }
-.dk-pair .pcard:last-child { position: absolute; left: 18px; top: 20px; }
+.dk-pair .pcard:last-child { position: absolute; left: 32px; top: 14px; }
+.phand .pcard:disabled { opacity: 0.4; }
 .pcard.trump { border-color: var(--present); box-shadow: 0 0 0 1px var(--present); }
 .dk-info .pcard.small { width: 32px; height: 44px; font-size: 0.85rem; vertical-align: middle; }
 .dk-info .pcard.small .suit { font-size: 0.85rem; }
