@@ -13,6 +13,7 @@ const app = document.getElementById('app');
 const DEFAULT_PLAYERS = ['Oyuncu 1', 'Oyuncu 2'];
 const QUESTIONS_URL = new URL('../data/questions.json', import.meta.url);
 const TRIVIA_URL = new URL('../data/trivia.json', import.meta.url);
+const TABU_URL = new URL('../data/tabu.json', import.meta.url);
 
 const prefs = {
   players: load('players', DEFAULT_PLAYERS),
@@ -55,6 +56,7 @@ async function loadGameData(game) {
     ctx.customQuestions = load('custom-questions', []);
   }
   if (needs.includes('trivia')) ctx.trivia = await loadJson(TRIVIA_URL);
+  if (needs.includes('tabu')) ctx.tabu = await loadJson(TABU_URL);
   return ctx;
 }
 

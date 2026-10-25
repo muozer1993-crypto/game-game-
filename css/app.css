@@ -665,3 +665,20 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .wh-list { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
 .wh-chip { padding: 2px 10px; border-radius: 999px; background: var(--secondary); color: var(--secondary-fg); font-size: 0.9rem; font-weight: 600; }
 .wh-chip.shared { text-decoration: line-through; opacity: 0.6; }
+
+/* ---- Tabu */
+.tb-card { text-align: center; padding: 18px 12px; margin: 10px 0; }
+.tb-word { font-size: 2rem; font-weight: 900; letter-spacing: 0.04em; margin-bottom: 12px; }
+.tb-taboo { display: grid; gap: 6px; }
+.tb-no { display: block; padding: 6px 10px; border-radius: 8px; background: var(--secondary); color: var(--danger); font-weight: 700; text-decoration: line-through; text-decoration-color: var(--muted); font-size: 1.05rem; }
+.tb-actions { display: grid; grid-template-columns: 1fr 1.4fr 1fr; gap: 8px; margin-top: 6px; }
+.tb-actions .btn { padding: 16px 6px; font-size: 1.05rem; }
+.btn-danger { background: var(--danger); color: #fff; }
+.tb-count.ok { color: var(--correct); font-weight: 700; }
+.tb-count.pass { color: var(--muted); font-weight: 700; }
+.tb-count.taboo { color: var(--danger); font-weight: 700; }
+.tb-list { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin: 8px 0; }
+.tb-chip { padding: 2px 10px; border-radius: 999px; background: var(--secondary); color: var(--secondary-fg); font-size: 0.9rem; font-weight: 600; }
+.tb-chip.ok { background: var(--correct); color: #fff; }
+.tb-chip.taboo { background: var(--danger); color: #fff; }
+.tb-rounds { display: grid; gap: 8px; margin-top: 8px; }

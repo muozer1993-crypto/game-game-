@@ -1,0 +1,2245 @@
+{
+ "license": "Bu proje için yazılmış özgün kartlar; MIT (projeyle aynı)",
+ "cards": [
+  {
+   "word": "Ekmek",
+   "taboo": [
+    "fırın",
+    "un",
+    "dilim",
+    "sabah",
+    "somun"
+   ]
+  },
+  {
+   "word": "Çay",
+   "taboo": [
+    "bardak",
+    "demlik",
+    "sıcak",
+    "içmek",
+    "şeker"
+   ]
+  },
+  {
+   "word": "Kahve",
+   "taboo": [
+    "fincan",
+    "Türk",
+    "sabah",
+    "içecek",
+    "telve"
+   ]
+  },
+  {
+   "word": "Telefon",
+   "taboo": [
+    "aramak",
+    "cep",
+    "konuşmak",
+    "mesaj",
+    "ekran"
+   ]
+  },
+  {
+   "word": "Bilgisayar",
+   "taboo": [
+    "klavye",
+    "ekran",
+    "internet",
+    "fare",
+    "yazılım"
+   ]
+  },
+  {
+   "word": "Doktor",
+   "taboo": [
+    "hastane",
+    "hasta",
+    "muayene",
+    "ilaç",
+    "beyaz önlük"
+   ]
+  },
+  {
+   "word": "Öğretmen",
+   "taboo": [
+    "okul",
+    "öğrenci",
+    "ders",
+    "sınıf",
+    "tahta"
+   ]
+  },
+  {
+   "word": "Futbol",
+   "taboo": [
+    "top",
+    "gol",
+    "maç",
+    "stadyum",
+    "takım"
+   ]
+  },
+  {
+   "word": "Basketbol",
+   "taboo": [
+    "pota",
+    "top",
+    "sayı",
+    "smaç",
+    "takım"
+   ]
+  },
+  {
+   "word": "Deniz",
+   "taboo": [
+    "su",
+    "dalga",
+    "plaj",
+    "yüzmek",
+    "mavi"
+   ]
+  },
+  {
+   "word": "Dağ",
+   "taboo": [
+    "yüksek",
+    "tırmanmak",
+    "zirve",
+    "kar",
+    "tepe"
+   ]
+  },
+  {
+   "word": "Orman",
+   "taboo": [
+    "ağaç",
+    "yeşil",
+    "hayvan",
+    "yürüyüş",
+    "odun"
+   ]
+  },
+  {
+   "word": "Güneş",
+   "taboo": [
+    "sıcak",
+    "gökyüzü",
+    "ışık",
+    "yaz",
+    "parlak"
+   ]
+  },
+  {
+   "word": "Ay",
+   "taboo": [
+    "gece",
+    "gökyüzü",
+    "yıldız",
+    "dolunay",
+    "parlak"
+   ]
+  },
+  {
+   "word": "Yağmur",
+   "taboo": [
+    "su",
+    "bulut",
+    "ıslak",
+    "şemsiye",
+    "damla"
+   ]
+  },
+  {
+   "word": "Kar",
+   "taboo": [
+    "beyaz",
+    "kış",
+    "soğuk",
+    "kardan adam",
+    "yağmak"
+   ]
+  },
+  {
+   "word": "Araba",
+   "taboo": [
+    "sürmek",
+    "tekerlek",
+    "direksiyon",
+    "yol",
+    "motor"
+   ]
+  },
+  {
+   "word": "Uçak",
+   "taboo": [
+    "uçmak",
+    "havaalanı",
+    "pilot",
+    "kanat",
+    "gökyüzü"
+   ]
+  },
+  {
+   "word": "Tren",
+   "taboo": [
+    "ray",
+    "istasyon",
+    "vagon",
+    "yolculuk",
+    "hızlı"
+   ]
+  },
+  {
+   "word": "Bisiklet",
+   "taboo": [
+    "pedal",
+    "tekerlek",
+    "sürmek",
+    "zincir",
+    "kask"
+   ]
+  },
+  {
+   "word": "Gemi",
+   "taboo": [
+    "deniz",
+    "kaptan",
+    "liman",
+    "yolculuk",
+    "yüzmek"
+   ]
+  },
+  {
+   "word": "Kedi",
+   "taboo": [
+    "miyav",
+    "tüy",
+    "pati",
+    "fare",
+    "evcil"
+   ]
+  },
+  {
+   "word": "Köpek",
+   "taboo": [
+    "hav",
+    "evcil",
+    "kuyruk",
+    "tasma",
+    "sadık"
+   ]
+  },
+  {
+   "word": "Fil",
+   "taboo": [
+    "hortum",
+    "büyük",
+    "Afrika",
+    "kulak",
+    "gri"
+   ]
+  },
+  {
+   "word": "Aslan",
+   "taboo": [
+    "kral",
+    "orman",
+    "yele",
+    "kükremek",
+    "avcı"
+   ]
+  },
+  {
+   "word": "Zürafa",
+   "taboo": [
+    "boyun",
+    "uzun",
+    "Afrika",
+    "benek",
+    "yaprak"
+   ]
+  },
+  {
+   "word": "Balık",
+   "taboo": [
+    "deniz",
+    "yüzmek",
+    "pul",
+    "olta",
+    "akvaryum"
+   ]
+  },
+  {
+   "word": "Kuş",
+   "taboo": [
+    "uçmak",
+    "kanat",
+    "tüy",
+    "yuva",
+    "gaga"
+   ]
+  },
+  {
+   "word": "Arı",
+   "taboo": [
+    "bal",
+    "vızıltı",
+    "kovan",
+    "çiçek",
+    "sokmak"
+   ]
+  },
+  {
+   "word": "Kelebek",
+   "taboo": [
+    "kanat",
+    "renkli",
+    "tırtıl",
+    "uçmak",
+    "çiçek"
+   ]
+  },
+  {
+   "word": "Elma",
+   "taboo": [
+    "kırmızı",
+    "meyve",
+    "ağaç",
+    "ısırmak",
+    "yeşil"
+   ]
+  },
+  {
+   "word": "Karpuz",
+   "taboo": [
+    "yaz",
+    "kırmızı",
+    "çekirdek",
+    "dilim",
+    "yeşil"
+   ]
+  },
+  {
+   "word": "Muz",
+   "taboo": [
+    "sarı",
+    "maymun",
+    "kabuk",
+    "meyve",
+    "uzun"
+   ]
+  },
+  {
+   "word": "Domates",
+   "taboo": [
+    "kırmızı",
+    "salata",
+    "sebze",
+    "salça",
+    "yaz"
+   ]
+  },
+  {
+   "word": "Pizza",
+   "taboo": [
+    "İtalyan",
+    "dilim",
+    "peynir",
+    "hamur",
+    "fırın"
+   ]
+  },
+  {
+   "word": "Döner",
+   "taboo": [
+    "et",
+    "ekmek",
+    "lavaş",
+    "döndürmek",
+    "kebap"
+   ]
+  },
+  {
+   "word": "Baklava",
+   "taboo": [
+    "tatlı",
+    "fıstık",
+    "şerbet",
+    "yufka",
+    "bayram"
+   ]
+  },
+  {
+   "word": "Simit",
+   "taboo": [
+    "susam",
+    "yuvarlak",
+    "çay",
+    "fırın",
+    "sabah"
+   ]
+  },
+  {
+   "word": "Dondurma",
+   "taboo": [
+    "soğuk",
+    "yaz",
+    "külah",
+    "çikolata",
+    "erimek"
+   ]
+  },
+  {
+   "word": "Çikolata",
+   "taboo": [
+    "tatlı",
+    "kakao",
+    "kahverengi",
+    "sütlü",
+    "şeker"
+   ]
+  },
+  {
+   "word": "Düğün",
+   "taboo": [
+    "gelin",
+    "damat",
+    "evlenmek",
+    "davet",
+    "nikah"
+   ]
+  },
+  {
+   "word": "Doğum günü",
+   "taboo": [
+    "pasta",
+    "mum",
+    "hediye",
+    "kutlamak",
+    "yaş"
+   ]
+  },
+  {
+   "word": "Bayram",
+   "taboo": [
+    "tatil",
+    "şeker",
+    "ziyaret",
+    "kurban",
+    "el öpmek"
+   ]
+  },
+  {
+   "word": "Tatil",
+   "taboo": [
+    "deniz",
+    "dinlenmek",
+    "otel",
+    "yaz",
+    "gezmek"
+   ]
+  },
+  {
+   "word": "Okul",
+   "taboo": [
+    "öğrenci",
+    "öğretmen",
+    "ders",
+    "sınıf",
+    "sınav"
+   ]
+  },
+  {
+   "word": "Sınav",
+   "taboo": [
+    "soru",
+    "not",
+    "çalışmak",
+    "kağıt",
+    "okul"
+   ]
+  },
+  {
+   "word": "Kitap",
+   "taboo": [
+    "okumak",
+    "sayfa",
+    "yazar",
+    "kütüphane",
+    "roman"
+   ]
+  },
+  {
+   "word": "Gazete",
+   "taboo": [
+    "haber",
+    "okumak",
+    "sabah",
+    "kağıt",
+    "manşet"
+   ]
+  },
+  {
+   "word": "Sinema",
+   "taboo": [
+    "film",
+    "perde",
+    "bilet",
+    "patlamış mısır",
+    "salon"
+   ]
+  },
+  {
+   "word": "Müzik",
+   "taboo": [
+    "şarkı",
+    "dinlemek",
+    "nota",
+    "enstrüman",
+    "ses"
+   ]
+  },
+  {
+   "word": "Gitar",
+   "taboo": [
+    "tel",
+    "çalmak",
+    "müzik",
+    "akor",
+    "enstrüman"
+   ]
+  },
+  {
+   "word": "Piyano",
+   "taboo": [
+    "tuş",
+    "çalmak",
+    "siyah",
+    "beyaz",
+    "müzik"
+   ]
+  },
+  {
+   "word": "Dans",
+   "taboo": [
+    "müzik",
+    "hareket",
+    "ritim",
+    "pist",
+    "eşlik"
+   ]
+  },
+  {
+   "word": "Resim",
+   "taboo": [
+    "boya",
+    "fırça",
+    "tuval",
+    "çizmek",
+    "sanat"
+   ]
+  },
+  {
+   "word": "Fotoğraf",
+   "taboo": [
+    "kamera",
+    "çekmek",
+    "poz",
+    "anı",
+    "gülümsemek"
+   ]
+  },
+  {
+   "word": "Televizyon",
+   "taboo": [
+    "izlemek",
+    "kanal",
+    "kumanda",
+    "ekran",
+    "dizi"
+   ]
+  },
+  {
+   "word": "Haber",
+   "taboo": [
+    "televizyon",
+    "gazete",
+    "spiker",
+    "gündem",
+    "olay"
+   ]
+  },
+  {
+   "word": "Hastane",
+   "taboo": [
+    "doktor",
+    "hasta",
+    "ambulans",
+    "ameliyat",
+    "hemşire"
+   ]
+  },
+  {
+   "word": "Eczane",
+   "taboo": [
+    "ilaç",
+    "reçete",
+    "doktor",
+    "hasta",
+    "satmak"
+   ]
+  },
+  {
+   "word": "Market",
+   "taboo": [
+    "alışveriş",
+    "kasa",
+    "ürün",
+    "sepet",
+    "satın almak"
+   ]
+  },
+  {
+   "word": "Para",
+   "taboo": [
+    "lira",
+    "harcamak",
+    "kazanmak",
+    "cüzdan",
+    "banka"
+   ]
+  },
+  {
+   "word": "Banka",
+   "taboo": [
+    "para",
+    "hesap",
+    "kredi",
+    "kart",
+    "şube"
+   ]
+  },
+  {
+   "word": "Polis",
+   "taboo": [
+    "suç",
+    "karakol",
+    "tutuklamak",
+    "üniforma",
+    "güvenlik"
+   ]
+  },
+  {
+   "word": "İtfaiye",
+   "taboo": [
+    "yangın",
+    "su",
+    "kırmızı",
+    "hortum",
+    "söndürmek"
+   ]
+  },
+  {
+   "word": "Asker",
+   "taboo": [
+    "ordu",
+    "üniforma",
+    "silah",
+    "vatan",
+    "komutan"
+   ]
+  },
+  {
+   "word": "Avukat",
+   "taboo": [
+    "mahkeme",
+    "dava",
+    "hukuk",
+    "savunmak",
+    "cübbe"
+   ]
+  },
+  {
+   "word": "Aşçı",
+   "taboo": [
+    "yemek",
+    "mutfak",
+    "pişirmek",
+    "restoran",
+    "tarif"
+   ]
+  },
+  {
+   "word": "Berber",
+   "taboo": [
+    "saç",
+    "kesmek",
+    "makas",
+    "tıraş",
+    "salon"
+   ]
+  },
+  {
+   "word": "Şoför",
+   "taboo": [
+    "araba",
+    "sürmek",
+    "direksiyon",
+    "yolcu",
+    "taksi"
+   ]
+  },
+  {
+   "word": "Pilot",
+   "taboo": [
+    "uçak",
+    "uçmak",
+    "kaptan",
+    "kokpit",
+    "havaalanı"
+   ]
+  },
+  {
+   "word": "Mühendis",
+   "taboo": [
+    "proje",
+    "hesap",
+    "inşaat",
+    "makine",
+    "tasarım"
+   ]
+  },
+  {
+   "word": "Çiftçi",
+   "taboo": [
+    "tarla",
+    "traktör",
+    "ekin",
+    "köy",
+    "hasat"
+   ]
+  },
+  {
+   "word": "Mutfak",
+   "taboo": [
+    "yemek",
+    "ocak",
+    "tencere",
+    "pişirmek",
+    "buzdolabı"
+   ]
+  },
+  {
+   "word": "Banyo",
+   "taboo": [
+    "duş",
+    "su",
+    "sabun",
+    "ayna",
+    "yıkanmak"
+   ]
+  },
+  {
+   "word": "Yatak",
+   "taboo": [
+    "uyumak",
+    "yastık",
+    "yorgan",
+    "gece",
+    "oda"
+   ]
+  },
+  {
+   "word": "Pencere",
+   "taboo": [
+    "cam",
+    "açmak",
+    "bakmak",
+    "perde",
+    "duvar"
+   ]
+  },
+  {
+   "word": "Kapı",
+   "taboo": [
+    "açmak",
+    "kapatmak",
+    "anahtar",
+    "kilit",
+    "zil"
+   ]
+  },
+  {
+   "word": "Anahtar",
+   "taboo": [
+    "kilit",
+    "kapı",
+    "açmak",
+    "anahtarlık",
+    "kaybetmek"
+   ]
+  },
+  {
+   "word": "Saat",
+   "taboo": [
+    "zaman",
+    "kol",
+    "dakika",
+    "akrep",
+    "yelkovan"
+   ]
+  },
+  {
+   "word": "Ayna",
+   "taboo": [
+    "bakmak",
+    "yansıma",
+    "cam",
+    "yüz",
+    "banyo"
+   ]
+  },
+  {
+   "word": "Şemsiye",
+   "taboo": [
+    "yağmur",
+    "açmak",
+    "ıslanmak",
+    "güneş",
+    "sap"
+   ]
+  },
+  {
+   "word": "Gözlük",
+   "taboo": [
+    "göz",
+    "görmek",
+    "cam",
+    "çerçeve",
+    "güneş"
+   ]
+  },
+  {
+   "word": "Ayakkabı",
+   "taboo": [
+    "ayak",
+    "giymek",
+    "bağcık",
+    "topuk",
+    "çift"
+   ]
+  },
+  {
+   "word": "Çanta",
+   "taboo": [
+    "taşımak",
+    "omuz",
+    "okul",
+    "içine koymak",
+    "fermuar"
+   ]
+  },
+  {
+   "word": "Şapka",
+   "taboo": [
+    "kafa",
+    "güneş",
+    "takmak",
+    "kep",
+    "başlık"
+   ]
+  },
+  {
+   "word": "Kazak",
+   "taboo": [
+    "kış",
+    "giymek",
+    "yün",
+    "sıcak",
+    "örmek"
+   ]
+  },
+  {
+   "word": "Kış",
+   "taboo": [
+    "kar",
+    "soğuk",
+    "mevsim",
+    "mont",
+    "aralık"
+   ]
+  },
+  {
+   "word": "Yaz",
+   "taboo": [
+    "sıcak",
+    "tatil",
+    "deniz",
+    "mevsim",
+    "güneş"
+   ]
+  },
+  {
+   "word": "İlkbahar",
+   "taboo": [
+    "çiçek",
+    "mevsim",
+    "açmak",
+    "nisan",
+    "yeşil"
+   ]
+  },
+  {
+   "word": "Sonbahar",
+   "taboo": [
+    "yaprak",
+    "mevsim",
+    "dökülmek",
+    "sarı",
+    "ekim"
+   ]
+  },
+  {
+   "word": "Köprü",
+   "taboo": [
+    "geçmek",
+    "nehir",
+    "boğaz",
+    "bağlamak",
+    "yol"
+   ]
+  },
+  {
+   "word": "Cami",
+   "taboo": [
+    "namaz",
+    "minare",
+    "ezan",
+    "ibadet",
+    "kubbe"
+   ]
+  },
+  {
+   "word": "Müze",
+   "taboo": [
+    "tarih",
+    "eser",
+    "gezmek",
+    "sergi",
+    "eski"
+   ]
+  },
+  {
+   "word": "Park",
+   "taboo": [
+    "çocuk",
+    "bank",
+    "yeşil",
+    "salıncak",
+    "yürüyüş"
+   ]
+  },
+  {
+   "word": "Pazar",
+   "taboo": [
+    "sebze",
+    "meyve",
+    "tezgah",
+    "pazarlık",
+    "alışveriş"
+   ]
+  },
+  {
+   "word": "Lunapark",
+   "taboo": [
+    "eğlence",
+    "dönme dolap",
+    "çocuk",
+    "bilet",
+    "çarpışan araba"
+   ]
+  },
+  {
+   "word": "Hayvanat bahçesi",
+   "taboo": [
+    "hayvan",
+    "kafes",
+    "gezmek",
+    "aslan",
+    "bilet"
+   ]
+  },
+  {
+   "word": "Kütüphane",
+   "taboo": [
+    "kitap",
+    "sessiz",
+    "okumak",
+    "ödünç",
+    "raf"
+   ]
+  },
+  {
+   "word": "Restoran",
+   "taboo": [
+    "yemek",
+    "garson",
+    "menü",
+    "hesap",
+    "masa"
+   ]
+  },
+  {
+   "word": "Otel",
+   "taboo": [
+    "oda",
+    "tatil",
+    "konaklamak",
+    "resepsiyon",
+    "yatak"
+   ]
+  },
+  {
+   "word": "Havaalanı",
+   "taboo": [
+    "uçak",
+    "bilet",
+    "valiz",
+    "uçuş",
+    "pasaport"
+   ]
+  },
+  {
+   "word": "Satranç",
+   "taboo": [
+    "şah",
+    "piyon",
+    "tahta",
+    "mat",
+    "oyun"
+   ]
+  },
+  {
+   "word": "Tavla",
+   "taboo": [
+    "zar",
+    "pul",
+    "kapı",
+    "oyun",
+    "çay"
+   ]
+  },
+  {
+   "word": "Bilmece",
+   "taboo": [
+    "soru",
+    "cevap",
+    "tahmin",
+    "zor",
+    "sormak"
+   ]
+  },
+  {
+   "word": "Şaka",
+   "taboo": [
+    "gülmek",
+    "komik",
+    "kandırmak",
+    "espri",
+    "1 Nisan"
+   ]
+  },
+  {
+   "word": "Rüya",
+   "taboo": [
+    "uyku",
+    "gece",
+    "görmek",
+    "hayal",
+    "uyanmak"
+   ]
+  },
+  {
+   "word": "Hediye",
+   "taboo": [
+    "paket",
+    "doğum günü",
+    "vermek",
+    "sürpriz",
+    "kurdele"
+   ]
+  },
+  {
+   "word": "Aşk",
+   "taboo": [
+    "sevgi",
+    "kalp",
+    "sevgili",
+    "romantik",
+    "evlenmek"
+   ]
+  },
+  {
+   "word": "Arkadaş",
+   "taboo": [
+    "dost",
+    "sevmek",
+    "birlikte",
+    "okul",
+    "samimi"
+   ]
+  },
+  {
+   "word": "Aile",
+   "taboo": [
+    "anne",
+    "baba",
+    "kardeş",
+    "ev",
+    "akraba"
+   ]
+  },
+  {
+   "word": "Bebek",
+   "taboo": [
+    "ağlamak",
+    "küçük",
+    "emzik",
+    "bez",
+    "anne"
+   ]
+  },
+  {
+   "word": "Dede",
+   "taboo": [
+    "yaşlı",
+    "torun",
+    "baba",
+    "sakal",
+    "baston"
+   ]
+  },
+  {
+   "word": "Komşu",
+   "taboo": [
+    "yan",
+    "kapı",
+    "apartman",
+    "ev",
+    "selam"
+   ]
+  },
+  {
+   "word": "Yalan",
+   "taboo": [
+    "doğru",
+    "söylemek",
+    "kandırmak",
+    "gerçek",
+    "Pinokyo"
+   ]
+  },
+  {
+   "word": "Korku",
+   "taboo": [
+    "karanlık",
+    "film",
+    "bağırmak",
+    "hayalet",
+    "ürkmek"
+   ]
+  },
+  {
+   "word": "Mutluluk",
+   "taboo": [
+    "gülmek",
+    "sevinç",
+    "iyi",
+    "hissetmek",
+    "neşe"
+   ]
+  },
+  {
+   "word": "Uyku",
+   "taboo": [
+    "yatak",
+    "gece",
+    "rüya",
+    "yorgun",
+    "uyanmak"
+   ]
+  },
+  {
+   "word": "Spor",
+   "taboo": [
+    "koşmak",
+    "sağlık",
+    "maç",
+    "salon",
+    "antrenman"
+   ]
+  },
+  {
+   "word": "Yüzme",
+   "taboo": [
+    "havuz",
+    "deniz",
+    "su",
+    "kulaç",
+    "mayo"
+   ]
+  },
+  {
+   "word": "Koşu",
+   "taboo": [
+    "hızlı",
+    "ayakkabı",
+    "maraton",
+    "yarış",
+    "ter"
+   ]
+  },
+  {
+   "word": "Kamp",
+   "taboo": [
+    "çadır",
+    "ateş",
+    "doğa",
+    "uyku tulumu",
+    "orman"
+   ]
+  },
+  {
+   "word": "Balık tutmak",
+   "taboo": [
+    "olta",
+    "deniz",
+    "yem",
+    "sabır",
+    "kova"
+   ]
+  },
+  {
+   "word": "Alışveriş",
+   "taboo": [
+    "market",
+    "para",
+    "sepet",
+    "mağaza",
+    "satın almak"
+   ]
+  },
+  {
+   "word": "Trafik",
+   "taboo": [
+    "araba",
+    "ışık",
+    "sıkışık",
+    "korna",
+    "yol"
+   ]
+  },
+  {
+   "word": "Deprem",
+   "taboo": [
+    "sallanmak",
+    "bina",
+    "yer",
+    "korku",
+    "çadır"
+   ]
+  },
+  {
+   "word": "Elektrik",
+   "taboo": [
+    "kablo",
+    "lamba",
+    "priz",
+    "kesinti",
+    "akım"
+   ]
+  },
+  {
+   "word": "İnternet",
+   "taboo": [
+    "bağlanmak",
+    "wifi",
+    "site",
+    "bilgisayar",
+    "online"
+   ]
+  },
+  {
+   "word": "Robot",
+   "taboo": [
+    "makine",
+    "metal",
+    "yapay zeka",
+    "program",
+    "insan"
+   ]
+  },
+  {
+   "word": "Uzay",
+   "taboo": [
+    "yıldız",
+    "gezegen",
+    "astronot",
+    "roket",
+    "boşluk"
+   ]
+  },
+  {
+   "word": "Piknik",
+   "taboo": [
+    "sepet",
+    "çimen",
+    "yemek",
+    "aile",
+    "örtü"
+   ]
+  },
+  {
+   "word": "Salıncak",
+   "taboo": [
+    "park",
+    "sallanmak",
+    "çocuk",
+    "ip",
+    "itmek"
+   ]
+  },
+  {
+   "word": "Kumsal",
+   "taboo": [
+    "deniz",
+    "kum",
+    "güneşlenmek",
+    "plaj",
+    "tatil"
+   ]
+  },
+  {
+   "word": "Ateş",
+   "taboo": [
+    "sıcak",
+    "yanmak",
+    "kıvılcım",
+    "odun",
+    "duman"
+   ]
+  },
+  {
+   "word": "Buz",
+   "taboo": [
+    "soğuk",
+    "su",
+    "erimek",
+    "donmak",
+    "kaymak"
+   ]
+  },
+  {
+   "word": "Rüzgar",
+   "taboo": [
+    "esmek",
+    "hava",
+    "fırtına",
+    "uçurtma",
+    "soğuk"
+   ]
+  },
+  {
+   "word": "Gökkuşağı",
+   "taboo": [
+    "yağmur",
+    "renk",
+    "gökyüzü",
+    "yedi",
+    "güneş"
+   ]
+  },
+  {
+   "word": "Yıldız",
+   "taboo": [
+    "gece",
+    "gökyüzü",
+    "parlak",
+    "kaymak",
+    "güneş"
+   ]
+  },
+  {
+   "word": "Nehir",
+   "taboo": [
+    "su",
+    "akmak",
+    "köprü",
+    "balık",
+    "deniz"
+   ]
+  },
+  {
+   "word": "Çöl",
+   "taboo": [
+    "kum",
+    "sıcak",
+    "deve",
+    "susuz",
+    "kaktüs"
+   ]
+  },
+  {
+   "word": "Ada",
+   "taboo": [
+    "deniz",
+    "etraf",
+    "su",
+    "kara",
+    "tekne"
+   ]
+  },
+  {
+   "word": "Volkan",
+   "taboo": [
+    "lav",
+    "patlamak",
+    "dağ",
+    "ateş",
+    "duman"
+   ]
+  },
+  {
+   "word": "Peynir",
+   "taboo": [
+    "süt",
+    "beyaz",
+    "kahvaltı",
+    "inek",
+    "ekmek"
+   ]
+  },
+  {
+   "word": "Yumurta",
+   "taboo": [
+    "tavuk",
+    "kahvaltı",
+    "kırmak",
+    "sarı",
+    "beyaz"
+   ]
+  },
+  {
+   "word": "Makarna",
+   "taboo": [
+    "İtalyan",
+    "haşlamak",
+    "sos",
+    "hamur",
+    "spagetti"
+   ]
+  },
+  {
+   "word": "Çorba",
+   "taboo": [
+    "kaşık",
+    "sıcak",
+    "mercimek",
+    "kase",
+    "içmek"
+   ]
+  },
+  {
+   "word": "Salata",
+   "taboo": [
+    "yeşil",
+    "domates",
+    "marul",
+    "zeytinyağı",
+    "sebze"
+   ]
+  },
+  {
+   "word": "Diş fırçası",
+   "taboo": [
+    "diş",
+    "macun",
+    "sabah",
+    "temizlemek",
+    "banyo"
+   ]
+  },
+  {
+   "word": "Sabun",
+   "taboo": [
+    "el",
+    "yıkamak",
+    "köpük",
+    "temiz",
+    "banyo"
+   ]
+  },
+  {
+   "word": "Şampuan",
+   "taboo": [
+    "saç",
+    "yıkamak",
+    "köpük",
+    "banyo",
+    "şişe"
+   ]
+  },
+  {
+   "word": "Kalem",
+   "taboo": [
+    "yazmak",
+    "kağıt",
+    "kurşun",
+    "silgi",
+    "okul"
+   ]
+  },
+  {
+   "word": "Makas",
+   "taboo": [
+    "kesmek",
+    "kağıt",
+    "keskin",
+    "iki",
+    "berber"
+   ]
+  },
+  {
+   "word": "Yapıştırıcı",
+   "taboo": [
+    "yapıştırmak",
+    "kağıt",
+    "tutkal",
+    "bant",
+    "tamir"
+   ]
+  },
+  {
+   "word": "Harita",
+   "taboo": [
+    "yol",
+    "ülke",
+    "bulmak",
+    "şehir",
+    "navigasyon"
+   ]
+  },
+  {
+   "word": "Pasaport",
+   "taboo": [
+    "seyahat",
+    "yurt dışı",
+    "kimlik",
+    "havaalanı",
+    "vize"
+   ]
+  },
+  {
+   "word": "Bavul",
+   "taboo": [
+    "tatil",
+    "eşya",
+    "tekerlek",
+    "taşımak",
+    "havaalanı"
+   ]
+  },
+  {
+   "word": "Kamera",
+   "taboo": [
+    "çekmek",
+    "film",
+    "fotoğraf",
+    "kayıt",
+    "lens"
+   ]
+  },
+  {
+   "word": "Mikrofon",
+   "taboo": [
+    "ses",
+    "konuşmak",
+    "şarkı",
+    "sahne",
+    "kayıt"
+   ]
+  },
+  {
+   "word": "Sahne",
+   "taboo": [
+    "tiyatro",
+    "oyuncu",
+    "perde",
+    "seyirci",
+    "alkış"
+   ]
+  },
+  {
+   "word": "Palyaço",
+   "taboo": [
+    "sirk",
+    "komik",
+    "burun",
+    "kırmızı",
+    "makyaj"
+   ]
+  },
+  {
+   "word": "Sihirbaz",
+   "taboo": [
+    "şapka",
+    "tavşan",
+    "numara",
+    "değnek",
+    "gösteri"
+   ]
+  },
+  {
+   "word": "Kral",
+   "taboo": [
+    "taç",
+    "saray",
+    "kraliçe",
+    "yönetmek",
+    "taht"
+   ]
+  },
+  {
+   "word": "Korsan",
+   "taboo": [
+    "gemi",
+    "hazine",
+    "papağan",
+    "göz bandı",
+    "deniz"
+   ]
+  },
+  {
+   "word": "Hazine",
+   "taboo": [
+    "altın",
+    "sandık",
+    "harita",
+    "korsan",
+    "zengin"
+   ]
+  },
+  {
+   "word": "Dinozor",
+   "taboo": [
+    "eski",
+    "dev",
+    "fosil",
+    "yok olmak",
+    "kertenkele"
+   ]
+  },
+  {
+   "word": "Ejderha",
+   "taboo": [
+    "ateş",
+    "masal",
+    "uçmak",
+    "kanat",
+    "canavar"
+   ]
+  },
+  {
+   "word": "Süper kahraman",
+   "taboo": [
+    "pelerin",
+    "güç",
+    "kurtarmak",
+    "uçmak",
+    "kötü"
+   ]
+  },
+  {
+   "word": "Dedektif",
+   "taboo": [
+    "ipucu",
+    "suç",
+    "çözmek",
+    "büyüteç",
+    "polis"
+   ]
+  },
+  {
+   "word": "Hayalet",
+   "taboo": [
+    "korku",
+    "beyaz",
+    "ölü",
+    "ev",
+    "çarşaf"
+   ]
+  },
+  {
+   "word": "Vampir",
+   "taboo": [
+    "kan",
+    "diş",
+    "gece",
+    "sarımsak",
+    "pelerin"
+   ]
+  },
+  {
+   "word": "Kar tanesi",
+   "taboo": [
+    "beyaz",
+    "kış",
+    "yağmak",
+    "soğuk",
+    "erimek"
+   ]
+  },
+  {
+   "word": "Uçurtma",
+   "taboo": [
+    "rüzgar",
+    "ip",
+    "uçmak",
+    "gökyüzü",
+    "çocuk"
+   ]
+  },
+  {
+   "word": "Balon",
+   "taboo": [
+    "şişirmek",
+    "uçmak",
+    "patlamak",
+    "doğum günü",
+    "hava"
+   ]
+  },
+  {
+   "word": "Oyuncak",
+   "taboo": [
+    "çocuk",
+    "oynamak",
+    "bebek",
+    "araba",
+    "mağaza"
+   ]
+  },
+  {
+   "word": "Bulmaca",
+   "taboo": [
+    "çözmek",
+    "kare",
+    "kelime",
+    "gazete",
+    "soru"
+   ]
+  },
+  {
+   "word": "Yarışma",
+   "taboo": [
+    "kazanmak",
+    "ödül",
+    "soru",
+    "birinci",
+    "yarışmacı"
+   ]
+  },
+  {
+   "word": "Ödül",
+   "taboo": [
+    "kazanmak",
+    "kupa",
+    "birinci",
+    "madalya",
+    "yarışma"
+   ]
+  },
+  {
+   "word": "Alkış",
+   "taboo": [
+    "el",
+    "çırpmak",
+    "beğenmek",
+    "seyirci",
+    "bravo"
+   ]
+  },
+  {
+   "word": "Gülmek",
+   "taboo": [
+    "komik",
+    "mutlu",
+    "şaka",
+    "kahkaha",
+    "ağız"
+   ]
+  },
+  {
+   "word": "Ağlamak",
+   "taboo": [
+    "gözyaşı",
+    "üzgün",
+    "mendil",
+    "bebek",
+    "hıçkırık"
+   ]
+  },
+  {
+   "word": "Hapşırmak",
+   "taboo": [
+    "burun",
+    "nezle",
+    "mendil",
+    "çok yaşa",
+    "alerji"
+   ]
+  },
+  {
+   "word": "Esnemek",
+   "taboo": [
+    "uyku",
+    "yorgun",
+    "ağız",
+    "sıkılmak",
+    "açmak"
+   ]
+  },
+  {
+   "word": "Fısıldamak",
+   "taboo": [
+    "sessiz",
+    "kulak",
+    "konuşmak",
+    "gizli",
+    "yavaş"
+   ]
+  },
+  {
+   "word": "Selfie",
+   "taboo": [
+    "fotoğraf",
+    "telefon",
+    "kendi",
+    "poz",
+    "paylaşmak"
+   ]
+  },
+  {
+   "word": "Emoji",
+   "taboo": [
+    "mesaj",
+    "yüz",
+    "gülmek",
+    "telefon",
+    "sarı"
+   ]
+  },
+  {
+   "word": "Şifre",
+   "taboo": [
+    "gizli",
+    "parola",
+    "giriş",
+    "unutmak",
+    "güvenlik"
+   ]
+  },
+  {
+   "word": "Kumanda",
+   "taboo": [
+    "televizyon",
+    "düğme",
+    "kanal",
+    "pil",
+    "uzaktan"
+   ]
+  },
+  {
+   "word": "Pil",
+   "taboo": [
+    "enerji",
+    "bitmek",
+    "kumanda",
+    "şarj",
+    "artı eksi"
+   ]
+  },
+  {
+   "word": "Şarj",
+   "taboo": [
+    "telefon",
+    "pil",
+    "kablo",
+    "bitmek",
+    "priz"
+   ]
+  },
+  {
+   "word": "Asansör",
+   "taboo": [
+    "kat",
+    "bina",
+    "düğme",
+    "yukarı",
+    "inmek"
+   ]
+  },
+  {
+   "word": "Merdiven",
+   "taboo": [
+    "basamak",
+    "çıkmak",
+    "inmek",
+    "kat",
+    "yorulmak"
+   ]
+  },
+  {
+   "word": "Balkon",
+   "taboo": [
+    "ev",
+    "dışarı",
+    "oturmak",
+    "çiçek",
+    "manzara"
+   ]
+  },
+  {
+   "word": "Bahçe",
+   "taboo": [
+    "çiçek",
+    "ağaç",
+    "ev",
+    "çim",
+    "sulamak"
+   ]
+  },
+  {
+   "word": "Çiçek",
+   "taboo": [
+    "bahçe",
+    "koku",
+    "renkli",
+    "vazo",
+    "gül"
+   ]
+  },
+  {
+   "word": "Gül",
+   "taboo": [
+    "kırmızı",
+    "diken",
+    "çiçek",
+    "aşk",
+    "koku"
+   ]
+  },
+  {
+   "word": "Zeytin",
+   "taboo": [
+    "ağaç",
+    "yağ",
+    "siyah",
+    "kahvaltı",
+    "yeşil"
+   ]
+  },
+  {
+   "word": "Fındık",
+   "taboo": [
+    "kabuk",
+    "Karadeniz",
+    "çikolata",
+    "kuruyemiş",
+    "ağaç"
+   ]
+  },
+  {
+   "word": "Lahmacun",
+   "taboo": [
+    "ince",
+    "kıyma",
+    "fırın",
+    "limon",
+    "maydanoz"
+   ]
+  },
+  {
+   "word": "Mantı",
+   "taboo": [
+    "hamur",
+    "yoğurt",
+    "küçük",
+    "kıyma",
+    "sarımsak"
+   ]
+  },
+  {
+   "word": "Ayran",
+   "taboo": [
+    "yoğurt",
+    "içmek",
+    "beyaz",
+    "tuz",
+    "soğuk"
+   ]
+  },
+  {
+   "word": "Limonata",
+   "taboo": [
+    "limon",
+    "yaz",
+    "soğuk",
+    "şeker",
+    "içmek"
+   ]
+  },
+  {
+   "word": "Nazar boncuğu",
+   "taboo": [
+    "mavi",
+    "göz",
+    "kötü",
+    "korumak",
+    "takmak"
+   ]
+  },
+  {
+   "word": "Halı",
+   "taboo": [
+    "yer",
+    "desen",
+    "dokumak",
+    "yumuşak",
+    "sermek"
+   ]
+  },
+  {
+   "word": "Hamam",
+   "taboo": [
+    "sıcak",
+    "yıkanmak",
+    "kese",
+    "buhar",
+    "mermer"
+   ]
+  },
+  {
+   "word": "Minibüs",
+   "taboo": [
+    "yolcu",
+    "şoför",
+    "dolmuş",
+    "durak",
+    "ücret"
+   ]
+  },
+  {
+   "word": "Vapur",
+   "taboo": [
+    "İstanbul",
+    "deniz",
+    "simit",
+    "martı",
+    "iskele"
+   ]
+  },
+  {
+   "word": "Martı",
+   "taboo": [
+    "deniz",
+    "beyaz",
+    "kuş",
+    "simit",
+    "vapur"
+   ]
+  },
+  {
+   "word": "Kaplumbağa",
+   "taboo": [
+    "yavaş",
+    "kabuk",
+    "tavşan",
+    "yüzmek",
+    "uzun ömür"
+   ]
+  },
+  {
+   "word": "Tavşan",
+   "taboo": [
+    "havuç",
+    "kulak",
+    "zıplamak",
+    "hızlı",
+    "beyaz"
+   ]
+  },
+  {
+   "word": "Maymun",
+   "taboo": [
+    "muz",
+    "ağaç",
+    "kuyruk",
+    "zıplamak",
+    "taklit"
+   ]
+  },
+  {
+   "word": "Penguen",
+   "taboo": [
+    "kutup",
+    "soğuk",
+    "siyah beyaz",
+    "yüzmek",
+    "buz"
+   ]
+  },
+  {
+   "word": "Timsah",
+   "taboo": [
+    "diş",
+    "nehir",
+    "yeşil",
+    "tehlikeli",
+    "gözyaşı"
+   ]
+  },
+  {
+   "word": "Yılan",
+   "taboo": [
+    "sürünmek",
+    "zehir",
+    "uzun",
+    "tıslamak",
+    "korku"
+   ]
+  },
+  {
+   "word": "Örümcek",
+   "taboo": [
+    "ağ",
+    "sekiz",
+    "bacak",
+    "korku",
+    "böcek"
+   ]
+  },
+  {
+   "word": "Karınca",
+   "taboo": [
+    "küçük",
+    "çalışkan",
+    "yuva",
+    "yaz",
+    "taşımak"
+   ]
+  },
+  {
+   "word": "Baykuş",
+   "taboo": [
+    "gece",
+    "bilge",
+    "uçmak",
+    "gözler",
+    "kuş"
+   ]
+  },
+  {
+   "word": "Horoz",
+   "taboo": [
+    "sabah",
+    "ötmek",
+    "tavuk",
+    "ibik",
+    "uyandırmak"
+   ]
+  },
+  {
+   "word": "İnek",
+   "taboo": [
+    "süt",
+    "çiftlik",
+    "mö",
+    "ot",
+    "peynir"
+   ]
+  },
+  {
+   "word": "Koyun",
+   "taboo": [
+    "yün",
+    "mee",
+    "kuzu",
+    "sürü",
+    "çoban"
+   ]
+  },
+  {
+   "word": "At",
+   "taboo": [
+    "binmek",
+    "koşmak",
+    "nal",
+    "çiftlik",
+    "kişnemek"
+   ]
+  },
+  {
+   "word": "Deve",
+   "taboo": [
+    "çöl",
+    "hörgüç",
+    "kum",
+    "susuz",
+    "yük"
+   ]
+  },
+  {
+   "word": "Kutup ayısı",
+   "taboo": [
+    "beyaz",
+    "soğuk",
+    "buz",
+    "balık",
+    "büyük"
+   ]
+  },
+  {
+   "word": "Yunus",
+   "taboo": [
+    "deniz",
+    "zeki",
+    "zıplamak",
+    "akıllı",
+    "yüzmek"
+   ]
+  },
+  {
+   "word": "Köpekbalığı",
+   "taboo": [
+    "deniz",
+    "diş",
+    "tehlikeli",
+    "yüzgeç",
+    "korku"
+   ]
+  },
+  {
+   "word": "Ahtapot",
+   "taboo": [
+    "sekiz",
+    "kol",
+    "deniz",
+    "mürekkep",
+    "yumuşak"
+   ]
+  }
+ ]
+}

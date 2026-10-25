@@ -38,6 +38,10 @@ içindekiler çıkarılır. Lisans: CC BY-SA 4.0 (FrequencyWords türevi) + Apac
 
 Bu proje için yazılmış özgün sorular. Lisans: MIT (projeyle aynı).
 
+## trivia.json ve tabu.json
+
+Bu proje için yazılmış özgün genel kültür soruları ve Tabu kartları. Lisans: MIT (projeyle aynı).
+
 ## vendor/peerjs.min.js
 
 PeerJS 1.5.5 — MIT, Copyright (c) 2015 Michelle Bu and Eric Zhang. Lisans metni:
