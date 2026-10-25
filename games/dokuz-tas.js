@@ -15,7 +15,7 @@ export const meta = {
   ].join('\n'),
   data: [],
   settings: [
-    { key: 'flying', label: 'Üç taş kalınca uçma', type: 'checkbox', default: true, help: 'Açıkken üç taşı kalan oyuncu taşını herhangi bir boş noktaya sürebilir.' },
+    { key: 'flying', label: 'Üç taş kalınca uçma', type: 'toggle', default: true, help: 'Açıkken üç taşı kalan oyuncu taşını herhangi bir boş noktaya sürebilir.' },
   ],
 };
 
