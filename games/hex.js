@@ -1,6 +1,6 @@
 // Hex — connect your two sides of a rhombus of hexagons before the opponent connects theirs.
 // Player 0 links top to bottom, player 1 links left to right; a draw is impossible.
-import { el, render as draw } from '../js/ui/dom.js';
+import { el, svg, render as draw } from '../js/ui/dom.js';
 import { nameSuffix } from '../js/lib/tr.js';
 
 export const meta = {
@@ -98,6 +98,23 @@ export function getResult(state) {
 
 const COLOURS = ['#e53935', '#3b6ef6'];
 
+// Board geometry (SVG units): pointy-top hexagons in a rhombus; row r is shifted half a cell to
+// the right of row r-1, which matches NB: (r-1,c) and (r-1,c+1) sit above (r,c).
+const S = 10;                       // hex circumradius
+const W = Math.sqrt(3) * S;         // hex width
+const PAD = S * 1.4;
+export function boardGeometry(n) {
+  const cx = (r, c) => PAD + (c + r / 2) * W + W / 2;
+  const cy = (r) => PAD + r * 1.5 * S + S;
+  return { cx, cy, width: (1.5 * n - 0.5) * W + 2 * PAD, height: (1.5 * (n - 1) + 2) * S + 2 * PAD };
+}
+function hexPoints(x, y, radius) {
+  return [-90, -30, 30, 90, 150, 210].map((deg) => {
+    const a = (deg * Math.PI) / 180;
+    return `${(x + radius * Math.cos(a)).toFixed(2)},${(y + radius * Math.sin(a)).toFixed(2)}`;
+  }).join(' ');
+}
+
 export function render(state, viewer, container, sendMove, ctx = {}) {
   const players = ctx.players || ['Oyuncu 1', 'Oyuncu 2'];
   const mine = !state.over && viewer === state.turn;
@@ -105,20 +122,29 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const pathSet = new Set(state.path || []);
   const vert = state.vertical;
   const horiz = 1 - vert;
-  const board = el('div', { class: 'hx-board', role: 'grid', 'aria-label': 'Hex tahtası' });
-  const cellWidth = `${(50 / n).toFixed(3)}%`; // the last row is shifted by half the board width
+  const g = boardGeometry(n);
+  const board = svg('svg', { class: 'hx-board', viewBox: `0 0 ${g.width.toFixed(2)} ${g.height.toFixed(2)}`, role: 'grid', 'aria-label': 'Hex tahtası' });
+  // the four edges: top/bottom belong to the vertical player, the slanted left/right to the other
+  const edge = (x1, y1, x2, y2, colour) => svg('line', { x1: x1.toFixed(2), y1: y1.toFixed(2), x2: x2.toFixed(2), y2: y2.toFixed(2), stroke: colour, 'stroke-width': (S * 0.55).toFixed(2), 'stroke-linecap': 'round', class: 'hx-edge' });
+  const off = S * 0.35;
+  board.append(
+    edge(g.cx(0, 0) - W / 2, PAD * 0.45, g.cx(0, n - 1) + W / 2, PAD * 0.45, COLOURS[vert]),
+    edge(g.cx(n - 1, 0) - W / 2, g.height - PAD * 0.45, g.cx(n - 1, n - 1) + W / 2, g.height - PAD * 0.45, COLOURS[vert]),
+    edge(g.cx(0, 0) - W / 2 - off, g.cy(0) - S * 0.5, g.cx(n - 1, 0) - W / 2 - off, g.cy(n - 1) + S * 0.5, COLOURS[horiz]),
+    edge(g.cx(0, n - 1) + W / 2 + off, g.cy(0) - S * 0.5, g.cx(n - 1, n - 1) + W / 2 + off, g.cy(n - 1) + S * 0.5, COLOURS[horiz]),
+  );
   for (let r = 0; r < n; r++) {
-    const row = el('div', { class: 'hx-row', style: { marginLeft: `${r * 50 / n}%` } });
+    const row = svg('g', { class: 'hx-row' });
     for (let c = 0; c < n; c++) {
       const i = r * n + c;
       const v = state.cells[i];
-      row.append(el('button', {
-        type: 'button',
-        class: `hx-cell ${v === null ? '' : `p${v}`} ${pathSet.has(i) ? 'win' : ''} ${state.last === i ? 'last' : ''}`,
-        style: { flex: `0 0 ${cellWidth}` },
+      const free = mine && v === null;
+      row.append(svg('polygon', {
+        points: hexPoints(g.cx(r, c), g.cy(r), S * 0.94),
+        class: `hx-cell ${v === null ? '' : `p${v}`} ${free ? 'free' : ''} ${pathSet.has(i) ? 'win' : ''} ${state.last === i ? 'last' : ''}`,
+        role: 'gridcell',
         'aria-label': `${r + 1}. satır ${c + 1}. sütun${v == null ? '' : `, ${players[v]}`}`,
-        disabled: !mine || v !== null,
-        onClick: () => sendMove({ type: 'place', cell: i }),
+        onClick: () => { if (free) sendMove({ type: 'place', cell: i }); },
       }));
     }
     board.append(row);
@@ -132,7 +158,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       el('span', { class: 'hx-key', style: { color: COLOURS[vert] } }, `${players[vert]}: üst ↔ alt`),
       el('span', { class: 'hx-key', style: { color: COLOURS[horiz] } }, `${players[horiz]}: sol ↔ sağ`),
     ),
-    el('div', { class: 'hx-wrap', style: { backgroundImage: `linear-gradient(to bottom, ${COLOURS[vert]} 0, ${COLOURS[vert]} 6px, transparent 6px, transparent calc(100% - 6px), ${COLOURS[vert]} calc(100% - 6px)), linear-gradient(to right, ${COLOURS[horiz]} 0, ${COLOURS[horiz]} 6px, transparent 6px, transparent calc(100% - 6px), ${COLOURS[horiz]} calc(100% - 6px))` } }, board),
+    el('div', { class: `hx-wrap ${n >= 9 ? 'big' : ''}` }, board),
     el('p', { class: 'hint' }, `Üst ve alt kenar ${nameSuffix(players[vert], 'in')}, sol ve sağ kenar ${nameSuffix(players[horiz], 'in')}.`),
   );
   return null;
