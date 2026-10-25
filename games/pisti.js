@@ -19,6 +19,10 @@ export const meta = {
   handoffNote: 'Kartların gizli: ekranı yalnızca sırası gelen görmeli.',
   settings: [
     { key: 'target', label: 'Hedef puan', type: 'select', default: 151, options: [{ value: 51, label: '51 (kısa)' }, { value: 101, label: '101' }, { value: 151, label: '151' }] },
+    {
+      key: 'hideHands', label: 'Tek telefonda eller gizli olsun', type: 'toggle', default: true,
+      help: 'Açıksa her kartta telefon el değiştirir. Kapatırsanız iki el de görünür, telefon vermeden oynanır.',
+    },
   ],
 };
 
@@ -52,7 +56,7 @@ function startDeal(state, dealNo) {
 
 export function setup(options = {}) {
   const target = [51, 101, 151].includes(Number(options.target)) ? Number(options.target) : 151;
-  const base = { seed: (Number(options.seed) || 1) >>> 0, target, scores: [0, 0], phase: 'play', dealer: Number(options.seed) % 2 === 0 ? 0 : 1, over: false, winner: null };
+  const base = { seed: (Number(options.seed) || 1) >>> 0, target, hideHands: options.hideHands !== false, scores: [0, 0], phase: 'play', dealer: Number(options.seed) % 2 === 0 ? 0 : 1, over: false, winner: null };
   const s = startDeal(base, 0);
   // the non-dealer plays first
   return { ...s, turn: 1 - s.dealer };
@@ -122,7 +126,7 @@ export function applyMove(state, player, move) {
 }
 
 export function getTurn(state) {
-  return state.over ? null : { player: state.turn, private: true };
+  return state.over ? null : { player: state.turn, private: state.hideHands !== false };
 }
 
 export function getResult(state) {
@@ -176,6 +180,9 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       el('span', {}, `${players[opp]}: elinde ${state.hands[opp].length} kart, aldığı ${state.captured[opp].length}`),
       el('span', {}, `deste ${state.deck.length}`),
     ),
+    state.hideHands === false && ctx.mode !== 'online'
+      ? el('div', { class: 'phand open-hand' }, state.hands[opp].map((c) => cardEl(c, { small: true })))
+      : null,
     tableView,
     el('div', { class: 'col-title active' }, `Senin elin (aldığın ${state.captured[viewer].length} kart)`),
     handView,

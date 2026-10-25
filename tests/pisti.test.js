@@ -59,3 +59,10 @@ test('pişti: eller bitince yeni dağıtım, deste bitince el biter ve puanlanı
   assert.equal(d.hands[0].length, 4);
   assert.equal(d.deck.length, 32);
 });
+
+test('pişti: eller açık ayarı tek telefonda ara ekranı kaldırır', () => {
+  const hidden = game.setup({ seed: 1 });
+  assert.equal(game.getTurn(hidden).private, true);
+  const open = game.setup({ seed: 1, hideHands: false });
+  assert.equal(game.getTurn(open).private, false);
+});

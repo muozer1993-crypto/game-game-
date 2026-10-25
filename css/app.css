@@ -442,6 +442,8 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .pcard.empty { color: var(--muted); background: var(--secondary); }
 .pcard:disabled { cursor: default; opacity: 0.85; }
 .pcard .suit { font-size: 1.2rem; }
+.pcard.small { width: 44px; height: 62px; font-size: 1rem; }
+.phand.open-hand { opacity: 0.8; }
 .dama-board { display: grid; grid-template-columns: repeat(8, 1fr); gap: 0; max-width: 400px; margin: 8px auto; border: 3px solid #5d4037; border-radius: 6px; overflow: hidden; }
 .dama-sq { aspect-ratio: 1; padding: 0; border: 0; background: #f0d9b5; display: flex; align-items: center; justify-content: center; cursor: pointer; touch-action: manipulation; }
 .dama-sq.dark { background: #b58863; }
