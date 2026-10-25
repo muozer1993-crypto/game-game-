@@ -36,3 +36,4 @@ import './hafiza-dizisi.test.js';
 import './hex.test.js';
 import './kelime-tahtasi.test.js';
 import './isim-sehir.test.js';
+import './yalanci-zar.test.js';
