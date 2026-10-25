@@ -33,7 +33,7 @@ test('kelime tahtası: yerleştirme kuralları ve oluşan kelimeler', () => {
   board[idx(5, 4)] = 'k'; board[idx(5, 5)] = 'a'; board[idx(5, 6)] = 'l';
   const res = placementWords(board, [t(4, 5, 'l'), t(6, 5, 'e')], false);
   assert.ok(!res.error, res.error);
-  assert.deepEqual(res.words.map((w) => w.word), ['lae'].length ? res.words.map((w) => w.word) : []);
+  assert.deepEqual(res.words.map((w) => w.word), ['lae'], 'only the vertical word through the A; single letters on rows 4 and 6 are not words');
   const vertical = placementWords(board, [t(4, 5, 'e'), t(6, 5, 'e')], false);
   assert.equal(vertical.words[0].word, 'eae', 'the main word runs through the existing A');
   assert.equal(vertical.horizontal, false);

@@ -12,7 +12,7 @@ export const meta = {
   rules: [
     'Her oyuncu torbadan yedi harf alır. Sırası gelen, harflerini tek bir satıra ya da sütuna, tahtadaki harflere bitişik olacak şekilde dizer; ilk kelime ortadaki yıldızdan geçer.',
     'Oluşan bütün kelimeler (yan kelimeler dahil) kelime listesinde olmalı. Puan: harf değerleri toplamı; mavi kareler harfi 2× / 3×, kırmızı kareler kelimeyi 2× / 3× katlar (yalnızca o tur konan harfler için). Yedi harfi birden koyan +50 alır.',
-    'Pas geçilebilir ya da (torbada en az 7 harf varken) harf değiştirilebilir. Torba bitip bir oyuncunun harfi tükenince ya da art arda dört pas olunca oyun biter; kalan harflerin değeri sahibinden düşülür. Çok puan kazanır.',
+    'Pas geçilebilir ya da (torbada en az 7 harf varken) harf değiştirilebilir. Torba bitip bir oyuncunun harfi tükenince ya da art arda dört puansız hamle (pas ya da değiştirme) olunca oyun biter; kalan harflerin değeri sahibinden düşülür. Çok puan kazanır.',
   ].join('\n'),
   data: ['dictionary'],
   handoffNote: 'Rafındaki harfleri rakibin görmemeli.',
@@ -240,7 +240,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   // a draft from a previous turn is stale once the board changed under it
   if (draft.tiles.some((t) => state.board[t.cell] !== null)) draft.tiles = [];
   const rack = state.racks[viewer];
-  const usedRack = new Set(draft.tiles.map((t) => t.rackIndex));
+  if (draft.selected != null && draft.selected >= rack.length) draft.selected = null; // the rack shrank (bag empty)
   const boardBox = el('div');
   const rackBox = el('div');
   const infoBox = el('div');
@@ -282,7 +282,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     boardBox.replaceChildren(board);
     const rackEl = el('div', { class: 'kb-rack' }, rack.map((l, k) => el('button', {
       type: 'button',
-      class: `kb-tile ${draft.selected === k ? 'sel' : ''} ${usedRack.has(k) || draft.tiles.some((t) => t.rackIndex === k) ? 'used' : ''} ${draft.exchange && draft.exchange.has(k) ? 'swap' : ''}`,
+      class: `kb-tile ${draft.selected === k ? 'sel' : ''} ${draft.tiles.some((t) => t.rackIndex === k) ? 'used' : ''} ${draft.exchange && draft.exchange.has(k) ? 'swap' : ''}`,
       disabled: !mine || draft.tiles.some((t) => t.rackIndex === k),
       'aria-label': `${upperTR(l)} ${VALUES[l]} puan`,
       onClick: () => {
@@ -304,6 +304,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     btnClear.disabled = !draft.tiles.length && !draft.exchange;
     btnSwap.textContent = draft.exchange ? `Değiştir (${draft.exchange.size})` : 'Harf değiştir';
     btnSwap.disabled = !mine || state.bag.length < RACK || (draft.exchange && !draft.exchange.size);
+    btnPass.disabled = !mine;
   };
   const btnPlay = el('button', { type: 'button', class: 'btn btn-primary', onClick: () => {
     const tiles = draft.tiles.map((t) => ({ cell: t.cell, letter: t.letter }));
@@ -321,7 +322,8 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   let status;
   if (state.over) {
     const [a, b] = state.scores;
-    status = `${a === b ? 'Berabere' : `${players[a > b ? 0 : 1]} kazandı`}: ${a}–${b} (${state.reason === 'passes' ? 'art arda paslar' : 'harfler bitti'})`;
+    const fmt = (x) => (x < 0 ? `−${-x}` : String(x)); // a real minus sign, so '3 – −9' stays readable
+    status = `${a === b ? 'Berabere' : `${players[a > b ? 0 : 1]} kazandı`}: ${fmt(a)} – ${fmt(b)} (${state.reason === 'passes' ? 'art arda puansız hamleler' : 'harfler bitti'})`;
   } else if (mine) status = `Sıra sende, ${players[viewer]}`;
   else status = `${players[state.turn]} kelime diziyor…`;
   const lastLine = state.lastWords.length ? el('p', { class: 'hint' }, `Son hamle (${players[opp === state.turn ? viewer : opp]}): ${state.lastWords.map((w) => `${upperTR(w.word)} ${w.points}`).join(', ')}`) : null;

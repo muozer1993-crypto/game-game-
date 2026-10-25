@@ -833,8 +833,8 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .kb-cell.last { box-shadow: inset 0 0 0 2px var(--present); }
 .kb-letter { display: inline-flex; align-items: baseline; line-height: 1; }
 .kb-letter sub, .kb-tile sub { font-size: 0.5em; font-weight: 600; margin-left: 1px; vertical-align: baseline; line-height: 1; }
-.kb-rack { display: flex; justify-content: center; gap: 6px; margin: 6px 0; flex-wrap: wrap; }
-.kb-tile { width: 42px; height: 48px; border: 0; border-radius: 8px; background: #f6e2a8; color: #1b1d24; font-weight: 800; font-size: 1.2rem; cursor: pointer; touch-action: manipulation; box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.2); }
+.kb-rack { display: flex; justify-content: center; gap: 4px; margin: 6px 0; flex-wrap: wrap; } /* 7 × 40px + 6 × 4px = 304px fits a 360px phone */
+.kb-tile { width: 40px; height: 48px; border: 0; border-radius: 8px; background: #f6e2a8; color: #1b1d24; font-weight: 800; font-size: 1.2rem; cursor: pointer; touch-action: manipulation; box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.2); }
 .kb-tile.sel { outline: 3px solid var(--primary); transform: translateY(-4px); }
 .kb-tile.used, .kb-tile:disabled { opacity: 0.35; }
 .kb-tile.swap { outline: 3px solid var(--danger); }
@@ -894,3 +894,6 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .zp-val { text-align: center; }
 .zp-val.can { color: var(--primary); font-weight: 700; }
 .zp-val.used { font-weight: 600; }
+
+.gm-board.dense { gap: 1px; margin-left: -12px; margin-right: -12px; max-width: none; } /* 15×15 needs the gutter */
+.gm-board.dense .gm-cell { border-radius: 2px; }
