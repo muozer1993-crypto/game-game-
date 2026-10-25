@@ -29,13 +29,19 @@ test('taş kağıt makas: el kazananı, gizli seçim, açılma, seri', () => {
   assert.equal(s.history.length, 0, 'waits for the other reveal');
   s = game.applyMove(s, 1, { type: 'show', choice: 'makas' });
   assert.deepEqual(s.scores, [1, 0]);
+  assert.equal(s.phase, 'result', 'both look at the reveal before the next round');
+  assert.equal(game.getTurn(s), null);
+  assert.throws(() => game.applyMove(s, 0, { type: 'pick', secret: { choice: 'kagit' } }), 'sonraki ele');
+  s = game.applyMove(s, 1, { type: 'next' });
   assert.deepEqual(s.picked, [false, false]);
+  assert.deepEqual(game.getTurn(s), { player: 0, private: true });
   // second round: draw, third: player 0 wins -> over
   s = game.applyMove(s, 0, { type: 'pick', secret: { choice: 'kagit' } });
   s = game.applyMove(s, 1, { type: 'pick', secret: { choice: 'kagit' } });
   s = runAuto(s);
   assert.deepEqual(s.scores, [1, 0]);
   assert.equal(s.history[1].winner, null);
+  s = game.applyMove(s, 0, { type: 'next' });
   s = game.applyMove(s, 0, { type: 'pick', secret: { choice: 'makas' } });
   s = game.applyMove(s, 1, { type: 'pick', secret: { choice: 'kagit' } });
   s = runAuto(s);

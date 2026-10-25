@@ -33,6 +33,7 @@ export function setup(options = {}) {
   return {
     rounds,
     target: Math.ceil(rounds / 2),
+    phase: 'pick',          // pick | result | over
     picks: [null, null],    // secret until revealed (only the owner's device knows)
     picked: [false, false], // public: has the player chosen this round?
     shown: [null, null],    // public after reveal
@@ -52,6 +53,7 @@ export function applyMove(state, player, move) {
   if (state.over) fail('Oyun bitti');
   switch (move.type) {
     case 'pick': {
+      if (state.phase !== 'pick') fail('Önce sonraki ele geçin');
       if (state.picked[player]) fail('Bu el için zaten seçtin');
       const picks = state.picks.slice();
       if (move.secret && move.secret.choice != null) {
@@ -75,9 +77,13 @@ export function applyMove(state, player, move) {
         if (w != null) scores[w] += 1;
         const history = state.history.concat([{ picks: shown.slice(), winner: w }]);
         const over = scores[0] >= state.target || scores[1] >= state.target || history.length >= state.rounds + 4;
-        next = { ...next, scores, history, over, picks: [null, null], picked: [false, false], shown: over ? shown : [null, null] };
+        next = { ...next, scores, history, over, phase: over ? 'over' : 'result', picks: [null, null] };
       }
       return next;
+    }
+    case 'next': {
+      if (state.phase !== 'result') fail('Bu el henüz bitmedi');
+      return { ...state, phase: 'pick', picked: [false, false], shown: [null, null] };
     }
     default:
       fail(`Bilinmeyen hamle: ${move.type}`);
@@ -93,7 +99,7 @@ export function autoMove(state, player) {
 }
 
 export function getTurn(state) {
-  if (state.over) return null;
+  if (state.over || state.phase !== 'pick') return null; // the reveal is looked at together
   const p = state.picked[0] ? (state.picked[1] ? null : 1) : 0;
   return p == null ? null : { player: p, private: true };
 }
@@ -121,6 +127,14 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const score = el('div', { class: 'c4-legend' }, el('span', {}, `${players[0]}: ${state.scores[0]}`), el('span', {}, `${players[1]}: ${state.scores[1]}`), el('span', { class: 'muted' }, `hedef ${state.target}`));
   if (state.over) {
     draw(container, el('div', { class: 'status-line' }, el('strong', {}, state.scores[0] === state.scores[1] ? 'Berabere!' : `${players[state.scores[0] > state.scores[1] ? 0 : 1]} kazandı!`)), score, lastView);
+    return null;
+  }
+  if (state.phase === 'result') {
+    draw(container,
+      el('div', { class: 'status-line' }, el('strong', {}, last.winner == null ? 'Berabere el!' : `${players[last.winner]} bu eli aldı.`)),
+      score, lastView,
+      el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block', style: { marginTop: '12px' }, onClick: () => sendMove({ type: 'next' }) }, 'Sonraki el'),
+    );
     return null;
   }
   if (state.picked[viewer]) {
