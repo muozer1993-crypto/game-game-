@@ -1,5 +1,6 @@
 // Mangala — the Turkish mancala variant. 6 pits per player with 4 stones each, one store each.
 import { el, render as draw } from '../js/ui/dom.js';
+import { nameSuffix } from '../js/lib/tr.js';
 
 export const meta = {
   group: 'masa',
@@ -8,12 +9,16 @@ export const meta = {
   description: 'Türk mangalası: taşları dağıt, çift sayıda yakala, hazneyi doldur.',
   rules: [
     'Her oyuncunun 6 kuyusu ve bir haznesi vardır; her kuyuda 4 taş. Ekranda 1. oyuncu alt sırayı oynar ve haznesi sağdadır; 2. oyuncu üst sırayı oynar ve haznesi soldadır. Taşlar alt sırada sağa, üst sırada sola doğru akar (saat yönünün tersine).',
-    'Sırası gelen kendi kuyularından birini seçer; bir taşı o kuyuda bırakır, kalanını birer birer dağıtır (kendi haznesine de bırakır, rakibin haznesini atlar). Kuyuda tek taş varsa o taş bir sonraki kuyuya gider.',
+    'Sırası gelen kendi kuyularından birini seçer; resmî kurala göre ilk taşı aldığı kuyuya geri bırakır, kalanını sağa doğru birer birer dağıtır (kendi haznesine de bırakır, rakibin haznesini atlar). Kuyuda tek taş varsa o taş bir sonraki kuyuya gider. Ayarlardan "Sonraki kuyudan başla" seçilirse aldığın kuyuya taş bırakılmaz (klasik ev kuralı).',
     'Son taş kendi haznene düşerse bir daha oynarsın. Son taş rakibin kuyusuna düşer ve oradaki taş sayısını çift yaparsa o kuyudaki taşların hepsini alırsın. Son taş kendi boş kuyuna düşerse ve karşısındaki rakip kuyusu doluysa oradakileri ve kendi taşını alırsın.',
-    'Bir oyuncunun kuyuları boşalınca oyun biter; kuyularında taş kalan oyuncu o taşları alır. Haznesinde çok taşı olan kazanır.',
+    'Bir oyuncunun kuyuları boşalınca oyun biter. Resmî kurala göre kuyuları ilk boşalan oyuncu, rakibin kuyularında kalan bütün taşları kendi haznesine alır (ayarlardan "herkes kendi tarafındakini alır" seçilebilir). Haznesinde çok taşı olan kazanır; eşitlikte berabere.',
+    'Varsayılanlar Türkiye Akıl ve Zekâ Oyunları Federasyonu (TAZOF) ve MEB zekâ oyunları kurallarıdır.',
   ].join('\n'),
   data: [],
-  settings: [],
+  settings: [
+    { key: 'firstStone', label: 'İlk taş', type: 'select', default: 'back', options: [{ value: 'back', label: 'Aldığın kuyuya geri bırakılır (resmî)' }, { value: 'next', label: 'Sonraki kuyudan başlanır (klasik ev kuralı)' }] },
+    { key: 'leftovers', label: 'Oyun sonunda kalan taşlar', type: 'select', default: 'emptier', options: [{ value: 'emptier', label: 'Kuyuları ilk boşalan alır (resmî)' }, { value: 'owner', label: 'Herkes kendi tarafındakini alır (ev kuralı)' }] },
+  ],
 };
 
 function fail(msg) {
@@ -26,7 +31,17 @@ export function setup(options = {}) {
   const pits = new Array(14).fill(4);
   pits[6] = 0;
   pits[13] = 0;
-  return { pits, turn: (Number(options.seed) || 0) % 2, over: false, last: null };
+  return {
+    pits,
+    turn: (Number(options.seed) || 0) % 2,
+    over: false,
+    last: null,
+    // house rules travel in the state so that both phones play the same variant;
+    // anything but the explicit variant value means the official (TAZOF) rule
+    firstStone: options.firstStone === 'next' ? 'next' : 'back',
+    leftovers: options.leftovers === 'owner' ? 'owner' : 'emptier',
+    collected: null, // { taker, from, count } when the game ended with stones left on the board
+  };
 }
 
 const storeOf = (p) => (p === 0 ? 6 : 13);
@@ -54,10 +69,10 @@ export function applyMove(state, player, move) {
   const myStore = storeOf(player);
   const oppStore = storeOf(1 - player);
   let captured = 0;
-  if (stones === 1) {
-    pits[from] = 0;
+  if (stones === 1 || state.firstStone === 'next') {
+    pits[from] = 0; // a single stone always moves on; in the 'next' variant nothing stays behind
   } else {
-    pits[from] = 1;
+    pits[from] = 1; // official rule: the first stone goes back into the pit it was lifted from
     stones -= 1;
   }
   while (stones > 0) {
@@ -80,13 +95,16 @@ export function applyMove(state, player, move) {
     pits[i] = 0;
   }
   let next = { ...state, pits, turn: again ? player : 1 - player, last: { from, to: i, captured, again } };
-  // end: a player's side is empty -> the other player collects their remaining stones
+  // end: a player's side is empty. Official rule (TAZOF 4. temel kural): that player takes every
+  // stone left on the opponent's side; in the 'owner' variant each side's stones go to their owner.
   const side = (p) => (p === 0 ? [0, 1, 2, 3, 4, 5] : [7, 8, 9, 10, 11, 12]);
   for (const p of [0, 1]) {
     if (side(p).every((k) => pits[k] === 0)) {
       const other = 1 - p;
-      for (const k of side(other)) { pits[storeOf(other)] += pits[k]; pits[k] = 0; }
-      next = { ...next, pits, over: true };
+      const taker = state.leftovers === 'owner' ? other : p;
+      let count = 0;
+      for (const k of side(other)) { count += pits[k]; pits[storeOf(taker)] += pits[k]; pits[k] = 0; }
+      next = { ...next, pits, over: true, collected: count ? { taker, from: other, count } : null };
       break;
     }
   }
@@ -130,9 +148,14 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   if (state.over) status = state.pits[6] === state.pits[13] ? 'Berabere!' : `${players[state.pits[6] > state.pits[13] ? 0 : 1]} kazandı!`;
   else if (mine) status = `Sıra sende, ${players[viewer]}: bir kuyu seç`;
   else status = `${players[state.turn]} düşünüyor…`;
+  const C = state.collected;
+  const endNote = state.over && C
+    ? (C.taker === C.from ? `Kuyularda kalan ${C.count} taş sahibine (${players[C.taker]}) gitti.` : `Kuyuları ilk boşalan ${players[C.taker]}, ${nameSuffix(players[C.from], 'in')} kuyularında kalan ${C.count} taşı aldı.`)
+    : '';
+  const variant = [state.firstStone === 'next' ? 'sonraki kuyudan başla' : null, state.leftovers === 'owner' ? 'kalan taşlar sahibine' : null].filter(Boolean);
   const note = state.last
-    ? el('p', { class: 'hint' }, `${state.last.captured ? `${state.last.captured} taş alındı. ` : ''}${state.last.again ? 'Son taş hazneye düştü: bir hamle daha.' : ''}`)
-    : el('p', { class: 'hint' }, `${players[0]} alt sıradaki kuyuları oynar, ${players[1]} üst sıradakileri.`);
+    ? el('p', { class: 'hint' }, `${state.last.captured ? `${state.last.captured} taş alındı. ` : ''}${state.last.again ? 'Son taş hazneye düştü: bir hamle daha. ' : ''}${endNote}`)
+    : el('p', { class: 'hint' }, `${players[0]} alt sıradaki kuyuları oynar, ${players[1]} üst sıradakileri.${variant.length ? ` Ev kuralı: ${variant.join(', ')}.` : ''}`);
   draw(container, el('div', { class: 'status-line' }, el('strong', {}, status)), board, note);
   return null;
 }

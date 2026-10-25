@@ -55,16 +55,55 @@ test('mangala: çift yakalama ve karşı kuyu yakalama, rakip haznesi atlanır',
   assert.equal(e.turn, 0, 'ended in own store');
 });
 
-test('mangala: bir taraf boşalınca oyun biter, kalan taşlar diğerine', () => {
+test('mangala: bir taraf boşalınca oyun biter, kalan taşları kuyuları boşalan alır (resmî kural)', () => {
   let s = game.setup({ seed: 0 });
   s.pits = new Array(14).fill(0);
   s.pits[5] = 1; s.pits[6] = 20; s.pits[13] = 15; s.pits[7] = 3; s.pits[8] = 2;
   s = game.applyMove(s, 0, { type: 'sow', pit: 5 }); // single stone -> store, side empty -> over
   assert.equal(s.over, true);
-  assert.equal(s.pits[6], 21);
-  assert.equal(s.pits[13], 20, 'player 1 collected its remaining 5 stones');
+  assert.equal(s.pits[6], 21 + 5, 'player 0 emptied first and takes the 5 stones left on player 1\'s side');
+  assert.equal(s.pits[13], 15);
+  assert.deepEqual(s.collected, { taker: 0, from: 1, count: 5 });
   assert.deepEqual(game.getResult(s), { winner: 0 });
   assert.throws(() => game.applyMove(s, 0, { type: 'sow', pit: 0 }), 'Oyun bitti');
+  // a capture that empties the OPPONENT's side: the player with the empty row collects the capturer's leftovers
+  let c = game.setup({ seed: 0 });
+  c.pits = new Array(14).fill(0);
+  c.pits[4] = 4; c.pits[0] = 5; c.pits[7] = 1; c.pits[6] = 10; c.pits[13] = 10;
+  c = game.applyMove(c, 0, { type: 'sow', pit: 4 }); // leave 1 in 4, sow 5, 6, 7: pit 7 becomes 2 -> captured
+  assert.equal(c.over, true);
+  assert.equal(c.pits[6], 10 + 1 + 2, 'store: one sown stone + the captured pair');
+  assert.equal(c.pits[13], 10 + 5 + 1 + 1, 'player 1 (empty row) takes the 7 stones left on player 0\'s side');
+  assert.deepEqual(game.getResult(c), { winner: 1 });
+  assert.equal(c.pits.reduce((a, b) => a + b, 0), 30, 'stones conserved');
+});
+
+test('mangala: ev kuralları — sonraki kuyudan başla, kalan taşlar sahibine', () => {
+  const def = game.setup({ seed: 0 });
+  assert.equal(def.firstStone, 'back', 'official rule by default');
+  assert.equal(def.leftovers, 'emptier');
+  // first stone goes to the next pit: 4 stones from pit 2 -> pits 3, 4, 5 and the store; last in the store -> play again
+  let n = game.setup({ seed: 0, firstStone: 'next' });
+  n = game.applyMove(n, 0, { type: 'sow', pit: 2 });
+  assert.deepEqual(n.pits.slice(0, 7), [4, 4, 0, 5, 5, 5, 1]);
+  assert.equal(n.turn, 0, 'last stone in the store: extra turn');
+  // the official rule from the same pit ends one pit earlier (pit 5) and passes the turn
+  let o = game.applyMove(game.setup({ seed: 0 }), 0, { type: 'sow', pit: 2 });
+  assert.deepEqual(o.pits.slice(0, 7), [4, 4, 1, 5, 5, 5, 0]);
+  assert.equal(o.turn, 1);
+  // leftovers to their owner (Kalah-style house rule)
+  let k = game.setup({ seed: 0, leftovers: 'owner' });
+  k.pits = new Array(14).fill(0);
+  k.pits[5] = 1; k.pits[6] = 20; k.pits[13] = 15; k.pits[7] = 3; k.pits[8] = 2;
+  k = game.applyMove(k, 0, { type: 'sow', pit: 5 });
+  assert.equal(k.over, true);
+  assert.equal(k.pits[6], 21);
+  assert.equal(k.pits[13], 20, 'player 1 keeps its own 5 stones');
+  assert.deepEqual(k.collected, { taker: 1, from: 1, count: 5 });
+  // unknown option values fall back to the official rules
+  const odd = game.setup({ seed: 0, firstStone: 'x', leftovers: 42 });
+  assert.equal(odd.firstStone, 'back');
+  assert.equal(odd.leftovers, 'emptier');
 });
 
 test('mangala: tam sayı olmayan kuyu reddedilir', () => {
