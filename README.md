@@ -1,6 +1,6 @@
 # Oyun Gecesi
 
-İki kişilik, Türkçe arayüzlü, telefonda rahat oynanan oyun koleksiyonu: 44 oyun; kartlardaki ★ ile favoriler üstte toplanır (kelime, soru-cevap, zekâ ve refleks, tahta, kart/zar/taş).
+İki kişilik, Türkçe arayüzlü, telefonda rahat oynanan oyun koleksiyonu: 45 oyun; kartlardaki ★ ile favoriler üstte toplanır (kelime, soru-cevap, zekâ ve refleks, tahta, kart/zar/taş).
 Düz HTML + CSS + JavaScript (ES modules); framework yok, build adımı yok, npm yok.
 Tek telefonda elden ele ya da iki telefonda oda koduyla oynanır. Ana ekrana eklenebilir
 (manifest + service worker) ve bir kez yüklendikten sonra tek telefon modu çevrimdışı çalışır.
@@ -20,6 +20,7 @@ Tek telefonda elden ele ya da iki telefonda oda koduyla oynanır. Ana ekrana ekl
 | **Tabu** | Yasaklı beş kelimeyi söylemeden anlat, eşin tahmin etsin; 220+ kart, roller her turda değişir. |
 | **Beni Ne Kadar Tanıyorsun?** | Aynı sorular ikinize; önce kendi cevabın, sonra rakibin tahmini; karşılaştırma otomatik. Hazır havuz + kendi sorularınız. |
 | **Genel Kültür Düellosu** | Aynı sorular ikinize; doğru sayısı, eşitlikte hız. 240+ soruluk havuz. |
+| **Doğruluk mu Cesaret mi?** | Parti klasiği: sırayla doğruluk (1) ya da cesaret (2) seç, rakibin hakem; 60+50 dostça kart (`data/dogruluk.json`), bir kez kart değiştirme. |
 | **Hesap Yarışı** | Aynı aritmetik işlemler ikinize (kolay/orta/zor); doğru sayısı, eşitlikte hız. |
 | **Hedef Sayı** | Altı sayı, dört işlem, üç basamaklı hedef; aynı bulmacada süreye karşı en yakına ulaş (tam 10, ≤5 uzak 7, ≤10 uzak 5). Tur sonunda çözüm gösterilir. |
 | **Renk Tuzağı** | Kelimeye değil yazının rengine dokun (Stroop); süre dolana kadar doğru −yanlış puanı. |

@@ -52,3 +52,5 @@ PeerJS 1.5.5 — MIT, Copyright (c) 2015 Michelle Bu and Eric Zhang. Lisans metn
 - Apache License 2.0: https://www.apache.org/licenses/LICENSE-2.0
 - CC BY-SA 4.0: https://creativecommons.org/licenses/by-sa/4.0/
 - MIT: ../LICENSE
+
+- `dogruluk.json`: Doğruluk mu Cesaret mi? kartları, bu proje için yazıldı (MIT).

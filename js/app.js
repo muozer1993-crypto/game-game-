@@ -15,6 +15,7 @@ const DEFAULT_PLAYERS = ['Oyuncu 1', 'Oyuncu 2'];
 const QUESTIONS_URL = new URL('../data/questions.json', import.meta.url);
 const TRIVIA_URL = new URL('../data/trivia.json', import.meta.url);
 const TABU_URL = new URL('../data/tabu.json', import.meta.url);
+const DOGRULUK_URL = new URL('../data/dogruluk.json', import.meta.url);
 
 const prefs = {
   players: load('players', DEFAULT_PLAYERS),
@@ -60,6 +61,7 @@ async function loadGameData(game) {
   }
   if (needs.includes('trivia')) ctx.trivia = await loadJson(TRIVIA_URL);
   if (needs.includes('tabu')) ctx.tabu = await loadJson(TABU_URL);
+  if (needs.includes('dogruluk')) ctx.dogruluk = await loadJson(DOGRULUK_URL);
   return ctx;
 }
 
@@ -290,7 +292,7 @@ function showTournamentResult() {
   );
 }
 
-/** Filters the game cards below by name as you type (44 games are a long list). */
+/** Filters the game cards below by name as you type (45 games are a long list). */
 function searchBox() {
   const input = el('input', {
     type: 'search', class: 'input', id: 'game-search', placeholder: 'Oyun ara…', autocomplete: 'off', 'aria-label': 'Oyun ara',
