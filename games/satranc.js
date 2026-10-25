@@ -315,7 +315,38 @@ const PIECE_URL = {};
 for (const p of ['wk', 'wq', 'wr', 'wb', 'wn', 'wp', 'bk', 'bq', 'br', 'bb', 'bn', 'bp']) PIECE_URL[p] = new URL(`../img/chess/${p}.svg`, import.meta.url).href;
 const PIECE_NAME = { k: 'şah', q: 'vezir', r: 'kale', b: 'fil', n: 'at', p: 'piyon' };
 const pieceName = (p) => `${p[0] === 'w' ? 'beyaz' : 'siyah'} ${PIECE_NAME[p[1]]}`;
-const pieceImg = (p, cls = 'ch-piece') => el('img', { class: cls, src: PIECE_URL[p], alt: pieceName(p), draggable: 'false' });
+// Pieces and squares are painted on <canvas>: phone browsers' forced dark modes re-colour images,
+// inline SVG and CSS backgrounds (black pieces came out white, both sides looked the same), but
+// leave canvas pixels alone.
+const IMG = {};
+const imageOf = (p) => {
+  if (!IMG[p] && typeof Image !== 'undefined') { IMG[p] = new Image(); IMG[p].src = PIECE_URL[p]; }
+  return IMG[p];
+};
+const SQUARE = { light: '#f0d9b5', dark: '#b58863' };
+function paint(canvas, p, bg) {
+  const g = canvas.getContext && canvas.getContext('2d');
+  if (!g) return;
+  const n = canvas.width;
+  g.clearRect(0, 0, n, n);
+  if (bg) { g.fillStyle = bg; g.fillRect(0, 0, n, n); }
+  if (!p) return;
+  const im = imageOf(p);
+  if (!im) return;
+  if (im.complete && im.naturalWidth) g.drawImage(im, n * 0.06, n * 0.06, n * 0.88, n * 0.88);
+  else im.addEventListener('load', () => paint(canvas, p, bg), { once: true });
+}
+const pieceCanvas = (p, cls, bg = null, size = 44) => {
+  const c = el('canvas', { class: cls, width: size, height: size, role: 'img', 'aria-label': pieceName(p) });
+  paint(c, p, bg);
+  return c;
+};
+const pieceImg = (p, cls = 'ch-mini') => pieceCanvas(p, cls, null, 44);
+const pieceCanvasCell = (p, dark) => {
+  const c = el('canvas', { class: 'ch-sq', width: 108, height: 108, 'aria-hidden': 'true' });
+  paint(c, p, dark ? SQUARE.dark : SQUARE.light);
+  return c;
+};
 const REASON = { mate: 'şah mat', stalemate: 'pat', material: 'yetersiz materyal', fifty: 'elli hamle kuralı', repetition: 'üç kez tekrar', resign: 'pes' };
 let selected = null;
 let selectedFor = null;
@@ -362,7 +393,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
           drawPromo();
           boardBox.replaceChildren(drawBoard());
         },
-      }, p ? pieceImg(p) : null));
+      }, pieceCanvasCell(p, dark)));
     }
     return board;
   };
