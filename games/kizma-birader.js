@@ -2,6 +2,7 @@
 // 52-square loop, land on an opponent to send them home, exact roll into the centre. A six, a
 // capture or a piece reaching home gives another roll; three sixes in a row lose the turn.
 import { el, svg, render as draw } from '../js/ui/dom.js';
+import { diceOnce } from '../js/lib/sfx.js';
 import { createRng } from '../js/lib/rng.js';
 import { nameSuffix } from '../js/lib/tr.js';
 
@@ -148,6 +149,7 @@ function cellOf(player, rel, slot) {
 }
 
 export function render(state, viewer, container, sendMove, ctx = {}) {
+  if (state.rollCount) diceOnce(`ld:${state.id}:${state.rollCount}`);
   const players = ctx.players || ['Oyuncu 1', 'Oyuncu 2'];
   const online = ctx.mode === 'online';
   const p = state.turn;

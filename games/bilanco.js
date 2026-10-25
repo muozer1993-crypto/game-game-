@@ -3,6 +3,7 @@
 // on a full pair. The game ends after the chosen number of rounds (or on bankruptcy): the higher
 // net worth wins. Dice come from the shared seed, so both phones see the same rolls.
 import { el, render as draw } from '../js/ui/dom.js';
+import { diceOnce } from '../js/lib/sfx.js';
 import { createRng, shuffle } from '../js/lib/rng.js';
 import { nameSuffix } from '../js/lib/tr.js';
 import { discCanvas, keyDot, fillCanvas } from '../js/ui/paint.js';
@@ -435,6 +436,7 @@ export function cellOf(i) {
 }
 
 export function render(state, viewer, container, sendMove, ctx = {}) {
+  if (state.rollCount) diceOnce(`bl:${state.id}:${state.rollCount}`);
   const players = ctx.players || PLAYERS;
   const online = ctx.mode === 'online';
   const anim = (ctx.options && ctx.options.anim) || 'normal';

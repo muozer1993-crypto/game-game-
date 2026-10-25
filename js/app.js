@@ -9,6 +9,7 @@ import { loadDictionary, loadCommonWords } from './lib/words.js';
 import { randomSeed, shuffle, createRng } from './lib/rng.js';
 import { nameSuffix, capitalizeTR } from './lib/tr.js';
 import { generateRoomCode, createHost, joinRoom, normalizeRoomCode } from './net/peer.js';
+import { setSoundEnabled, playEnd } from './lib/sfx.js';
 
 const app = document.getElementById('app');
 const DEFAULT_PLAYERS = ['Oyuncu 1', 'Oyuncu 2'];
@@ -22,8 +23,11 @@ const prefs = {
   theme: load('theme', 'auto'),
   onlineName: load('online-name', ''),
   vibrate: load('vibrate', true) !== false, // buzz when it becomes your turn online
+  sound: load('sound', true) !== false, // sound effects (ball clicks, dice, end-of-game tune)
   favorites: (load('favorites', []) || []).filter((id) => typeof id === 'string'), // game ids starred on the menu
 };
+
+setSoundEnabled(prefs.sound);
 
 // ---------------------------------------------------------------- theme
 function applyTheme(theme) {
@@ -114,9 +118,9 @@ window.addEventListener('popstate', () => {
   showMenu();
 });
 
-function header(title, { onBack, right } = {}) {
+function header(title, { onBack, left, right } = {}) {
   return el('header', { class: 'topbar' },
-    onBack ? el('button', { type: 'button', class: 'btn btn-icon', 'aria-label': 'Geri', onClick: onBack }, '←') : el('span'),
+    onBack ? el('button', { type: 'button', class: 'btn btn-icon', 'aria-label': 'Geri', onClick: onBack }, '←') : left || el('span'),
     el('h1', { class: 'topbar-title' }, title),
     right || el('span'),
   );
@@ -128,14 +132,28 @@ export function showMenu() {
   tournament = null;
   setScreen('menu');
   const themeSelect = el('select', { class: 'select', 'aria-label': 'Tema', onChange: (e) => applyTheme(e.target.value) },
-    el('option', { value: 'auto' }, 'Tema: Sistem'),
-    el('option', { value: 'light' }, 'Tema: Açık'),
-    el('option', { value: 'dark' }, 'Tema: Koyu'),
+    el('option', { value: 'auto' }, '🌓 Sistem'),
+    el('option', { value: 'light' }, '☀️ Açık'),
+    el('option', { value: 'dark' }, '🌙 Koyu'),
   );
   themeSelect.value = prefs.theme;
+  const soundBtn = el('button', { type: 'button', class: 'btn btn-icon btn-secondary' });
+  const showSound = () => {
+    soundBtn.textContent = prefs.sound ? '🔊' : '🔇';
+    soundBtn.setAttribute('aria-label', prefs.sound ? 'Sesler açık (kapatmak için dokun)' : 'Sesler kapalı (açmak için dokun)');
+    soundBtn.setAttribute('aria-pressed', String(prefs.sound));
+  };
+  soundBtn.addEventListener('click', () => {
+    prefs.sound = !prefs.sound;
+    save('sound', prefs.sound);
+    setSoundEnabled(prefs.sound);
+    showSound();
+    toast(prefs.sound ? 'Ses efektleri açık' : 'Ses efektleri kapalı');
+  });
+  showSound();
 
   render(app,
-    header('Oyun Gecesi', { right: themeSelect }),
+    header('Oyun Gecesi', { left: soundBtn, right: themeSelect }),
     el('p', { class: 'lead' }, 'İki kişilik oyunlar. Tek telefonda elden ele ya da iki telefonda oda koduyla.'),
     quickRow((game) => showSetup(game)),
     searchBox(),
@@ -568,6 +586,7 @@ export function showPlay(p) {
     onChange: updateScore,
     onEnd: (result) => {
       bumpRecord(p.game.id, p.players, result);
+      playEnd(!!result.draw);
       let text;
       if (result.draw) text = 'Berabere!';
       else {

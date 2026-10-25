@@ -2,6 +2,7 @@
 // Player 0 moves from point 24 down to 1 (indexes 23 → 0, home 0..5),
 // player 1 moves from 1 up to 24 (indexes 0 → 23, home 18..23).
 import { el, render as draw, toast } from '../js/ui/dom.js';
+import { diceOnce } from '../js/lib/sfx.js';
 import { randomSeed } from '../js/lib/rng.js';
 import { nameSuffix } from '../js/lib/tr.js';
 import { discCanvas, keyDot, triangleCanvas } from '../js/ui/paint.js';
@@ -230,6 +231,7 @@ const CHECKER = ['#fafafa', '#263238'];
 const checker = (owner, label) => el('span', { class: `tv-checker p${owner}` }, discCanvas(CHECKER[owner], { mark: label, size: 56 }));
 
 export function render(state, viewer, container, sendMove, ctx = {}) {
+  if (state.turnStart) diceOnce(state.turnStart); // a new roll makes a new turnStart
   const players = ctx.players || ['Oyuncu 1', 'Oyuncu 2'];
   const online = ctx.mode === 'online';
   const p = state.turn;

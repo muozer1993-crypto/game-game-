@@ -2,6 +2,7 @@
 // then write the result into one of 15 categories. Upper-section bonus at 63. No hidden
 // information, so the phone is simply passed; online the opponent watches every roll.
 import { el, render as draw } from '../js/ui/dom.js';
+import { diceOnce } from '../js/lib/sfx.js';
 import { createRng } from '../js/lib/rng.js';
 
 export const meta = {
@@ -139,6 +140,7 @@ const drafts = new Map(); // `${id}:${rollCount}` -> held[] being chosen for the
 let draftsFor = null;
 
 export function render(state, viewer, container, sendMove, ctx = {}) {
+  if (state.rollCount) diceOnce(`zp:${state.id}:${state.rollCount}`);
   const players = ctx.players || ['Oyuncu 1', 'Oyuncu 2'];
   const online = ctx.mode === 'online';
   if (draftsFor !== state.id) { drafts.clear(); draftsFor = state.id; }

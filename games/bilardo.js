@@ -6,6 +6,7 @@
 // the whole shot on both devices and reach exactly the same final positions; render()
 // re-runs the same simulation to animate it.
 import { el, render as draw } from '../js/ui/dom.js';
+import { playClick, playPocket } from '../js/lib/sfx.js';
 
 export const meta = {
   group: 'masa',
@@ -106,7 +107,10 @@ export function setup(options = {}) {
   };
 }
 
-/** Deterministic shot simulation. Returns { balls, pocketed (in order), firstHit (id the cue ball touched first, or null), frames }. */
+/**
+ * Deterministic shot simulation. Returns { balls, pocketed (in order), firstHit (id the cue ball touched
+ * first, or null), frames, events } — with frames, `events` lists [step, 'hit' | 'pocket', strength] for sounds.
+ */
 export function simulate(balls0, shot, withFrames = false) {
   const balls = balls0.map((b) => ({ ...b, vx: 0, vy: 0 }));
   const cue = balls.find((b) => b.id === 0);
@@ -115,6 +119,8 @@ export function simulate(balls0, shot, withFrames = false) {
   const pocketed = [];
   const frames = [];
   let firstHit = null;
+  const events = [];
+  let step = 0;
   const inPocket = (b) => {
     for (const [px, py] of POCKETS) {
       const dx = b.x - px;
@@ -123,8 +129,8 @@ export function simulate(balls0, shot, withFrames = false) {
     }
     return false;
   };
-  const pocket = (b) => { b.pocketed = true; b.vx = 0; b.vy = 0; pocketed.push(b.id); };
-  for (let step = 0; step < MAX_STEPS; step++) {
+  const pocket = (b) => { b.pocketed = true; b.vx = 0; b.vy = 0; pocketed.push(b.id); if (withFrames) events.push([step, 'pocket', 1]); };
+  for (step = 0; step < MAX_STEPS; step++) {
     let moving = false;
     for (let sub = 0; sub < SUB; sub++) {
       for (const b of balls) {
@@ -156,6 +162,7 @@ export function simulate(balls0, shot, withFrames = false) {
           b.x += nx * overlap / 2; b.y += ny * overlap / 2;
           const dvn = (b.vx - a.vx) * nx + (b.vy - a.vy) * ny;
           if (dvn < 0 && firstHit === null && (a.id === 0 || b.id === 0)) firstHit = a.id === 0 ? b.id : a.id;
+          if (dvn < 0 && withFrames) events.push([step, 'hit', Math.min(1, -dvn / 8)]);
           if (dvn < 0) {
             const jn = -(1 + RESTITUTION) * dvn / 2;
             a.vx -= jn * nx; a.vy -= jn * ny;
@@ -180,7 +187,7 @@ export function simulate(balls0, shot, withFrames = false) {
     if (!moving) break;
   }
   const out = balls.map(({ id, x, y, pocketed: p }) => ({ id, x: Math.round(x * 1000) / 1000, y: Math.round(y * 1000) / 1000, pocketed: p }));
-  return { balls: out, pocketed, firstHit, frames };
+  return { balls: out, pocketed, firstHit, frames, events };
 }
 
 /**
@@ -598,10 +605,19 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       animating = true;
       balls = state.last.before.map((b) => ({ ...b }));
       let k = 0;
+      let ev = 0; // next sound event; frame k shows simulation step 2k
       const tick = () => {
         const f = frames[Math.min(k, frames.length - 1)];
         balls = f.map(([id, x, y, p]) => ({ id, x, y, pocketed: !!p }));
         paint();
+        let loud = 0;
+        let drop = false;
+        while (ev < sim.events.length && sim.events[ev][0] <= 2 * k) {
+          const [, kind, v] = sim.events[ev++];
+          if (kind === 'pocket') drop = true; else loud = Math.max(loud, v);
+        }
+        if (loud) playClick(loud);
+        if (drop) playPocket();
         k += 2;
         if (k < frames.length) raf = requestAnimationFrame(tick);
         else { animating = false; balls = restBalls(); paint(); setStatus(); drawHandBar(); }

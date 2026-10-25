@@ -3,6 +3,7 @@
 // one calls the other a liar. All dice are revealed: if the bid holds, the challenger loses a
 // die, otherwise the bidder does. Whoever runs out of dice loses.
 import { el, render as draw } from '../js/ui/dom.js';
+import { diceOnce } from '../js/lib/sfx.js';
 import { createRng } from '../js/lib/rng.js';
 import { nameSuffix } from '../js/lib/tr.js';
 
@@ -138,6 +139,7 @@ function diceRow(dice, { hit = null, wild = false, hidden = false } = {}) {
 }
 
 export function render(state, viewer, container, sendMove, ctx = {}) {
+  diceOnce(`yz:${state.id}:${state.round}`); // every round starts with fresh dice
   const players = ctx.players || ['Oyuncu 1', 'Oyuncu 2'];
   const online = ctx.mode === 'online';
   const opp = 1 - viewer;
