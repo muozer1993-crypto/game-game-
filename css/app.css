@@ -461,8 +461,9 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .mg-pit.last { box-shadow: inset 0 0 0 2px var(--present); }
 .mg-count { font-weight: 800; font-size: 1.1rem; }
 .mg-stones { font-size: 0.45rem; letter-spacing: 1px; line-height: 1.1; color: var(--muted); max-width: 100%; overflow: hidden; word-break: break-all; white-space: normal; text-align: center; }
-.mg-store { border: 2px solid var(--border); border-radius: 14px; background: var(--secondary); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 0.75rem; text-align: center; padding: 4px 2px; }
+.mg-store { min-width: 0; overflow: hidden; border: 2px solid var(--border); border-radius: 14px; background: var(--secondary); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 0.75rem; text-align: center; padding: 4px 2px; }
 .mg-store .mg-count { font-size: 1.4rem; }
+.mg-store .muted { max-width: 100%; overflow-wrap: anywhere; line-height: 1.15; } /* long names wrap inside the store */
 .rps-choices { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 12px 0; }
 .rps-btn { flex-direction: column; min-height: 96px; font-size: 1rem; }
 .rps-icon { font-size: 2.2rem; }
@@ -994,6 +995,8 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .mg-pit.flash, .mg-store.flash { border-color: var(--present); background: color-mix(in srgb, var(--present) 22%, var(--card)); }
 .mg-pit.lifted { border-style: dashed; border-color: var(--present); }
 .mg-board.animating { cursor: pointer; }
+/* while stones are moving the (disabled) pits let the tap through to the board, which skips the animation */
+.mg-board.animating .mg-pit { pointer-events: none; }
 .mg-skip { font-size: 0.85rem; font-weight: 400; }
 @media (prefers-reduced-motion: reduce) { .mg-hand { transition: none; } }
 

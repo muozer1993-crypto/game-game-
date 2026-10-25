@@ -11,9 +11,9 @@ export const meta = {
   description: 'Türk daması: ileri ve yana git, atlayarak al, almak zorunlu.',
   rules: [
     'Her oyuncunun 16 taşı vardır (2. ve 3. sıralar). Taşlar ileri ya da yana bir kare gider; geriye gidemez.',
-    'Rakip taşının üstünden boş kareye atlayarak alınır; aynı hamlede art arda atlanabilir. Alma zorunludur ve en çok taş alan dizi seçilmelidir.',
+    'Rakip taşının üstünden boş kareye atlayarak alınır; aynı hamlede art arda atlanabilir (dönülebilir ama geldiğin yöne geri dönülmez). Alma zorunludur ve en çok taş alan dizi seçilmelidir.',
     'Son sıraya ulaşan taş dama olur: dama ileri, geri ve yana istediği kadar gider ve uzaktan da alabilir.',
-    'Taşı kalmayan ya da hamlesi olmayan kaybeder. Bir taşa karşı bir dama kazanır.',
+    'Taşı kalmayan ya da hamlesi olmayan kaybeder. Bir taşa karşı bir dama kazanır. Birer dama kalırsa ya da 25\'er hamle boyunca yalnız damalar oynayıp hiç alma olmazsa berabere.',
     'Oynamak için taşa, sonra gideceği kareye dokun; çoklu almada her atlama için sırayla dokun.',
   ].join('\n'),
   data: [],
@@ -51,11 +51,13 @@ function captureSequences(cells, from, p) {
   const r0 = Math.floor(from / N);
   const c0 = from % N;
   const dirs = piece.k ? ALL_DIRS : [[forward(p), 0], ...DIRS_MAN];
-  const rec = (r, c, taken, path, isKing) => {
+  const rec = (r, c, taken, path, isKing, back = null) => {
     let extended = false;
     // the moving piece's origin and pieces already captured in this sequence count as empty
     const free = (i) => cells[i] === null || i === from || taken.includes(i);
     for (const [dr, dc] of dirs) {
+      // within one capture sequence a piece may turn 90° but never straight back (180°)
+      if (back && dr === back[0] && dc === back[1]) continue;
       if (isKing) {
         // king: slide over empty squares, jump exactly one enemy, land on any empty square after it
         let rr = r + dr;
@@ -68,7 +70,7 @@ function captureSequences(cells, from, p) {
         let lc = cc + dc;
         while (inside(lr, lc) && free(idx(lr, lc))) {
           extended = true;
-          rec(lr, lc, taken.concat([target]), path.concat([idx(lr, lc)]), true);
+          rec(lr, lc, taken.concat([target]), path.concat([idx(lr, lc)]), true, [-dr, -dc]);
           lr += dr;
           lc += dc;
         }
@@ -84,7 +86,7 @@ function captureSequences(cells, from, p) {
         if (!free(land)) continue;
         extended = true;
         // a man that reaches the last row keeps capturing as a king in Turkish draughts; keep it simple: continue as man
-        rec(lr, lc, taken.concat([target]), path.concat([land]), false);
+        rec(lr, lc, taken.concat([target]), path.concat([land]), false, [-dr, -dc]);
       }
     }
     if (!extended && taken.length) results.push({ path, captured: taken });
@@ -128,6 +130,8 @@ export function legalMoves(state, p = state.turn) {
   return moves;
 }
 
+export const QUIET_DRAW = 50; // 25 king moves each without a capture or a man moving: a draw
+
 function countPieces(cells, p) {
   let men = 0;
   let kings = 0;
@@ -151,7 +155,9 @@ export function applyMove(state, player, move) {
   const lastRow = player === 0 ? 0 : N - 1;
   if (Math.floor(to / N) === lastRow) piece.k = true;
   cells[to] = piece;
-  let next = { ...state, cells, turn: 1 - player, last: legal.path };
+  // plies in a row with only king moves and no capture: kings alone can shuffle forever
+  const quiet = legal.captured.length || !state.cells[from].k ? 0 : (state.quiet || 0) + 1;
+  let next = { ...state, cells, turn: 1 - player, last: legal.path, quiet };
   const mine = countPieces(cells, player);
   const theirs = countPieces(cells, 1 - player);
   if (theirs.total === 0) return { ...next, over: true, winner: player };
@@ -164,6 +170,7 @@ export function applyMove(state, player, move) {
     // one king each: nobody can force a win
     if (mine.total === 1 && theirs.total === 1 && mine.kings === 1 && theirs.kings === 1) return { ...next, over: true, winner: null };
   }
+  if (quiet >= QUIET_DRAW) return { ...next, over: true, winner: null, drawReason: 'quiet' };
   return next;
 }
 
@@ -235,7 +242,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const a = countPieces(state.cells, 0);
   const b = countPieces(state.cells, 1);
   let status;
-  if (state.over) status = state.winner == null ? 'Berabere: birer dama kaldı.' : `${players[state.winner]} kazandı!`;
+  if (state.over) status = state.winner == null ? (state.drawReason === 'quiet' ? `Berabere: ${QUIET_DRAW / 2} hamledir yalnız damalar oynuyor, alma yok.` : 'Berabere: birer dama kaldı.') : `${players[state.winner]} kazandı!`;
   else if (mine) status = moves.some((m) => m.captured.length) ? `Sıra sende, ${players[viewer]}: alma zorunlu!` : `Sıra sende, ${players[viewer]}: taşı seç`;
   else status = `${players[state.turn]} düşünüyor…`;
   draw(container,

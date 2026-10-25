@@ -1,5 +1,5 @@
 import { test, assert } from './runner.js';
-import game, { legalMoves } from '../games/dama.js';
+import game, { legalMoves, QUIET_DRAW } from '../games/dama.js';
 
 const N = 8;
 const empty = () => ({ ...game.setup({ seed: 0 }), cells: new Array(64).fill(null), turn: 0 });
@@ -89,4 +89,32 @@ test('dama: tek taş kalan oyuncu damayı alabiliyorsa oyun bitmez; birer dama b
   d = game.applyMove(d, 0, { type: 'move', from: 0, path: [1] });
   assert.equal(d.over, true);
   assert.deepEqual(game.getResult(d), { draw: true });
+});
+
+test('dama: çoklu almada dama geldiği yöne geri dönemez (90° dönebilir); yalnız damalarla uzun süre alma yoksa berabere', () => {
+  // king at (3,3); white men at (3,5) and (3,1). Taking (3,5) lands at (3,6)/(3,7); going straight back to take (3,1) is a 180° turn
+  let s = empty();
+  put(s, 3, 3, 0, true); put(s, 3, 5, 1); put(s, 3, 1, 1); put(s, 7, 7, 1);
+  let moves = legalMoves(s);
+  assert.ok(moves.length > 0);
+  assert.equal(Math.max(...moves.map((m) => m.captured.length)), 1, 'no 180° turn: one capture only');
+  // a 90° turn is fine: after (3,5) -> (3,6), turn down to take (5,6)
+  s = empty();
+  put(s, 3, 3, 0, true); put(s, 3, 5, 1); put(s, 5, 6, 1); put(s, 0, 0, 1);
+  moves = legalMoves(s);
+  assert.equal(Math.max(...moves.map((m) => m.captured.length)), 2, '90° turn allowed');
+  // quiet king moves: the 50th in a row without a capture or a man moving ends the game in a draw
+  let q = empty();
+  put(q, 0, 0, 0, true); put(q, 7, 7, 1, true); put(q, 7, 0, 1, true); put(q, 0, 7, 0, true);
+  q = { ...q, quiet: QUIET_DRAW - 1 };
+  const m = legalMoves(q).find((x) => !x.captured.length);
+  q = game.applyMove(q, 0, { type: 'move', from: m.from, path: m.path.slice(1) });
+  assert.equal(q.over, true);
+  assert.deepEqual(game.getResult(q), { draw: true });
+  assert.equal(q.drawReason, 'quiet');
+  // a man moving resets the count
+  let r = empty();
+  put(r, 4, 4, 0); put(r, 0, 0, 1, true);
+  r = game.applyMove({ ...r, quiet: 30 }, 0, { type: 'move', from: 4 * N + 4, path: [3 * N + 4] });
+  assert.equal(r.quiet, 0);
 });

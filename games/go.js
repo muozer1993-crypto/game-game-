@@ -6,7 +6,7 @@ import { drawDisc } from '../js/ui/paint.js';
 
 export const meta = {
   group: 'masa',
-  name: 'Go (9×9)',
+  name: 'Go',
   icon: '⚫',
   description: 'Taşlarınla alan çevir, nefessiz kalan taşları al; iki pas sonra sayım.',
   rules: [
@@ -112,7 +112,8 @@ export function applyMove(state, player, move) {
         return { ...state, agree };
       }
       case 'resume':
-        return { ...state, phase: 'play', passes: 0, dead: [], agree: [false, false], turn: player };
+        // back to play with the player whose turn it was after the passes (not whoever asked to resume)
+        return { ...state, phase: 'play', passes: 0, dead: [], agree: [false, false] };
       default:
         fail('Sayım sırasında taş konmaz');
     }
@@ -175,6 +176,8 @@ export function getResult(state) {
 }
 
 // ----------------------------------------------------------------- render
+const num = (x) => String(x).replace('.', ','); // 6,5 in Turkish
+
 export function render(state, viewer, container, sendMove, ctx = {}) {
   const players = ctx.players || ['Oyuncu 1', 'Oyuncu 2'];
   const online = ctx.mode === 'online';
@@ -228,12 +231,12 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     });
   }
   const boardBox = el('div', { class: 'go-wrap' }, board, layer);
-  const caps = el('div', { class: 'c4-legend' }, el('span', {}, `⚫ ${players[0]}: ${state.captures[0]} esir`), el('span', {}, `⚪ ${players[1]}: ${state.captures[1]} esir`), el('span', { class: 'muted' }, `komi ${KOMI}`));
+  const caps = el('div', { class: 'c4-legend' }, el('span', {}, `⚫ ${players[0]}: ${state.captures[0]} esir`), el('span', {}, `⚪ ${players[1]}: ${state.captures[1]} esir`), el('span', { class: 'muted' }, `${n}×${n} · komi ${num(KOMI)}`));
   if (state.phase === 'over') {
     const R = state.result;
     draw(container,
-      el('div', { class: 'status-line' }, el('strong', {}, `${players[R.winner]} kazandı: ${R.total[0]} – ${R.total[1]}`)),
-      el('p', { class: 'hint' }, `Alan: siyah ${R.area[0]}, beyaz ${R.area[1]} + komi ${KOMI}.`),
+      el('div', { class: 'status-line' }, el('strong', {}, `${players[R.winner]} kazandı: ${num(R.total[0])} – ${num(R.total[1])}`)),
+      el('p', { class: 'hint' }, `Alan: siyah ${R.area[0]}, beyaz ${R.area[1]} + komi ${num(KOMI)}.`),
       boardBox, caps,
     );
     return null;
@@ -242,7 +245,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     const est = score(state);
     draw(container,
       el('div', { class: 'status-line' }, el('strong', {}, 'Sayım: ölü grupları işaretleyin')),
-      el('p', { class: 'hint' }, `Şu an: siyah ${est.total[0]} – beyaz ${est.total[1]} (komi dahil). ${state.agree[0] ? `${players[0]} onayladı. ` : ''}${state.agree[1] ? `${players[1]} onayladı. ` : ''}`),
+      el('p', { class: 'hint' }, `Şu an: siyah ${num(est.total[0])} – beyaz ${num(est.total[1])} (komi dahil). ${state.agree[0] ? `${players[0]} onayladı. ` : ''}${state.agree[1] ? `${players[1]} onayladı. ` : ''}`),
       boardBox,
       el('div', { class: 'row', style: { justifyContent: 'center', gap: '8px' } },
         el('button', { type: 'button', class: 'btn btn-primary', disabled: online && state.agree[viewer], onClick: () => sendMove({ type: 'agree' }) }, online ? (state.agree[viewer] ? 'Onayladın' : 'Onayla') : `Onayla (${players[state.agree[0] ? 1 : 0]})`),

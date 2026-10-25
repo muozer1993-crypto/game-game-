@@ -86,6 +86,7 @@ test('go: pas, sayım, ölü taş, onay, alan puanı ve komi', () => {
   let u = game.applyMove(game.applyMove(game.setup({ size: 9, seed: 2 }), 0, { type: 'pass' }), 1, { type: 'pass' });
   u = game.applyMove(u, 1, { type: 'resume' });
   assert.equal(u.phase, 'play');
-  assert.equal(u.turn, 1);
+  assert.equal(u.turn, 0, 'the player to move after the two passes, not whoever asked to resume');
   assert.equal(u.passes, 0);
+  assert.throws(() => game.applyMove(u, 1, { type: 'place', cell: 0 }), 'Sıra sende değil');
 });
