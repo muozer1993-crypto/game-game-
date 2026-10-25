@@ -257,7 +257,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   cleanups.push(() => timer.stop());
 
   const wordBox = el('div', { class: 'wh-word' });
-  const gridBox = el('div', { class: 'wh-grid', style: { '--n': state.size } });
+  const gridBox = el('div', { class: 'wh-grid', style: { gridTemplateColumns: `repeat(${state.size}, 1fr)` } });
   const cellEls = [];
   const update = () => {
     paths.set(key, path);

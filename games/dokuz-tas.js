@@ -206,7 +206,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   else if (state.mustRemove) status = `${players[state.turn]} üçlü yaptı, bir taşını alıyor…`;
   else status = `${players[state.turn]} ${state.hand[state.turn] > 0 ? 'taş koyuyor' : 'taş sürüyor'}…`;
 
-  const legend = (p) => el('span', { class: 'nm-key', style: { '--c': COLORS[p] } }, `${players[p]}: tahtada ${count(state.points, p)}${state.hand[p] ? `, elde ${state.hand[p]}` : ''}`);
+  const legend = (p) => el('span', { class: `nm-key p${p}` }, `${players[p]}: tahtada ${count(state.points, p)}${state.hand[p] ? `, elde ${state.hand[p]}` : ''}`);
   draw(container,
     el('div', { class: 'status-line' }, el('strong', {}, status)),
     el('div', { class: 'c4-legend' }, legend(0), legend(1)),
