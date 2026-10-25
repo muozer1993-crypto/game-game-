@@ -1,5 +1,5 @@
 import { test, assert } from './runner.js';
-import game, { BOARD, N, GROUPS, CARDS, JAIL, JAIL_FEE, GO_BONUS, MAX_HOUSES, TRANSPORT_RENT, baseRent, rollDice, rentOf, netWorth, canBuild, ownsGroup, cellOf } from '../games/bilanco.js';
+import game, { BOARD, N, GROUPS, CARDS, JAIL, JAIL_FEE, GO_BONUS, MAX_HOUSES, MAX_ROUNDS, BUYOUT_MULT, TRANSPORT_RENT, baseRent, rollDice, rentOf, netWorth, canBuild, canBuyOut, ownsGroup, cellOf, accusative } from '../games/bilanco.js';
 
 const ctx = { players: ['Ali', 'Ayşe'] };
 const play = (s, p, move) => game.applyMove(s, p, move, ctx);
@@ -70,7 +70,10 @@ test('bilanço: zar at, boş şehre gel, satın al, sırayı ver; sıra ve hata 
   assert.equal(s.turn, 1);
   assert.equal(s.phase, 'roll');
   assert.deepEqual(s.played, [1, 0]);
-  assert.ok(s.log.some((t) => t.includes('Ali Kastamonu aldı')));
+  assert.ok(s.log.some((t) => t.includes("Ali Kastamonu'yu aldı")));
+  assert.equal(accusative(BOARD[7]), 'Garı');
+  assert.equal(accusative(BOARD[12]), 'Havalimanını');
+  assert.equal(accusative(BOARD[1]), "Sinop'u");
   // "Alma" leaves it unowned
   let t = rigged(11, 0, 0, ([a, b]) => a + b === 3);
   t = play(t, 0, { type: 'roll' });
@@ -106,6 +109,41 @@ test('bilanço: rakibin mülküne gelen kira öder (çiftle iki kat, evle daha �
   assert.equal(s.cash[1], 1000 + 24);
   assert.equal(s.phase, 'act');
   assert.ok(s.log.some((t) => t.includes("Ali, Ayşe'ye Kastamonu kirası ödedi: ₺24")));
+});
+
+test('bilanço: bölünmüş çift — rakibin şehrini kiradan sonra iki katına alıp çifti tamamla', () => {
+  // Ali owns Antalya (11); Ayşe owns Muğla (13). Ali at Otopark (10) rolls a non-double 3 → Muğla
+  const owner = BOARD.map(() => null); owner[11] = 0; owner[13] = 1;
+  let s = { ...rigged(91, 0, 10, ([a, b]) => a !== b && a + b === 3), owner };
+  s = play(s, 0, { type: 'roll' });
+  assert.equal(s.pos[0], 13);
+  assert.equal(s.phase, 'buy', 'buyout offered after the rent');
+  assert.deepEqual(s.cash, [1000 - 18, 1000 + 18]);
+  assert.ok(canBuyOut(s, 0, 13));
+  assert.throws(() => play(s, 0, { type: 'end' }), 'Önce satın al ya da geç');
+  const bought = play(s, 0, { type: 'buy' });
+  assert.equal(bought.owner[13], 0);
+  assert.deepEqual(bought.cash, [1000 - 18 - 180 * BUYOUT_MULT, 1000 + 18 + 180 * BUYOUT_MULT]);
+  assert.ok(ownsGroup(bought, 0, 'turuncu'));
+  assert.equal(bought.phase, 'act');
+  assert.ok(bought.log.at(-1).includes("Ali Muğla'yı Ayşe'den satın aldı (₺360)"), bought.log.at(-1));
+  assert.ok(canBuild(bought, 0, 11), 'the pair is complete: houses allowed');
+  const passed = play(s, 0, { type: 'pass' });
+  assert.equal(passed.owner[13], 1);
+  assert.equal(passed.phase, 'act');
+  // no offer without the pair-mate, with houses on it, without the money, or on a transport square
+  const o2 = BOARD.map(() => null); o2[13] = 1;
+  let t = { ...rigged(91, 0, 10, ([a, b]) => a !== b && a + b === 3), owner: o2 };
+  t = play(t, 0, { type: 'roll' });
+  assert.equal(t.phase, 'act');
+  let u = { ...rigged(91, 0, 10, ([a, b]) => a !== b && a + b === 3), owner, cash: [300, 1000] };
+  u = play(u, 0, { type: 'roll' });
+  assert.equal(u.phase, 'act', '282 left, 360 needed');
+  const o3 = BOARD.map(() => null); o3[7] = 1; o3[12] = 0;
+  let v = { ...rigged(92, 0, 3, ([a, b]) => a !== b && a + b === 4), owner: o3 };
+  v = play(v, 0, { type: 'roll' });
+  assert.equal(v.pos[0], 7);
+  assert.equal(v.phase, 'act', 'transport squares cannot be bought out');
 });
 
 test('bilanço: ev kurma ve satma; tam çift, sınır ve para şartı', () => {
@@ -162,19 +200,30 @@ test('bilanço: çift tekrar attırır, üç çift kodese; kodes: öde, çift de
   assert.equal(k.pos[0], JAIL);
   assert.equal(k.phase, 'act');
   // a double frees you and moves you, but gives no extra roll
-  let d = { ...game.setup({ seed }), turn: 0, pos: [JAIL, 0], jail: [1, null], rollCount: findRoll(seed, 0, ([a, b]) => a === b) };
+  let d = { ...game.setup({ seed }), turn: 0, pos: [JAIL, 0], jail: [1, null], rollCount: findRoll(seed, 0, ([a, b]) => a === b && [7, 11].includes(JAIL + a + b)) };
   const dice = rollDice(seed, d.rollCount);
   d = play(d, 0, { type: 'roll' });
   assert.equal(d.jail[0], null);
-  assert.equal(d.pos[0] === (JAIL + dice[0] + dice[1]) % N || d.last.path.length > 0, true);
+  assert.equal(d.pos[0], JAIL + dice[0] + dice[1]);
   if (d.phase === 'buy') d = play(d, 0, { type: 'pass' });
   assert.ok(d.phase === 'act' || d.phase === 'over', 'no extra roll after leaving jail on a double');
   // third failed attempt: pay and move
-  let f = { ...game.setup({ seed }), turn: 0, pos: [JAIL, 0], jail: [2, null], rollCount: findRoll(seed, 0, ([a, b]) => a !== b && ![10].includes(JAIL + a + b)) };
+  // (land on a quiet square: Eskişehir, Gar, Bursa, Otopark or Antalya — all free, so a buy offer at most)
+  let f = { ...game.setup({ seed }), turn: 0, pos: [JAIL, 0], jail: [2, null], rollCount: findRoll(seed, 0, ([a, b]) => a !== b && [6, 7, 8, 10, 11].includes(JAIL + a + b)) };
+  const fd = rollDice(seed, f.rollCount);
   f = play(f, 0, { type: 'roll' });
   assert.equal(f.jail[0], null);
-  assert.ok(f.pos[0] !== JAIL);
-  assert.ok(f.cash[0] <= 1000 - JAIL_FEE + 150, 'paid the fee');
+  assert.equal(f.pos[0], JAIL + fd[0] + fd[1]);
+  assert.equal(f.cash[0], 1000 - JAIL_FEE, 'paid the fee');
+  // third attempt with no money and nothing to sell: bankrupt
+  let z = { ...game.setup({ seed }), turn: 0, pos: [JAIL, 0], jail: [2, null], cash: [20, 900], rollCount: findRoll(seed, 0, ([a, b]) => a !== b) };
+  z = play(z, 0, { type: 'roll' });
+  assert.equal(z.phase, 'over');
+  assert.deepEqual(game.getResult(z), { winner: 1 });
+  assert.equal(z.cash[1], 900, 'a fee to the bank is not paid to the opponent');
+  // paying out of jail needs the money
+  assert.throws(() => play({ ...game.setup({ seed }), turn: 0, pos: [JAIL, 0], jail: [0, null], cash: [40, 900] }, 0, { type: 'payJail' }), 'Paran yetmiyor');
+  assert.throws(() => play({ ...game.setup({ seed }), turn: 0 }, 0, { type: 'payJail' }), 'Kodeste değilsin');
   assert.ok(f.log.some((t2) => t2.includes('üçüncü denemede')));
 });
 
@@ -265,26 +314,62 @@ test('bilanço: tur sayısı dolunca varlığı çok olan kazanır; eşitlikte b
   s = play(s, 1, { type: 'end' });
   assert.deepEqual(game.getResult(s), { winner: 1 });
   assert.ok(s.log.at(-1).includes('Turlar bitti'));
-  // "until bankruptcy" never ends on rounds
-  s = { ...game.setup({ seed: 70, rounds: 0 }), turn: 1, played: [60, 59], phase: 'act' };
+  // "until bankruptcy" goes on past 15 rounds but stops at MAX_ROUNDS
+  s = { ...game.setup({ seed: 70, rounds: 0 }), turn: 1, played: [20, 19], phase: 'act' };
   s = play(s, 1, { type: 'end' });
   assert.equal(s.phase, 'roll');
+  s = { ...game.setup({ seed: 70, rounds: 0 }), turn: 1, played: [MAX_ROUNDS, MAX_ROUNDS - 1], phase: 'act', owner };
+  s = play(s, 1, { type: 'end' });
+  assert.equal(s.phase, 'over');
+  assert.deepEqual(game.getResult(s), { winner: 1 });
 });
 
-test('bilanço: rastgele oyunlar kuralları bozmaz (para eksiye düşmez, para+mülk tutarlı)', () => {
-  for (let seed = 1; seed <= 40; seed++) {
-    let s = game.setup({ seed, rounds: 10 });
+test('bilanço: vergi, ulaşım kirası ve doğum günü kartı (parası yetmeyen rakip mal satar)', () => {
+  // Başla → Gelir Vergisi (4) with a non-double 4
+  let t = rigged(81, 0, 0, ([a, b]) => a !== b && a + b === 4);
+  t = play(t, 0, { type: 'roll' });
+  assert.equal(t.pos[0], 4);
+  assert.equal(t.cash[0], 900);
+  assert.equal(t.cash[1], 1000, 'tax goes to the bank');
+  // Ali lands on Ayşe's Gar (7) while she owns both transports: 60
+  const owner = BOARD.map(() => null); owner[7] = 1; owner[12] = 1;
+  let r = { ...rigged(82, 0, 3, ([a, b]) => a !== b && a + b === 4), owner };
+  r = play(r, 0, { type: 'roll' });
+  assert.equal(r.pos[0], 7);
+  assert.deepEqual(r.cash, [1000 - TRANSPORT_RENT[2], 1000 + TRANSPORT_RENT[2]]);
+  // birthday card: Ayşe has ₺10 and a house on Sinop — she sells the house (₺25) to pay ₺30
+  const seed = 83;
+  const base = game.setup({ seed });
+  const card = CARDS.findIndex((c) => c.fromOpp);
+  const own2 = BOARD.map(() => null); own2[1] = 1; own2[3] = 1;
+  const houses = BOARD.map(() => 0); houses[1] = 1;
+  let b = { ...base, deck: [card, ...base.deck.filter((c) => c !== card)], turn: 0, pos: [6, 0], cash: [1000, 10], owner: own2, houses, rollCount: findRoll(seed, 0, ([x, y]) => x !== y && x + y === 3) };
+  b = play(b, 0, { type: 'roll' });
+  assert.equal(b.pos[0], 9);
+  assert.equal(b.houses[1], 0, 'house sold to pay');
+  assert.deepEqual(b.cash, [1030, 10 + 25 - 30]);
+});
+
+const deepFreeze = (o) => { Object.values(o).forEach((v) => { if (v && typeof v === 'object' && !Object.isFrozen(v)) deepFreeze(v); }); return Object.freeze(o); };
+
+test('bilanço: rastgele oyunlar kuralları bozmaz (para eksiye düşmez, saf hamleler, her oyun biter)', () => {
+  for (let seed = 1; seed <= 60; seed++) {
+    const rounds = [10, 6, 15, 0][seed % 4];
+    let s = game.setup({ seed, rounds, cash: seed % 3 ? 1000 : 1500 });
     let steps = 0;
-    while (s.phase !== 'over' && steps < 2000) {
+    while (s.phase !== 'over' && steps < 6000) {
       const p = s.turn;
       let move;
+      const mine = BOARD.map((_, i) => i).filter((i) => s.owner[i] === p);
+      const b = BOARD.findIndex((_, i) => canBuild(s, p, i));
+      const sell = mine.find((i) => s.houses[i] > 0);
       if (s.phase === 'buy') move = { type: (seed + steps) % 3 ? 'buy' : 'pass' };
-      else if (s.phase === 'act') {
-        const b = BOARD.findIndex((_, i) => canBuild(s, p, i));
-        move = b >= 0 && (seed + steps) % 2 ? { type: 'build', pos: b } : { type: 'end' };
-      } else if (s.jail[p] != null && (seed + steps) % 4 === 0 && s.cash[p] >= JAIL_FEE) move = { type: 'payJail' };
+      else if (b >= 0 && (seed + steps) % 2) move = { type: 'build', pos: b };
+      else if (sell != null && (seed + steps) % 11 === 0) move = { type: 'sellHouse', pos: sell };
+      else if (s.phase === 'act') move = { type: 'end' };
+      else if (s.jail[p] != null && (seed + steps) % 4 === 0 && s.cash[p] >= JAIL_FEE) move = { type: 'payJail' };
       else move = { type: 'roll' };
-      s = play(s, p, move);
+      s = play(deepFreeze(s), p, move);
       steps += 1;
       assert.ok(s.cash[0] >= 0 && s.cash[1] >= 0, `cash never negative (seed ${seed})`);
       assert.ok(s.pos.every((x) => x >= 0 && x < N));
@@ -295,6 +380,7 @@ test('bilanço: rastgele oyunlar kuralları bozmaz (para eksiye düşmez, para+m
     }
     assert.equal(s.phase, 'over', `seed ${seed} finishes`);
     assert.ok(game.getResult(s));
-    assert.ok(s.played[0] <= 10 && s.played[1] <= 10);
+    const limit = rounds || MAX_ROUNDS;
+    assert.ok(s.played[0] <= limit && s.played[1] <= limit);
   }
 });

@@ -5,6 +5,7 @@
 import { el, render as draw } from '../js/ui/dom.js';
 import { createRng, shuffle } from '../js/lib/rng.js';
 import { nameSuffix } from '../js/lib/tr.js';
+import { discCanvas, keyDot, fillCanvas } from '../js/ui/paint.js';
 
 export const meta = {
   group: 'kart',
@@ -14,29 +15,32 @@ export const meta = {
   rules: [
     'Sırayla iki zar atıp tahtada ilerlersiniz. Boştaki bir şehre ya da ulaşım karesine gelirsen satın alabilirsin; rakibinin mülküne gelirsen kira ödersin. Başla\'dan geçince 100 alırsın.',
     'Aynı renkteki iki şehir de sendeyse kira iki katına çıkar ve sıran geldiğinde bu şehirlere ev kurabilirsin (en çok 3). Ev kira getirisini çok artırır. İki ulaşım karesi birlikte daha çok kira getirir.',
+    'Bölünmüş çift: rakibinin şehrine geldiğinde o rengin öbür şehri sendeyse, kirayı ödedikten sonra o şehri rakipten iki katı fiyatına satın alıp çifti tamamlayabilirsin.',
     'Çift atan bir daha atar; üst üste üç çift kodese götürür. Kodesteyken 50 ödeyip çıkabilir ya da çift atmayı deneyebilirsin; üçüncü denemede 50 ödenir. Şans kartları para, ceza ya da yer değişikliği getirir.',
-    'Parası yetmeyen oyuncunun önce evleri, sonra mülkleri yarı fiyatına bankaya satılır; yine yetmezse iflas eder ve rakip kazanır. Seçilen tur sayısı dolunca varlığı (para + mülkler + evler) çok olan kazanır.',
+    'Parası yetmeyen oyuncunun önce evleri, sonra mülkleri yarı fiyatına bankaya satılır; yine yetmezse iflas eder ve rakip kazanır. Seçilen tur sayısı dolunca ("İflasa kadar" seçiliyse en geç 40 turda) varlığı (para + mülkler + evler) çok olan kazanır.',
   ].join('\n'),
   data: [],
   settings: [
-    { key: 'rounds', label: 'Tur sayısı', type: 'select', default: 10, options: [{ value: 6, label: '6 (çok kısa)' }, { value: 10, label: '10' }, { value: 15, label: '15' }, { value: 0, label: 'İflasa kadar' }] },
+    { key: 'rounds', label: 'Tur sayısı', type: 'select', default: 10, options: [{ value: 6, label: '6 (çok kısa)' }, { value: 10, label: '10' }, { value: 15, label: '15' }, { value: 0, label: 'İflasa kadar (en çok 40)' }] },
     { key: 'cash', label: 'Başlangıç parası', type: 'select', default: 1000, options: [{ value: 1000, label: '₺1000' }, { value: 1500, label: '₺1500' }] },
     { key: 'anim', label: 'Piyon animasyonu', type: 'select', default: 'normal', options: [{ value: 'normal', label: 'Normal' }, { value: 'fast', label: 'Hızlı' }, { value: 'off', label: 'Kapalı' }] },
   ],
 };
 
 export const GROUPS = {
-  kahve: { name: 'Kahverengi', color: '#8d6e63', house: 50 },
-  mavi: { name: 'Açık mavi', color: '#4fc3f7', house: 60 },
-  turuncu: { name: 'Turuncu', color: '#fb8c00', house: 100 },
-  kirmizi: { name: 'Kırmızı', color: '#e53935', house: 120 },
-  lacivert: { name: 'Lacivert', color: '#283593', house: 160 },
+  kahve: { name: 'Kahverengi', color: '#8d6e63', ink: '#fff', house: 50 },
+  mavi: { name: 'Açık mavi', color: '#4fc3f7', ink: '#1b1d24', house: 60 },
+  turuncu: { name: 'Turuncu', color: '#fb8c00', ink: '#1b1d24', house: 100 },
+  kirmizi: { name: 'Kırmızı', color: '#e53935', ink: '#fff', house: 120 },
+  lacivert: { name: 'Lacivert', color: '#283593', ink: '#fff', house: 160 },
 };
 export const HOUSE_MULT = [1, 4, 10, 20]; // rent multiplier by houses (0 = base, doubled for a full pair)
 export const TRANSPORT_RENT = [0, 25, 60];
 export const GO_BONUS = 100;
 export const JAIL_FEE = 50;
 export const MAX_HOUSES = 3;
+export const BUYOUT_MULT = 2; // a split pair: the owner of one city may buy the other from the opponent at twice its price
+export const MAX_ROUNDS = 40; // "until bankruptcy" still stops here: with split colour pairs nobody may ever go broke
 export const JAIL = 5;
 
 // the 20 squares, starting at Başla and running clockwise round the board
@@ -48,12 +52,12 @@ export const BOARD = [
   { kind: 'tax', name: 'Gelir Vergisi', amount: 100 },
   { kind: 'jail', name: 'Kodes' },
   { kind: 'city', name: 'Eskişehir', price: 100, group: 'mavi' },
-  { kind: 'transport', name: 'Gar', price: 150 },
+  { kind: 'transport', name: 'Gar', price: 150, acc: 'Garı' },
   { kind: 'city', name: 'Bursa', price: 120, group: 'mavi' },
   { kind: 'chance', name: 'Şans' },
   { kind: 'parking', name: 'Otopark' },
   { kind: 'city', name: 'Antalya', price: 160, group: 'turuncu' },
-  { kind: 'transport', name: 'Havalimanı', price: 150 },
+  { kind: 'transport', name: 'Havalimanı', price: 150, acc: 'Havalimanını' },
   { kind: 'city', name: 'Muğla', price: 180, group: 'turuncu' },
   { kind: 'chance', name: 'Şans' },
   { kind: 'gotojail', name: 'Kodese Gir' },
@@ -64,6 +68,8 @@ export const BOARD = [
 ];
 export const N = BOARD.length;
 export const baseRent = (pos) => Math.round(BOARD[pos].price / 10);
+/** "Sinop'u", "İstanbul'u" — the transport squares are common nouns: "Garı", "Havalimanını". */
+export const accusative = (sq) => sq.acc || nameSuffix(sq.name, 'i');
 
 export const CARDS = [
   { text: 'Başla\'ya ilerle.', go: 0 },
@@ -138,6 +144,14 @@ export function netWorth(state, p) {
     if (sq.group) v += state.houses[i] * GROUPS[sq.group].house;
   });
   return v;
+}
+
+/** Standing on the opponent's city whose pair-mate p owns: p may buy it from them at BUYOUT_MULT × price. */
+export function canBuyOut(state, p, pos) {
+  const sq = BOARD[pos];
+  return sq.kind === 'city' && state.owner[pos] === 1 - p && !state.houses[pos]
+    && BOARD.some((o, i) => i !== pos && o.group === sq.group && state.owner[i] === p)
+    && state.cash[p] >= sq.price * BUYOUT_MULT;
 }
 
 export function canBuild(state, p, pos) {
@@ -218,6 +232,7 @@ function land(s, p, path, players, depth = 0) {
       const rent = rentOf(s, pos);
       note(s, `${players[p]}, ${nameSuffix(players[opp], 'e')} ${sq.name} kirası ödedi: ₺${rent}.`);
       if (!pay(s, p, rent, true, players)) return;
+      if (canBuyOut(s, p, pos)) s.phase = 'buy';
     }
   } else if (sq.kind === 'tax') {
     note(s, `${players[p]} vergi ödedi: ₺${sq.amount}.`);
@@ -231,7 +246,7 @@ function land(s, p, path, players, depth = 0) {
     note(s, `Şans: ${card.text}`);
     if (card.cash > 0) s.cash[p] += card.cash;
     else if (card.cash < 0) { if (!pay(s, p, -card.cash, false, players)) return; }
-    else if (card.fromOpp) { const amt = Math.min(card.fromOpp, s.cash[opp]); s.cash[opp] -= amt; s.cash[p] += amt; }
+    else if (card.fromOpp) { if (!pay(s, opp, card.fromOpp, true, players)) return; }
     else if (card.perHouse) {
       const total = s.houses.reduce((a, h, i) => a + (s.owner[i] === p ? h : 0), 0) * card.perHouse;
       if (total && !pay(s, p, total, false, players)) return;
@@ -258,7 +273,8 @@ function endTurn(s, players) {
   const p = s.turn;
   s.played[p] += 1;
   s.doubles = 0;
-  if (s.rounds && s.played[0] >= s.rounds && s.played[1] >= s.rounds) {
+  const limit = s.rounds || MAX_ROUNDS;
+  if (s.played[0] >= limit && s.played[1] >= limit) {
     const a = netWorth(s, 0);
     const b = netWorth(s, 1);
     s.phase = 'over';
@@ -333,10 +349,18 @@ export function applyMove(state, player, move, ctx = {}) {
       if (s.phase !== 'buy') fail('Satın alınacak bir şey yok');
       const pos = s.pos[p];
       const sq = BOARD[pos];
-      if (s.owner[pos] != null || s.cash[p] < sq.price) fail('Satın alınamaz');
-      s.cash[p] -= sq.price;
-      s.owner[pos] = p;
-      note(s, `${players[p]} ${sq.name} aldı (₺${sq.price}).`);
+      if (s.owner[pos] === 1 - p && canBuyOut(s, p, pos)) {
+        const cost = sq.price * BUYOUT_MULT;
+        s.cash[p] -= cost;
+        s.cash[1 - p] += cost;
+        s.owner[pos] = p;
+        note(s, `${players[p]} ${accusative(sq)} ${nameSuffix(players[1 - p], 'de')}n satın aldı (₺${cost}): ${GROUPS[sq.group].name.toLowerCase()} çift tamam!`);
+      } else {
+        if (s.owner[pos] != null || s.cash[p] < sq.price) fail('Satın alınamaz');
+        s.cash[p] -= sq.price;
+        s.owner[pos] = p;
+        note(s, `${players[p]} ${accusative(sq)} aldı (₺${sq.price}).`);
+      }
       s.phase = 'buy-done';
       afterMove(s);
       if (s.phase === 'buy-done') s.phase = 'act';
@@ -344,7 +368,7 @@ export function applyMove(state, player, move, ctx = {}) {
     }
     case 'pass': {
       if (s.phase !== 'buy') fail('Geçilecek bir şey yok');
-      note(s, `${players[p]} ${BOARD[s.pos[p]].name} almadı.`);
+      note(s, `${players[p]} ${accusative(BOARD[s.pos[p]])} almadı.`);
       s.phase = 'buy-done';
       afterMove(s);
       if (s.phase === 'buy-done') s.phase = 'act';
@@ -397,6 +421,10 @@ const TOKEN = ['#e53935', '#1e88e5'];
 const STEP_MS = { normal: 170, fast: 80 };
 const replayed = new Map(); // `${id}:${n}` -> start time | 'done'
 let replayedFor = null;
+// The main button changes meaning in place ("Sırayı ver" becomes the next player's "Zar at"):
+// taps in the first moments after a step are ignored so a double tap cannot act twice.
+const TAP_GUARD_MS = 350;
+let armed = { key: '', at: 0 };
 
 /** Grid cell (row, col) of a square on the 6×6 ring: Başla bottom-right, clockwise. */
 export function cellOf(i) {
@@ -419,6 +447,9 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   let animating = !!(L && anim !== 'off' && replayed.get(key) !== 'done' && L.path.length);
   if (animating && !replayed.has(key)) replayed.set(key, Date.now());
   const stepMs = STEP_MS[anim] || STEP_MS.normal;
+  const stepKey = `${state.id}:${state.rollCount}:${state.phase}:${state.turn}:${state.played.join()}:${state.jail.join()}`;
+  if (armed.key !== stepKey) armed = { key: stepKey, at: Date.now() };
+  const act = (move) => { if (Date.now() - armed.at >= TAP_GUARD_MS) sendMove(move); };
 
   const board = el('div', { class: `bl-board${animating ? ' animating' : ''}` });
   const cells = [];
@@ -433,7 +464,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       style: { gridRow: String(r), gridColumn: String(c) },
       'aria-label': `${sq.name}${sq.price ? `, ₺${sq.price}` : ''}${o != null ? `, sahibi ${players[o]}` : ''}${state.houses[i] ? `, ${state.houses[i]} ev` : ''}`,
     },
-    g ? el('div', { class: 'bl-band', style: { background: g.color } }, state.houses[i] ? '⌂'.repeat(state.houses[i]) : '') : null,
+    g ? el('div', { class: 'bl-band', style: { color: g.ink } }, fillCanvas(g.color, 'bl-band-bg'), el('span', {}, state.houses[i] ? '⌂'.repeat(state.houses[i]) : '')) : null,
     el('div', { class: 'bl-name' }, label ? `${label} ${sq.name}` : sq.name),
     sq.price ? el('div', { class: 'bl-price' }, o != null ? `kira ${rentOf(state, i)}` : `₺${sq.price}`) : null,
     el('div', { class: 'bl-tokens' }));
@@ -442,7 +473,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   });
   const placeTokens = (pos) => {
     cells.forEach((c) => c.querySelector('.bl-tokens').replaceChildren());
-    [0, 1].forEach((q) => cells[pos[q]].querySelector('.bl-tokens').append(el('span', { class: `bl-token t${q}`, style: { background: TOKEN[q] }, title: players[q] })));
+    [0, 1].forEach((q) => cells[pos[q]].querySelector('.bl-tokens').append(el('span', { class: `bl-token t${q}`, title: players[q] }, discCanvas(TOKEN[q], { rim: '#fff', size: 40 }))));
   };
   const center = el('div', { class: 'bl-center' },
     el('div', { class: 'bl-dice', 'aria-label': state.dice ? `Zar: ${state.dice[0]} ve ${state.dice[1]}` : 'Henüz zar atılmadı' },
@@ -453,7 +484,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   placeTokens(state.pos);
 
   const money = el('div', { class: 'bl-money' }, [0, 1].map((q) => el('div', { class: `bl-player ${state.turn === q && state.phase !== 'over' ? 'active' : ''}` },
-    el('span', { class: 'bl-dot', style: { background: TOKEN[q] } }),
+    keyDot(TOKEN[q]),
     el('strong', {}, players[q]), ` ₺${state.cash[q]}`,
     el('span', { class: 'muted' }, ` · varlık ₺${netWorth(state, q)}${state.jail[q] != null ? ' · kodeste' : ''}`))));
 
@@ -463,7 +494,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     status = R.draw ? 'Berabere!' : R.reason === 'bankrupt' ? `${players[R.winner]} kazandı: rakip iflas etti!` : `${players[R.winner]} kazandı: varlık ₺${netWorth(state, R.winner)} – ₺${netWorth(state, 1 - R.winner)}`;
   } else if (mine) status = `${players[p]}, sıra sende`;
   else status = `${players[p]} oynuyor…`;
-  const roundInfo = state.rounds ? `Tur ${Math.min(state.played[p] + 1, state.rounds)} / ${state.rounds}` : 'İflasa kadar';
+  const roundInfo = state.rounds ? `Tur ${Math.min(state.played[p] + 1, state.rounds)} / ${state.rounds}` : `Tur ${Math.min(state.played[p] + 1, MAX_ROUNDS)} · iflasa kadar (en çok ${MAX_ROUNDS})`;
 
   // actions
   const actions = el('div', { class: 'bl-actions' });
@@ -472,19 +503,21 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     if (state.phase === 'roll') {
       if (state.jail[p] != null) {
         actions.append(
-          el('button', { type: 'button', class: 'btn btn-primary', onClick: () => sendMove({ type: 'roll' }) }, `Çift atmayı dene (${(state.jail[p] || 0) + 1}/3)`),
-          el('button', { type: 'button', class: 'btn btn-secondary', disabled: state.cash[p] < JAIL_FEE, onClick: () => sendMove({ type: 'payJail' }) }, `₺${JAIL_FEE} öde, çık`),
+          el('button', { type: 'button', class: 'btn btn-primary', onClick: () => act({ type: 'roll' }) }, `Çift atmayı dene (${(state.jail[p] || 0) + 1}/3)`),
+          el('button', { type: 'button', class: 'btn btn-secondary', disabled: state.cash[p] < JAIL_FEE, onClick: () => act({ type: 'payJail' }) }, `₺${JAIL_FEE} öde, çık`),
         );
       } else {
-        actions.append(el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block', onClick: () => sendMove({ type: 'roll' }) }, state.doubles > 0 ? 'Çift! Tekrar zar at' : 'Zar at'));
+        actions.append(el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block', onClick: () => act({ type: 'roll' }) }, state.doubles > 0 ? 'Çift! Tekrar zar at' : 'Zar at'));
       }
     } else if (state.phase === 'buy') {
+      const buyout = state.owner[state.pos[p]] === 1 - p;
       actions.append(
-        el('button', { type: 'button', class: 'btn btn-primary', onClick: () => sendMove({ type: 'buy' }) }, `${sq.name} al (₺${sq.price})`),
-        el('button', { type: 'button', class: 'btn btn-secondary', onClick: () => sendMove({ type: 'pass' }) }, 'Alma'),
+        buyout ? el('p', { class: 'hint bl-offer' }, `${GROUPS[sq.group].name} çiftin öbür şehri sende: ${accusative(sq)} ${nameSuffix(players[1 - p], 'de')}n iki katı fiyatına alıp çifti tamamlayabilirsin.`) : null,
+        el('button', { type: 'button', class: 'btn btn-primary', onClick: () => act({ type: 'buy' }) }, buyout ? `${accusative(sq)} satın al (₺${sq.price * BUYOUT_MULT})` : `${accusative(sq)} al (₺${sq.price})`),
+        el('button', { type: 'button', class: 'btn btn-secondary', onClick: () => act({ type: 'pass' }) }, 'Alma'),
       );
     } else if (state.phase === 'act') {
-      actions.append(el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block', onClick: () => sendMove({ type: 'end' }) }, 'Sırayı ver'));
+      actions.append(el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block', onClick: () => act({ type: 'end' }) }, 'Sırayı ver'));
     }
   }
   // own properties with build/sell buttons (only on your turn, before/after rolling)
@@ -492,12 +525,12 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const ownView = (q) => {
     const list = BOARD.map((s2, i) => i).filter((i) => state.owner[i] === q);
     if (!list.length) return el('p', { class: 'hint' }, `${players[q]}: henüz mülk yok.`);
-    return el('div', { class: 'bl-props' }, el('div', { class: 'col-title' }, `${players[q]} mülkleri`), list.map((i) => {
+    return el('div', { class: 'bl-props' }, el('div', { class: 'col-title' }, `${nameSuffix(players[q], 'in')} mülkleri`), list.map((i) => {
       const s2 = BOARD[i];
       const g = s2.group ? GROUPS[s2.group] : null;
       const full = g && ownsGroup(state, q, s2.group);
       return el('div', { class: 'bl-prop' },
-        el('span', { class: 'bl-swatch', style: { background: g ? g.color : '#9e9e9e' } }),
+        fillCanvas(g ? g.color : '#9e9e9e', 'bl-swatch'),
         el('span', { class: 'bl-pname' }, `${s2.name}${state.houses[i] ? ` ${'⌂'.repeat(state.houses[i])}` : ''}`),
         el('span', { class: 'muted' }, `kira ₺${rentOf(state, i)}${g && !full ? ' · çifti tamamla' : ''}`),
         canManage && q === p && g && full ? el('span', { class: 'bl-btns' },

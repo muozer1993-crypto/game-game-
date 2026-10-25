@@ -59,17 +59,54 @@ export function drawDisc(g, cx, cy, radius, fill, opts = {}) {
   g.restore();
 }
 
+/** A canvas filled with one colour (a board square, a panel): forced dark modes cannot repaint it. */
+export function fillCanvas(color, cls = 'fill-canvas') {
+  const c = el('canvas', { class: cls, width: 4, height: 4, 'aria-hidden': 'true' });
+  const g = c.getContext && c.getContext('2d');
+  if (g) {
+    g.fillStyle = color;
+    g.fillRect(0, 0, 4, 4);
+  }
+  return c;
+}
+
 /**
  * A plain canvas to sit behind an SVG board, painted in the page background colour. Forced dark modes
- * darken the page but not this, so the board's dark lines and dots stay visible on it.
+ * darken the page but not this, so the board's dark lines and dots stay visible on it. It follows the
+ * phone switching between light and dark while a game is open (the "auto" theme).
  */
 export function backdrop(varName = '--bg') {
   const c = el('canvas', { class: 'board-backdrop', width: 4, height: 4, 'aria-hidden': 'true' });
   const g = c.getContext && c.getContext('2d');
-  if (g) {
+  if (!g) return c;
+  const paint = () => {
     g.fillStyle = getComputedStyle(document.documentElement).getPropertyValue(varName).trim() || '#ffffff';
     g.fillRect(0, 0, 4, 4);
+  };
+  paint();
+  if (typeof matchMedia === 'function') {
+    const mq = matchMedia('(prefers-color-scheme: dark)');
+    const onChange = () => {
+      if (!c.isConnected) { mq.removeEventListener('change', onChange); return; }
+      paint();
+    };
+    mq.addEventListener('change', onChange);
   }
+  return c;
+}
+
+/** A tavla point: a triangle on canvas, pointing down (top row) or up (bottom row). */
+export function triangleCanvas(color, pointDown, cls = 'tri-canvas') {
+  const w = 40;
+  const h = 120;
+  const c = el('canvas', { class: cls, width: w, height: h, 'aria-hidden': 'true' });
+  const g = c.getContext && c.getContext('2d');
+  if (!g) return c;
+  g.beginPath();
+  if (pointDown) { g.moveTo(0, 0); g.lineTo(w, 0); g.lineTo(w / 2, h); } else { g.moveTo(w / 2, 0); g.lineTo(w, h); g.lineTo(0, h); }
+  g.closePath();
+  g.fillStyle = color;
+  g.fill();
   return c;
 }
 

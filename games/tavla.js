@@ -4,7 +4,7 @@
 import { el, render as draw, toast } from '../js/ui/dom.js';
 import { randomSeed } from '../js/lib/rng.js';
 import { nameSuffix } from '../js/lib/tr.js';
-import { discCanvas, keyDot } from '../js/ui/paint.js';
+import { discCanvas, keyDot, triangleCanvas } from '../js/ui/paint.js';
 
 export const meta = {
   group: 'kart',
@@ -269,7 +269,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
           selected = selected === i ? null : i;
           drawBoard();
         },
-      }, el('span', { class: 'tv-stack' }, checkers));
+      }, triangleCanvas(selected === i ? '#ffb300' : isTarget ? '#81c784' : isSource ? '#ffe082' : d % 2 ? '#a1887f' : '#d7ccc8', top, 'tv-tri'), el('span', { class: 'tv-stack' }, checkers));
     };
     // display column: top row shows display indexes 12..23 left to right, bottom shows 11..0 left to right
     function colOf(d) {

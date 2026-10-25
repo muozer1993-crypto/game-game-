@@ -2,7 +2,7 @@
 // capture by jumping orthogonally; kings (dama) move any distance. Capturing is mandatory,
 // and the sequence that captures the most pieces must be chosen.
 import { el, render as draw } from '../js/ui/dom.js';
-import { discCanvas, keyDot } from '../js/ui/paint.js';
+import { discCanvas, keyDot, fillCanvas } from '../js/ui/paint.js';
 
 export const meta = {
   group: 'masa',
@@ -225,7 +225,8 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
           if (selected === i) { selected = null; partial = []; } else { selected = i; partial = []; }
           drawBoard();
         },
-      }, piece ? el('span', { class: `dama-piece p${piece.p} ${piece.k ? 'king' : ''}` }, discCanvas(DAMA_COLOUR[piece.p], { mark: piece.k ? '♛' : '', size: 80 })) : null));
+      }, fillCanvas(dark ? '#b58863' : '#f0d9b5', 'dama-bg'),
+      piece ? el('span', { class: `dama-piece p${piece.p} ${piece.k ? 'king' : ''}` }, discCanvas(DAMA_COLOUR[piece.p], { mark: piece.k ? '♛' : '', size: 80 })) : null));
     }
     draw(boardBox, cells);
   };
