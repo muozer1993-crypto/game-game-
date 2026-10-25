@@ -7,7 +7,7 @@ import { nameSuffix } from '../js/lib/tr.js';
 import { SUITS, cardText } from './pisti.js';
 
 export const meta = {
-  group: 'masa',
+  group: 'kart',
   name: 'Poker',
   icon: '♠️',
   description: 'Texas Hold\'em bire bir: iki gizli kart, beş ortak kart, körler ve rest.',

@@ -92,4 +92,4 @@ Dört Bağlantı, Noktalar ve Kutular, Hafıza, XOX, Taş Kağıt Makas, Adam As
 Kelime Türetme, Kelime Tahtası, İsim Şehir, Tabu (`data/tabu.json`), Reversi, Beş Taş, Hex, Dokuz Taş,
 Refleks, Satranç, Go, Okey (ikili), Pişti, Durak, Sekizler, Poker, Yalancı Zar, Zar Pokeri, Hesap Yarışı, Hedef Sayı, Renk Tuzağı, Hafıza Dizisi, Mayın Tarlası,
 Sudoku Düellosu — her biri `games/` altında tek dosya; `games/index.js` kaydı ve `sw.js`
-önbellek listesi. Ana menü `meta.group` ile bölümlere ayrılır (kelime / soru-cevap / masa).
+önbellek listesi. Ana menü `meta.group` ile bölümlere ayrılır (kelime / soru-cevap / zekâ ve refleks / tahta / kart-zar-taş).

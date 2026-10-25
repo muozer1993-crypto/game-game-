@@ -5,7 +5,7 @@ import { createTimer } from '../js/ui/timer.js';
 import { createRng } from '../js/lib/rng.js';
 
 export const meta = {
-  group: 'tanisma',
+  group: 'zeka',
   name: 'Renk Tuzağı',
   icon: '🎨',
   description: 'Kelimeye değil, rengine dokun! Süre dolana kadar en çok doğruyu yapan kazanır.',

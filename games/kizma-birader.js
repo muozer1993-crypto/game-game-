@@ -6,7 +6,7 @@ import { createRng } from '../js/lib/rng.js';
 import { nameSuffix } from '../js/lib/tr.js';
 
 export const meta = {
-  group: 'masa',
+  group: 'kart',
   name: 'Kızma Birader',
   icon: '🎯',
   description: 'Altı at, taşını çıkar, rakibini ez, tam sayıyla eve gir. Klasik zar yarışı.',

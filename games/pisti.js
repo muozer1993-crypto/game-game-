@@ -4,7 +4,7 @@ import { el, render as draw } from '../js/ui/dom.js';
 import { createRng, shuffle } from '../js/lib/rng.js';
 
 export const meta = {
-  group: 'masa',
+  group: 'kart',
   name: 'Pişti',
   icon: '🂡',
   description: 'Masadaki kartla aynı değeri ya da vale at, yığını al. 151 puana ilk ulaşan kazanır.',

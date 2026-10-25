@@ -6,7 +6,7 @@ import { createRng, shuffle } from '../js/lib/rng.js';
 import { nameSuffix } from '../js/lib/tr.js';
 
 export const meta = {
-  group: 'masa',
+  group: 'kart',
   name: 'Domino',
   icon: '🁣',
   description: 'Yedişer taş, uçlardan birine uyanı ekle; oynayamazsan çek. Elini bitiren rakibin puanını alır.',

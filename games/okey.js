@@ -6,7 +6,7 @@ import { createRng, shuffle } from '../js/lib/rng.js';
 import { nameSuffix } from '../js/lib/tr.js';
 
 export const meta = {
-  group: 'masa',
+  group: 'kart',
   name: 'Okey (ikili)',
   icon: '🀄',
   description: 'Gösterge, okey, per ve seriler: 14 taşı diz, 15.yi at, eli bitir.',

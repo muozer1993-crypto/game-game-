@@ -50,7 +50,9 @@ export const games = [sonHece, gizliKelime, gizliSayi, adamAsmaca, harfAvi, keli
 export const groups = [
   { id: 'kelime', title: 'Kelime oyunları' },
   { id: 'tanisma', title: 'Soru-cevap' },
-  { id: 'masa', title: 'Masa oyunları' },
+  { id: 'zeka', title: 'Zekâ ve refleks' },
+  { id: 'masa', title: 'Tahta oyunları' },
+  { id: 'kart', title: 'Kart, zar ve taş oyunları' },
 ];
 
 export function findGame(id) {

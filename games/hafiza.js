@@ -3,7 +3,7 @@ import { el, render as draw } from '../js/ui/dom.js';
 import { createRng, shuffle } from '../js/lib/rng.js';
 
 export const meta = {
-  group: 'masa',
+  group: 'zeka',
   name: 'Hafıza',
   icon: '🃏',
   description: 'Kapalı kartlardan ikisini aç; eşleşirse puan senin ve bir daha oynarsın.',

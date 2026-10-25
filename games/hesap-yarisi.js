@@ -6,7 +6,7 @@ import { createKeyboard } from '../js/ui/keyboard.js';
 import { createRng } from '../js/lib/rng.js';
 
 export const meta = {
-  group: 'tanisma',
+  group: 'zeka',
   name: 'Hesap Yarışı',
   icon: '🧮',
   description: 'Aynı işlemler ikinize; doğru sayısı, eşitlikte hız kazandırır.',

@@ -73,9 +73,12 @@ function setScreen(name, cleanupFn) {
   teardown = cleanupFn || null;
   currentScreen = name;
   if (location.hash !== `#${name}`) {
-    // The menu replaces the current entry so the history does not grow round after round.
+    // The history holds at most two entries: the menu and the current screen. Screens reached
+    // from another screen replace that entry, so an evening of rounds never piles up stale
+    // entries that would turn the back button into a no-op.
     if (name === 'menu') history.replaceState(null, '', '#menu');
-    else history.pushState(null, '', `#${name}`);
+    else if (history.state && history.state.app) history.replaceState({ app: true }, '', `#${name}`);
+    else history.pushState({ app: true }, '', `#${name}`);
   }
   window.scrollTo(0, 0);
 }
@@ -85,7 +88,7 @@ window.addEventListener('popstate', () => {
   if (currentScreen === 'menu') return;
   if (currentScreen === 'play') {
     if (activeSession && !activeSession.ended && !confirm('Oyundan çıkılsın mı?')) {
-      history.pushState(null, '', '#play');
+      history.pushState({ app: true }, '', '#play');
       return;
     }
     if (online.transport && !online.resuming && !reconnectOverlay) { showOnlineLobby({ notify: true }); return; }
@@ -99,7 +102,7 @@ window.addEventListener('popstate', () => {
   }
   if (currentScreen === 'online-wait' && online.transport) { leaveOnline(); showOnline(); return; }
   if (currentScreen === 'online-lobby' && online.transport && !confirm('Odadan çıkılsın mı? Rakibin bağlantısı kesilir.')) {
-    history.pushState(null, '', '#online-lobby');
+    history.pushState({ app: true }, '', '#online-lobby');
     return;
   }
   showMenu();
@@ -244,7 +247,10 @@ async function startTournamentGame() {
     if (tournament !== t) return; // the user left meanwhile
     const info = { index: t.index, total: t.ids.length, wins: t.wins.slice() };
     if (t.onlineHost) {
-      if (!online.transport) { showMenu(); return; }
+      if (!online.transport || online.resuming) { // the link dropped while the data loaded: keep the room
+        if (online.resuming || reconnectOverlay) toast('Bağlantı yok; yeniden bağlanınca "Sonraki oyun"a tekrar bas', { kind: 'error', duration: 4000 });
+        return;
+      }
       startOnlineGame(game, options, ctx, [0, 0], info);
     } else {
       showPlay({ game, options, players: t.players, ctx, mode: 'local', self: null, scores: [0, 0] });
@@ -437,9 +443,11 @@ export function showSetup(game, { onlineHost = false } = {}) {
       const ctx = await loadGameData(game);
       const options = { ...values, seed: randomSeed() };
       if (onlineHost && (!online.transport || online.resuming)) { // the room dropped while the data loaded
-        toast('Bağlantı yok; yeniden bağlanınca tekrar dene', { kind: 'error', duration: 4000 });
-        startBtn.disabled = false;
-        startBtn.textContent = 'Başla';
+        if (currentScreen === `setup-${game.id}`) { // otherwise the room was left meanwhile: nothing to say
+          toast('Bağlantı yok; yeniden bağlanınca tekrar dene', { kind: 'error', duration: 4000 });
+          startBtn.disabled = false;
+          startBtn.textContent = 'Başla';
+        }
         return;
       }
       if (onlineHost) startOnlineGame(game, options, ctx);
@@ -840,7 +848,7 @@ function wireTransport(myName, { resume = false } = {}) {
     // Decided when the channel opens, not when the handler was registered: the host keeps its
     // handlers across a replacement connection (the guest reconnecting after a drop the host never
     // noticed) and must then offer a resume, not a fresh greeting that would reset the guest.
-    if (online.session && !online.session.destroyed) t.send({ t: 'resume', received: online.session.received, name: online.myName });
+    if (online.session && !online.session.destroyed) t.send({ t: 'resume', received: online.session.received, name: online.myName, gameNo: online.gameNo || 0 });
     else t.send({ t: 'hello', name: online.myName, v: APP_VERSION });
   });
 }
@@ -950,7 +958,9 @@ function showOnlineLobby({ notify = false } = {}) {
 function startOnlineGame(game, options, ctx, scores, tournamentInfo = null) {
   if (!online.transport) return;
   const state0 = game.setup(options, { ...ctx, players: online.players, mode: 'online', self: 0, options });
-  online.transport.send({ t: 'start', gameId: game.id, options, state0, players: online.players, scores: scores || [0, 0], tournament: tournamentInfo });
+  online.gameNo = (online.gameNo || 0) + 1; // identifies this game in resume messages
+  online.lastStart = { t: 'start', gameId: game.id, options, state0, players: online.players, scores: scores || [0, 0], tournament: tournamentInfo, gameNo: online.gameNo };
+  online.transport.send(online.lastStart);
   showPlay({ game, options, players: online.players, ctx, mode: 'online', self: 0, initialState: state0, scores });
 }
 
@@ -969,12 +979,13 @@ async function handleOnlineMessage(msg) {
       // a stale cached build on one phone would desync the games: say so before anything starts
       if (msg.v && msg.v !== APP_VERSION) toast(`Uygulama sürümleri farklı (sende ${APP_VERSION}, rakipte ${msg.v}): ikiniz de ana menüye dönüp sayfayı yenileyin`, { kind: 'error', duration: 8000 });
       if (online.resuming) {
-        // the other side started over: our game cannot continue
+        const hadGame = !!(activeSession && !activeSession.destroyed);
         closeReconnect();
         if (activeSession) { activeSession.destroy(); activeSession = null; }
         online.session = null;
         online.transport.send({ t: 'hello', name: online.myName, v: APP_VERSION }); // it never got our greeting
-        toast('Rakip yeniden başladı; oyun baştan kurulacak', { duration: 4000 });
+        // with a game running the other side evidently started over; from the lobby it is just the link coming back
+        toast(hadGame ? 'Rakip yeniden başladı; oyun baştan kurulacak' : 'Bağlantı yeniden kuruldu', { duration: hadGame ? 4000 : 2500 });
       }
       showOnlineLobby();
       return;
@@ -989,15 +1000,22 @@ async function handleOnlineMessage(msg) {
         showOnlineLobby();
         return;
       }
-      online.transport.send({ t: 'resumeMoves', moves: online.session.ownMovesFrom(Number(msg.received) || 0), received: online.session.received });
+      if ((Number(msg.gameNo) || 0) !== (online.gameNo || 0)) {
+        // the other side is in a different game (a new round started while it was away): the host's
+        // current game is authoritative, so it re-sends the start; the guest just waits for it
+        if (online.role === 'host' && online.lastStart) { online.transport.send(online.lastStart); closeReconnect(); }
+        return;
+      }
+      online.transport.send({ t: 'resumeMoves', moves: online.session.ownMovesFrom(Number(msg.received) || 0), received: online.session.received, gameNo: online.gameNo || 0 });
       return;
     }
     case 'resumeMoves': {
       if (!online.session) return;
+      if ((Number(msg.gameNo) || 0) !== (online.gameNo || 0)) { closeReconnect(); return; } // moves of another game
       for (const m of msg.moves || []) online.session.receive(m);
       if (online.resuming) {
         // reply with what the other side missed, then both are in sync
-        online.transport.send({ t: 'resumeMoves', moves: online.session.ownMovesFrom(Number(msg.received) || 0), received: online.session.received, final: true });
+        online.transport.send({ t: 'resumeMoves', moves: online.session.ownMovesFrom(Number(msg.received) || 0), received: online.session.received, final: true, gameNo: online.gameNo || 0 });
       }
       closeReconnect();
       if (online.session) online.session.render();
@@ -1009,6 +1027,8 @@ async function handleOnlineMessage(msg) {
       const game = findGame(msg.gameId);
       if (!game) { toast('Bu oyun bu sürümde yok', { kind: 'error' }); return; }
       const round = ++online.round;   // moves of an earlier round must not reach the new session
+      online.gameNo = Number(msg.gameNo) || 0;
+      closeReconnect();               // a start also answers a pending resume
       online.queue = [];
       online.busy = true;
       online.session = null;

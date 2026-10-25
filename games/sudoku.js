@@ -5,7 +5,7 @@ import { createTimer } from '../js/ui/timer.js';
 import { createRng, shuffle } from '../js/lib/rng.js';
 
 export const meta = {
-  group: 'masa',
+  group: 'zeka',
   name: 'Sudoku Düellosu',
   icon: '🔢',
   description: 'Aynı sudoku ikinize; önce doğru çözen kazanır.',

@@ -6,7 +6,7 @@ import { createTimer } from '../js/ui/timer.js';
 import { createRng, shuffle } from '../js/lib/rng.js';
 
 export const meta = {
-  group: 'masa',
+  group: 'zeka',
   name: 'Mayın Tarlası',
   icon: '💣',
   description: 'Aynı mayın tarlası ikinize: temizleyen ya da daha çok kare açan kazanır.',

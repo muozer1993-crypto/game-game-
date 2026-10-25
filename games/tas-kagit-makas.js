@@ -3,7 +3,7 @@ import { el, render as draw } from '../js/ui/dom.js';
 import { nameSuffix } from '../js/lib/tr.js';
 
 export const meta = {
-  group: 'masa',
+  group: 'kart',
   name: 'Taş Kağıt Makas',
   icon: '✊',
   description: 'Gizlice seç, birlikte aç. Beşte üç alan kazanır.',

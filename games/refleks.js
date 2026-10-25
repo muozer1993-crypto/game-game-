@@ -5,7 +5,7 @@ import { el, render as draw } from '../js/ui/dom.js';
 import { createRng } from '../js/lib/rng.js';
 
 export const meta = {
-  group: 'masa',
+  group: 'zeka',
   name: 'Refleks',
   icon: '⚡',
   description: 'Ekran yeşile dönünce ilk dokunan eli alır; erken dokunan eli kaybeder.',

@@ -7,7 +7,7 @@ import { createRng } from '../js/lib/rng.js';
 import { nameSuffix } from '../js/lib/tr.js';
 
 export const meta = {
-  group: 'masa',
+  group: 'kart',
   name: 'Yalancı Zar',
   icon: '🎲',
   description: 'Zarların gizli; masadaki zarlar üstüne blöf yap, rakibin blöfünü yakala.',

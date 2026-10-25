@@ -4,7 +4,7 @@ import { el, render as draw } from '../js/ui/dom.js';
 import { createRng } from '../js/lib/rng.js';
 
 export const meta = {
-  group: 'tanisma',
+  group: 'zeka',
   name: 'Hafıza Dizisi',
   icon: '🎵',
   description: 'Yanan renk dizisini ezberle ve aynısını dokun; her turda bir uzar. Daha uzun diziyi hatırlayan kazanır.',

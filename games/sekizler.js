@@ -7,7 +7,7 @@ import { nameSuffix } from '../js/lib/tr.js';
 import { SUITS, cardText } from './pisti.js';
 
 export const meta = {
-  group: 'masa',
+  group: 'kart',
   name: 'Sekizler',
   icon: '🃏',
   description: 'Üstteki kartla aynı renk ya da aynı sayıyı at; sekiz jokerdir, renk seçtirir.',

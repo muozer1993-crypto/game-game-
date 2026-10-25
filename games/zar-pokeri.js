@@ -5,7 +5,7 @@ import { el, render as draw } from '../js/ui/dom.js';
 import { createRng } from '../js/lib/rng.js';
 
 export const meta = {
-  group: 'masa',
+  group: 'kart',
   name: 'Zar Pokeri',
   icon: '🎰',
   description: 'Beş zar, üç atış, 15 kategori; tutacağın zarı seç, en iyi haneyi doldur.',

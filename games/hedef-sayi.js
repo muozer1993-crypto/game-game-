@@ -6,7 +6,7 @@ import { createTimer } from '../js/ui/timer.js';
 import { createRng, shuffle } from '../js/lib/rng.js';
 
 export const meta = {
-  group: 'tanisma',
+  group: 'zeka',
   name: 'Hedef Sayı',
   icon: '🎯',
   description: 'Altı sayı, dört işlem, üç basamaklı hedef: süre dolmadan en yakına ulaş.',
