@@ -418,6 +418,20 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .tv-key.p0::before, .tv-key.p1::before { content: ''; display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 6px; border: 1px solid rgba(0,0,0,0.3); vertical-align: -1px; }
 .tv-key.p0::before { background: #fafafa; }
 .tv-key.p1::before { background: #263238; }
+.dama-board { display: grid; grid-template-columns: repeat(8, 1fr); gap: 0; max-width: 400px; margin: 8px auto; border: 3px solid #5d4037; border-radius: 6px; overflow: hidden; }
+.dama-sq { aspect-ratio: 1; padding: 0; border: 0; background: #f0d9b5; display: flex; align-items: center; justify-content: center; cursor: pointer; touch-action: manipulation; }
+.dama-sq.dark { background: #b58863; }
+.dama-sq:disabled { cursor: default; }
+.dama-sq.source { box-shadow: inset 0 0 0 3px #ffe082; }
+.dama-sq.selected { box-shadow: inset 0 0 0 3px #ffb300; }
+.dama-sq.target { box-shadow: inset 0 0 0 3px #43a047; background: #a5d6a7; }
+.dama-sq.last { outline: 2px solid rgba(0,0,0,0.25); outline-offset: -2px; }
+.dama-piece { width: 78%; height: 78%; border-radius: 50%; border: 2px solid rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; font-size: 1rem; }
+.dama-piece.p0 { background: #fafafa; color: #222; }
+.dama-piece.p1 { background: #263238; color: #fff; }
+.dama-key.p0::before, .dama-key.p1::before { content: ''; display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 6px; border: 1px solid rgba(0,0,0,0.3); vertical-align: -1px; }
+.dama-key.p0::before { background: #fafafa; }
+.dama-key.p1::before { background: #263238; }
 .mg-board { display: grid; grid-template-columns: 56px 1fr 56px; gap: 6px; align-items: stretch; margin: 10px 0; }
 .mg-rows { display: grid; gap: 6px; }
 .mg-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; }

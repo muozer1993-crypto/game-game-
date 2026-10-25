@@ -73,7 +73,7 @@ export default {
 5. Online mod (oda kodu, PeerJS; Firebase alternatifi README'de artı/eksi ile)
 
 ## Eklenen oyunlar (faz 2)
-Genel Kültür Düellosu (`data/trivia.json`), Amiral Battı, Tavla, Bilardo, Dört Bağlantı,
-Noktalar ve Kutular, Hafıza, XOX — her biri `games/` altında tek dosya; `games/index.js`
+Genel Kültür Düellosu (`data/trivia.json`), Amiral Battı, Tavla, Dama, Mangala, Bilardo,
+Dört Bağlantı, Noktalar ve Kutular, Hafıza, XOX, Taş Kağıt Makas — her biri `games/` altında tek dosya; `games/index.js`
 kaydı ve `sw.js` önbellek listesi. Ana menü `meta.group` ile bölümlere ayrılır
 (kelime / soru-cevap / masa).
