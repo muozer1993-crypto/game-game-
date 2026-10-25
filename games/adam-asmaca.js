@@ -206,7 +206,8 @@ let draftsFor = null;     // state.id the drafts belong to
 
 /** The gallows; the six body parts appear as lives run out. */
 export function gallows(wrong, lives) {
-  const parts = wrong <= 0 ? 0 : Math.min(6, Math.ceil((wrong / lives) * 6));
+  // the sixth part (the second leg) is kept for the actual hanging, whatever the lives setting
+  const parts = wrong <= 0 ? 0 : wrong >= lives ? 6 : Math.min(5, Math.ceil((wrong / lives) * 6));
   const g = svg('svg', { viewBox: '0 0 120 140', class: 'hm-gallows', 'aria-hidden': 'true' });
   const stroke = { stroke: 'currentColor', 'stroke-width': 4, 'stroke-linecap': 'round', fill: 'none' };
   g.append(svg('line', { x1: 10, y1: 130, x2: 70, y2: 130, ...stroke }));
@@ -228,7 +229,7 @@ export function gallows(wrong, lives) {
 function wordRow(letters, { cursor = false } = {}) {
   const slots = letters.map((ch) => el('span', { class: `hm-slot ${ch ? 'filled' : ''}` }, ch ? upperTR(ch) : ''));
   if (cursor) slots.push(el('span', { class: 'hm-slot cursor' }));
-  return el('div', { class: 'hm-word' }, slots);
+  return el('div', { class: `hm-word ${slots.length > 10 ? 'long' : ''}` }, slots); // long words stay on one line
 }
 
 export function render(state, viewer, container, sendMove, ctx = {}) {
@@ -364,7 +365,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     !mine && !result && state.secret ? el('p', { class: 'hint' }, `Tuttuğun kelime: ${upperTR(state.secret)}`) : null,
     result
       ? el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block', style: { marginTop: '12px' }, onClick: () => sendMove({ type: 'next' }) },
-        state.round + 1 >= state.rounds ? 'Sonucu gör' : `Sonraki kelime (sıra ${nameSuffix(players[setter], 'de')})`)
+        state.round + 1 >= state.rounds ? 'Sonucu gör' : (ctx.mode === 'online' ? 'Sonraki kelime' : `Sonraki kelime: ${players[guesser]} kelime tutar, ${players[setter]} bulur`))
       : null,
     typedBox,
     result ? null : kbBox,

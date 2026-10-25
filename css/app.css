@@ -618,6 +618,8 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
   display: inline-flex; align-items: flex-end; justify-content: center; padding-bottom: 2px;
   font-size: 1.3rem; font-weight: 800; text-transform: uppercase;
 }
+.hm-word.long { gap: 4px; }
+.hm-word.long .hm-slot { width: 22px; font-size: 1.1rem; }
 .hm-slot.filled { border-color: var(--fg); }
 .hm-slot.cursor { border-color: var(--primary); }
 .hm-misses { text-align: center; letter-spacing: 0.12em; min-height: 1.4em; font-weight: 600; }
@@ -738,3 +740,17 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .records-list { display: grid; gap: 4px; margin-top: 6px; }
 .records-row { display: flex; justify-content: space-between; gap: 8px; }
 .records-score { font-variant-numeric: tabular-nums; font-weight: 700; }
+
+/* ---- Mayın Tarlası */
+.ms-grid { display: grid; gap: 2px; max-width: 380px; margin: 6px auto; }
+.ms-cell {
+  aspect-ratio: 1; border: 0; padding: 0; border-radius: 4px; background: var(--key); color: var(--key-fg);
+  font-weight: 800; font-size: 1rem; display: flex; align-items: center; justify-content: center; cursor: pointer; touch-action: manipulation;
+}
+.ms-grid.dense .ms-cell { font-size: 0.8rem; border-radius: 3px; }
+.ms-cell:disabled { cursor: default; }
+.ms-cell.open { background: var(--card); border: 1px solid var(--border); }
+.ms-cell.mine { background: var(--danger); color: #fff; }
+.ms-cell.wrong { background: var(--present); }
+.ms-cell.n1 { color: #1e88e5; } .ms-cell.n2 { color: #43a047; } .ms-cell.n3 { color: #e53935; } .ms-cell.n4 { color: #5e35b1; }
+.ms-cell.n5 { color: #8d6e63; } .ms-cell.n6 { color: #00acc1; } .ms-cell.n7 { color: #111; } .ms-cell.n8 { color: #777; }

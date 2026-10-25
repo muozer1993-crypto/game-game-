@@ -21,12 +21,13 @@ import bilardo from './bilardo.js';
 import hafiza from './hafiza.js';
 import tasKagitMakas from './tas-kagit-makas.js';
 import refleks from './refleks.js';
+import mayinTarlasi from './mayin-tarlasi.js';
 import mangala from './mangala.js';
 import dama from './dama.js';
 import pisti from './pisti.js';
 import durak from './durak.js';
 
-export const games = [sonHece, gizliKelime, gizliSayi, adamAsmaca, harfAvi, tabu, beniTani, genelKultur, hesapYarisi, amiralBatti, satranc, tavla, dama, mangala, dokuzTas, pisti, durak, bilardo, dortBaglanti, reversi, noktalarKutular, hafiza, xox, tasKagitMakas, refleks];
+export const games = [sonHece, gizliKelime, gizliSayi, adamAsmaca, harfAvi, tabu, beniTani, genelKultur, hesapYarisi, amiralBatti, satranc, tavla, dama, mangala, dokuzTas, pisti, durak, bilardo, dortBaglanti, reversi, noktalarKutular, hafiza, mayinTarlasi, xox, tasKagitMakas, refleks];
 
 /** Menu sections, in display order. A game's meta.group picks its section. */
 export const groups = [
