@@ -20,9 +20,10 @@ export function createTimer(container, opts) {
   container.append(root);
 
   let expired = false;
-  let handle = null;
+  let handle = null;   // the interval while counting down
+  let deferred = null; // onExpire deferred past the render that created the timer
 
-  const update = () => {
+  const update = (initial = false) => {
     const remaining = opts.paused ? (opts.remaining ?? 0) : Math.max(0, opts.deadline - Date.now());
     const seconds = Math.ceil(remaining / 1000);
     text.textContent = opts.paused ? `⏸ ${seconds} sn` : `${seconds} sn`;
@@ -32,16 +33,22 @@ export function createTimer(container, opts) {
     if (!opts.paused && remaining <= 0 && !expired) {
       expired = true;
       stop();
-      if (opts.onExpire) opts.onExpire();
+      if (!opts.onExpire) return;
+      // createTimer runs inside a game's render(); when the deadline has already passed,
+      // onExpire (which dispatches a move and re-renders) must not run re-entrantly, or the
+      // outer render would overwrite the screen the nested one drew.
+      if (initial) deferred = setTimeout(() => { deferred = null; opts.onExpire(); }, 0);
+      else opts.onExpire();
     }
   };
 
   const stop = () => {
     if (handle !== null) { clearInterval(handle); handle = null; }
+    if (deferred !== null) { clearTimeout(deferred); deferred = null; }
   };
 
-  update();
-  if (!opts.paused) handle = setInterval(update, 100);
+  update(true);
+  if (!opts.paused && !expired) handle = setInterval(update, 100);
 
   return { stop, element: root };
 }

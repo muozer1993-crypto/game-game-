@@ -163,6 +163,19 @@ export class Session {
   }
 
   render() {
+    // a game must never dispatch from inside its render; if one does, finish this render
+    // first and then draw again with the newer state
+    if (this.rendering) { this.renderAgain = true; return; }
+    this.rendering = true;
+    try {
+      this.renderNow();
+    } finally {
+      this.rendering = false;
+      if (this.renderAgain) { this.renderAgain = false; this.render(); }
+    }
+  }
+
+  renderNow() {
     if (this.cleanup) {
       try { this.cleanup(); } catch (err) { console.warn(err); }
       this.cleanup = null;
