@@ -76,15 +76,19 @@ function setScreen(name, cleanupFn) {
     // The history holds at most two entries: the menu and the current screen. Screens reached
     // from another screen replace that entry, so an evening of rounds never piles up stale
     // entries that would turn the back button into a no-op.
-    if (name === 'menu') history.replaceState(null, '', '#menu');
-    else if (history.state && history.state.app) history.replaceState({ app: true }, '', `#${name}`);
+    if (name === 'menu') {
+      // back to the menu entry itself when we are on the screen entry above it (no duplicate menus)
+      if (history.state && history.state.app) { ignorePop = true; history.back(); } else history.replaceState(null, '', '#menu');
+    } else if (history.state && history.state.app) history.replaceState({ app: true }, '', `#${name}`);
     else history.pushState({ app: true }, '', `#${name}`);
   }
   window.scrollTo(0, 0);
 }
+let ignorePop = false; // a popstate we caused ourselves (history.back() from setScreen)
 
 window.addEventListener('popstate', () => {
   // Browser / Android back button.
+  if (ignorePop) { ignorePop = false; return; }
   if (currentScreen === 'menu') return;
   if (currentScreen === 'play') {
     if (activeSession && !activeSession.ended && !confirm('Oyundan çıkılsın mı?')) {
