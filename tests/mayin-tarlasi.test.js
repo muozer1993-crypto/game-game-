@@ -82,3 +82,17 @@ test('mayın tarlası: açma, taşma, bayrak, mayın, temizleme ve sonuç', () =
   assert.ok(region.length >= 4 && region.includes(f.start));
   assert.ok(region.every((i) => f.numbers[i] !== -1));
 });
+
+test('mayın tarlası: tek telefonda önce bitiren sonucunu görür, "Tamam" deyince telefon geçer; iki telefonda beklemez', () => {
+  let s = game.setup({ size: 8, seconds: 0, seed: 5 });
+  const mine = s.numbers.findIndex((n) => n === -1);
+  s = game.applyMove(s, 0, { type: 'reveal', cell: mine, ms: 1000 });
+  assert.equal(s.boards[0].status, 'dead');
+  assert.deepEqual(game.getTurn(s), { player: 0, private: true, simultaneous: true }, 'player 0 still holds the phone');
+  assert.throws(() => game.applyMove(s, 1, { type: 'seen' }), 'henüz bitmedi');
+  s = game.applyMove(s, 0, { type: 'seen' });
+  assert.equal(game.getTurn(s).player, 1);
+  let o = game.setup({ size: 8, seconds: 0, seed: 5 }, { mode: 'online' });
+  o = game.applyMove(o, 0, { type: 'reveal', cell: mine, ms: 1000 });
+  assert.equal(game.getTurn(o).player, 1, 'online: no acknowledgement needed');
+});

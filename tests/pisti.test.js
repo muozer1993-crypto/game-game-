@@ -30,6 +30,12 @@ test('pişti: dağıtım, masa, alma ve pişti', () => {
   let j = { ...s, table: [{ r: 11, s: 3 }] };
   j = game.applyMove(j, 0, { type: 'play', card: 1 }, ON);
   assert.equal(j.last.pisti, 20);
+  // a jack taking a lone card of another rank takes it, but it is no pişti
+  let v = { ...s, table: [{ r: 9, s: 3 }] };
+  v = game.applyMove(v, 0, { type: 'play', card: 1 }, ON);
+  assert.equal(v.last.took, 2);
+  assert.equal(v.last.pisti, 0);
+  assert.equal(v.pistiPoints[0], 0);
   // no match: the card stays on the table
   let n = game.applyMove(s, 0, { type: 'play', card: 2 }, ON);
   assert.equal(n.table.length, 3);

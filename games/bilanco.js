@@ -228,7 +228,7 @@ function land(s, p, path, players, depth = 0) {
     const o = s.owner[pos];
     if (o == null) {
       if (s.cash[p] >= sq.price) { s.phase = 'buy'; return; }
-      note(s, `${players[p]} ${sq.name} için yeterli parası yok.`);
+      note(s, `${nameSuffix(players[p], 'in')} ${sq.name} için yeterli parası yok.`);
     } else if (o === opp) {
       const rent = rentOf(s, pos);
       note(s, `${players[p]}, ${nameSuffix(players[opp], 'e')} ${sq.name} kirası ödedi: ₺${rent}.`);

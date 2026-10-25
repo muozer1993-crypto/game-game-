@@ -1,6 +1,7 @@
 // Sudoku Düellosu — both players solve the same seeded puzzle on their own; the faster
 // correct solution wins, otherwise the one with more conflict-free cells filled.
 import { el, render as draw } from '../js/ui/dom.js';
+import { nameSuffix } from '../js/lib/tr.js';
 import { createTimer } from '../js/ui/timer.js';
 import { createRng, shuffle } from '../js/lib/rng.js';
 
@@ -69,7 +70,7 @@ export function conflicts(grid) {
 
 export const isSolved = (grid) => grid.every((v) => v >= 1 && v <= 9) && conflicts(grid).size === 0;
 
-export function setup(options = {}) {
+export function setup(options = {}, ctx = {}) {
   const level = ['easy', 'medium', 'hard'].includes(options.level) ? options.level : 'easy';
   const minutes = [0, 5, 10, 20].includes(Number(options.minutes)) ? Number(options.minutes) : 10;
   const givens = makePuzzle(level, Number(options.seed) || 1);
@@ -82,6 +83,8 @@ export function setup(options = {}) {
     status: ['playing', 'playing'], // playing | solved | time
     ms: [null, null],
     finished: [false, false],
+    // one phone: whoever finishes first sees their result and passes the phone on with "Tamam"
+    seen: ctx.mode === 'online' ? [true, true] : [false, false],
     phase: 'play',
   };
 }
@@ -96,6 +99,12 @@ export function applyMove(state, player, move) {
   if (!move || typeof move !== 'object') fail('Geçersiz hamle');
   if (state.phase !== 'play') fail('Oyun bitti');
   if (player !== 0 && player !== 1) fail('Geçersiz oyuncu');
+  if (move.type === 'seen') {
+    if (!state.finished[player]) fail('Bulmacan henüz bitmedi');
+    const seen = (state.seen || [true, true]).slice();
+    seen[player] = true;
+    return { ...state, seen };
+  }
   if (state.finished[player]) fail('Senin bulmacan bitti');
   const grids = state.grids.map((g) => g.slice());
   const finish = (status, ms) => {
@@ -124,7 +133,8 @@ export function applyMove(state, player, move) {
 
 export function getTurn(state) {
   if (state.phase !== 'play') return null;
-  const p = state.finished[0] ? (state.finished[1] ? null : 1) : 0;
+  const seen = state.seen || [true, true];
+  const p = state.finished[0] && seen[0] ? (state.finished[1] ? null : 1) : 0;
   return p == null ? null : { player: p, private: true, simultaneous: true };
 }
 
@@ -156,7 +166,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const summary = (p) => {
     const g = state.grids[p];
     if (state.status[p] === 'solved') return `çözdü (${(state.ms[p] / 1000).toFixed(0)} sn)`;
-    return `${goodCount(g)}/81 doğru dolu${state.status[p] === 'time' ? ', süre doldu' : state.status[p] === 'quit' ? ', bıraktı' : ''}`;
+    return `${goodCount(g)}/81 kare çakışmasız dolu${state.status[p] === 'time' ? ', süre doldu' : state.status[p] === 'quit' ? ', bıraktı' : ''}`;
   };
 
   const board = (p, { interactive = false } = {}) => {
@@ -195,8 +205,11 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   if (state.finished[viewer]) {
     draw(container,
       el('div', { class: 'status-line' }, el('strong', {}, state.status[viewer] === 'solved' ? `Çözdün! ${(state.ms[viewer] / 1000).toFixed(0)} sn` : state.status[viewer] === 'quit' ? 'Bıraktın.' : 'Süre doldu.')),
-      el('p', { class: 'hint' }, `${players[opp]} çözüyor…${ctx.mode === 'online' ? ` (${goodCount(state.grids[opp])}/81)` : ''}`),
-      el('div', { class: 'spinner', 'aria-hidden': 'true' }),
+      ...(state.seen && !state.seen[viewer]
+        ? [el('p', { class: 'hint' }, `Şimdi sıra ${nameSuffix(players[opp], 'de')}.`),
+          el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block', onClick: () => sendMove({ type: 'seen' }) }, 'Tamam, telefonu ver')]
+        : [el('p', { class: 'hint' }, `${players[opp]} çözüyor…${ctx.mode === 'online' ? ` (${goodCount(state.grids[opp])}/81)` : ''}`),
+          el('div', { class: 'spinner', 'aria-hidden': 'true' })]),
       board(viewer),
     );
     return null;

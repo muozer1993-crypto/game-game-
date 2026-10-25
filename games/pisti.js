@@ -10,7 +10,7 @@ export const meta = {
   description: 'Masadaki kartla aynı değeri ya da vale at, yığını al. 151 puana ilk ulaşan kazanır.',
   rules: [
     'Her oyuncuya 4 kart dağıtılır, masaya 4 kart konur (yalnızca üstteki açık). Sırası gelen elinden bir kart atar.',
-    'Atılan kart masanın üstündeki kartla aynı değerdeyse ya da valeyse masadaki kartların hepsi alınır. Masada tek kart varken alınırsa "pişti" olur: 10 puan (vale üstüne vale 20 puan).',
+    'Atılan kart masanın üstündeki kartla aynı değerdeyse ya da valeyse masadaki kartların hepsi alınır. Masada tek kart varken aynı değerdeki kartla alınırsa "pişti" olur: 10 puan (vale üstüne vale 20 puan; tek karta vale atıp almak pişti sayılmaz).',
     'Eller bitince yeniden 4 kart dağıtılır; deste bitince masada kalanlar son alana gider.',
     'Puanlar: sinek 2\'lisi 2, karo 10\'lusu 3, her vale 1, her as 1, çok kart toplayan 3 (26-26 ise kimseye). 151 puana ilk ulaşan kazanır.',
     'Tek telefonda eller gizli olduğu için her kartta telefon el değiştirir; iki telefonda herkes kendi elini görür.',
@@ -102,8 +102,9 @@ export function applyMove(state, player, move, ctx = {}) {
   let lastTaker = state.lastTaker;
   const top = table[table.length - 1];
   if (top && (top.r === card.r || card.r === 11)) {
-    if (table.length === 1) {
-      last.pisti = card.r === 11 && top.r === 11 ? 20 : 10;
+    // pişti: a lone card taken with a card of the same rank (a jack on a lone non-jack takes it but is no pişti)
+    if (table.length === 1 && top.r === card.r) {
+      last.pisti = card.r === 11 ? 20 : 10;
       pistiPoints[player] += last.pisti;
     }
     captured[player].push(...table, card);

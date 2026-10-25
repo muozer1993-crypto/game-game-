@@ -300,7 +300,9 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       disabled: !offTarget,
       'aria-label': `Toplanan: ${players[0]} ${state.off[0]}, ${players[1]} ${state.off[1]}`,
       onClick: () => { if (offTarget) sendMove({ type: 'step', from: selected === -1 ? 'bar' : selected, die: targets.get('off').die }); },
-    }, el('span', { class: 'tv-off-count p0' }, String(state.off[0])), el('span', { class: 'tv-off-count p1' }, String(state.off[1])));
+    },
+    // each count sits beside its owner's home: the top home is the opponent's on the shown side
+    ...(flip ? [0, 1] : [1, 0]).map((q) => el('span', { class: `tv-off-count p${q}` }, String(state.off[q]))));
     draw(boardBox, cells, bar, offTray);
   };
 

@@ -96,7 +96,8 @@ export function applyMove(state, player, move) {
       const rollCount = state.rollCount + 1;
       const sixes = die === 6 ? state.sixes + 1 : 0;
       if (sixes >= 3) return { ...state, die: null, rollCount, sixes: 0, turn: opp, last: { player, die, event: 'threeSixes' } };
-      if (!legalMoves(state, player, die).length) return { ...state, die: null, rollCount, sixes: 0, turn: opp, last: { player, die, event: 'noMove' } };
+      // no piece can move: the turn passes — but a six still earns another roll
+      if (!legalMoves(state, player, die).length) return { ...state, die: null, rollCount, sixes: die === 6 ? sixes : 0, turn: die === 6 ? player : opp, last: { player, die, event: 'noMove' } };
       return { ...state, die, rollCount, sixes, last: { player, die, event: 'rolled' } };
     }
     case 'move': {
@@ -205,7 +206,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   if (L) {
     const who = players[L.player];
     if (L.event === 'threeSixes') note = `${who} üst üste üç altı attı: sıra yandı.`;
-    else if (L.event === 'noMove') note = `${who} ${L.die} attı, oynayacak taşı yok.`;
+    else if (L.event === 'noMove') note = `${who} ${L.die} attı, oynayacak taşı yok${L.die === 6 ? '; altı attığı için bir daha atar' : ''}.`;
     else if (L.event === 'capture') note = `${who} ${nameSuffix(players[1 - L.player], 'in')} taşını kalesine yolladı!`;
     else if (L.event === 'home') note = `${nameSuffix(who, 'in')} bir taşı eve girdi.`;
   }

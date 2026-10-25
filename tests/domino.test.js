@@ -69,3 +69,12 @@ test('domino: oynama ve yön, çekme, pas, kilitlenme, bitiş ve puan', () => {
   assert.deepEqual(game.getResult(o), { winner: 0 });
   assert.deepEqual(o.line.map((t) => [t.a, t.b]), [[3, 3], [3, 2]], 'tile flipped to match the end');
 });
+
+test('domino: tek elde eli bitiren kazanır (0 puan alsa da); kilitli eşit el beraberlikle biter', () => {
+  const s = game.setup({ target: 0, seed: 3 });
+  assert.equal(s.target, 0);
+  const done = { ...s, phase: 'over', scores: [0, 0], result: { winner: 1, points: 0, how: 'out' } };
+  assert.deepEqual(game.getResult(done), { winner: 1 });
+  const tie = { ...s, phase: 'over', scores: [0, 0], result: { winner: null, points: 0, how: 'blocked' } };
+  assert.deepEqual(game.getResult(tie), { draw: true });
+});

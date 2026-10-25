@@ -83,3 +83,17 @@ test('kızma birader: altıyla çıkış, ilerleme, ezme, tam giriş, üç altı
   assert.throws(() => game.applyMove(k, 0, { type: 'roll' }), 'bir taş seç');
   assert.throws(() => game.applyMove(k, 0, { type: 'move', piece: 1 }), 'oynanamaz');
 });
+
+test('kızma birader: oynayacak taş yokken atılan altı yine bir daha attırır', () => {
+  // every piece of player 0 is home already except one stuck in the home column with no exact move for a six
+  let s = { ...game.setup({ pieces: 2, seed: 7 }), turn: 0 };
+  const findRoll = (want) => { for (let n = 0; n < 500; n++) if (rollDie(s.seed, n) === want) return n; return -1; };
+  s = { ...s, pieces: [[HOME, 55], [-1, -1]], rollCount: findRoll(6) };
+  assert.deepEqual(legalMoves(s, 0, 6), [], 'a six cannot move');
+  const t = game.applyMove(s, 0, { type: 'roll' });
+  assert.equal(t.last.event, 'noMove');
+  assert.equal(t.turn, 0, 'the six gives another roll');
+  assert.equal(t.sixes, 1);
+  const u = game.applyMove({ ...s, rollCount: findRoll(5) }, 0, { type: 'roll' });
+  if (!legalMoves(s, 0, 5).length) assert.equal(u.turn, 1, 'no six, no move: the turn passes');
+});

@@ -2,6 +2,7 @@
 // clears it (or, failing that, uncovers more safe cells) wins. A zero region around a
 // seeded start cell is opened for both, so nobody dies on the first tap.
 import { el, render as draw } from '../js/ui/dom.js';
+import { nameSuffix } from '../js/lib/tr.js';
 import { createTimer } from '../js/ui/timer.js';
 import { createRng, shuffle } from '../js/lib/rng.js';
 
@@ -84,7 +85,7 @@ export function flood(size, numbers, revealed, i) {
   return out;
 }
 
-export function setup(options = {}) {
+export function setup(options = {}, ctx = {}) {
   const size = [8, 9, 12].includes(Number(options.size)) ? Number(options.size) : 9;
   const seconds = [0, 120, 180, 300].includes(Number(options.seconds)) ? Number(options.seconds) : 180;
   const field = makeField(size, Number(options.seed) || 1);
@@ -99,6 +100,8 @@ export function setup(options = {}) {
     start: field.start,
     boards: [board(), board()],
     finished: [false, false],
+    // one phone: whoever finishes first sees their result and passes the phone on with "Tamam"
+    seen: ctx.mode === 'online' ? [true, true] : [false, false],
     phase: 'play',
   };
 }
@@ -111,6 +114,12 @@ export function applyMove(state, player, move) {
   if (state.phase !== 'play') fail('Oyun bitti');
   if (player !== 0 && player !== 1) fail('Geçersiz oyuncu');
   const b = state.boards[player];
+  if (move.type === 'seen') {
+    if (!state.finished[player]) fail('Tarlan henüz bitmedi');
+    const seen = (state.seen || [true, true]).slice();
+    seen[player] = true;
+    return { ...state, seen };
+  }
   if (state.finished[player]) fail('Senin tarlan bitti');
   const boards = state.boards.map((x) => ({ ...x, revealed: x.revealed.slice(), flags: x.flags.slice() }));
   const mine = boards[player];
@@ -150,7 +159,8 @@ export function applyMove(state, player, move) {
 
 export function getTurn(state) {
   if (state.phase !== 'play') return null;
-  const p = state.finished[0] ? (state.finished[1] ? null : 1) : 0;
+  const seen = state.seen || [true, true];
+  const p = state.finished[0] && seen[0] ? (state.finished[1] ? null : 1) : 0;
   return p == null ? null : { player: p, private: true, simultaneous: true };
 }
 
@@ -233,8 +243,11 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   if (state.finished[viewer]) {
     draw(container,
       el('div', { class: 'status-line' }, el('strong', {}, b.status === 'cleared' ? `Temizledin! ${(b.ms / 1000).toFixed(1).replace('.', ',')} sn` : b.status === 'dead' ? 'Mayına bastın!' : b.status === 'quit' ? 'Bıraktın.' : 'Süre doldu.')),
-      el('p', { class: 'hint' }, `${statusText(viewer)}. ${players[opp]} oynuyor… (${progress(state, opp)}/${total})`),
-      el('div', { class: 'spinner', 'aria-hidden': 'true' }),
+      ...(state.seen && !state.seen[viewer]
+        ? [el('p', { class: 'hint' }, `${statusText(viewer)}. Şimdi sıra ${nameSuffix(players[opp], 'de')}.`),
+          el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block', onClick: () => sendMove({ type: 'seen' }) }, 'Tamam, telefonu ver')]
+        : [el('p', { class: 'hint' }, `${statusText(viewer)}. ${players[opp]} oynuyor… (${progress(state, opp)}/${total})`),
+          el('div', { class: 'spinner', 'aria-hidden': 'true' })]),
       grid(viewer, { showMines: true }),
     );
     return null;

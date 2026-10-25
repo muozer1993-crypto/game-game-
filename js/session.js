@@ -11,6 +11,8 @@
 import { showHandoff } from './ui/handoff.js';
 import { toast } from './ui/dom.js';
 
+const SWITCH_GUARD_MS = 350; // one phone: taps ignored this long after the turn passes to the other player
+
 export function stripSecret(move) {
   if (move && typeof move === 'object' && 'secret' in move) {
     const { secret, ...rest } = move; // eslint-disable-line no-unused-vars
@@ -192,6 +194,13 @@ export class Session {
       this.lastMine = mine;
     } else {
       viewer = turn && turn.player != null ? turn.player : (this.lastViewer ?? 0);
+      // one phone, the other player's turn now: ignore taps for a moment, so that a double tap
+      // on the move just made cannot also act for the next player (cards, cells under the finger)
+      if (this.lastViewer != null && viewer !== this.lastViewer && this.container && this.container.style) {
+        this.container.style.pointerEvents = 'none';
+        clearTimeout(this.tapGuard);
+        this.tapGuard = setTimeout(() => { if (this.container) this.container.style.pointerEvents = ''; }, SWITCH_GUARD_MS);
+      }
       if (!this.ended && turn && turn.player != null) {
         const first = !this.lastTurn && turn.private;
         const changed = this.lastTurn && this.lastTurn.player !== turn.player && (turn.private || this.lastTurn.private);
@@ -221,6 +230,8 @@ export class Session {
       try { this.cleanup(); } catch { /* ignore */ }
       this.cleanup = null;
     }
+    clearTimeout(this.tapGuard);
+    if (this.container && this.container.style) this.container.style.pointerEvents = '';
     this.destroyed = true;
   }
 }

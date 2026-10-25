@@ -68,3 +68,11 @@ test('sudoku: girişler, ipucu koruması, çakışma sayımı, çözüm ve sonu�
   d = game.applyMove(d, 1, { type: 'finish', ms: 1 });
   assert.deepEqual(game.getResult(d), { draw: true });
 });
+
+test('sudoku: tek telefonda önce bitiren sonucunu görür, "Tamam" deyince telefon geçer', () => {
+  let s = game.setup({ level: 'easy', minutes: 0, seed: 5 });
+  s = game.applyMove(s, 0, { type: 'finish', ms: 2000 });
+  assert.equal(game.getTurn(s).player, 0);
+  s = game.applyMove(s, 0, { type: 'seen' });
+  assert.equal(game.getTurn(s).player, 1);
+});

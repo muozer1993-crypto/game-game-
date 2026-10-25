@@ -81,7 +81,8 @@ export function applyMove(state, player, move) {
   const finishHand = (winner, points, how) => {
     const scores = state.scores.slice();
     if (winner != null) scores[winner] += points;
-    const over = winner != null && (!state.target || scores[winner] >= state.target);
+    // "Tek el" (no target) ends after this hand whatever happened in it, a drawn hand included
+    const over = !state.target || (winner != null && scores[winner] >= state.target);
     return { ...state, hands, scores, phase: over ? 'over' : 'handOver', result: { winner, points, how } };
   };
   switch (move.type) {
@@ -137,6 +138,8 @@ export function getTurn(state) {
 
 export function getResult(state) {
   if (state.phase !== 'over') return null;
+  // one hand: whoever won it wins (going out can score 0 when the other hand holds nothing)
+  if (!state.target) return state.result && state.result.winner != null ? { winner: state.result.winner } : { draw: true };
   const [a, b] = state.scores;
   if (a === b) return { draw: true };
   return { winner: a > b ? 0 : 1 };

@@ -210,7 +210,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   if (state.over) status = state.loser == null ? 'Berabere: ikinizin de kartı bitti.' : `${players[state.loser]} durak oldu! ${players[1 - state.loser]} kazandı.`;
   else if (mine && state.phase === 'defend') status = `Savun, ${players[viewer]}: kıracak bir kart seç ya da "Al"`;
   else if (mine && state.taking) status = `${players[opp]} alıyor: istersen aynı değerde kart ekle, sonra "Bitti"`;
-  else if (mine) status = state.table.length ? `Saldırmaya devam et ${players[viewer]} (aynı değerde kart) ya da "Bitti"` : `Saldır, ${players[viewer]}: bir kart at`;
+  else if (mine) status = state.table.length ? `Saldırmaya devam et, ${players[viewer]} (aynı değerde kart) ya da "Bitti"` : `Saldır, ${players[viewer]}: bir kart at`;
   else status = `${players[turn]} ${state.phase === 'defend' ? 'savunuyor' : 'saldırıyor'}…`;
 
   const canPlay = (c) => {
