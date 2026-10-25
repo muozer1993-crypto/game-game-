@@ -41,8 +41,9 @@ import sekizler from './sekizler.js';
 import poker from './poker.js';
 import kizmaBirader from './kizma-birader.js';
 import okey from './okey.js';
+import domino from './domino.js';
 
-export const games = [sonHece, gizliKelime, gizliSayi, adamAsmaca, harfAvi, kelimeTuretme, kelimeTahtasi, isimSehir, tabu, beniTani, genelKultur, hesapYarisi, hedefSayi, renkTuzagi, hafizaDizisi, amiralBatti, satranc, tavla, kizmaBirader, dama, mangala, dokuzTas, okey, pisti, durak, sekizler, poker, yalanciZar, zarPokeri, bilardo, dortBaglanti, besTas, hex, reversi, noktalarKutular, hafiza, mayinTarlasi, sudoku, xox, tasKagitMakas, refleks];
+export const games = [sonHece, gizliKelime, gizliSayi, adamAsmaca, harfAvi, kelimeTuretme, kelimeTahtasi, isimSehir, tabu, beniTani, genelKultur, hesapYarisi, hedefSayi, renkTuzagi, hafizaDizisi, amiralBatti, satranc, tavla, kizmaBirader, dama, mangala, domino, dokuzTas, okey, pisti, durak, sekizler, poker, yalanciZar, zarPokeri, bilardo, dortBaglanti, besTas, hex, reversi, noktalarKutular, hafiza, mayinTarlasi, sudoku, xox, tasKagitMakas, refleks];
 
 /** Menu sections, in display order. A game's meta.group picks its section. */
 export const groups = [

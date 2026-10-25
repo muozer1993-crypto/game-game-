@@ -1,6 +1,6 @@
 # Oyun Gecesi
 
-İki kişilik, Türkçe arayüzlü, telefonda rahat oynanan oyun koleksiyonu: 41 oyun; kartlardaki ★ ile favoriler üstte toplanır (kelime, soru-cevap, masa).
+İki kişilik, Türkçe arayüzlü, telefonda rahat oynanan oyun koleksiyonu: 42 oyun; kartlardaki ★ ile favoriler üstte toplanır (kelime, soru-cevap, masa).
 Düz HTML + CSS + JavaScript (ES modules); framework yok, build adımı yok, npm yok.
 Tek telefonda elden ele ya da iki telefonda oda koduyla oynanır. Ana ekrana eklenebilir
 (manifest + service worker) ve bir kez yüklendikten sonra tek telefon modu çevrimdışı çalışır.
@@ -30,6 +30,7 @@ Tek telefonda elden ele ya da iki telefonda oda koduyla oynanır. Ana ekrana ekl
 | **Kızma Birader** | Klasik zar yarışı: altıyla çık, rakibi ez, yıldızlı kareler güvenli, tam sayıyla eve gir; 2 ya da 4 taş. |
 | **Dama** | Türk daması: ileri/yana, atlayarak alma zorunlu, en çok alan dizi, dama. |
 | **Mangala** | Türk mangalası: bir taş bırak, dağıt, çift yakala, hazne. |
+| **Domino** | Yedişer taş, uçlardan birine uyanı ekle, yön seç; oynayamazsan kapalıdan çek, bitince pas. Elini bitiren rakibin noktalarını alır, kilitlenince hafif olan farkı. |
 | **Dokuz Taş** | Dokuzar taş koy, sür; üçlü yapan rakibin taşını alır. Üç taşta uçma ayarı. |
 | **Okey (ikili)** | 106 taş, gösterge ve okey, sahte okey; ortadan çek ya da rakibin attığını al, 14 taşı per/seri ya da yedi çifte diz, 15.yi at. Çifte ve okey atarak bitiş ×2. |
 | **Pişti** | Klasik pişti: aynı değer ya da vale alır, pişti 10/20, 151'e kadar. |
