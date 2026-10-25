@@ -111,6 +111,9 @@ export function allJudged(state) {
   return state.revealed[0] && state.revealed[1] && state.judgments.every((l) => l.every((v) => v != null));
 }
 
+/** done[] arrived with a later build; a state made by an older build may lack it. */
+const doneOf = (state) => state.done || [false, false];
+
 export function applyMove(state, player, move, ctx = {}) {
   if (!move || typeof move !== 'object') fail('Geçersiz hamle');
   switch (move.type) {
@@ -159,7 +162,7 @@ export function applyMove(state, player, move, ctx = {}) {
       // On one shared phone either player may tap the buttons; online only the owner decides.
       if (ctx.mode === 'online' && player !== owner) fail('Buna cevabın sahibi karar verir');
       if (!state.revealed[owner]) fail('Önce cevaplar açıklanmalı');
-      if (state.done[owner]) fail('Bu oyuncu sonucu onayladı; karar değiştirilemez');
+      if (doneOf(state)[owner]) fail('Bu oyuncu sonucu onayladı; karar değiştirilemez');
       const q = state.questions[move.index];
       if (!q) fail('Geçersiz soru');
       if (q.type !== 'open') fail('Bu soru otomatik puanlanır');
@@ -173,7 +176,7 @@ export function applyMove(state, player, move, ctx = {}) {
       if (!allJudged(state)) fail('Önce bütün açık uçlu cevaplara karar verilmeli');
       // on one phone a single tap ends it; online each player confirms, so the two devices
       // cannot end with different judgments (a late judge move is rejected once its owner is done)
-      const done = ctx.mode === 'online' ? state.done.map((d, p) => d || p === player) : [true, true];
+      const done = ctx.mode === 'online' ? doneOf(state).map((d, p) => d || p === player) : [true, true];
       return { ...state, done, phase: done[0] && done[1] ? 'over' : 'compare' };
     }
     default:
@@ -280,7 +283,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     return null;
   }
   const pts = points(state);
-  const canJudge = (owner) => state.phase === 'compare' && !state.done[owner] && (!online || viewer === owner);
+  const canJudge = (owner) => state.phase === 'compare' && !doneOf(state)[owner] && (!online || viewer === owner);
   const pairRow = (owner, i) => {
     const guesser = 1 - owner;
     const verdict = state.judgments[owner][i];
@@ -306,7 +309,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     el('div', {}, el('strong', {}, `${players[1]}, ${nameSuffix(players[0], 'i')} ${total} üzerinden ${formatPoints(pts[1])} tanıyor`)),
   );
   const done = allJudged(state);
-  const mineDone = online && state.done[viewer];
+  const mineDone = online && doneOf(state)[viewer];
   draw(container,
     summary,
     state.phase === 'compare' && !done ? el('p', { class: 'hint' }, 'Açık uçlu cevaplara Tuttu / Yakın / Tutmadı diyerek karar verin.') : null,

@@ -26,3 +26,4 @@ import './refleks.test.js';
 import './satranc.test.js';
 import './hesap-yarisi.test.js';
 import './durak.test.js';
+import './version.test.js';

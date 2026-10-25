@@ -1,5 +1,6 @@
 // Screen flow: menu -> setup -> play (-> result -> new round) ; menu -> online -> setup/play.
 import { games, groups, findGame } from '../games/index.js';
+import { APP_VERSION } from './version.js';
 import { Session } from './session.js';
 import { el, render, clear, toast } from './ui/dom.js';
 import { createScoreboard } from './ui/scoreboard.js';
@@ -567,7 +568,7 @@ function wireTransport(myName, { resume = false } = {}) {
   });
   t.onOpen(() => {
     if (resume && online.session) t.send({ t: 'resume', received: online.session.received, name: myName });
-    else t.send({ t: 'hello', name: myName });
+    else t.send({ t: 'hello', name: myName, v: APP_VERSION });
   });
 }
 
@@ -687,12 +688,14 @@ async function handleOnlineMessage(msg) {
     case 'hello': {
       const other = String(msg.name || 'Oyuncu').slice(0, 20);
       online.players = online.role === 'host' ? [online.myName, other] : [other, online.myName];
+      // a stale cached build on one phone would desync the games: say so before anything starts
+      if (msg.v && msg.v !== APP_VERSION) toast(`Uygulama sürümleri farklı (sende ${APP_VERSION}, rakipte ${msg.v}): ikiniz de ana menüye dönüp sayfayı yenileyin`, { kind: 'error', duration: 8000 });
       if (online.resuming) {
         // the other side started over: our game cannot continue
         closeReconnect();
         if (activeSession) { activeSession.destroy(); activeSession = null; }
         online.session = null;
-        online.transport.send({ t: 'hello', name: online.myName }); // it never got our greeting
+        online.transport.send({ t: 'hello', name: online.myName, v: APP_VERSION }); // it never got our greeting
         toast('Rakip yeniden başladı; oyun baştan kurulacak', { duration: 4000 });
       }
       showOnlineLobby();
@@ -704,7 +707,7 @@ async function handleOnlineMessage(msg) {
         // we have no game to resume (fresh page): treat it as a greeting
         const other = String(msg.name || 'Oyuncu').slice(0, 20);
         online.players = online.role === 'host' ? [online.myName, other] : [other, online.myName];
-        online.transport.send({ t: 'hello', name: online.myName });
+        online.transport.send({ t: 'hello', name: online.myName, v: APP_VERSION });
         showOnlineLobby();
         return;
       }

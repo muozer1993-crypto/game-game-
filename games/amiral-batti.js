@@ -274,6 +274,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   // ---- placement
   if (state.phase === 'place') {
     if (state.ready[viewer]) {
+      drafts.delete(`${viewer}:${state.size}`); // accepted: the draft is no longer needed
       draw(container,
         el('div', { class: 'status-line' }, el('strong', {}, 'Gemilerin hazır.')),
         el('p', { class: 'hint' }, `${players[opp]} gemilerini yerleştiriyor…`),
@@ -347,7 +348,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
         el('button', { type: 'button', class: 'btn btn-small', onClick: () => { fleet = []; redraw(); } }, 'Temizle'),
       ),
       boardBox,
-      el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block', style: { marginTop: '10px' }, onClick: () => { const f = fleet; drafts.delete(draftKey); sendMove({ type: 'place', secret: { fleet: f } }); if (!state.ready[viewer]) { /* rejected: keep the draft */ } } }, 'Hazır'),
+      el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block', style: { marginTop: '10px' }, onClick: () => sendMove({ type: 'place', secret: { fleet } }) }, 'Hazır'), // a rejected placement keeps the draft
     );
     return null;
   }
