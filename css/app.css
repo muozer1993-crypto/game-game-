@@ -769,3 +769,9 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 :root[data-theme="dark"] .sd-cell.sel, :root:not([data-theme="light"]) .sd-cell.sel { background: rgba(91, 140, 255, 0.35); }
 .sd-pad { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; max-width: 380px; margin: 8px auto; }
 .sd-key { padding: 12px 0; font-size: 1.2rem; font-weight: 800; }
+
+/* ---- Kelime Türetme */
+.kt-tiles { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin: 6px auto; max-width: 360px; }
+.kt-tile { width: 44px; height: 52px; font-size: 1.4rem; }
+.kt-tile:disabled { opacity: 0.3; }
+.kt-rack { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin: 8px 0; }

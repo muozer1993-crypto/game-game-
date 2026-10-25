@@ -74,6 +74,6 @@ export default {
 
 ## Eklenen oyunlar (faz 2)
 Genel Kültür Düellosu (`data/trivia.json`), Amiral Battı, Tavla, Dama, Mangala, Bilardo,
-Dört Bağlantı, Noktalar ve Kutular, Hafıza, XOX, Taş Kağıt Makas, Adam Asmaca, Harf Avı, Tabu (`data/tabu.json`), Reversi, Dokuz Taş, Refleks, Satranç, Hesap Yarışı, Durak, Mayın Tarlası, Sudoku Düellosu — her biri `games/` altında tek dosya; `games/index.js`
+Dört Bağlantı, Noktalar ve Kutular, Hafıza, XOX, Taş Kağıt Makas, Adam Asmaca, Harf Avı, Kelime Türetme, Tabu (`data/tabu.json`), Reversi, Dokuz Taş, Refleks, Satranç, Hesap Yarışı, Durak, Mayın Tarlası, Sudoku Düellosu — her biri `games/` altında tek dosya; `games/index.js`
 kaydı ve `sw.js` önbellek listesi. Ana menü `meta.group` ile bölümlere ayrılır
 (kelime / soru-cevap / masa).

@@ -29,3 +29,4 @@ import './durak.test.js';
 import './version.test.js';
 import './mayin-tarlasi.test.js';
 import './sudoku.test.js';
+import './kelime-turetme.test.js';
