@@ -3,7 +3,7 @@ import { games, groups, findGame } from '../games/index.js';
 import { Session } from './session.js';
 import { el, render, clear, toast } from './ui/dom.js';
 import { createScoreboard } from './ui/scoreboard.js';
-import { load, save } from './lib/storage.js';
+import { load, save, remove } from './lib/storage.js';
 import { loadDictionary, loadCommonWords } from './lib/words.js';
 import { randomSeed } from './lib/rng.js';
 import { nameSuffix } from './lib/tr.js';
@@ -212,6 +212,7 @@ export function showSetup(game, { onlineHost = false } = {}) {
   if (game.setupExtra) {
     try { game.setupExtra(extra, { load, save }); } catch (err) { console.warn(err); }
   }
+  const record = onlineHost ? recordView(game, online.players) : recordView(game, names.map((n, i) => n.trim() || DEFAULT_PLAYERS[i]));
 
   const startBtn = el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block' }, 'Başla');
   startBtn.addEventListener('click', async () => {
@@ -237,11 +238,41 @@ export function showSetup(game, { onlineHost = false } = {}) {
     header(game.meta.name, { onBack: onlineHost ? showOnlineLobby : showMenu }),
     el('p', { class: 'lead' }, game.meta.description),
     el('details', { class: 'rules' }, el('summary', {}, 'Kurallar'), rulesBody(game)),
-    el('section', { class: 'section' }, nameFields),
+    el('section', { class: 'section' }, nameFields, record),
     fields.length ? el('section', { class: 'section' }, el('h2', { class: 'section-title' }, 'Ayarlar'), fields) : null,
     extra,
     el('section', { class: 'section' }, startBtn),
   );
+}
+
+// ---------------------------------------------------------------- all-time record per game and player pair
+function recordKey(gameId, players) {
+  const [a, b] = players.map((n) => n.trim().toLocaleLowerCase('tr-TR'));
+  return a <= b ? `record:${gameId}:${a}|${b}` : `record:${gameId}:${b}|${a}`;
+}
+function loadRecord(gameId, players) {
+  const rec = load(recordKey(gameId, players), null);
+  if (!rec || !Array.isArray(rec.wins)) return null;
+  const swapped = players[0].trim().toLocaleLowerCase('tr-TR') > players[1].trim().toLocaleLowerCase('tr-TR');
+  return { wins: swapped ? [rec.wins[1], rec.wins[0]] : rec.wins.slice(), draws: rec.draws || 0, rounds: rec.rounds || 0 };
+}
+function bumpRecord(gameId, players, result) {
+  const rec = loadRecord(gameId, players) || { wins: [0, 0], draws: 0, rounds: 0 };
+  rec.rounds += 1;
+  if (result.draw) rec.draws += 1; else rec.wins[result.winner] += 1;
+  const swapped = players[0].trim().toLocaleLowerCase('tr-TR') > players[1].trim().toLocaleLowerCase('tr-TR');
+  save(recordKey(gameId, players), { wins: swapped ? [rec.wins[1], rec.wins[0]] : rec.wins, draws: rec.draws, rounds: rec.rounds });
+}
+function recordView(game, players) {
+  const rec = loadRecord(game.id, players);
+  if (!rec || !rec.rounds) return null;
+  const box = el('div', { class: 'record muted' });
+  render(box,
+    el('span', {}, `Bu oyunda şimdiye kadar: ${players[0]} ${rec.wins[0]} – ${players[1]} ${rec.wins[1]}${rec.draws ? `, ${rec.draws} berabere` : ''} (${rec.rounds} tur)`),
+    ' ',
+    el('button', { type: 'button', class: 'btn btn-small', onClick: () => { remove(recordKey(game.id, players)); box.remove(); } }, 'Sıfırla'),
+  );
+  return box;
 }
 
 function rulesBody(game) {
@@ -297,6 +328,7 @@ export function showPlay(p) {
     ctx: p.ctx,
     onChange: updateScore,
     onEnd: (result) => {
+      bumpRecord(p.game.id, p.players, result);
       let text;
       if (result.draw) text = 'Berabere!';
       else {

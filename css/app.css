@@ -180,6 +180,7 @@ a { color: var(--primary); }
 .names { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
 details.rules { margin: 10px 0; }
+.record { font-size: 0.9rem; margin-top: 4px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .rules-body p { margin-bottom: 8px; }
 
