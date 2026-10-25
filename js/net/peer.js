@@ -13,6 +13,13 @@ const PEER_OPTIONS = {
     iceServers: [
       { urls: 'stun:stun.l.google.com:19302' },
       { urls: 'stun:stun1.l.google.com:19302' },
+      // Two phones on mobile data usually sit behind carrier NATs that STUN alone cannot
+      // punch through; the Open Relay Project's free public TURN servers (static credentials,
+      // published for exactly this use) relay the data channel in that case. Unreachable
+      // servers are simply ignored by ICE.
+      { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
+      { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
+      { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' },
     ],
   },
 };

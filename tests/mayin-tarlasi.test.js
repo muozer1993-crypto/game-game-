@@ -66,6 +66,11 @@ test('mayın tarlası: açma, taşma, bayrak, mayın, temizleme ve sonuç', () =
   t = game.applyMove(t, 0, { type: 'finish', ms: 120000 });
   t = game.applyMove(t, 1, { type: 'finish', ms: 120000 });
   assert.equal(t.boards[0].status, 'time');
+  {
+    let q = game.setup({ size: 8, seconds: 120, seed: 3 });
+    q = game.applyMove(q, 1, { type: 'finish', reason: 'quit', ms: 700 });
+    assert.equal(q.boards[1].status, 'quit', 'a voluntary Bitir is a quit, not a time-out');
+  }
   assert.deepEqual(game.getResult(t), { winner: 0 });
   let d = game.setup({ size: 8, seconds: 120, seed: 3 });
   d = game.applyMove(d, 0, { type: 'finish', ms: 1 });

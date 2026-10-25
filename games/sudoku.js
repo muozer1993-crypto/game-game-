@@ -117,7 +117,7 @@ export function applyMove(state, player, move) {
     if (isSolved(grids[player])) return finish('solved', move.ms);
     return { ...state, grids };
   }
-  if (move.type === 'finish') return finish('time', move.ms);
+  if (move.type === 'finish') return finish(move.reason === 'quit' ? 'quit' : 'time', move.ms); // quit = voluntary 'Bitir'
   fail(`Bilinmeyen hamle: ${move.type}`);
   return state;
 }
@@ -156,7 +156,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const summary = (p) => {
     const g = state.grids[p];
     if (state.status[p] === 'solved') return `çözdü (${(state.ms[p] / 1000).toFixed(0)} sn)`;
-    return `${goodCount(g)}/81 doğru dolu${state.status[p] === 'time' ? ', süre doldu' : ''}`;
+    return `${goodCount(g)}/81 doğru dolu${state.status[p] === 'time' ? ', süre doldu' : state.status[p] === 'quit' ? ', bıraktı' : ''}`;
   };
 
   const board = (p, { interactive = false } = {}) => {
@@ -194,7 +194,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   }
   if (state.finished[viewer]) {
     draw(container,
-      el('div', { class: 'status-line' }, el('strong', {}, state.status[viewer] === 'solved' ? `Çözdün! ${(state.ms[viewer] / 1000).toFixed(0)} sn` : 'Süre doldu.')),
+      el('div', { class: 'status-line' }, el('strong', {}, state.status[viewer] === 'solved' ? `Çözdün! ${(state.ms[viewer] / 1000).toFixed(0)} sn` : state.status[viewer] === 'quit' ? 'Bıraktın.' : 'Süre doldu.')),
       el('p', { class: 'hint' }, `${players[opp]} çözüyor…${ctx.mode === 'online' ? ` (${goodCount(state.grids[opp])}/81)` : ''}`),
       el('div', { class: 'spinner', 'aria-hidden': 'true' }),
       board(viewer),
@@ -221,7 +221,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     el('button', { type: 'button', class: 'btn btn-secondary sd-key', onClick: () => set(0) }, 'Sil'),
   );
   const giveUp = el('div', { class: 'row', style: { justifyContent: 'center', marginTop: '6px' } },
-    el('button', { type: 'button', class: 'btn btn-small', onClick: () => { if (confirm('Çözmeden bitirilsin mi? Doğru dolu kare sayın puanın olur.')) sendMove({ type: 'finish', ms: Date.now() - startedAt }); } }, 'Bitir'));
+    el('button', { type: 'button', class: 'btn btn-small', onClick: () => { if (confirm('Çözmeden bitirilsin mi? Doğru dolu kare sayın puanın olur.')) sendMove({ type: 'finish', reason: 'quit', ms: Date.now() - startedAt }); } }, 'Bitir'));
   redraw();
   draw(container,
     timerBox,

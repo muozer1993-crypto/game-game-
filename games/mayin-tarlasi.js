@@ -141,7 +141,7 @@ export function applyMove(state, player, move) {
       return { ...state, boards };
     }
     case 'finish':
-      return finish('time', move.ms);
+      return finish(move.reason === 'quit' ? 'quit' : 'time', move.ms); // quit = voluntary 'Bitir'
     default:
       fail(`Bilinmeyen hamle: ${move.type}`);
   }
@@ -184,6 +184,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     if (x.status === 'cleared') return `temizledi (${(x.ms / 1000).toFixed(1)} sn)`;
     if (x.status === 'dead') return `mayına bastı, ${base}`;
     if (x.status === 'time') return `süre doldu, ${base}`;
+    if (x.status === 'quit') return `bıraktı, ${base}`;
     return base;
   };
 
@@ -191,7 +192,8 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     const x = state.boards[p];
     const revealed = new Set(x.revealed);
     const flags = new Set(x.flags);
-    const box = el('div', { class: `ms-grid ${state.size === 12 ? 'dense' : ''}`, style: { gridTemplateColumns: `repeat(${state.size}, 1fr)` } });
+    // the 12×12 field bleeds into the page gutter and never shrinks a cell below 30px (scrolls sideways instead)
+    const box = el('div', { class: `ms-grid ${state.size === 12 ? 'dense' : ''}`, style: { gridTemplateColumns: `repeat(${state.size}, ${state.size === 12 ? 'minmax(30px, 1fr)' : '1fr'})` } });
     for (let i = 0; i < state.size * state.size; i++) {
       const n = state.numbers[i];
       const open = revealed.has(i);
@@ -230,7 +232,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
 
   if (state.finished[viewer]) {
     draw(container,
-      el('div', { class: 'status-line' }, el('strong', {}, b.status === 'cleared' ? `Temizledin! ${(b.ms / 1000).toFixed(1)} sn` : b.status === 'dead' ? 'Mayına bastın!' : 'Süre doldu.')),
+      el('div', { class: 'status-line' }, el('strong', {}, b.status === 'cleared' ? `Temizledin! ${(b.ms / 1000).toFixed(1)} sn` : b.status === 'dead' ? 'Mayına bastın!' : b.status === 'quit' ? 'Bıraktın.' : 'Süre doldu.')),
       el('p', { class: 'hint' }, `${statusText(viewer)}. ${players[opp]} oynuyor… (${progress(state, opp)}/${total})`),
       el('div', { class: 'spinner', 'aria-hidden': 'true' }),
       grid(viewer, { showMines: true }),
@@ -254,7 +256,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     el('div', { class: 'status-line' }, el('strong', {}, `${players[viewer]}: ${b.revealed.length}/${total} · mayın ${state.mines.length}, bayrak ${b.flags.length}`)),
     ctx.mode === 'online' ? el('p', { class: 'hint' }, `${players[opp]}: ${statusText(opp)}`) : null,
     el('div', { class: 'row', style: { justifyContent: 'center', marginBottom: '6px', gap: '8px' } }, flagBtn,
-      el('button', { type: 'button', class: 'btn btn-small', onClick: () => { if (confirm('Tarlayı bırakıp bitirilsin mi? Açtığın güvenli kareler puanın olur.')) sendMove({ type: 'finish', ms: Date.now() - startedAt }); } }, 'Bitir')),
+      el('button', { type: 'button', class: 'btn btn-small', onClick: () => { if (confirm('Tarlayı bırakıp bitirilsin mi? Açtığın güvenli kareler puanın olur.')) sendMove({ type: 'finish', reason: 'quit', ms: Date.now() - startedAt }); } }, 'Bitir')),
     grid(viewer, { interactive: true }),
   );
   return () => { if (timer) timer.stop(); };

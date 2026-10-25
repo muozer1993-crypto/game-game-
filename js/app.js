@@ -139,13 +139,16 @@ export function showRecords() {
     const m = key.match(/^record:([^:]+):(.*)\|(.*)$/);
     const rec = load(key, null);
     if (!m || !rec || !Array.isArray(rec.wins)) continue;
-    rows.push({ key, game: findGame(m[1]), gameId: m[1], names: [capitalizeTR(m[2]), capitalizeTR(m[3])], wins: rec.wins, draws: rec.draws || 0, rounds: rec.rounds || 0 });
+    const stored = Array.isArray(rec.names) && rec.names.length === 2;
+    const names = stored ? rec.names.map(String) : [capitalizeTR(m[2]), capitalizeTR(m[3])]; // old records: from the key
+    rows.push({ key, pair: `${m[2]}|${m[3]}`, stored, game: findGame(m[1]), gameId: m[1], names, wins: rec.wins, draws: rec.draws || 0, rounds: rec.rounds || 0 });
   }
-  const pairs = new Map();
+  const pairs = new Map(); // grouped by the lowercased key pair; shown with the stored display names when any record has them
   for (const r of rows) {
-    const id = r.names.join('|');
+    const id = r.pair;
     if (!pairs.has(id)) pairs.set(id, { names: r.names, rows: [], wins: [0, 0], draws: 0, rounds: 0 });
     const pr = pairs.get(id);
+    if (r.stored && !pr.stored) { pr.names = r.names; pr.stored = true; }
     pr.rows.push(r);
     pr.wins[0] += r.wins[0]; pr.wins[1] += r.wins[1]; pr.draws += r.draws; pr.rounds += r.rounds;
   }
@@ -419,22 +422,27 @@ export function showSetup(game, { onlineHost = false } = {}) {
 }
 
 // ---------------------------------------------------------------- all-time record per game and player pair
+const recordName = (n) => String(n).trim().toLocaleLowerCase('tr-TR').replace(/[|:]/g, ' ');
+// records are stored with the pair in alphabetical order so that both seat orders share one key
+const recordSwapped = (players) => recordName(players[0]) > recordName(players[1]);
 function recordKey(gameId, players) {
-  const [a, b] = players.map((n) => n.trim().toLocaleLowerCase('tr-TR').replace(/[|:]/g, ' '));
+  const [a, b] = players.map(recordName);
   return a <= b ? `record:${gameId}:${a}|${b}` : `record:${gameId}:${b}|${a}`;
 }
 function loadRecord(gameId, players) {
   const rec = load(recordKey(gameId, players), null);
   if (!rec || !Array.isArray(rec.wins)) return null;
-  const swapped = players[0].trim().toLocaleLowerCase('tr-TR') > players[1].trim().toLocaleLowerCase('tr-TR');
+  const swapped = recordSwapped(players);
   return { wins: swapped ? [rec.wins[1], rec.wins[0]] : rec.wins.slice(), draws: rec.draws || 0, rounds: rec.rounds || 0 };
 }
 function bumpRecord(gameId, players, result) {
   const rec = loadRecord(gameId, players) || { wins: [0, 0], draws: 0, rounds: 0 };
   rec.rounds += 1;
   if (result.draw) rec.draws += 1; else rec.wins[result.winner] += 1;
-  const swapped = players[0].trim().toLocaleLowerCase('tr-TR') > players[1].trim().toLocaleLowerCase('tr-TR');
-  save(recordKey(gameId, players), { wins: swapped ? [rec.wins[1], rec.wins[0]] : rec.wins, draws: rec.draws, rounds: rec.rounds });
+  const swapped = recordSwapped(players);
+  const names = players.map((n) => String(n).trim());
+  // the display names travel with the record: the key is lowercased and cannot restore "Ayşe N."
+  save(recordKey(gameId, players), { wins: swapped ? [rec.wins[1], rec.wins[0]] : rec.wins, draws: rec.draws, rounds: rec.rounds, names: swapped ? [names[1], names[0]] : names });
 }
 function recordView(game, players) {
   const rec = loadRecord(game.id, players);
@@ -487,7 +495,8 @@ export function showPlay(p) {
 
   const updateScore = () => {
     const turn = activeSession ? activeSession.currentTurn() : null;
-    const highlight = turn && !(turn.simultaneous && isOnline) ? turn.player : null;
+    // simultaneous games: online nobody is 'on turn'; on one phone only the player holding it (private turn)
+    const highlight = turn && !(turn.simultaneous && (isOnline || !turn.private)) ? turn.player : null;
     render(scoreBox, createScoreboard({ players: p.players, scores, turn: highlight, self: p.self }));
   };
 

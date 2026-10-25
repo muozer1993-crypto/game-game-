@@ -145,7 +145,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       el('div', { class: 'status-line' }, el('strong', {}, a === b ? `Berabere: ${a}–${b}` : `${players[a > b ? 0 : 1]} kazandı: ${Math.max(a, b)}–${Math.min(a, b)}`)),
       score,
       el('div', { class: 'tb-rounds' }, state.log.map((r, i) => el('div', { class: 'tb-round' },
-        el('div', { class: 'col-title' }, `${i + 1}. tur — ${players[firstDescriber(state) === 0 ? i % 2 : 1 - (i % 2)]} anlattı, ${roundScore(r) > 0 ? '+' : ''}${roundScore(r)}`),
+        el('div', { class: 'col-title' }, `${i + 1}. tur — ${players[firstDescriber(state) === 0 ? i % 2 : 1 - (i % 2)]} ${mime ? 'canlandırdı' : 'anlattı'}, ${roundScore(r) > 0 ? '+' : ''}${roundScore(r)}`),
         el('div', { class: 'tb-list' }, r.map((e) => el('span', { class: `tb-chip ${e.result}` }, `${MARK[e.result]} ${cards[e.card] ? cards[e.card].word : '?'}`))),
       ))),
     );
@@ -158,7 +158,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       score,
       el('div', { class: 'tb-list' }, entries.map((e) => el('span', { class: `tb-chip ${e.result}` }, `${MARK[e.result]} ${cards[e.card] ? cards[e.card].word : '?'}`))),
       el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block', style: { marginTop: '12px' }, onClick: () => sendMove({ type: 'next' }) },
-        state.round + 1 >= state.rounds ? 'Sonucu gör' : `Sonraki tur (${players[g]} anlatacak)`),
+        state.round + 1 >= state.rounds ? 'Sonucu gör' : `Sonraki tur (${players[g]} ${mime ? 'canlandıracak' : 'anlatacak'})`),
     );
     return null;
   }

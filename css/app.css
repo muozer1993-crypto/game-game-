@@ -747,6 +747,7 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
   aspect-ratio: 1; border: 0; padding: 0; border-radius: 4px; background: var(--key); color: var(--key-fg);
   font-weight: 800; font-size: 1rem; display: flex; align-items: center; justify-content: center; cursor: pointer; touch-action: manipulation;
 }
+.ms-grid.dense { gap: 1px; max-width: none; margin-left: -12px; margin-right: -12px; overflow-x: auto; padding-bottom: 2px; }
 .ms-grid.dense .ms-cell { font-size: 0.8rem; border-radius: 3px; }
 .ms-cell:disabled { cursor: default; }
 .ms-cell.open { background: var(--card); border: 1px solid var(--border); }

@@ -96,6 +96,9 @@ geçince telefon kısaca titrer (online ekranından kapatılabilir).
 Bağlantı katmanı **PeerJS** (WebRTC, `vendor/peerjs.min.js`, MIT). Seçilme nedeni: sıfır kurulum.
 Hesap, API anahtarı, sunucu, yapılandırma dosyası gerekmez; eşleştirme için PeerJS'in ücretsiz
 genel sunucusu (`0.peerjs.com`) kullanılır, oyun verisi doğrudan iki telefon arasında akar.
+İki telefon da farklı mobil operatör ağındaysa (CGNAT) doğrudan bağlantı kurulamayabilir; bu
+durumda veri Open Relay Project'in ücretsiz genel TURN sunucuları üzerinden aktarılır
+(`js/net/peer.js` içindeki `iceServers`; sunucu ulaşılamazsa yalnızca doğrudan bağlantı denenir).
 
 **Bağlantı koparsa:** iki telefonda da "Bağlantı koptu — Yeniden bağlan" penceresi çıkar. Aynı oda
 koduyla yeniden eşleşilir ve kopukluk sırasında yapılan hamleler karşıya aktarılır; oyun kaldığı
@@ -112,7 +115,7 @@ telefonunda kalır.
 |---|---|---|
 | Kurulum | Yok. Dosyayı aç, çalışır. | Firebase projesi aç, Realtime Database etkinleştir, güvenlik kuralı yaz, config'i depoya koy. |
 | Maliyet | Ücretsiz, kota yok ama SLA/garanti de yok. | Spark planı ücretsiz (1 GB depolama, 10 GB/ay aktarım, 100 eşzamanlı bağlantı). |
-| Güvenilirlik | Genel eşleştirme sunucusu tek nokta; nadiren yavaş/kapalı olabilir. İki telefon farklı mobil operatör ağlarındaysa (CGNAT) doğrudan bağlantı kurulamayabilir; PeerJS'in kendi TURN sunucusu şu an çalışmıyor. Aynı Wi-Fi ya da Wi-Fi + mobil genelde sorunsuz. | Her ağda çalışır (sunucu üzerinden). |
+| Güvenilirlik | Genel eşleştirme sunucusu tek nokta; nadiren yavaş/kapalı olabilir. İki telefon farklı mobil operatör ağlarındaysa (CGNAT) doğrudan bağlantı kurulamayabilir; o zaman Open Relay Project'in ücretsiz TURN sunucusu araya girer (üçüncü taraf, garanti yok). Aynı Wi-Fi ya da Wi-Fi + mobil genelde doğrudan bağlanır. | Her ağda çalışır (sunucu üzerinden). |
 | Gizlilik | Veri sunucuda saklanmaz, doğrudan telefonlar arasında. | Hamleler Google sunucusunda durur (kurallarla kısıtlanabilir). |
 | Yeniden bağlanma | Sayfa yenilenince oda düşer; yeniden kurmak gerekir. | Oda veritabanında durduğu için yenilemeye dayanıklı. |
 

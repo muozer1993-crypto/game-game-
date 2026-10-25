@@ -46,6 +46,13 @@ test('sudoku: girişler, ipucu koruması, çakışma sayımı, çözüm ve sonu�
   s = game.applyMove(s, 1, { type: 'finish', ms: 600000 });
   assert.equal(s.phase, 'over');
   assert.equal(s.status[1], 'time');
+  // a voluntary 'Bitir' is recorded as a quit, not a time-out
+  {
+    let q = game.setup({ level: 'easy', minutes: 0, seed: 5 });
+    q = game.applyMove(q, 0, { type: 'finish', reason: 'quit', ms: 1500 });
+    assert.equal(q.status[0], 'quit');
+    assert.equal(q.finished[0], true);
+  }
   assert.deepEqual(game.getResult(s), { winner: 0 });
   assert.equal(goodCount(s.grids[1]), 46);
   // nobody solves: more conflict-free cells wins; equal -> draw

@@ -85,8 +85,11 @@ export default {
 - Testler: `node tests/node.mjs` (saf mantık, 140+ test) ve `tests/index.html` (aynı testler
   tarayıcıda). Tarayıcı akış testleri geliştirme sırasında Playwright ile koşuldu (depoda değil).
 
-## Eklenen oyunlar (faz 2)
-Genel Kültür Düellosu (`data/trivia.json`), Amiral Battı, Tavla, Dama, Mangala, Bilardo,
-Dört Bağlantı, Noktalar ve Kutular, Hafıza, XOX, Taş Kağıt Makas, Adam Asmaca, Harf Avı, Kelime Türetme, Kelime Tahtası, Tabu (`data/tabu.json`), Reversi, Beş Taş, Hex, Dokuz Taş, Refleks, Satranç, Hesap Yarışı, Renk Tuzağı, Hafıza Dizisi, Durak, Mayın Tarlası, Sudoku Düellosu — her biri `games/` altında tek dosya; `games/index.js`
-kaydı ve `sw.js` önbellek listesi. Ana menü `meta.group` ile bölümlere ayrılır
-(kelime / soru-cevap / masa).
+## Oyunlar (33)
+Faz 1: Son Hece, Gizli Kelime, Gizli Sayı, Beni Ne Kadar Tanıyorsun? (`data/questions.json`).
+Faz 2: Genel Kültür Düellosu (`data/trivia.json`), Amiral Battı, Tavla, Dama, Mangala, Bilardo,
+Dört Bağlantı, Noktalar ve Kutular, Hafıza, XOX, Taş Kağıt Makas, Adam Asmaca, Harf Avı,
+Kelime Türetme, Kelime Tahtası, Tabu (`data/tabu.json`), Reversi, Beş Taş, Hex, Dokuz Taş,
+Refleks, Satranç, Pişti, Durak, Hesap Yarışı, Renk Tuzağı, Hafıza Dizisi, Mayın Tarlası,
+Sudoku Düellosu — her biri `games/` altında tek dosya; `games/index.js` kaydı ve `sw.js`
+önbellek listesi. Ana menü `meta.group` ile bölümlere ayrılır (kelime / soru-cevap / masa).
