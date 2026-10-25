@@ -7,8 +7,8 @@ export const meta = {
   icon: '🪨',
   description: 'Türk mangalası: taşları dağıt, çift sayıda yakala, hazneyi doldur.',
   rules: [
-    'Her oyuncunun 6 kuyusu ve bir haznesi vardır; her kuyuda 4 taş. Hazneler sağ tarafta: senin haznen kendi kuyularının sağında.',
-    'Sırası gelen kendi kuyularından birini seçer; bir taşı o kuyuda bırakır, kalanını saat yönünün tersine birer birer dağıtır (kendi haznesine de bırakır, rakibin haznesini atlar). Kuyuda tek taş varsa o taş bir sonraki kuyuya gider.',
+    'Her oyuncunun 6 kuyusu ve bir haznesi vardır; her kuyuda 4 taş. Ekranda 1. oyuncu alt sırayı oynar ve haznesi sağdadır; 2. oyuncu üst sırayı oynar ve haznesi soldadır. Taşlar alt sırada sağa, üst sırada sola doğru akar (saat yönünün tersine).',
+    'Sırası gelen kendi kuyularından birini seçer; bir taşı o kuyuda bırakır, kalanını birer birer dağıtır (kendi haznesine de bırakır, rakibin haznesini atlar). Kuyuda tek taş varsa o taş bir sonraki kuyuya gider.',
     'Son taş kendi haznene düşerse bir daha oynarsın. Son taş rakibin kuyusuna düşer ve oradaki taş sayısını çift yaparsa o kuyudaki taşların hepsini alırsın. Son taş kendi boş kuyuna düşerse ve karşısındaki rakip kuyusu doluysa oradakileri ve kendi taşını alırsın.',
     'Bir oyuncunun kuyuları boşalınca oyun biter; kuyularında taş kalan oyuncu o taşları alır. Haznesinde çok taşı olan kazanır.',
   ].join('\n'),
@@ -45,6 +45,7 @@ export function applyMove(state, player, move) {
   if (state.over) fail('Oyun bitti');
   if (player !== state.turn) fail('Sıra sende değil');
   const from = Number(move.pit);
+  if (!Number.isInteger(from)) fail('Geçersiz hamle');
   if (!ownsPit(player, from)) fail('Bu kuyu senin değil');
   if (state.pits[from] === 0) fail('Bu kuyu boş');
   const pits = state.pits.slice();

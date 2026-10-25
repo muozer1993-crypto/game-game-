@@ -76,7 +76,7 @@ export function applyMove(state, player, move) {
         const scores = state.scores.slice();
         if (w != null) scores[w] += 1;
         const history = state.history.concat([{ picks: shown.slice(), winner: w }]);
-        const over = scores[0] >= state.target || scores[1] >= state.target || history.length >= state.rounds + 4;
+        const over = scores[0] >= state.target || scores[1] >= state.target;
         next = { ...next, scores, history, over, phase: over ? 'over' : 'result', picks: [null, null] };
       }
       return next;
@@ -101,7 +101,7 @@ export function autoMove(state, player) {
 export function getTurn(state) {
   if (state.over || state.phase !== 'pick') return null; // the reveal is looked at together
   const p = state.picked[0] ? (state.picked[1] ? null : 1) : 0;
-  return p == null ? null : { player: p, private: true };
+  return p == null ? null : { player: p, private: true, simultaneous: true };
 }
 
 export function getResult(state) {

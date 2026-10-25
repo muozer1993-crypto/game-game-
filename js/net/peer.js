@@ -88,17 +88,26 @@ function makeTransport(role, code, peer) {
   });
 
   const attach = (c) => {
+    const old = conn;
     conn = c;
+    if (old && old !== c) {
+      // a replacement connection (the other side reconnected): drop the old one quietly
+      open = false;
+      try { old.close(); } catch { /* ignore */ }
+    }
+    const current = () => conn === c; // events from superseded connections are ignored
     c.on('data', (data) => {
+      if (!current()) return;
       messageHandlers.forEach((fn) => { try { fn(data); } catch (e) { console.warn(e); } });
     });
     c.on('open', () => {
+      if (!current()) return;
       open = true;
-      while (queue.length) c.send(queue.shift());
       openHandlers.forEach((fn) => { try { fn(); } catch (e) { console.warn(e); } });
+      while (queue.length) c.send(queue.shift());
     });
-    c.on('close', emitClose);
-    c.on('error', (err) => { console.warn('Bağlantı hatası', err); emitClose(); });
+    c.on('close', () => { if (current()) emitClose(); });
+    c.on('error', (err) => { if (!current()) return; console.warn('Bağlantı hatası', err); emitClose(); });
     if (c.open) {
       open = true;
       openHandlers.forEach((fn) => { try { fn(); } catch (e) { console.warn(e); } });
@@ -153,7 +162,8 @@ export async function createHost(code, opts = {}) {
           settled = true;
           const transport = makeTransport('host', roomCode, peer);
           peer.on('connection', (conn) => {
-            if (transport.connected) { conn.close(); return; } // only two players
+            // a second connection replaces the first: the guest may be reconnecting after a
+            // drop the host has not noticed yet (two players only, so there is no third party)
             transport.attach(conn);
           });
           resolve(transport);

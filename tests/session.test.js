@@ -108,3 +108,15 @@ test('session (online): kopan bağlantıdan sonra kaçırılan hamleler yeniden 
   assert.equal(sessions[1].receive(missed[0]), false);
   assert.equal(JSON.stringify(sessions[1].state), before);
 });
+
+test('session (online): sıradaki hamle kaybolduysa sonraki hamle uygulanmaz, sayaç ilerlemez', () => {
+  const { sessions, deliver } = pair(gizliKelime, { length: 5, secretMode: 'random', feedback: 'wordle', maxGuesses: 6 }, ctx);
+  const state0 = gizliKelime.setup({ length: 5, secretMode: 'random', feedback: 'wordle', maxGuesses: 6 });
+  sessions[0].start(state0);
+  sessions[1].start(JSON.parse(JSON.stringify(state0)));
+  deliver();
+  const before = sessions[1].received;
+  assert.equal(sessions[1].receive({ t: 'move', seq: before + 1, player: 0, move: { type: 'guess', word: 'kitap' } }), false);
+  assert.equal(sessions[1].received, before, 'the gap is kept for the resume replay');
+  assert.equal(sessions[1].state.guesses[0].length, 0);
+});

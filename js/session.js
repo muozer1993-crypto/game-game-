@@ -134,10 +134,12 @@ export class Session {
   receive(msg) {
     if (!msg || msg.t !== 'move') return false;
     if (typeof msg.seq === 'number' && msg.seq < this.received) return false; // duplicate after a resume
-    if (typeof msg.seq === 'number' && msg.seq !== this.received) {
-      console.warn(`Hamle sırası uyuşmuyor (gelen ${msg.seq}, beklenen ${this.received})`);
+    if (typeof msg.seq === 'number' && msg.seq > this.received) {
+      // a move was lost in between (link dropped): wait for the resume replay to fill the gap
+      console.warn(`Hamle sırası uyuşmuyor (gelen ${msg.seq}, beklenen ${this.received}); bekleniyor`);
+      return false;
     }
-    this.received = (typeof msg.seq === 'number' ? msg.seq : this.received) + 1;
+    this.received += 1;
     if (this.self !== null && msg.player === this.self) return false; // never accept moves "from us"
     const move = { ...msg.move };
     // Timers are based on the local clock: stamp remote moves with our own time.

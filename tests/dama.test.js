@@ -63,3 +63,30 @@ test('dama: hamlesi olmayan kaybeder, taşı bitince kaybeder', () => {
   assert.equal(s.over, true);
   assert.equal(s.winner, 0);
 });
+
+test('dama: dama kendi başlangıç karesinin ve alınan taşların üstünden kayabilir (en çok alma)', () => {
+  // reviewer's board: P0 king at (4,4); P1 men at (4,2), (2,1), (1,3), (6,4); P0 blockers at (4,0), (0,1), (1,5)
+  let s = empty();
+  put(s, 4, 4, 0, true); put(s, 4, 2, 1); put(s, 2, 1, 1); put(s, 1, 3, 1); put(s, 6, 4, 1); put(s, 4, 0, 0); put(s, 0, 1, 0); put(s, 1, 5, 0);
+  const moves = legalMoves(s);
+  assert.ok(moves.length >= 1);
+  assert.ok(moves.every((m) => m.captured.length === 4), 'the 4-capture is mandatory: ' + JSON.stringify(moves.map((m) => m.captured.length)));
+  const four = moves.find((m) => m.path[m.path.length - 1] === 7 * N + 4);
+  assert.ok(four, 'ending at (7,4) after sliding down over the vacated origin');
+});
+
+test('dama: tek taş kalan oyuncu damayı alabiliyorsa oyun bitmez; birer dama berabere', () => {
+  // king at (2,4) slides to (4,4), next to a lone man at (4,3): the man can capture sideways to (4,5)
+  let s = empty();
+  put(s, 2, 4, 0, true); put(s, 4, 3, 1); put(s, 0, 7, 0);
+  s = game.applyMove(s, 0, { type: 'move', from: 2 * N + 4, path: [4 * N + 4] });
+  assert.equal(s.over, false, 'the lone man captures next, so no shortcut win');
+  const cap = legalMoves(s, 1).find((m) => m.captured.length);
+  assert.ok(cap);
+  // one king each -> draw
+  let d = empty();
+  put(d, 0, 0, 0, true); put(d, 7, 7, 1, true);
+  d = game.applyMove(d, 0, { type: 'move', from: 0, path: [1] });
+  assert.equal(d.over, true);
+  assert.deepEqual(game.getResult(d), { draw: true });
+});

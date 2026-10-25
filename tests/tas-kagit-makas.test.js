@@ -16,7 +16,7 @@ test('taş kağıt makas: el kazananı, gizli seçim, açılma, seri', () => {
   assert.equal(roundWinner('tas', 'tas'), null);
   let s = game.setup({ rounds: 3 });
   assert.equal(s.target, 2);
-  assert.deepEqual(game.getTurn(s), { player: 0, private: true });
+  assert.deepEqual(game.getTurn(s), { player: 0, private: true, simultaneous: true });
   s = game.applyMove(s, 0, { type: 'pick', secret: { choice: 'tas' } });
   assert.throws(() => game.applyMove(s, 0, { type: 'pick', secret: { choice: 'tas' } }), 'zaten seçtin');
   assert.equal(game.autoMove(s, 0), null, 'nothing to show until both picked');
@@ -34,7 +34,7 @@ test('taş kağıt makas: el kazananı, gizli seçim, açılma, seri', () => {
   assert.throws(() => game.applyMove(s, 0, { type: 'pick', secret: { choice: 'kagit' } }), 'sonraki ele');
   s = game.applyMove(s, 1, { type: 'next' });
   assert.deepEqual(s.picked, [false, false]);
-  assert.deepEqual(game.getTurn(s), { player: 0, private: true });
+  assert.deepEqual(game.getTurn(s), { player: 0, private: true, simultaneous: true });
   // second round: draw, third: player 0 wins -> over
   s = game.applyMove(s, 0, { type: 'pick', secret: { choice: 'kagit' } });
   s = game.applyMove(s, 1, { type: 'pick', secret: { choice: 'kagit' } });

@@ -52,18 +52,20 @@ function captureSequences(cells, from, p) {
   const dirs = piece.k ? ALL_DIRS : [[forward(p), 0], ...DIRS_MAN];
   const rec = (r, c, taken, path, isKing) => {
     let extended = false;
+    // the moving piece's origin and pieces already captured in this sequence count as empty
+    const free = (i) => cells[i] === null || i === from || taken.includes(i);
     for (const [dr, dc] of dirs) {
       if (isKing) {
         // king: slide over empty squares, jump exactly one enemy, land on any empty square after it
         let rr = r + dr;
         let cc = c + dc;
-        while (inside(rr, cc) && cells[idx(rr, cc)] === null) { rr += dr; cc += dc; }
+        while (inside(rr, cc) && free(idx(rr, cc))) { rr += dr; cc += dc; }
         if (!inside(rr, cc)) continue;
         const target = idx(rr, cc);
-        if (cells[target] === null || cells[target].p === p || taken.includes(target)) continue;
+        if (cells[target] === null || cells[target].p === p) continue;
         let lr = rr + dr;
         let lc = cc + dc;
-        while (inside(lr, lc) && (cells[idx(lr, lc)] === null || idx(lr, lc) === from)) {
+        while (inside(lr, lc) && free(idx(lr, lc))) {
           extended = true;
           rec(lr, lc, taken.concat([target]), path.concat([idx(lr, lc)]), true);
           lr += dr;
@@ -78,7 +80,7 @@ function captureSequences(cells, from, p) {
         const target = idx(mr, mc);
         const land = idx(lr, lc);
         if (cells[target] === null || cells[target].p === p || taken.includes(target)) continue;
-        if (cells[land] !== null && land !== from) continue;
+        if (!free(land)) continue;
         extended = true;
         // a man that reaches the last row keeps capturing as a king in Turkish draughts; keep it simple: continue as man
         rec(lr, lc, taken.concat([target]), path.concat([land]), false);
@@ -152,10 +154,15 @@ export function applyMove(state, player, move) {
   const mine = countPieces(cells, player);
   const theirs = countPieces(cells, 1 - player);
   if (theirs.total === 0) return { ...next, over: true, winner: player };
-  if (!legalMoves(next, 1 - player).length) return { ...next, over: true, winner: player };
-  // a lone man against a king loses
-  if (theirs.total === 1 && theirs.kings === 0 && mine.kings >= 1) return { ...next, over: true, winner: player };
-  if (mine.total === 1 && mine.kings === 0 && theirs.kings >= 1) return { ...next, over: true, winner: 1 - player };
+  const replies = legalMoves(next, 1 - player);
+  if (!replies.length) return { ...next, over: true, winner: player };
+  // a lone man against a king loses, unless that man can capture right now
+  if (!replies.some((m) => m.captured.length)) {
+    if (theirs.total === 1 && theirs.kings === 0 && mine.kings >= 1) return { ...next, over: true, winner: player };
+    if (mine.total === 1 && mine.kings === 0 && theirs.kings >= 1) return { ...next, over: true, winner: 1 - player };
+    // one king each: nobody can force a win
+    if (mine.total === 1 && theirs.total === 1 && mine.kings === 1 && theirs.kings === 1) return { ...next, over: true, winner: null };
+  }
   return next;
 }
 
@@ -224,7 +231,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const a = countPieces(state.cells, 0);
   const b = countPieces(state.cells, 1);
   let status;
-  if (state.over) status = `${players[state.winner]} kazandı!`;
+  if (state.over) status = state.winner == null ? 'Berabere: birer dama kaldı.' : `${players[state.winner]} kazandı!`;
   else if (mine) status = moves.some((m) => m.captured.length) ? `Sıra sende, ${players[viewer]}: alma zorunlu!` : `Sıra sende, ${players[viewer]}: taşı seç`;
   else status = `${players[state.turn]} düşünüyor…`;
   draw(container,

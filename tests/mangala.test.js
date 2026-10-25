@@ -66,3 +66,8 @@ test('mangala: bir taraf boşalınca oyun biter, kalan taşlar diğerine', () =>
   assert.deepEqual(game.getResult(s), { winner: 0 });
   assert.throws(() => game.applyMove(s, 0, { type: 'sow', pit: 0 }), 'Oyun bitti');
 });
+
+test('mangala: tam sayı olmayan kuyu reddedilir', () => {
+  const s = game.setup({ seed: 0 });
+  assert.throws(() => game.applyMove(s, 0, { type: 'sow', pit: 2.5 }), 'Geçersiz hamle');
+});

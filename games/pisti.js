@@ -51,15 +51,15 @@ function startDeal(state, dealNo) {
     table.push(c);
   }
   const hands = [deck.splice(0, 4), deck.splice(0, 4)];
-  return { ...state, deck, hands, table, dealNo, captured: [[], []], pistiPoints: [0, 0], lastTaker: null, turn: 1 - (state.dealer ?? 1), dealer: 1 - (state.dealer ?? 1), last: null };
+  const dealer = 1 - (state.dealer ?? 1);
+  // the non-dealer leads; the deal alternates
+  return { ...state, deck, hands, table, dealNo, captured: [[], []], pistiPoints: [0, 0], lastTaker: null, dealer, turn: 1 - dealer, justDealt: true };
 }
 
 export function setup(options = {}) {
   const target = [51, 101, 151].includes(Number(options.target)) ? Number(options.target) : 151;
-  const base = { seed: (Number(options.seed) || 1) >>> 0, target, hideHands: options.hideHands !== false, scores: [0, 0], phase: 'play', dealer: Number(options.seed) % 2 === 0 ? 0 : 1, over: false, winner: null };
-  const s = startDeal(base, 0);
-  // the non-dealer plays first
-  return { ...s, turn: 1 - s.dealer };
+  const base = { seed: (Number(options.seed) || 1) >>> 0, target, hideHands: options.hideHands !== false, scores: [0, 0], phase: 'play', dealer: Number(options.seed) % 2 === 0 ? 0 : 1, over: false, winner: null, pendingAck: null, last: null, dealResult: null };
+  return { ...startDeal(base, 0), justDealt: false };
 }
 
 /** Deal points for the cards captured in one deal (without pişti bonuses). */
@@ -77,9 +77,17 @@ export function dealPoints(captured) {
   return pts;
 }
 
-export function applyMove(state, player, move) {
-  if (!move || move.type !== 'play') fail('Geçersiz hamle');
+export function applyMove(state, player, move, ctx = {}) {
+  if (!move || typeof move !== 'object') fail('Geçersiz hamle');
   if (state.over) fail('Oyun bitti');
+  if (move.type === 'ack') {
+    // on a shared phone with hidden hands the player looks at the outcome before passing the phone
+    if (state.pendingAck !== player) fail('Onaylanacak hamle yok');
+    const turn = state.justDealt && state.nextTurn != null ? state.nextTurn : 1 - player;
+    return { ...state, pendingAck: null, turn, nextTurn: null };
+  }
+  if (move.type !== 'play') fail('Geçersiz hamle');
+  if (state.pendingAck != null) fail('Önce "Tamam" de');
   if (player !== state.turn) fail('Sıra sende değil');
   const i = Number(move.card);
   const hand = state.hands[player];
@@ -105,7 +113,8 @@ export function applyMove(state, player, move) {
   } else {
     table.push(card);
   }
-  let next = { ...state, hands, table, captured, pistiPoints, lastTaker, last, turn: 1 - player };
+  const needsAck = state.hideHands !== false && ctx.mode !== 'online';
+  let next = { ...state, hands, table, captured, pistiPoints, lastTaker, last, justDealt: false, turn: needsAck ? player : 1 - player, pendingAck: needsAck ? player : null };
   if (hands[0].length === 0 && hands[1].length === 0) {
     if (next.deck.length >= 8) {
       const deck = next.deck.slice();
@@ -117,9 +126,11 @@ export function applyMove(state, player, move) {
       const scores = [state.scores[0] + pts[0] + pistiPoints[0], state.scores[1] + pts[1] + pistiPoints[1]];
       next = { ...next, scores, dealResult: { pts, pisti: pistiPoints.slice(), cards: [next.captured[0].length, next.captured[1].length] } };
       if (scores[0] >= state.target || scores[1] >= state.target) {
-        if (scores[0] !== scores[1]) return { ...next, over: true, phase: 'over', winner: scores[0] > scores[1] ? 0 : 1 };
+        if (scores[0] !== scores[1]) return { ...next, over: true, phase: 'over', winner: scores[0] > scores[1] ? 0 : 1, pendingAck: null };
       }
-      next = startDeal(next, state.dealNo + 1);
+      const fresh = startDeal(next, state.dealNo + 1);
+      // keep the note of the final capture and the ack of the player who ended the deal
+      next = { ...fresh, last, pendingAck: needsAck ? player : null, turn: needsAck ? player : fresh.turn, nextTurn: fresh.turn };
     }
   }
   return next;
@@ -161,12 +172,14 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     const l = state.last;
     notes.push(`${players[l.player]} ${cardText(l.card)} attı${l.took ? `, ${l.took} kart aldı` : ''}${l.pisti ? ` — PİŞTİ! (+${l.pisti})` : ''}.`);
   }
-  if (state.dealResult && state.hands[0].length === 4 && state.hands[1].length === 4 && state.deck.length === 52 - 12) {
+  if (state.dealResult && (state.justDealt || state.over)) {
     const d = state.dealResult;
     notes.push(`El bitti: ${players[0]} ${d.pts[0] + d.pisti[0]} puan (${d.cards[0]} kart), ${players[1]} ${d.pts[1] + d.pisti[1]} puan (${d.cards[1]} kart).`);
   }
+  const acking = !state.over && state.pendingAck === viewer;
   let status;
   if (state.over) status = `${players[state.winner]} ${state.target} puana ulaştı!`;
+  else if (acking) status = state.last && state.last.took ? (state.last.pisti ? 'PİŞTİ!' : `${state.last.took} kart aldın!`) : 'Kart masada kaldı.';
   else if (mine) status = `Sıra sende, ${players[viewer]}: bir kart at`;
   else status = `${players[state.turn]} oynuyor…`;
   draw(container,
@@ -185,8 +198,9 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       : null,
     tableView,
     el('div', { class: 'col-title active' }, `Senin elin (aldığın ${state.captured[viewer].length} kart)`),
-    handView,
+    acking ? null : handView,
     notes.length ? el('p', { class: 'hint' }, notes.join(' ')) : null,
+    acking ? el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block', onClick: () => sendMove({ type: 'ack' }) }, 'Tamam, telefonu ver') : null,
   );
   return null;
 }
