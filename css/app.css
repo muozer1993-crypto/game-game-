@@ -986,3 +986,8 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .dm-tile.sel { outline: 3px solid var(--primary); transform: translateY(-4px); }
 .dm-tile:disabled { opacity: 0.4; cursor: default; }
 .dm-hand { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin: 6px 0 8px; }
+
+/* ---- Go */
+.go-wrap { max-width: 440px; margin: 8px auto; }
+.go-board { display: block; width: 100%; height: auto; touch-action: manipulation; }
+.go-cell.free { cursor: pointer; }

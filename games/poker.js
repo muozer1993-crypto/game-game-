@@ -98,10 +98,20 @@ function dealHand(state, handNo) {
   const post = (p, amount) => { const a = Math.min(amount, stacks[p]); stacks[p] -= a; bets[p] += a; };
   post(dealer, SB);
   post(1 - dealer, BB);
-  return {
+  const next = {
     ...state, handNo, dealer, hole, community, stacks, bets, pot: 0, invested: bets.slice(),
     street: 0, turn: dealer, acted: [false, false], lastRaise: BB, phase: 'play', result: null,
   };
+  // a blind that already put a short stack all-in leaves no decision: the other side's uncovered
+  // part goes back and the board runs out
+  const short = stacks[0] === 0 ? 0 : stacks[1] === 0 ? 1 : -1;
+  if (short >= 0) {
+    const other = 1 - short;
+    const back = Math.max(0, bets[other] - bets[short]);
+    stacks[other] += back; bets[other] -= back;
+    return advance({ ...next, stacks, bets, invested: bets.slice(), acted: [true, true] });
+  }
+  return next;
 }
 
 export function setup(options = {}) {
@@ -132,7 +142,7 @@ function settle(state, { folder = null } = {}) {
     else { const w = cmp > 0 ? 0 : 1; stacks[w] += 2 * low; result = { winner: w, amount: 2 * low, hands, shown: true }; }
   }
   const over = stacks[0] === 0 || stacks[1] === 0;
-  return { ...state, stacks, bets: [0, 0], street: folder == null ? 3 : state.street, phase: over ? 'over' : 'handOver', result, hands: state.hands + 1 };
+  return { ...state, stacks, bets: [0, 0], pot: total, street: folder == null ? 3 : state.street, phase: over ? 'over' : 'handOver', result, hands: state.hands + 1 };
 }
 
 /** Both have acted and the bets match: collect them and move to the next street (or showdown). */
@@ -161,12 +171,16 @@ export function applyMove(state, player, move) {
   const acted = state.acted.slice();
   acted[player] = true;
   const put = (amount) => { stacks[player] -= amount; bets[player] += amount; invested[player] += amount; };
-  const after = (next) => (acted[0] && acted[1] && (bets[0] === bets[1] || allIn(next, 0) || allIn(next, 1)) ? advance(next) : { ...next, turn: opp });
+  const after = (next) => {
+    const matched = bets[0] === bets[1];
+    if (matched && (allIn(next, 0) || allIn(next, 1))) return advance(next); // nothing left to decide
+    return acted[0] && acted[1] && matched ? advance(next) : { ...next, turn: opp };
+  };
   switch (move.type) {
     case 'fold':
       return settle(state, { folder: player });
     case 'check': {
-      if (bets[player] !== bets[opp]) fail('Önce görmen gerek');
+      if (bets[player] < bets[opp]) fail('Önce görmen gerek');
       return after({ ...state, acted });
     }
     case 'call': {
@@ -247,7 +261,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       tableView,
       el('div', { class: 'pk-hands' }, [0, 1].map((p) => el('div', { class: 'pk-hand' },
         el('div', { class: 'col-title' }, `${players[p]}${R.hands ? ` — ${R.hands[p].name}` : ''}`),
-        el('div', { class: 'ce-row' }, (R.shown || p === viewer || ctx.mode !== 'online') ? state.hole[p].map((c) => cardEl(c, { small: true })) : [cardEl(null, { small: true }), cardEl(null, { small: true })]),
+        el('div', { class: 'ce-row' }, (R.shown || (ctx.mode === 'online' && p === viewer)) ? state.hole[p].map((c) => cardEl(c, { small: true })) : [cardEl(null, { small: true }), cardEl(null, { small: true })]),
       ))),
       stacksLine,
       state.phase === 'handOver' ? el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block', style: { marginTop: '12px' }, onClick: () => sendMove({ type: 'next' }) }, 'Sonraki el') : null,

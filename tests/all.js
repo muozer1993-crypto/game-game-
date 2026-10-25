@@ -44,3 +44,4 @@ import './kizma-birader.test.js';
 import './hedef-sayi.test.js';
 import './okey.test.js';
 import './domino.test.js';
+import './go.test.js';

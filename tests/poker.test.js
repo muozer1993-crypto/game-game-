@@ -106,4 +106,22 @@ test('poker: körler, bekle/gör/yükselt/pas, sokaklar, rest ve iade, bitiş', 
   assert.ok(b.phase === 'handOver' || b.phase === 'over');
   assert.equal(b.stacks[0] + b.stacks[1], 1000);
   assert.ok(b.result.winner === 1 ? b.stacks[1] === 1000 : b.result.winner === 0 ? b.stacks[0] === 120 && b.stacks[1] === 880 : b.stacks[0] === 60);
+  // the pot shown after a fold equals what was awarded
+  assert.equal(f.pot, f.result.amount, 'pot after a fold');
+  // a big blind that cannot cover the small blind: nobody has a decision, the board runs out
+  let sb = game.applyMove({ ...s, stacks: [5, 1995], phase: 'handOver', result: { winner: 1 } }, 0, { type: 'next' });
+  assert.ok(sb.phase === 'handOver' || sb.phase === 'over', 'short big blind: hand resolved at once');
+  assert.equal(sb.stacks[0] + sb.stacks[1], 2000);
+  assert.ok(sb.result.shown, 'showdown, not a fold');
+  // a small blind that is all-in for less than the big blind: the big blind's excess comes back
+  let ss = game.applyMove({ ...s, stacks: [1992, 8], phase: 'handOver', result: { winner: 0 } }, 0, { type: 'next' });
+  assert.ok(ss.phase === 'handOver' || ss.phase === 'over');
+  assert.equal(ss.stacks[0] + ss.stacks[1], 2000);
+  assert.ok(ss.result.winner == null ? ss.result.amount === 8 : ss.result.amount === 16, 'pot is twice the short blind: ' + ss.result.amount);
+  // a matched call that puts the caller all-in needs no further action from the other side
+  let m = { ...s, stacks: [40, 500], bets: [0, 0], invested: [0, 0], pot: 0, street: 1, turn: 1, acted: [false, false], lastRaise: BB };
+  m = game.applyMove(m, 1, { type: 'raise', to: 60 });
+  m = game.applyMove(m, 0, { type: 'call' });
+  assert.ok(m.phase === 'handOver' || m.phase === 'over', 'runs out without asking the bettor to check');
+  assert.equal(m.stacks[0] + m.stacks[1], 540);
 });
