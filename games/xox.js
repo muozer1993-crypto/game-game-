@@ -2,6 +2,7 @@
 import { el, render as draw } from '../js/ui/dom.js';
 
 export const meta = {
+  group: 'masa',
   name: 'XOX',
   icon: '❌',
   description: 'Klasik üç taş: sırayla işaret koy, üçünü yan yana getiren kazanır.',

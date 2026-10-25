@@ -1,5 +1,5 @@
 // Screen flow: menu -> setup -> play (-> result -> new round) ; menu -> online -> setup/play.
-import { games, findGame } from '../games/index.js';
+import { games, groups, findGame } from '../games/index.js';
 import { Session } from './session.js';
 import { el, render, clear, toast } from './ui/dom.js';
 import { createScoreboard } from './ui/scoreboard.js';
@@ -106,20 +106,10 @@ export function showMenu() {
   );
   themeSelect.value = prefs.theme;
 
-  const list = games.map((game) =>
-    el('button', { type: 'button', class: 'card game-card', onClick: () => showSetup(game) },
-      el('div', { class: 'game-icon', 'aria-hidden': 'true' }, game.meta.icon || '🎲'),
-      el('div', { class: 'game-text' },
-        el('div', { class: 'game-name' }, game.meta.name),
-        el('div', { class: 'game-desc' }, game.meta.description),
-      ),
-    ),
-  );
-
   render(app,
     header('Oyun Gecesi', { right: themeSelect }),
     el('p', { class: 'lead' }, 'İki kişilik oyunlar. Tek telefonda elden ele ya da iki telefonda oda koduyla.'),
-    el('section', { class: 'game-list' }, list),
+    gameSections((game) => showSetup(game)),
     el('section', { class: 'section' },
       el('button', { type: 'button', class: 'btn btn-secondary btn-block', onClick: showOnline }, '📶 İki telefonda oyna (oda kodu)'),
     ),
@@ -128,6 +118,26 @@ export function showMenu() {
       el('a', { href: 'README.md' }, 'Kaynak ve lisanslar'),
     ),
   );
+}
+
+/** Game cards grouped into sections (used by the menu and the online lobby). */
+function gameSections(onPick) {
+  const card = (game) => el('button', { type: 'button', class: 'card game-card', onClick: () => onPick(game) },
+    el('div', { class: 'game-icon', 'aria-hidden': 'true' }, game.meta.icon || '🎲'),
+    el('div', { class: 'game-text' },
+      el('div', { class: 'game-name' }, game.meta.name),
+      el('div', { class: 'game-desc' }, game.meta.description),
+    ));
+  const used = new Set();
+  const sections = groups.map((g) => {
+    const list = games.filter((game) => game.meta.group === g.id);
+    list.forEach((game) => used.add(game.id));
+    if (!list.length) return null;
+    return el('section', { class: 'section' }, el('h2', { class: 'section-title' }, g.title), el('div', { class: 'game-list' }, list.map(card)));
+  });
+  const rest = games.filter((game) => !used.has(game.id));
+  if (rest.length) sections.push(el('section', { class: 'section' }, el('h2', { class: 'section-title' }, 'Diğer'), el('div', { class: 'game-list' }, rest.map(card))));
+  return sections;
 }
 
 // ---------------------------------------------------------------- setup
@@ -488,15 +498,10 @@ function showOnlineLobby({ notify = false } = {}) {
   if (notify) online.transport.send({ t: 'lobby' });
   if (online.role === 'host') {
     setScreen('online-lobby');
-    const list = games.map((game) =>
-      el('button', { type: 'button', class: 'card game-card', onClick: () => showSetup(game, { onlineHost: true }) },
-        el('div', { class: 'game-icon', 'aria-hidden': 'true' }, game.meta.icon || '🎲'),
-        el('div', { class: 'game-text' }, el('div', { class: 'game-name' }, game.meta.name), el('div', { class: 'game-desc' }, game.meta.description)),
-      ));
     render(app,
       header('Oyun seç', { onBack: () => { leaveOnline(); showMenu(); } }),
       el('p', { class: 'lead' }, `${online.players[1]} bağlandı. Bir oyun seç.`),
-      el('section', { class: 'game-list' }, list),
+      gameSections((game) => showSetup(game, { onlineHost: true })),
     );
   } else {
     setScreen('online-lobby');

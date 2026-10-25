@@ -2,6 +2,7 @@
 import { createGame } from './gizli-kelime.js';
 
 export const meta = {
+  group: 'kelime',
   name: 'Gizli Sayı',
   icon: '🔢',
   description: 'Rakamları farklı 4 haneli sayıyı "+ −" ipuçlarıyla rakibinden önce bul.',

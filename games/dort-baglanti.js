@@ -2,6 +2,7 @@
 import { el, render as draw } from '../js/ui/dom.js';
 
 export const meta = {
+  group: 'masa',
   name: 'Dört Bağlantı',
   icon: '🔴',
   description: 'Sırayla taş bırak; yatay, dikey ya da çapraz dört taşı yan yana getiren kazanır.',

@@ -6,6 +6,7 @@ import { syllabify, lastSyllable } from '../js/lib/syllabify.js';
 import { normalizeWord, isTurkishWord, upperTR, nameSuffix, VOWELS } from '../js/lib/tr.js';
 
 export const meta = {
+  group: 'kelime',
   name: 'Son Hece',
   icon: '🔗',
   description: 'Her kelime bir öncekinin son hecesiyle başlar. Kelime bulamayan ya da süresi biten kaybeder.',

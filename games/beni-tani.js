@@ -10,6 +10,7 @@ import { createRng, shuffle } from '../js/lib/rng.js';
 import { nameSuffix } from '../js/lib/tr.js';
 
 export const meta = {
+  group: 'tanisma',
   name: 'Beni Ne Kadar Tanıyorsun?',
   icon: '💞',
   description: 'Aynı soruları önce kendin için cevapla, sonra rakibin cevaplarını tahmin et.',

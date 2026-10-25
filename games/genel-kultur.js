@@ -5,6 +5,7 @@ import { createTimer } from '../js/ui/timer.js';
 import { createRng, shuffle } from '../js/lib/rng.js';
 
 export const meta = {
+  group: 'tanisma',
   name: 'Genel Kültür Düellosu',
   icon: '🧠',
   description: 'Aynı sorulara ikiniz de cevap verin; doğru sayısı, eşitlikte hız kazandırır.',

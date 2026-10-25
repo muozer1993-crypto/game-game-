@@ -7,6 +7,7 @@
 import { el, render as draw } from '../js/ui/dom.js';
 
 export const meta = {
+  group: 'masa',
   name: 'Bilardo',
   icon: '🎱',
   description: 'Sırayla vur; topu cebe sokan puan alır ve devam eder. Çok top ceplayan kazanır.',

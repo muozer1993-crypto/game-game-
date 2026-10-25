@@ -72,6 +72,8 @@ export default {
 4. Beni Ne Kadar Tanıyorsun (hazır havuz + özel sorular, Tuttu/Yakın/Tutmadı)
 5. Online mod (oda kodu, PeerJS; Firebase alternatifi README'de artı/eksi ile)
 
-## Sonra eklenecekler
-Genel kültür düellosu, amiral battı, dört bağlantı, noktalar-kutular, tavla —
-her biri `games/` altına tek dosya olarak eklenir ve `games/index.js`'e kaydedilir.
+## Eklenen oyunlar (faz 2)
+Genel Kültür Düellosu (`data/trivia.json`), Amiral Battı, Tavla, Bilardo, Dört Bağlantı,
+Noktalar ve Kutular, Hafıza, XOX — her biri `games/` altında tek dosya; `games/index.js`
+kaydı ve `sw.js` önbellek listesi. Ana menü `meta.group` ile bölümlere ayrılır
+(kelime / soru-cevap / masa).

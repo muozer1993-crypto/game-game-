@@ -3,6 +3,7 @@
 import { el, svg, render as draw } from '../js/ui/dom.js';
 
 export const meta = {
+  group: 'masa',
   name: 'Noktalar ve Kutular',
   icon: '🔲',
   description: 'Noktaların arasına çizgi çek; kutuyu kapatan puanı alır ve bir daha oynar.',

@@ -15,6 +15,13 @@ import hafiza from './hafiza.js';
 
 export const games = [sonHece, gizliKelime, gizliSayi, beniTani, genelKultur, amiralBatti, tavla, bilardo, dortBaglanti, noktalarKutular, hafiza, xox];
 
+/** Menu sections, in display order. A game's meta.group picks its section. */
+export const groups = [
+  { id: 'kelime', title: 'Kelime oyunları' },
+  { id: 'tanisma', title: 'Soru-cevap' },
+  { id: 'masa', title: 'Masa oyunları' },
+];
+
 export function findGame(id) {
   return games.find((g) => g.id === id) || null;
 }

@@ -459,6 +459,7 @@ export function createGame(cfg) {
 }
 
 export const meta = {
+  group: 'kelime',
   name: 'Gizli Kelime',
   icon: '🟩',
   description: 'Karşılıklı Wordle: rakibinin tuttuğu kelimeyi ondan önce bul.',

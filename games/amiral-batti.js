@@ -6,6 +6,7 @@ import { createRng, randomSeed } from '../js/lib/rng.js';
 import { nameSuffix } from '../js/lib/tr.js';
 
 export const meta = {
+  group: 'masa',
   name: 'Amiral Battı',
   icon: '🚢',
   description: 'Gemilerini gizle, rakibin denizine ateş et. Bütün gemileri önce batıran kazanır.',

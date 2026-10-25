@@ -6,6 +6,7 @@ import { randomSeed } from '../js/lib/rng.js';
 import { nameSuffix } from '../js/lib/tr.js';
 
 export const meta = {
+  group: 'masa',
   name: 'Tavla',
   icon: '🎲',
   description: 'Klasik tavla: zar at, pulları ev bölgene taşı, hepsini topla.',
