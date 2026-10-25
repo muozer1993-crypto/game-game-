@@ -124,6 +124,11 @@ function makeTransport(role, code, peer) {
       try { if (conn) conn.close(); } catch { /* ignore */ }
       try { peer.destroy(); } catch { /* ignore */ }
     },
+    /** Test helper: drop the data channel as if the network failed (handlers do fire). */
+    simulateDrop() {
+      try { if (conn) conn.close(); } catch { /* ignore */ }
+      emitClose();
+    },
   };
 }
 
@@ -163,7 +168,7 @@ export async function createHost(code, opts = {}) {
       });
     } catch (err) {
       lastError = err;
-      if (err.type !== 'unavailable-id') throw err;
+      if (err.type !== 'unavailable-id' || opts.keepCode) throw err;
     }
   }
   throw lastError || new Error('Oda açılamadı');

@@ -366,6 +366,8 @@ const online = {
   transport: null,
   role: null,       // 'host' | 'guest'
   self: null,       // 0 host, 1 guest
+  code: null,       // room code (kept for reconnecting)
+  resuming: false,  // a reconnect is in progress: 'hello' is replaced by 'resume'
   players: null,
   session: null,
   queue: [],        // moves that arrived while the guest was still loading the game
@@ -382,6 +384,8 @@ function leaveOnline({ silent = false } = {}) {
   online.transport = null;
   online.role = null;
   online.self = null;
+  online.code = null;
+  online.resuming = false;
   online.players = null;
   online.session = null;
   online.queue = [];
@@ -463,18 +467,75 @@ export function showOnline() {
   );
 }
 
-function wireTransport(myName) {
+function wireTransport(myName, { resume = false } = {}) {
   const t = online.transport;
   online.myName = myName;
-  online.players = null;
+  online.code = t.code;
+  if (!resume) online.players = null;
+  if (online.session) online.session.transport = t;
   t.onMessage((msg) => handleOnlineMessage(msg));
   t.onClose(() => {
-    if (!online.transport) return;
+    if (online.transport !== t) return; // an old transport we already replaced
+    // Mid-game (or in the lobby with a known opponent) offer to reconnect instead of dropping everything.
+    if (online.players && (online.session || currentScreen === 'online-lobby' || currentScreen === 'setup-online')) {
+      showReconnect();
+      return;
+    }
     leaveOnline({ silent: true });
     toast('Bağlantı koptu', { kind: 'error', duration: 4000 });
     showMenu();
   });
-  t.onOpen(() => { t.send({ t: 'hello', name: myName }); });
+  t.onOpen(() => {
+    if (resume && online.session) t.send({ t: 'resume', received: online.session.received, name: myName });
+    else t.send({ t: 'hello', name: myName });
+  });
+}
+
+/** Overlay shown when the connection drops mid-game; both sides re-establish the same room. */
+let reconnectOverlay = null;
+function showReconnect() {
+  if (reconnectOverlay) return;
+  const status = el('p', { class: 'muted', style: { minHeight: '1.4em' } }, 'Bağlantı koptu.');
+  const retryBtn = el('button', { type: 'button', class: 'btn btn-primary btn-block' }, 'Yeniden bağlan');
+  const exitBtn = el('button', { type: 'button', class: 'btn btn-secondary btn-block', onClick: () => { closeReconnect(); leaveOnline({ silent: true }); showMenu(); } }, 'Çık');
+  reconnectOverlay = el('div', { class: 'overlay' },
+    el('div', { class: 'card overlay-card', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Bağlantı koptu' },
+      el('h2', {}, 'Bağlantı koptu'),
+      el('p', {}, `Oda kodu ${online.code}. İkiniz de "Yeniden bağlan" deyince oyun kaldığı yerden sürer.`),
+      status, retryBtn, el('div', { style: { height: '8px' } }), exitBtn));
+  document.body.append(reconnectOverlay);
+  const attempt = async () => {
+    retryBtn.disabled = true;
+    const old = online.transport;
+    online.transport = null;
+    if (old) { try { old.close(); } catch { /* ignore */ } }
+    online.resuming = true;
+    const code = online.code;
+    const deadline = Date.now() + 120000;
+    let t = null;
+    while (!t && Date.now() < deadline && reconnectOverlay) {
+      try {
+        if (online.role === 'host') t = await createHost(code, { keepCode: true, attempts: 1, onStatus: (s) => { status.textContent = s; } });
+        else t = await joinRoom(code, { onStatus: (s) => { status.textContent = s; } });
+      } catch (err) {
+        status.textContent = `${err.message || 'Bağlanılamadı'} — tekrar deneniyor…`;
+        await new Promise((r) => setTimeout(r, 4000));
+      }
+    }
+    if (!t) { retryBtn.disabled = false; status.textContent = 'Bağlanılamadı. Tekrar dene ya da çık.'; return; }
+    online.transport = t;
+    wireTransport(online.myName, { resume: true });
+    status.textContent = online.role === 'host' ? 'Oda yeniden açıldı, rakip bekleniyor…' : 'Bağlandı, oyun eşitleniyor…';
+  };
+  retryBtn.addEventListener('click', attempt);
+  attempt();
+}
+function closeReconnect() {
+  if (reconnectOverlay) { reconnectOverlay.remove(); reconnectOverlay = null; }
+  online.resuming = false;
+}
+if (typeof window !== 'undefined' && load('debug', false)) {
+  window.__oyun = { online, drop: () => { if (online.transport) online.transport.simulateDrop(); } };
 }
 
 function showOnlineWaiting(code) {
@@ -533,8 +594,32 @@ async function handleOnlineMessage(msg) {
     case 'hello': {
       const other = String(msg.name || 'Oyuncu').slice(0, 20);
       online.players = online.role === 'host' ? [online.myName, other] : [other, online.myName];
-      if (online.role === 'host') showOnlineLobby();
-      else showOnlineLobby();
+      if (online.resuming) {
+        // the other side started over: our game cannot continue
+        closeReconnect();
+        if (activeSession) { activeSession.destroy(); activeSession = null; }
+        online.session = null;
+        toast('Rakip yeniden başladı; oyun baştan kurulacak', { duration: 4000 });
+      }
+      showOnlineLobby();
+      return;
+    }
+    case 'resume': {
+      // the other device reconnected mid-game: send it the moves it missed, and ask for ours
+      if (!online.session) { online.transport.send({ t: 'hello', name: online.myName }); return; }
+      online.transport.send({ t: 'resumeMoves', moves: online.session.ownMovesFrom(Number(msg.received) || 0), received: online.session.received });
+      return;
+    }
+    case 'resumeMoves': {
+      if (!online.session) return;
+      for (const m of msg.moves || []) online.session.receive(m);
+      if (online.resuming) {
+        // reply with what the other side missed, then both are in sync
+        online.transport.send({ t: 'resumeMoves', moves: online.session.ownMovesFrom(Number(msg.received) || 0), received: online.session.received, final: true });
+      }
+      closeReconnect();
+      if (online.session) online.session.render();
+      toast('Bağlantı yeniden kuruldu', { duration: 2500 });
       return;
     }
     case 'start': {

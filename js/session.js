@@ -92,9 +92,12 @@ export class Session {
     if (!next || next === this.state) return false;
     this.state = next;
     const publicMove = stripSecret(move);
-    this.log.push({ player, move: publicMove });
-    if (!remote && this.mode === 'online' && this.transport) {
-      this.transport.send({ t: 'move', seq: this.sent++, player, move: publicMove });
+    if (!remote && this.mode === 'online') {
+      const seq = this.sent++;
+      this.log.push({ player, move: publicMove, own: true, seq });
+      if (this.transport) this.transport.send({ t: 'move', seq, player, move: publicMove });
+    } else {
+      this.log.push({ player, move: publicMove, own: false });
     }
     return true;
   }
@@ -122,9 +125,15 @@ export class Session {
     }
   }
 
+  /** Our own moves from sequence number `from` on, as wire messages (for resuming after a drop). */
+  ownMovesFrom(from) {
+    return this.log.filter((e) => e.own && e.seq >= from).map((e) => ({ t: 'move', seq: e.seq, player: e.player, move: e.move }));
+  }
+
   /** A message from the other device. Returns false when it is not a move for this session. */
   receive(msg) {
     if (!msg || msg.t !== 'move') return false;
+    if (typeof msg.seq === 'number' && msg.seq < this.received) return false; // duplicate after a resume
     if (typeof msg.seq === 'number' && msg.seq !== this.received) {
       console.warn(`Hamle sırası uyuşmuyor (gelen ${msg.seq}, beklenen ${this.received})`);
     }

@@ -73,6 +73,10 @@ Bağlantı katmanı **PeerJS** (WebRTC, `vendor/peerjs.min.js`, MIT). Seçilme n
 Hesap, API anahtarı, sunucu, yapılandırma dosyası gerekmez; eşleştirme için PeerJS'in ücretsiz
 genel sunucusu (`0.peerjs.com`) kullanılır, oyun verisi doğrudan iki telefon arasında akar.
 
+**Bağlantı koparsa:** iki telefonda da "Bağlantı koptu — Yeniden bağlan" penceresi çıkar. Aynı oda
+koduyla yeniden eşleşilir ve kopukluk sırasında yapılan hamleler karşıya aktarılır; oyun kaldığı
+yerden sürer. (Sayfa yenilenirse oyun durumu kaybolur; o zaman lobiden yeni oyun kurulur.)
+
 **Gizli bilgi:** Gizli Kelime'de gizli kelime karşı telefona hiç gönderilmez. Tahmin, kelimenin
 sahibinin telefonuna gider; orada puanlanır ve yalnızca sonuç (renkler ya da +/−) geri yazılır.
 Beni Ne Kadar Tanıyorsun'da cevaplar da aynı şekilde tahmin aşaması bitene kadar sahibinin

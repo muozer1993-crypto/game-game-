@@ -83,3 +83,28 @@ test('session (online): kendi hamlemizin yankısı yok sayılır', () => {
   assert.equal(sessions[0].receive({ t: 'move', seq: 0, player: 0, move: { type: 'setSecret' } }), false);
   assert.equal(JSON.stringify(sessions[0].state), before);
 });
+
+test('session (online): kopan bağlantıdan sonra kaçırılan hamleler yeniden gönderilir', () => {
+  const { sessions, deliver, inbox } = pair(gizliKelime, { length: 5, secretMode: 'random', feedback: 'wordle', maxGuesses: 6 }, ctx);
+  const state0 = gizliKelime.setup({ length: 5, secretMode: 'random', feedback: 'wordle', maxGuesses: 6 });
+  sessions[0].start(state0);
+  sessions[1].start(JSON.parse(JSON.stringify(state0)));
+  deliver();
+  // the link drops: host guesses while the guest hears nothing
+  inbox[1].length = 0;
+  sessions[0].dispatch(0, { type: 'guess', word: 'kitap' });
+  inbox[1].length = 0; // lost in transit
+  assert.equal(sessions[1].state.guesses[0].length, 0);
+  // reconnect: the guest says what it has received; the host replays its own moves from there
+  const missed = sessions[0].ownMovesFrom(sessions[1].received);
+  assert.equal(missed.length, 1);
+  assert.equal(missed[0].move.word, 'kitap');
+  for (const m of missed) sessions[1].receive(m);
+  assert.equal(sessions[1].state.guesses[0].length, 1);
+  deliver(); // the guest scores it and the feedback reaches the host
+  assert.deepEqual(sessions[0].state.guesses[0][0].result, sessions[1].state.guesses[0][0].result);
+  // a duplicate replay is ignored
+  const before = JSON.stringify(sessions[1].state);
+  assert.equal(sessions[1].receive(missed[0]), false);
+  assert.equal(JSON.stringify(sessions[1].state), before);
+});
