@@ -16,13 +16,14 @@ test('doğruluk mu cesaret mi: seçim, kart sırası, değiştirme, hakem, puan,
   assert.equal(s.current.kind, 'dare');
   assert.equal(s.current.index, s.order.dare[0]);
   assert.deepEqual(game.getTurn(s), { player: 1, private: false }, 'the judge is on turn');
-  assert.throws(() => game.applyMove(s, 0, { type: 'resolve', done: true }), 'Hakem diğer oyuncu');
+  assert.throws(() => game.applyMove(s, 0, { type: 'resolve', done: true }, { mode: 'online' }), 'Hakem diğer oyuncu');
+  assert.equal(game.applyMove(s, 1, { type: 'resolve', done: true }, { mode: 'online' }).scores[0], 2, 'online: the judge resolves');
   // swap once
   s = game.applyMove(s, 0, { type: 'swap' });
   assert.equal(s.current.index, s.order.dare[1]);
   assert.equal(s.current.swapped, true);
   assert.throws(() => game.applyMove(s, 0, { type: 'swap' }), 'bir kez');
-  assert.throws(() => game.applyMove(s, 1, { type: 'swap' }), 'yalnızca sırası gelen');
+  assert.throws(() => game.applyMove(s, 1, { type: 'swap' }, { mode: 'online' }), 'yalnızca sırası gelen');
   s = game.applyMove(s, 1, { type: 'resolve', done: true });
   assert.deepEqual(s.scores, [SCORE.dare, 0]);
   assert.equal(s.turn, 1);

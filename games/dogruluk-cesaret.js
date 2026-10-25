@@ -54,7 +54,8 @@ function nextIndex(state, kind) {
   return list[state.used[kind] % list.length];
 }
 
-export function applyMove(state, player, move) {
+export function applyMove(state, player, move, ctx = {}) {
+  const online = ctx.mode === 'online'; // on one phone the moves come from whoever holds it
   if (!move || typeof move !== 'object') fail('Geçersiz hamle');
   if (player !== 0 && player !== 1) fail('Geçersiz oyuncu');
   if (state.phase === 'over') fail('Oyun bitti');
@@ -70,7 +71,7 @@ export function applyMove(state, player, move) {
     }
     case 'swap': {
       if (state.phase !== 'prompt') fail('Önce bir kart seç');
-      if (player !== state.turn) fail('Kartı yalnızca sırası gelen değiştirebilir');
+      if (online && player !== state.turn) fail('Kartı yalnızca sırası gelen değiştirebilir');
       if (state.current.swapped) fail('Bir kart yalnızca bir kez değiştirilir');
       const kind = state.current.kind;
       const index = nextIndex(state, kind);
@@ -78,7 +79,7 @@ export function applyMove(state, player, move) {
     }
     case 'resolve': {
       if (state.phase !== 'prompt') fail('Sonuçlanacak kart yok');
-      if (player === state.turn) fail('Hakem diğer oyuncu'); // online: only the judge; hot-seat sends as the judge too
+      if (online && player === state.turn) fail('Hakem diğer oyuncu'); // online: only the other phone judges
       const done = !!move.done;
       const scores = state.scores.slice();
       if (done) scores[state.turn] += SCORE[state.current.kind];
