@@ -1,5 +1,5 @@
 import { test, assert } from './runner.js';
-import game, { legalPits } from '../games/mangala.js';
+import game, { legalPits, replayFrames } from '../games/mangala.js';
 
 test('mangala: diziliş, dağıtma, bir taş bırakma kuralı', () => {
   let s = game.setup({ seed: 0 });
@@ -63,7 +63,7 @@ test('mangala: bir taraf boşalınca oyun biter, kalan taşları kuyuları boşa
   assert.equal(s.over, true);
   assert.equal(s.pits[6], 21 + 5, 'player 0 emptied first and takes the 5 stones left on player 1\'s side');
   assert.equal(s.pits[13], 15);
-  assert.deepEqual(s.collected, { taker: 0, from: 1, count: 5 });
+  assert.deepEqual(s.collected, { taker: 0, from: 1, count: 5, pits: [{ pit: 7, count: 3 }, { pit: 8, count: 2 }] });
   assert.deepEqual(game.getResult(s), { winner: 0 });
   assert.throws(() => game.applyMove(s, 0, { type: 'sow', pit: 0 }), 'Oyun bitti');
   // a capture that empties the OPPONENT's side: the player with the empty row collects the capturer's leftovers
@@ -99,7 +99,7 @@ test('mangala: ev kuralları — sonraki kuyudan başla, kalan taşlar sahibine'
   assert.equal(k.over, true);
   assert.equal(k.pits[6], 21);
   assert.equal(k.pits[13], 20, 'player 1 keeps its own 5 stones');
-  assert.deepEqual(k.collected, { taker: 1, from: 1, count: 5 });
+  assert.deepEqual(k.collected, { taker: 1, from: 1, count: 5, pits: [{ pit: 7, count: 3 }, { pit: 8, count: 2 }] });
   // unknown option values fall back to the official rules
   const odd = game.setup({ seed: 0, firstStone: 'x', leftovers: 42 });
   assert.equal(odd.firstStone, 'back');
@@ -109,4 +109,59 @@ test('mangala: ev kuralları — sonraki kuyudan başla, kalan taşlar sahibine'
 test('mangala: tam sayı olmayan kuyu reddedilir', () => {
   const s = game.setup({ seed: 0 });
   assert.throws(() => game.applyMove(s, 0, { type: 'sow', pit: 2.5 }), 'Geçersiz hamle');
+});
+
+test('mangala: hamle yolu kaydedilir, tekrar oynatma kareleri son duruma varır', () => {
+  // official: 4 stones from pit 2 -> back into 2, then 3, 4, 5
+  let s = game.applyMove(game.setup({ seed: 0 }), 0, { type: 'sow', pit: 2 });
+  assert.deepEqual(s.last.path, [2, 3, 4, 5]);
+  assert.equal(s.last.lifted, 4);
+  assert.equal(s.n, 1);
+  let f = replayFrames(s);
+  assert.equal(f.length, 1 + 4, 'lift + one frame per stone');
+  assert.deepEqual(f[0].hand, { at: 2, count: 4 });
+  assert.equal(f[0].pits[2], 0, 'the lifted pit is empty while the stones are in hand');
+  assert.deepEqual(f[f.length - 1].pits, s.pits, 'the last frame is the final board');
+  assert.equal(f[f.length - 1].hand, null);
+  // 'next' house rule: the path starts after the lifted pit
+  let n = game.applyMove(game.setup({ seed: 0, firstStone: 'next' }), 0, { type: 'sow', pit: 2 });
+  assert.deepEqual(n.last.path, [3, 4, 5, 6]);
+  // a capture: frames take the pit and carry the stones into the store, ending on the final board
+  let c = game.setup({ seed: 0 });
+  c.pits = c.pits.slice(); c.pits[5] = 3; c.pits[7] = 3;
+  c = game.applyMove(c, 0, { type: 'sow', pit: 5 });
+  assert.deepEqual(c.last.takes, [{ pit: 7, count: 4 }]);
+  f = replayFrames(c);
+  assert.equal(f[f.length - 1].kind, 'store');
+  assert.deepEqual(f[f.length - 1].pits, c.pits);
+  // empty-pit capture takes the opposite pit and the own stone
+  let d = game.setup({ seed: 0 });
+  d.pits = d.pits.slice(); d.pits[0] = 2; d.pits[1] = 0;
+  d = game.applyMove(d, 0, { type: 'sow', pit: 0 });
+  assert.deepEqual(d.last.takes, [{ pit: 11, count: 4 }, { pit: 1, count: 1 }]);
+  assert.deepEqual(replayFrames(d).slice(-1)[0].pits, d.pits);
+  // the game end collection is replayed too
+  let e = game.setup({ seed: 0 });
+  e.pits = new Array(14).fill(0);
+  e.pits[5] = 1; e.pits[6] = 20; e.pits[13] = 15; e.pits[7] = 3; e.pits[8] = 2;
+  e = game.applyMove(e, 0, { type: 'sow', pit: 5 });
+  f = replayFrames(e);
+  assert.equal(f[f.length - 1].kind, 'collect');
+  assert.deepEqual(f[f.length - 1].pits, e.pits);
+  // random games: every replay ends exactly on the final board and conserves the stones
+  let seed = 7;
+  const rnd = () => { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; };
+  for (let g = 0; g < 60; g++) {
+    for (const opts of [{}, { firstStone: 'next' }, { variant: 'bantumi' }, { leftovers: 'owner' }]) {
+      let st = game.setup({ seed: g, ...opts });
+      for (let m = 0; m < 300 && !st.over; m++) {
+        const legal = legalPits(st);
+        st = game.applyMove(st, st.turn, { type: 'sow', pit: legal[Math.floor(rnd() * legal.length)] });
+        const fr = replayFrames(st);
+        assert.deepEqual(fr[fr.length - 1].pits, st.pits, 'replay ends on the board');
+        fr.forEach((x) => assert.equal(x.pits.reduce((a, b) => a + b, 0) + (x.hand && (x.kind === 'lift' || x.kind === 'drop') ? x.hand.count : 0) + (x.kind === 'take' ? x.hand.count : 0), 48, 'stones conserved in every frame'));
+      }
+      assert.ok(st.over, 'random game ends');
+    }
+  }
 });
