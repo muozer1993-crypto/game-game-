@@ -10,9 +10,9 @@ export const meta = {
   group: 'masa',
   name: 'Bilardo',
   icon: '🎱',
-  description: 'Sırayla vur; topu cebe sokan puan alır ve devam eder. Çok top ceplayan kazanır.',
+  description: 'Istakayı geri çeker gibi nişan al ve vur; topu cebe sokan puan alır ve devam eder. Çok top ceplayan kazanır.',
   rules: [
-    'Beyaz topu sürükleyerek nişan al: parmağını beyaz topun üstünden istediğin yöne doğru çek; çizgi yönü, uzunluk gücü gösterir. Bırakınca vuruş yapılır.',
+    'Istakayı geri çeker gibi nişan al: parmağını beyaz topun arkasına koy ve topu göndermek istediğin yönün tersine doğru çek. Top parmağının tersi yönüne gider; ne kadar geri çekersen o kadar sert vurur. Kesik çizgi topun yolunu ve ilk değeceği topu gösterir. Bırakınca vuruş yapılır; vazgeçmek için parmağını beyaz topun üstüne geri getirip bırak.',
     'Bir topu cebe sokan 1 puan alır ve bir daha vurur. Top girmezse ya da beyaz top cebe düşerse sıra rakibe geçer (beyaz top başlangıç noktasına konur).',
     'Masadaki bütün toplar bitince çok topu olan kazanır.',
   ].join('\n'),
@@ -35,6 +35,10 @@ const SPEED = 15;
 const MAX_STEPS = 4000;
 const COLORS = ['#ffffff', '#f4c20d', '#1e5bc6', '#d72c2c', '#5b2d90', '#f07b1f', '#1a7f37', '#8b1a1a', '#111111', '#f4c20d', '#1e5bc6', '#d72c2c', '#5b2d90', '#f07b1f', '#1a7f37', '#8b1a1a'];
 const SUB = 4; // sub-steps per step so that a fast ball never skips over another ball
+// pull-back aiming: the finger behind the cue ball is the cue; the ball goes the other way
+export const CANCEL_R = R * 1.6;   // finger back on the ball: no shot
+export const PULL_FULL = 100;      // pull this far beyond CANCEL_R for full power
+export const MIN_POWER = 0.06;
 
 function fail(msg) {
   throw new Error(msg);
@@ -144,6 +148,46 @@ export function simulate(balls0, shot, withFrames = false) {
   return { balls: out, pocketed, frames };
 }
 
+/**
+ * Pull-back aiming: the shot goes from the finger through the cue ball and onwards, i.e. away
+ * from the finger, and the further the finger is from the ball, the harder. null = cancelled
+ * (finger back on the ball).
+ */
+export function aimFromPointer(cue, p) {
+  const dx = cue.x - p.x;
+  const dy = cue.y - p.y;
+  const d = Math.sqrt(dx * dx + dy * dy);
+  if (d < CANCEL_R) return null;
+  return { dx: dx / d, dy: dy / d, power: Math.min(1, (d - CANCEL_R) / PULL_FULL) };
+}
+
+/**
+ * Where the cue ball, rolling from (x0, y0) along the unit vector (dx, dy), first touches
+ * another ball or a cushion: { x, y } is the cue ball's centre at that moment, `ball` the
+ * ball it hits (or null for a cushion).
+ */
+export function predictContact(balls, x0, y0, dx, dy) {
+  let best = Infinity;
+  let hit = null;
+  for (const b of balls) {
+    if (b.id === 0 || b.pocketed) continue;
+    const fx = x0 - b.x;
+    const fy = y0 - b.y;
+    const fd = fx * dx + fy * dy;
+    const c = fx * fx + fy * fy - 4 * R * R;
+    if (c <= 0) continue; // already touching
+    const disc = fd * fd - c;
+    if (disc < 0) continue;
+    const t = -fd - Math.sqrt(disc);
+    if (t > 0 && t < best) { best = t; hit = b; }
+  }
+  const tx = dx > 0 ? (W - R - x0) / dx : dx < 0 ? (R - x0) / dx : Infinity;
+  const ty = dy > 0 ? (H - R - y0) / dy : dy < 0 ? (R - y0) / dy : Infinity;
+  const tc = Math.max(0, Math.min(tx, ty));
+  if (tc < best) { best = tc; hit = null; }
+  return { x: x0 + dx * best, y: y0 + dy * best, ball: hit };
+}
+
 function respotCue(balls) {
   const cue = balls.find((b) => b.id === 0);
   let y = H * 0.78;
@@ -219,16 +263,7 @@ function drawTable(ctxc, scale, balls, aim) {
     c.fillStyle = '#111';
     c.fill();
   }
-  if (aim) {
-    c.beginPath();
-    c.moveTo(aim.x0, aim.y0);
-    c.lineTo(aim.x0 + aim.dx * (30 + aim.power * 120), aim.y0 + aim.dy * (30 + aim.power * 120));
-    c.strokeStyle = 'rgba(255,255,255,0.8)';
-    c.lineWidth = 2;
-    c.setLineDash([4, 4]);
-    c.stroke();
-    c.setLineDash([]);
-  }
+  if (aim && !aim.cancel) drawAimPath(c, balls, aim);
   for (const b of balls) {
     if (b.pocketed) continue;
     c.beginPath();
@@ -252,6 +287,92 @@ function drawTable(ctxc, scale, balls, aim) {
       c.fillText(String(b.id), b.x, b.y + 0.5);
     }
   }
+  if (aim && !aim.cancel) drawCue(c, aim);
+  if (aim) drawPower(c, aim);
+  c.restore();
+}
+
+/** Power gauge at the top of the table while aiming (or "no shot" with the finger on the ball). */
+function drawPower(c, aim) {
+  const w = 96;
+  const x = (W - w) / 2;
+  const y = 10;
+  c.save();
+  c.fillStyle = 'rgba(0,0,0,0.55)';
+  c.beginPath();
+  c.roundRect ? c.roundRect(x - 4, y - 4, w + 8, 24, 6) : c.rect(x - 4, y - 4, w + 8, 24);
+  c.fill();
+  c.font = 'bold 8px system-ui, sans-serif';
+  c.textAlign = 'center';
+  c.textBaseline = 'middle';
+  if (aim.cancel || aim.power < MIN_POWER) {
+    c.fillStyle = '#fff';
+    c.fillText(aim.cancel ? 'Vuruş yok (geri çek)' : 'Biraz daha geri çek', W / 2, y + 8);
+  } else {
+    c.fillStyle = 'rgba(255,255,255,0.2)';
+    c.fillRect(x, y + 10, w, 5);
+    c.fillStyle = aim.power < 0.5 ? '#7bd88f' : aim.power < 0.8 ? '#f4c20d' : '#ef5350';
+    c.fillRect(x, y + 10, w * aim.power, 5);
+    c.fillStyle = '#fff';
+    c.fillText(`Güç %${Math.round(aim.power * 100)}`, W / 2, y + 3);
+  }
+  c.restore();
+}
+
+/** Dashed path of the cue ball up to its first contact, a ghost ball there and the struck ball's direction. */
+function drawAimPath(c, balls, aim) {
+  const hit = predictContact(balls, aim.x0, aim.y0, aim.dx, aim.dy);
+  c.save();
+  c.strokeStyle = 'rgba(255,255,255,0.85)';
+  c.lineWidth = 1.5;
+  c.setLineDash([4, 4]);
+  c.beginPath();
+  c.moveTo(aim.x0 + aim.dx * R, aim.y0 + aim.dy * R);
+  c.lineTo(hit.x, hit.y);
+  c.stroke();
+  c.setLineDash([]);
+  c.beginPath();
+  c.arc(hit.x, hit.y, R, 0, Math.PI * 2);
+  c.strokeStyle = 'rgba(255,255,255,0.7)';
+  c.stroke();
+  if (hit.ball) {
+    const nx = hit.ball.x - hit.x;
+    const ny = hit.ball.y - hit.y;
+    const n = Math.sqrt(nx * nx + ny * ny) || 1;
+    const len = 18 + aim.power * 42;
+    c.beginPath();
+    c.moveTo(hit.ball.x + (nx / n) * R, hit.ball.y + (ny / n) * R);
+    c.lineTo(hit.ball.x + (nx / n) * (R + len), hit.ball.y + (ny / n) * (R + len));
+    c.strokeStyle = 'rgba(255,235,59,0.9)';
+    c.lineWidth = 2;
+    c.stroke();
+  }
+  c.restore();
+}
+
+/** The cue stick behind the ball, drawn back further the harder the shot. */
+function drawCue(c, aim) {
+  const back = R + 3 + aim.power * 30;
+  const tipX = aim.x0 - aim.dx * back;
+  const tipY = aim.y0 - aim.dy * back;
+  const buttX = tipX - aim.dx * 160;
+  const buttY = tipY - aim.dy * 160;
+  c.save();
+  c.lineCap = 'round';
+  c.strokeStyle = 'rgba(0,0,0,0.35)'; // shadow
+  c.lineWidth = 5;
+  c.beginPath(); c.moveTo(tipX + 1.5, tipY + 2); c.lineTo(buttX + 1.5, buttY + 2); c.stroke();
+  const g = c.createLinearGradient(tipX, tipY, buttX, buttY);
+  g.addColorStop(0, '#f3e2c0');
+  g.addColorStop(0.55, '#c8955a');
+  g.addColorStop(0.56, '#3b2414');
+  g.addColorStop(1, '#2a180c');
+  c.strokeStyle = g;
+  c.lineWidth = 4;
+  c.beginPath(); c.moveTo(tipX, tipY); c.lineTo(buttX, buttY); c.stroke();
+  c.strokeStyle = '#3d7bd9'; // chalked tip
+  c.lineWidth = 4;
+  c.beginPath(); c.moveTo(tipX, tipY); c.lineTo(tipX - aim.dx * 2.5, tipY - aim.dy * 2.5); c.stroke();
   c.restore();
 }
 
@@ -271,7 +392,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     let text;
     if (state.over) text = state.scores[0] === state.scores[1] ? 'Berabere!' : `${players[state.scores[0] > state.scores[1] ? 0 : 1]} daha çok top cepledi!`;
     else if (animating) text = 'Toplar yuvarlanıyor…';
-    else if (mine) text = `Sıra sende, ${players[viewer]}: beyaz topu çekerek nişan al`;
+    else if (mine) text = `Sıra sende, ${players[viewer]}: ıstakayı geri çeker gibi nişan al`;
     else text = `${players[state.turn]} vuruyor…`;
     draw(info, el('strong', {}, text));
   };
@@ -299,7 +420,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     }
   }
 
-  // aiming: drag anywhere; the direction is from the cue ball towards the pointer
+  // aiming: pull back like a cue — the ball goes from the finger through the cue ball, away from the finger
   const cue = () => balls.find((b) => b.id === 0);
   const toTable = (e) => {
     const rect = canvas.getBoundingClientRect();
@@ -309,14 +430,22 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   let pointerId = null;
   let start = null;
   let moved = false;
+  const aimAt = (p) => {
+    const q = cue();
+    const a = aimFromPointer(q, p);
+    // while the finger is down the table shows the cue and the power (drawn on the canvas, so
+    // nothing around the table changes size and moves under the finger)
+    aim = a ? { x0: q.x, y0: q.y, ...a } : { cancel: true };
+    paint();
+  };
   const onDown = (e) => {
     if (!mine || animating || dragging) return;
     dragging = true;
     pointerId = e.pointerId;
     start = toTable(e);
     moved = false;
-    aim = null;
     try { canvas.setPointerCapture(e.pointerId); } catch { /* ignore */ }
+    aimAt(start);
   };
   const onMove = (e) => {
     if (!dragging || e.pointerId !== pointerId) return;
@@ -325,17 +454,9 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     if (!moved) {
       const mx = p.x - start.x;
       const my = p.y - start.y;
-      if (mx * mx + my * my < 36) return;
-      moved = true;
+      if (mx * mx + my * my >= 36) moved = true;
     }
-    const q = cue();
-    const dx = p.x - q.x;
-    const dy = p.y - q.y;
-    const d = Math.sqrt(dx * dx + dy * dy);
-    if (d < 2) { aim = null; paint(); return; }
-    const power = Math.min(1, Math.max(0.08, d / 140));
-    aim = { x0: q.x, y0: q.y, dx: dx / d, dy: dy / d, power };
-    paint();
+    aimAt(p);
   };
   const onCancel = (e) => {
     if (!dragging || e.pointerId !== pointerId) return;
@@ -346,11 +467,11 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const onUp = (e) => {
     if (!dragging || e.pointerId !== pointerId) return;
     dragging = false;
-    if (moved && aim && aim.power > 0.08) {
+    if (moved && aim && !aim.cancel && aim.power >= MIN_POWER) {
       const dx = Math.round(aim.dx * 10000) / 10000;
       const dy = Math.round(aim.dy * 10000) / 10000;
       const n = Math.sqrt(dx * dx + dy * dy) || 1;
-      sendMove({ type: 'shot', dx: Math.round((dx / n) * 10000) / 10000, dy: Math.round((dy / n) * 10000) / 10000, power: Math.round(aim.power * 100) / 100 });
+      sendMove({ type: 'shot', dx: Math.round((dx / n) * 10000) / 10000, dy: Math.round((dy / n) * 10000) / 10000, power: Math.max(0.01, Math.round(aim.power * 100) / 100) });
     }
     aim = null;
     paint();
@@ -361,7 +482,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   canvas.addEventListener('pointercancel', onCancel);
 
   // while the shot is still rolling, show the numbers from before the shot (no spoilers)
-  const noteOf = (l) => (l ? `${players[l.by]}: ${l.pocketed.length ? `${l.pocketed.length} top cepledi` : 'top giremedi'}${l.scratch ? ', beyaz top cebe düştü' : ''}.` : 'Parmağını beyaz toptan vurmak istediğin yöne sürükle; uzaklık gücü belirler.');
+  const noteOf = (l) => (l ? `${players[l.by]}: ${l.pocketed.length ? `${l.pocketed.length} top cepledi` : 'top giremedi'}${l.scratch ? ', beyaz top cebe düştü' : ''}.` : 'Parmağını beyaz topun arkasına koy, geri çek ve bırak: top parmağının tersi yönüne gider; ne kadar çekersen o kadar sert.');
   const legend = el('div', { class: 'c4-legend' });
   const lastNote = el('p', { class: 'hint' });
   const drawInfo = () => {

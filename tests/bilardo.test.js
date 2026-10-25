@@ -1,5 +1,5 @@
 import { test, assert } from './runner.js';
-import game, { simulate, W, H, R } from '../games/bilardo.js';
+import game, { simulate, W, H, R, aimFromPointer, predictContact, CANCEL_R, PULL_FULL } from '../games/bilardo.js';
 
 test('bilardo: diziliş ve deterministik simülasyon', () => {
   const s = game.setup({ balls: 9, seed: 0 });
@@ -56,4 +56,41 @@ test('bilardo: bütün toplar girince oyun biter', () => {
   s = game.applyMove(s, 0, { type: 'shot', dx: -0.7071, dy: -0.7071, power: 0.5 });
   assert.equal(s.over, true);
   assert.deepEqual(game.getResult(s), { winner: 0 });
+});
+
+test('bilardo: ıstakayı geri çekme — top parmağın tersine gider, uzaklık güç, topun üstü iptal', () => {
+  const cue = { x: 100, y: 300 };
+  // finger below the ball: the shot goes up
+  const a = aimFromPointer(cue, { x: 100, y: 300 + CANCEL_R + PULL_FULL / 2 });
+  assert.ok(Math.abs(a.dx) < 1e-9 && Math.abs(a.dy + 1) < 1e-9, 'straight up');
+  assert.ok(Math.abs(a.power - 0.5) < 1e-9, 'half power');
+  // finger to the left: the shot goes right, full power when pulled far enough
+  const b = aimFromPointer(cue, { x: 100 - CANCEL_R - PULL_FULL * 2, y: 300 });
+  assert.ok(Math.abs(b.dx - 1) < 1e-9 && Math.abs(b.dy) < 1e-9);
+  assert.equal(b.power, 1);
+  // diagonal pull: unit direction pointing away from the finger
+  const c = aimFromPointer(cue, { x: 140, y: 340 });
+  assert.ok(Math.abs(c.dx * c.dx + c.dy * c.dy - 1) < 1e-9 && c.dx < 0 && c.dy < 0);
+  // finger back on the ball: cancelled
+  assert.equal(aimFromPointer(cue, { x: 103, y: 302 }), null);
+});
+
+test('bilardo: nişan çizgisi ilk değilen topu ve banda çarpmayı bulur', () => {
+  const balls = [{ id: 0, x: 100, y: 300, pocketed: false }, { id: 1, x: 100, y: 150, pocketed: false }, { id: 2, x: 40, y: 300, pocketed: false }, { id: 3, x: 100, y: 100, pocketed: true }];
+  const up = predictContact(balls, 100, 300, 0, -1);
+  assert.equal(up.ball && up.ball.id, 1);
+  assert.ok(Math.abs(up.y - (150 + 2 * R)) < 1e-9 && Math.abs(up.x - 100) < 1e-9, 'touches ball 1 two radii before its centre');
+  const left = predictContact(balls, 100, 300, -1, 0);
+  assert.equal(left.ball && left.ball.id, 2);
+  const right = predictContact(balls, 100, 300, 1, 0);
+  assert.equal(right.ball, null, 'nothing that way: the cushion');
+  assert.ok(Math.abs(right.x - (W - R)) < 1e-9);
+  const down = predictContact(balls, 100, 300, 0, 1);
+  assert.equal(down.ball, null);
+  assert.ok(Math.abs(down.y - (H - R)) < 1e-9);
+  // a glancing line that misses ball 1 by more than two radii goes on to the cushion
+  const miss = predictContact(balls, 100 + 2 * R + 1, 300, 0, -1);
+  assert.equal(miss.ball, null);
+  // pocketed balls are ignored: the path continues past where ball 3 was
+  assert.ok(predictContact([balls[0], balls[3]], 100, 300, 0, -1).y < 100);
 });
