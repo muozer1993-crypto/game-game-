@@ -116,6 +116,7 @@ export function showMenu() {
     header('Oyun Gecesi', { right: themeSelect }),
     el('p', { class: 'lead' }, 'İki kişilik oyunlar. Tek telefonda elden ele ya da iki telefonda oda koduyla.'),
     quickRow((game) => showSetup(game)),
+    searchBox(),
     gameSections((game) => showSetup(game)),
     el('section', { class: 'section' },
       el('button', { type: 'button', class: 'btn btn-secondary btn-block', onClick: () => showTournamentSetup() }, '🏆 Oyun gecesi turnuvası (art arda birkaç oyun)'),
@@ -261,6 +262,25 @@ function showTournamentResult() {
       el('button', { type: 'button', class: 'btn btn-secondary btn-big', onClick: () => (onlineHost ? showOnlineLobby({ notify: true }) : showMenu()) }, onlineHost ? 'Lobiye dön' : 'Ana menü'),
     ),
   );
+}
+
+/** Filters the game cards below by name as you type (33 games are a long list). */
+function searchBox() {
+  const input = el('input', {
+    type: 'search', class: 'input', id: 'game-search', placeholder: 'Oyun ara…', autocomplete: 'off', 'aria-label': 'Oyun ara',
+    onInput: (e) => {
+      const q = e.target.value.trim().toLocaleLowerCase('tr-TR');
+      document.querySelectorAll('.game-card').forEach((card) => {
+        const name = (card.querySelector('.game-name') || {}).textContent || '';
+        card.hidden = !!q && !name.toLocaleLowerCase('tr-TR').includes(q);
+      });
+      document.querySelectorAll('#app section.section').forEach((sec) => {
+        const cards = sec.querySelectorAll('.game-card');
+        if (cards.length) sec.hidden = ![...cards].some((c) => !c.hidden);
+      });
+    },
+  });
+  return el('div', { class: 'field search-field' }, input);
 }
 
 /** Shortcuts above the list: the game played last and a random pick. */

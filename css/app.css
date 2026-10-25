@@ -839,3 +839,6 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .kb-tile.used, .kb-tile:disabled { opacity: 0.35; }
 .kb-tile.swap { outline: 3px solid var(--danger); }
 :root[data-theme="dark"] .kb-cell:not(.filled):not(.l2):not(.l3):not(.w2):not(.w3), :root:not([data-theme="light"]) .kb-cell:not(.filled):not(.l2):not(.l3):not(.w2):not(.w3) { background: var(--secondary); }
+
+.search-field { margin: 0 0 10px; }
+.game-card[hidden], section.section[hidden] { display: none; }
