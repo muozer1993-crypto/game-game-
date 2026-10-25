@@ -400,7 +400,7 @@ export function showSetup(game, { onlineHost = false } = {}) {
 
 // ---------------------------------------------------------------- all-time record per game and player pair
 function recordKey(gameId, players) {
-  const [a, b] = players.map((n) => n.trim().toLocaleLowerCase('tr-TR'));
+  const [a, b] = players.map((n) => n.trim().toLocaleLowerCase('tr-TR').replace(/[|:]/g, ' '));
   return a <= b ? `record:${gameId}:${a}|${b}` : `record:${gameId}:${b}|${a}`;
 }
 function loadRecord(gameId, players) {
@@ -499,7 +499,7 @@ export function showPlay(p) {
         t.results.push({ id: p.game.id, winner: result.draw ? null : result.winner });
         t.index += 1;
         tally = { index: t.index, total: t.ids.length, wins: t.wins };
-      } else if (isOnline && online.tournament) {
+      } else if (isOnline && p.self === 1 && online.tournament) {
         const info = online.tournament;
         const wins = Array.isArray(info.wins) ? info.wins.slice() : [0, 0];
         if (!result.draw) wins[result.winner] += 1;
@@ -512,7 +512,7 @@ export function showPlay(p) {
         const nextGame = last ? null : findGame(t.ids[t.index]);
         again = el('button', { type: 'button', class: 'btn btn-primary btn-big', onClick: () => (last ? showTournamentResult() : startTournamentGame()) },
           last ? 'Turnuva sonucu' : `Sonraki oyun: ${nextGame ? nextGame.meta.name : '?'}`);
-      } else if (isOnline && online.tournament) {
+      } else if (isOnline && p.self === 1 && online.tournament) {
         again = el('span', { class: 'muted' }, tally && tally.index >= tally.total ? 'Turnuva bitti.' : 'Ev sahibi sonraki oyunu başlatacak…');
       } else {
         again = el('button', { type: 'button', class: 'btn btn-primary btn-big' }, 'Yeni tur');
@@ -585,6 +585,7 @@ const online = {
   busy: false,      // guest is loading data for a 'start'
   round: 0,         // bumped on every 'start'/'lobby' so stale loads and moves are dropped
   ctxCache: {},
+  tournament: null, // guest side: { index, total, wins } carried by the host's 'start'
 };
 
 function leaveOnline({ silent = false } = {}) {
@@ -601,6 +602,7 @@ function leaveOnline({ silent = false } = {}) {
   online.session = null;
   online.queue = [];
   online.busy = false;
+  online.tournament = null;
   online.round++;
 }
 
@@ -719,7 +721,7 @@ function wireTransport(myName, { resume = false } = {}) {
   t.onClose(() => {
     if (online.transport !== t) return; // an old transport we already replaced
     // Mid-game (or in the lobby with a known opponent) offer to reconnect instead of dropping everything.
-    const inRoom = online.players && (online.session || currentScreen === 'online-lobby' || (online.role === 'host' && currentScreen.startsWith('setup-')));
+    const inRoom = online.players && (online.session || currentScreen === 'online-lobby' || (online.role === 'host' && (currentScreen.startsWith('setup-') || currentScreen === 'tournament' || currentScreen === 'tournament-result')));
     if (inRoom) {
       if (reconnectOverlay) { if (reconnectRetry) reconnectRetry(); } else showReconnect();
       return;
@@ -813,6 +815,7 @@ function showOnlineWaiting(code) {
 function showOnlineLobby({ notify = false } = {}) {
   if (!online.transport || !online.players) { showMenu(); return; }
   tournament = null;
+  online.tournament = null;
   if (notify) online.transport.send({ t: 'lobby' });
   if (online.role === 'host') {
     setScreen('online-lobby');
@@ -928,10 +931,12 @@ async function handleOnlineMessage(msg) {
       online.round++;        // cancels a start that is still loading
       online.queue = [];
       online.busy = false;
-      if (currentScreen !== 'online-lobby') {
+      // a finished tournament's summary stays on the host's screen until the host leaves it
+      const tournamentDone = currentScreen === 'tournament-result' || (tournament && tournament.index >= tournament.ids.length);
+      if (currentScreen !== 'online-lobby' && !tournamentDone) {
         toast('Rakip oyundan ayrıldı', { duration: 3000 });
         showOnlineLobby();
-      }
+      } else if (tournamentDone && currentScreen !== 'online-lobby') toast('Rakip lobiye döndü', { duration: 3000 });
       return;
     }
     case 'leave': {
