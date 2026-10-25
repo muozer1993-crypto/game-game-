@@ -42,6 +42,12 @@ export function setup(options = {}) {
 export function applyMove(state, player, move) {
   if (!move || typeof move !== 'object') fail('Geçersiz hamle');
   if (state.over) fail('Oyun bitti');
+  if (move.type === 'hide') {
+    // Either device may close a mismatched pair, so that the game cannot stall
+    // when the mover's device drops right after the second flip.
+    if (state.open.length !== 2) fail('Kapanacak kart yok');
+    return { ...state, open: [], turn: 1 - state.turn };
+  }
   if (player !== state.turn) fail('Sıra sende değil');
   if (move.type === 'flip') {
     if (state.open.length >= 2) fail('Önce kartlar kapanmalı');
@@ -59,10 +65,6 @@ export function applyMove(state, player, move) {
       return { ...state, cards, open: [], scores, over };
     }
     return { ...state, open }; // mismatch stays visible until 'hide'
-  }
-  if (move.type === 'hide') {
-    if (state.open.length !== 2) fail('Kapanacak kart yok');
-    return { ...state, open: [], turn: 1 - player };
   }
   fail(`Bilinmeyen hamle: ${move.type}`);
   return state;
@@ -85,7 +87,8 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const waitingHide = state.open.length === 2;
   const cols = state.size === 12 ? 4 : state.size === 36 ? 6 : state.size === 24 ? 6 : 4;
   let timer = null;
-  if (waitingHide && mine) timer = setTimeout(() => sendMove({ type: 'hide' }), HIDE_MS);
+  // the mover's device closes the cards; the other device only steps in if that never arrives
+  if (waitingHide) timer = setTimeout(() => sendMove({ type: 'hide' }), mine ? HIDE_MS : HIDE_MS + 1500);
   const board = el('div', { class: 'mem-board', style: { gridTemplateColumns: `repeat(${cols}, 1fr)` } },
     state.cards.map((c, i) => {
       const faceUp = c.matched !== null || state.open.includes(i);

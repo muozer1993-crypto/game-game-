@@ -80,6 +80,14 @@ function fail(msg) {
 export function createGame(cfg) {
   const kind = cfg.kind;
   const isNumber = kind === 'number';
+  // noun forms for messages: nominative, accusative, "your ...", genitive
+  const N = isNumber
+    ? { nom: 'sayı', acc: 'sayıyı', my: 'sayın', gen: 'sayının' }
+    : { nom: 'kelime', acc: 'kelimeyi', my: 'kelimen', gen: 'kelimenin' };
+  // what the viewer has typed but not sent yet; a re-render (e.g. the opponent's move
+  // arriving online) must not wipe it
+  const drafts = new Map();
+  let draftsFor = null; // state.id the drafts belong to
 
   function validateWord(state, raw, ctx, what) {
     const word = isNumber ? String(raw || '').trim() : normalizeWord(raw || '');
@@ -103,6 +111,7 @@ export function createGame(cfg) {
     const maxGuesses = Number(options.maxGuesses);
     return {
       kind,
+      id: String(options.seed ?? ''), // new every game (app passes a fresh seed)
       length,
       feedback: isNumber ? 'plusminus' : (options.feedback === 'plusminus' ? 'plusminus' : 'wordle'),
       // manual: each player types a secret for the opponent; random: one random secret each;
@@ -148,9 +157,9 @@ export function createGame(cfg) {
     if (!move || typeof move !== 'object') fail('Geçersiz hamle');
     switch (move.type) {
       case 'setSecret': {
-        if (state.phase !== 'secret') fail('Gizli kelime artık değiştirilemez');
-        if (state.shared && player !== 0) fail('Ortak kelimeyi oyunu kuran seçer');
-        if (state.ready[player]) fail('Gizli kelimen zaten hazır');
+        if (state.phase !== 'secret') fail(`Gizli ${N.nom} artık değiştirilemez`);
+        if (state.shared && player !== 0) fail(`Ortak ${N.acc} oyunu kuran seçer`);
+        if (state.ready[player]) fail(`Gizli ${N.my} zaten hazır`);
         const secrets = state.secrets.slice();
         if (move.secret && move.secret.word != null) {
           secrets[player] = validateWord(state, move.secret.word, ctx, 'secret');
@@ -177,7 +186,7 @@ export function createGame(cfg) {
         if (state.phase !== 'play') fail('Oyun bu aşamada değil');
         const g = move.guesser;
         if (g !== 0 && g !== 1) fail('Geçersiz hamle');
-        if (player !== ownerOf(state, g)) fail('Puanı kelimenin sahibi verir');
+        if (player !== ownerOf(state, g)) fail(`Puanı ${N.gen} sahibi verir`);
         const idx = pendingOf(state, g);
         if (idx < 0 || idx !== move.index) fail('Puanlanacak tahmin yok');
         const result = move.result;
@@ -197,7 +206,7 @@ export function createGame(cfg) {
         return { ...state, phase: 'over', gaveUp: player };
       }
       case 'reveal': {
-        if (state.phase !== 'over') fail('Oyun bitmeden kelime açıklanamaz');
+        if (state.phase !== 'over') fail(`Oyun bitmeden ${N.nom} açıklanamaz`);
         if (state.revealed[player] != null) return state;
         const revealed = state.revealed.slice();
         revealed[player] = String(move.word);
@@ -307,6 +316,7 @@ export function createGame(cfg) {
     const cleanups = [];
     const you = (p) => (p === viewer ? 'Sen' : players[p]);
     currentFeedback = state.feedback;
+    if (draftsFor !== state.id) { drafts.clear(); draftsFor = state.id; }
 
     // ---- secret phase
     if (state.phase === 'secret') {
@@ -318,20 +328,22 @@ export function createGame(cfg) {
         return null;
       }
       if (state.ready[viewer]) {
+        drafts.delete(`secret:${viewer}`);
         draw(container,
-          el('div', { class: 'status-line' }, el('strong', {}, 'Gizli kelimen hazır.')),
+          el('div', { class: 'status-line' }, el('strong', {}, `Gizli ${N.my} hazır.`)),
           el('p', { class: 'hint' }, `${players[opp]} gizli ${isNumber ? 'sayısını' : 'kelimesini'} seçiyor…`),
           el('div', { class: 'spinner', 'aria-hidden': 'true' }),
         );
         return null;
       }
       if (state.secretMode !== 'manual') {
-        draw(container, el('p', { class: 'hint' }, 'Yaygın kelime listesi yüklenemediği için gizli kelime seçilemedi. Ayarlardan "Herkes rakibi için kendisi seçsin" seçeneğini dene.'));
+        draw(container, el('p', { class: 'hint' }, `${isNumber ? 'Rastgele sayı seçilemedi.' : 'Yaygın kelime listesi yüklenemediği için gizli kelime seçilemedi.'} Ayarlardan "Herkes rakibi için kendisi seçsin" seçeneğini dene.`));
         return null;
       }
-      let typed = '';
+      const draftKey = `secret:${viewer}`;
+      let typed = (drafts.get(draftKey) || '').slice(0, state.length);
       const rowBox = el('div', { class: 'tiles' });
-      const drawRow = () => draw(rowBox, tileRow(typed, null, state.length));
+      const drawRow = () => { drafts.set(draftKey, typed); draw(rowBox, tileRow(typed, null, state.length)); };
       drawRow();
       const kbBox = el('div');
       const kb = createKeyboard(kbBox, {
@@ -354,6 +366,7 @@ export function createGame(cfg) {
 
     // ---- over
     if (state.phase === 'over') {
+      drafts.clear();
       const mySecret = state.secrets[viewer] || state.revealed[viewer];
       const oppSecret = state.secrets[opp] || state.revealed[opp];
       const lines = [];
@@ -392,9 +405,13 @@ export function createGame(cfg) {
     const oppGuesses = state.guesses[opp];
     const left = state.maxGuesses ? state.maxGuesses - myGuesses.length : null;
 
-    let typed = '';
+    drafts.delete('secret:0');
+    drafts.delete('secret:1');
+    const draftKey = `play:${viewer}:${myGuesses.length}`;
+    let typed = mine && !myPending ? (drafts.get(draftKey) || '') : '';
     const currentRow = el('div', { class: 'tiles' });
     const drawCurrent = () => {
+      drafts.set(draftKey, typed);
       if (mine && !myPending) draw(currentRow, tileRow(typed, null, state.length));
       else draw(currentRow);
     };
@@ -408,7 +425,8 @@ export function createGame(cfg) {
       onEnter: () => { if (!mine || myPending) return; sendMove({ type: 'guess', word: typed }); },
     });
     kb.setDisabled(!mine || myPending);
-    if (state.feedback === 'wordle') kb.setKeyStates(keyStates(myGuesses));
+    // in shared mode both players hunt the same word, so the opponent's clues count too
+    if (state.feedback === 'wordle') kb.setKeyStates(keyStates(state.shared ? myGuesses.concat(oppGuesses) : myGuesses));
     cleanups.push(() => kb.destroy());
 
     let status;
@@ -422,7 +440,7 @@ export function createGame(cfg) {
     const oppSolved = state.solved[opp] != null;
     const mySolved = state.solved[viewer] != null;
     const notices = [];
-    if (oppSolved && !mySolved && mine) notices.push(el('p', { class: 'hint notice' }, `${players[opp]} kelimeyi buldu. Bu son tahminin: bulursan berabere, bulamazsan kaybedersin.`));
+    if (oppSolved && !mySolved && mine) notices.push(el('p', { class: 'hint notice' }, `${players[opp]} ${N.acc} buldu. Bu son tahminin: bulursan berabere, bulamazsan kaybedersin.`));
     if (mySolved && !mine) notices.push(el('p', { class: 'hint notice' }, `Buldun! ${players[opp]} son tahminini yapıyor…`));
     const lastOppView = !online && lastOpp && lastOpp.result
       ? el('div', { class: 'last-opp' },

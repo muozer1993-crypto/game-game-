@@ -184,6 +184,7 @@ export class Session {
             note: this.game.meta.handoffNote || null,
             onReady: () => this.render(),
           });
+          this.onChange(this.state);
           return;
         }
       }

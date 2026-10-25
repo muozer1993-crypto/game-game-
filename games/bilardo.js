@@ -33,7 +33,8 @@ const RESTITUTION = 0.96;
 const STOP2 = 0.03 * 0.03;
 const SPEED = 15;
 const MAX_STEPS = 4000;
-const COLORS = ['#ffffff', '#f4c20d', '#1e5bc6', '#d72c2c', '#5b2d90', '#f07b1f', '#1a7f37', '#8b1a1a', '#111111', '#f4c20d', '#1e5bc6', '#d72c2c', '#5b2d90', '#f07b1f', '#1a7f37'];
+const COLORS = ['#ffffff', '#f4c20d', '#1e5bc6', '#d72c2c', '#5b2d90', '#f07b1f', '#1a7f37', '#8b1a1a', '#111111', '#f4c20d', '#1e5bc6', '#d72c2c', '#5b2d90', '#f07b1f', '#1a7f37', '#8b1a1a'];
+const SUB = 4; // sub-steps per step so that a fast ball never skips over another ball
 
 function fail(msg) {
   throw new Error(msg);
@@ -76,54 +77,65 @@ export function simulate(balls0, shot, withFrames = false) {
   cue.vy = shot.dy * shot.power * SPEED;
   const pocketed = [];
   const frames = [];
+  const inPocket = (b) => {
+    for (const [px, py] of POCKETS) {
+      const dx = b.x - px;
+      const dy = b.y - py;
+      if (dx * dx + dy * dy < POCKET_R * POCKET_R) return true;
+    }
+    return false;
+  };
+  const pocket = (b) => { b.pocketed = true; b.vx = 0; b.vy = 0; pocketed.push(b.id); };
   for (let step = 0; step < MAX_STEPS; step++) {
     let moving = false;
+    for (let sub = 0; sub < SUB; sub++) {
+      for (const b of balls) {
+        if (b.pocketed || (b.vx === 0 && b.vy === 0)) continue;
+        b.x += b.vx / SUB;
+        b.y += b.vy / SUB;
+        if (inPocket(b)) { pocket(b); continue; }
+        if (b.x < R) { b.x = R; b.vx = -b.vx * CUSHION; }
+        else if (b.x > W - R) { b.x = W - R; b.vx = -b.vx * CUSHION; }
+        if (b.y < R) { b.y = R; b.vy = -b.vy * CUSHION; }
+        else if (b.y > H - R) { b.y = H - R; b.vy = -b.vy * CUSHION; }
+      }
+      // ball-ball collisions (after every sub-move, so nothing tunnels through)
+      for (let i = 0; i < balls.length; i++) {
+        const a = balls[i];
+        if (a.pocketed) continue;
+        for (let j = i + 1; j < balls.length; j++) {
+          const b = balls[j];
+          if (b.pocketed) continue;
+          const dx = b.x - a.x;
+          const dy = b.y - a.y;
+          const d2 = dx * dx + dy * dy;
+          if (d2 >= 4 * R * R || d2 === 0) continue;
+          const dist = Math.sqrt(d2);
+          const nx = dx / dist;
+          const ny = dy / dist;
+          const overlap = 2 * R - dist;
+          a.x -= nx * overlap / 2; a.y -= ny * overlap / 2;
+          b.x += nx * overlap / 2; b.y += ny * overlap / 2;
+          const dvn = (b.vx - a.vx) * nx + (b.vy - a.vy) * ny;
+          if (dvn < 0) {
+            const jn = -(1 + RESTITUTION) * dvn / 2;
+            a.vx -= jn * nx; a.vy -= jn * ny;
+            b.vx += jn * nx; b.vy += jn * ny;
+          }
+        }
+      }
+    }
+    // friction once per step; keep every ball on the table and check pockets for balls that were pushed
     for (const b of balls) {
       if (b.pocketed) continue;
+      if (b.x < R) b.x = R; else if (b.x > W - R) b.x = W - R;
+      if (b.y < R) b.y = R; else if (b.y > H - R) b.y = H - R;
+      if (inPocket(b)) { pocket(b); continue; }
       if (b.vx === 0 && b.vy === 0) continue;
-      b.x += b.vx;
-      b.y += b.vy;
       b.vx *= FRICTION;
       b.vy *= FRICTION;
       if (b.vx * b.vx + b.vy * b.vy < STOP2) { b.vx = 0; b.vy = 0; }
-      let inPocket = false;
-      for (const [px, py] of POCKETS) {
-        const dx = b.x - px;
-        const dy = b.y - py;
-        if (dx * dx + dy * dy < POCKET_R * POCKET_R) { inPocket = true; break; }
-      }
-      if (inPocket) { b.pocketed = true; b.vx = 0; b.vy = 0; pocketed.push(b.id); continue; }
-      if (b.x < R) { b.x = R; b.vx = -b.vx * CUSHION; }
-      else if (b.x > W - R) { b.x = W - R; b.vx = -b.vx * CUSHION; }
-      if (b.y < R) { b.y = R; b.vy = -b.vy * CUSHION; }
-      else if (b.y > H - R) { b.y = H - R; b.vy = -b.vy * CUSHION; }
       if (b.vx !== 0 || b.vy !== 0) moving = true;
-    }
-    // ball-ball collisions
-    for (let i = 0; i < balls.length; i++) {
-      const a = balls[i];
-      if (a.pocketed) continue;
-      for (let j = i + 1; j < balls.length; j++) {
-        const b = balls[j];
-        if (b.pocketed) continue;
-        const dx = b.x - a.x;
-        const dy = b.y - a.y;
-        const d2 = dx * dx + dy * dy;
-        if (d2 >= 4 * R * R || d2 === 0) continue;
-        const dist = Math.sqrt(d2);
-        const nx = dx / dist;
-        const ny = dy / dist;
-        const overlap = 2 * R - dist;
-        a.x -= nx * overlap / 2; a.y -= ny * overlap / 2;
-        b.x += nx * overlap / 2; b.y += ny * overlap / 2;
-        const dvn = (b.vx - a.vx) * nx + (b.vy - a.vy) * ny;
-        if (dvn < 0) {
-          const jn = -(1 + RESTITUTION) * dvn / 2;
-          a.vx -= jn * nx; a.vy -= jn * ny;
-          b.vx += jn * nx; b.vy += jn * ny;
-          moving = true;
-        }
-      }
     }
     if (withFrames && step % 2 === 0) frames.push(balls.map((b) => [b.id, b.x, b.y, b.pocketed ? 1 : 0]));
     if (!moving) break;
@@ -173,7 +185,7 @@ export function applyMove(state, player, move) {
     scores,
     shots: state.shots + 1,
     turn: keepTurn || over ? state.turn : 1 - player,
-    last: { by: player, before, shot, pocketed: objectPocketed, scratch },
+    last: { by: player, before, shot, pocketed: objectPocketed, scratch, prevScores: state.scores.slice(), prevOnTable: state.balls.filter((b) => b.id && !b.pocketed).length, prevNote: state.last ? { by: state.last.by, pocketed: state.last.pocketed, scratch: state.last.scratch } : null },
     over,
   };
 }
@@ -190,7 +202,7 @@ export function getResult(state) {
 }
 
 // ----------------------------------------------------------------- render
-let animatedShots = -1;
+const animated = new WeakSet(); // state.last objects whose animation already played on this device
 
 function drawTable(ctxc, scale, balls, aim) {
   const c = ctxc;
@@ -266,8 +278,9 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const paint = () => { c2d.clearRect(0, 0, canvas.width, canvas.height); drawTable(c2d, scale, balls, aim); };
 
   // animate the last shot once (both on the shooter's and the other device)
-  if (state.last && animatedShots !== state.shots) {
-    animatedShots = state.shots;
+  const willAnimate = state.last && !animated.has(state.last);
+  if (willAnimate) {
+    animated.add(state.last);
     const sim = simulate(state.last.before, state.last.shot, true);
     const frames = sim.frames;
     if (frames.length) {
@@ -293,10 +306,28 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     return { x: (e.clientX - rect.left) / rect.width * W, y: (e.clientY - rect.top) / rect.height * H };
   };
   let dragging = false;
-  const onDown = (e) => { if (!mine || animating) return; dragging = true; canvas.setPointerCapture(e.pointerId); onMove(e); };
+  let pointerId = null;
+  let start = null;
+  let moved = false;
+  const onDown = (e) => {
+    if (!mine || animating || dragging) return;
+    dragging = true;
+    pointerId = e.pointerId;
+    start = toTable(e);
+    moved = false;
+    aim = null;
+    try { canvas.setPointerCapture(e.pointerId); } catch { /* ignore */ }
+  };
   const onMove = (e) => {
-    if (!dragging) return;
+    if (!dragging || e.pointerId !== pointerId) return;
     const p = toTable(e);
+    // a plain tap must not shoot: require a real drag first
+    if (!moved) {
+      const mx = p.x - start.x;
+      const my = p.y - start.y;
+      if (mx * mx + my * my < 36) return;
+      moved = true;
+    }
     const q = cue();
     const dx = p.x - q.x;
     const dy = p.y - q.y;
@@ -306,10 +337,16 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     aim = { x0: q.x, y0: q.y, dx: dx / d, dy: dy / d, power };
     paint();
   };
-  const onUp = () => {
-    if (!dragging) return;
+  const onCancel = (e) => {
+    if (!dragging || e.pointerId !== pointerId) return;
     dragging = false;
-    if (aim && aim.power > 0.08) {
+    aim = null;
+    paint();
+  };
+  const onUp = (e) => {
+    if (!dragging || e.pointerId !== pointerId) return;
+    dragging = false;
+    if (moved && aim && aim.power > 0.08) {
       const dx = Math.round(aim.dx * 10000) / 10000;
       const dy = Math.round(aim.dy * 10000) / 10000;
       const n = Math.sqrt(dx * dx + dy * dy) || 1;
@@ -321,23 +358,30 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   canvas.addEventListener('pointerdown', onDown);
   canvas.addEventListener('pointermove', onMove);
   canvas.addEventListener('pointerup', onUp);
-  canvas.addEventListener('pointercancel', onUp);
+  canvas.addEventListener('pointercancel', onCancel);
 
-  const lastNote = state.last
-    ? el('p', { class: 'hint' }, `${players[state.last.by]}: ${state.last.pocketed.length ? `${state.last.pocketed.length} top cepledi` : 'top giremedi'}${state.last.scratch ? ', beyaz top cebe düştü' : ''}.`)
-    : el('p', { class: 'hint' }, 'Parmağını beyaz toptan vurmak istediğin yöne sürükle; uzaklık gücü belirler.');
-  setStatus();
+  // while the shot is still rolling, show the numbers from before the shot (no spoilers)
+  const noteOf = (l) => (l ? `${players[l.by]}: ${l.pocketed.length ? `${l.pocketed.length} top cepledi` : 'top giremedi'}${l.scratch ? ', beyaz top cebe düştü' : ''}.` : 'Parmağını beyaz toptan vurmak istediğin yöne sürükle; uzaklık gücü belirler.');
+  const legend = el('div', { class: 'c4-legend' });
+  const lastNote = el('p', { class: 'hint' });
+  const drawInfo = () => {
+    const pre = animating && state.last;
+    const scores = pre ? state.last.prevScores : state.scores;
+    const onTable = pre ? state.last.prevOnTable : state.balls.filter((b) => b.id && !b.pocketed).length;
+    draw(legend, el('span', {}, `${players[0]}: ${scores[0]}`), el('span', {}, `${players[1]}: ${scores[1]}`), el('span', { class: 'muted' }, `Masada: ${onTable}`));
+    lastNote.textContent = pre ? noteOf(state.last.prevNote) : noteOf(state.last);
+  };
+  const baseSetStatus = setStatus;
+  const refresh = () => { baseSetStatus(); drawInfo(); };
+  refresh();
   paint();
-  draw(container,
-    info,
-    el('div', { class: 'c4-legend' },
-      el('span', {}, `${players[0]}: ${state.scores[0]}`),
-      el('span', {}, `${players[1]}: ${state.scores[1]}`),
-      el('span', { class: 'muted' }, `Masada: ${state.balls.filter((b) => b.id && !b.pocketed).length}`),
-    ),
-    el('div', { class: 'pool-wrap' }, canvas),
-    lastNote,
-  );
+  draw(container, info, legend, el('div', { class: 'pool-wrap' }, canvas), lastNote);
+  if (willAnimate) {
+    // when the animation ends, the completion branch calls setStatus(); refresh the numbers too
+    const check = () => { if (animating) { raf2 = requestAnimationFrame(check); } else drawInfo(); };
+    let raf2 = requestAnimationFrame(check);
+    return () => { if (raf) cancelAnimationFrame(raf); cancelAnimationFrame(raf2); };
+  }
   return () => { if (raf) cancelAnimationFrame(raf); };
 }
 

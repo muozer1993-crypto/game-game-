@@ -110,7 +110,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       const owner = state.boxes[r * n + c];
       if (owner === null) continue;
       root.append(svg('rect', { x: M + c * S + 4, y: M + r * S + 4, width: S - 8, height: S - 8, rx: 6, fill: COLORS[owner], opacity: 0.25 }));
-      root.append(svg('text', { x: M + c * S + S / 2, y: M + r * S + S / 2 + 7, 'text-anchor': 'middle', 'font-size': 20, 'font-weight': 700, fill: COLORS[owner], text: players[owner][0].toLocaleUpperCase('tr-TR') }));
+      root.append(svg('text', { x: M + c * S + S / 2, y: M + r * S + S / 2 + 7, 'text-anchor': 'middle', 'font-size': 20, 'font-weight': 700, fill: COLORS[owner], text: ([...String(players[owner] || '')][0] || '?').toLocaleUpperCase('tr-TR') }));
     }
   }
   // lines (taken + free hit areas)
@@ -123,7 +123,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       root.append(svg('line', { x1, y1, x2, y2, stroke: 'currentColor', 'stroke-width': 2, 'stroke-dasharray': '2 6', opacity: 0.35, 'stroke-linecap': 'round' }));
       if (mine) {
         root.append(svg('line', {
-          x1, y1, x2, y2, stroke: 'transparent', 'stroke-width': 26, class: 'dab-hit', 'stroke-linecap': 'round',
+          x1, y1, x2, y2, stroke: 'transparent', 'stroke-width': S * 0.5, class: 'dab-hit', 'stroke-linecap': 'butt',
           onClick: () => sendMove({ type: 'line', kind, index }),
         }));
       }

@@ -24,12 +24,12 @@ test('genel kültür: seçim — tohuma bağlı, kategoriler dengeli, zorluk sü
 test('genel kültür: cevaplama, süre sınırı, sonuç ve hız beraberliği', () => {
   let s = game.setup({ count: 5, timeLimit: 10, seed: 3 }, ctx);
   assert.equal(s.questions.length, 5);
-  assert.deepEqual(game.getTurn(s), { player: 0, private: true });
+  assert.deepEqual(game.getTurn(s), { player: 0, private: true, simultaneous: true });
   assert.throws(() => game.applyMove(s, 0, { type: 'answer', index: 1, choice: 0, ms: 100 }), 'sırayla');
   assert.throws(() => game.applyMove(s, 0, { type: 'answer', index: 0, choice: 7, ms: 100 }), 'Geçersiz cevap');
   // player 0: all correct, 1 s each; player 1: all correct, 0.5 s each
   for (let i = 0; i < 5; i++) s = game.applyMove(s, 0, { type: 'answer', index: i, choice: s.questions[i].answer, ms: 1000 });
-  assert.deepEqual(game.getTurn(s), { player: 1, private: true });
+  assert.deepEqual(game.getTurn(s), { player: 1, private: true, simultaneous: true });
   assert.throws(() => game.applyMove(s, 0, { type: 'answer', index: 5, choice: 0, ms: 1 }), 'Bütün soruları');
   for (let i = 0; i < 5; i++) s = game.applyMove(s, 1, { type: 'answer', index: i, choice: s.questions[i].answer, ms: 500 });
   assert.equal(s.phase, 'over');

@@ -38,6 +38,7 @@ export function setup(options = {}) {
     rolled: null,      // the dice as rolled (for display)
     turnStart: null,   // snapshot {pts, bar, off, dice} taken after rolling, for undo
     moves: [],         // steps played this turn [{from, to, die, hit}]
+    skipped: null,     // { player, dice } when the last roll had no legal move
     over: false,
     winner: null,
     points: 0,
@@ -168,7 +169,7 @@ export function applyMove(state, player, move) {
       const d = Array.isArray(move.dice) ? move.dice.map(Number) : [];
       if (d.length !== 2 || d.some((x) => !Number.isInteger(x) || x < 1 || x > 6)) fail('Geçersiz zar');
       const dice = d[0] === d[1] ? [d[0], d[0], d[0], d[0]] : d.slice().sort((a, b) => b - a);
-      const next = { ...state, dice, rolled: d.slice(), moves: [] };
+      const next = { ...state, dice, rolled: d.slice(), moves: [], skipped: null };
       next.turnStart = { pts: next.pts.slice(), bar: next.bar.slice(), off: next.off.slice(), dice: dice.slice() };
       return next;
     }
@@ -194,7 +195,7 @@ export function applyMove(state, player, move) {
     case 'pass': {
       if (!state.dice.length) fail('Geçilecek hamle yok');
       if (legalSteps(state, player).length) fail('Oynanabilecek hamle var');
-      return endTurn(state);
+      return { ...endTurn(state), skipped: { player, dice: state.rolled ? state.rolled.slice() : state.dice.slice() } };
     }
     case 'giveup': {
       return { ...state, over: true, winner: 1 - player, points: 1, dice: [] };
@@ -281,8 +282,8 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       'aria-label': `Bar: ${players[0]} ${state.bar[0]}, ${players[1]} ${state.bar[1]}`,
       onClick: () => { selected = selected === -1 ? null : -1; drawBoard(); },
     },
-      el('span', { class: 'tv-stack' }, Array.from({ length: Math.min(state.bar[0], 5) }, () => el('span', { class: 'tv-checker p0' }))),
-      el('span', { class: 'tv-stack' }, Array.from({ length: Math.min(state.bar[1], 5) }, () => el('span', { class: 'tv-checker p1' }))),
+      el('span', { class: 'tv-stack' }, Array.from({ length: Math.min(state.bar[0], 5) }, (_, k) => el('span', { class: 'tv-checker p0' }, k === 4 && state.bar[0] > 5 ? String(state.bar[0]) : ''))),
+      el('span', { class: 'tv-stack' }, Array.from({ length: Math.min(state.bar[1], 5) }, (_, k) => el('span', { class: 'tv-checker p1' }, k === 4 && state.bar[1] > 5 ? String(state.bar[1]) : ''))),
     );
     const offTarget = targets.has('off');
     const offTray = el('button', {
@@ -296,9 +297,10 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     draw(boardBox, cells, bar, offTray);
   };
 
-  const dice = state.dice.length
-    ? el('div', { class: 'tv-dice' }, state.rolled.map((d) => el('span', { class: 'tv-die' }, DIE[d])), el('span', { class: 'muted' }, ` kalan: ${state.dice.join(' ')}`))
-    : el('div', { class: 'tv-dice muted' }, state.rolled ? '' : 'Zar atılmadı');
+  let dice;
+  if (state.dice.length) dice = el('div', { class: 'tv-dice' }, state.rolled.map((d) => el('span', { class: 'tv-die' }, DIE[d])), el('span', { class: 'muted' }, ` kalan: ${state.dice.join(' ')}`));
+  else if (state.skipped) dice = el('div', { class: 'tv-dice' }, state.skipped.dice.map((d) => el('span', { class: 'tv-die' }, DIE[d])), el('span', { class: 'muted', style: { fontSize: '0.95rem' } }, ` ${players[state.skipped.player]} attı: oynanacak hamle yok, sıra geçti`));
+  else dice = el('div', { class: 'tv-dice muted' }, 'Zar atılmadı');
 
   let status;
   if (state.over) status = `${players[state.winner]} kazandı${state.points === 2 ? ' (mars, 2 puan)' : ''}!`;

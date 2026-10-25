@@ -22,6 +22,7 @@ export const meta = {
 export const CHOICES = ['tas', 'kagit', 'makas'];
 const LABEL = { tas: 'Taş', kagit: 'Kağıt', makas: 'Makas' };
 const ICON = { tas: '✊', kagit: '✋', makas: '✌️' };
+const ACC = { tas: 'taşı', kagit: 'kağıdı', makas: 'makası' }; // accusative
 const BEATS = { tas: 'makas', makas: 'kagit', kagit: 'tas' };
 
 function fail(msg) {
@@ -122,7 +123,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
         el('span', {}, `${players[0]} ${ICON[last.picks[0]]}`),
         el('span', { class: 'muted' }, 'vs'),
         el('span', {}, `${ICON[last.picks[1]]} ${players[1]}`)),
-      el('div', {}, last.winner == null ? 'Berabere' : `${players[last.winner]} aldı (${LABEL[last.picks[last.winner]]} ${LABEL[last.picks[1 - last.winner]].toLocaleLowerCase('tr-TR')}ı yener)`))
+      el('div', {}, last.winner == null ? 'Berabere' : `${players[last.winner]} aldı (${LABEL[last.picks[last.winner]]} ${ACC[last.picks[1 - last.winner]]} yener)`))
     : null;
   const score = el('div', { class: 'c4-legend' }, el('span', {}, `${players[0]}: ${state.scores[0]}`), el('span', {}, `${players[1]}: ${state.scores[1]}`), el('span', { class: 'muted' }, `hedef ${state.target}`));
   if (state.over) {

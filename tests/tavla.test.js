@@ -19,7 +19,7 @@ test('tavla: zar atma, basit hamle, sıra geçişi', () => {
   assert.throws(() => roll(s, [2, 2]), 'zaten atıldı');
   const legal = legalSteps(s);
   assert.ok(legal.some((x) => x.from === 23 && x.die === 3), '24 -> 21 is legal');
-  assert.ok(!legal.some((x) => x.from === 23 && x.die === 1 && x.to === 22) === false || true);
+  assert.ok(legal.some((x) => x.from === 23 && x.die === 1 && x.to === 22), '24 -> 23 is legal');
   s = game.applyMove(s, 0, { type: 'step', from: 7, die: 3 }); // 8 -> 5
   assert.equal(s.pts[7], 2);
   assert.equal(s.pts[4], 1);
@@ -89,6 +89,9 @@ test('tavla: oynanacak hamle yoksa sıra kendiliğinden geçer, geri al', () => 
   assert.equal(game.autoMove(s, 1), null);
   s = game.applyMove(s, 0, { type: 'pass' });
   assert.equal(s.turn, 1);
+  assert.deepEqual(s.skipped, { player: 0, dice: [5, 1] }, 'the skipped roll stays visible');
+  const r = game.applyMove(s, 1, { type: 'roll', dice: [2, 2] });
+  assert.equal(r.skipped, null);
   // undo restores the position after the roll
   let u = roll(game.setup({ seed: 0 }), [4, 2]);
   const before = JSON.stringify([u.pts, u.bar, u.off, u.dice]);

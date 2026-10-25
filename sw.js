@@ -1,6 +1,6 @@
 // Minimal service worker: precache the app shell, serve cache-first, fall back to network.
 // Bump VERSION whenever files change so that old caches are dropped.
-const VERSION = 'v15';
+const VERSION = 'v16';
 const CACHE = `oyun-gecesi-${VERSION}`;
 const SHELL = [
   './',
@@ -46,6 +46,7 @@ const SHELL = [
   './icons/icon.svg',
   './icons/icon-192.png',
   './icons/icon-512.png',
+  './icons/icon-512-maskable.png',
   './README.md',
   './tests/index.html',
   './tests/runner.js',
@@ -58,6 +59,17 @@ const SHELL = [
   './tests/son-hece.test.js',
   './tests/gizli-kelime.test.js',
   './tests/beni-tani.test.js',
+  './tests/amiral-batti.test.js',
+  './tests/bilardo.test.js',
+  './tests/dama.test.js',
+  './tests/dort-baglanti.test.js',
+  './tests/genel-kultur.test.js',
+  './tests/hafiza.test.js',
+  './tests/mangala.test.js',
+  './tests/noktalar-kutular.test.js',
+  './tests/pisti.test.js',
+  './tests/tas-kagit-makas.test.js',
+  './tests/tavla.test.js',
 ];
 
 self.addEventListener('install', (event) => {

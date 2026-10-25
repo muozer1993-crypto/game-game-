@@ -68,6 +68,7 @@ export function setup(options = {}, ctx = {}) {
   const questions = pickQuestions(pool, custom, count, options.customMode || 'first', Number(options.seed) || 1);
   const empty = () => [new Array(count).fill(null), new Array(count).fill(null)];
   return {
+    id: String(options.seed ?? ''), // new every game: typed drafts are kept per game
     count,
     phase: 'play',      // play | compare | over
     questions,
@@ -76,6 +77,7 @@ export function setup(options = {}, ctx = {}) {
     guesses: empty(),   // guesses[p][i]: p's guess of the other player's answer (public)
     guessed: [0, 0],
     finished: [false, false],
+    done: [false, false],    // pressed "Sonucu gör" (both must, online)
     revealed: [false, false],
     judgments: empty(), // judgments[owner][i]: verdict for the other player's guess of owner's answer
   };
@@ -157,6 +159,7 @@ export function applyMove(state, player, move, ctx = {}) {
       // On one shared phone either player may tap the buttons; online only the owner decides.
       if (ctx.mode === 'online' && player !== owner) fail('Buna cevabın sahibi karar verir');
       if (!state.revealed[owner]) fail('Önce cevaplar açıklanmalı');
+      if (state.done[owner]) fail('Bu oyuncu sonucu onayladı; karar değiştirilemez');
       const q = state.questions[move.index];
       if (!q) fail('Geçersiz soru');
       if (q.type !== 'open') fail('Bu soru otomatik puanlanır');
@@ -168,7 +171,10 @@ export function applyMove(state, player, move, ctx = {}) {
     case 'finish': {
       if (state.phase !== 'compare') fail('Karşılaştırma bitmedi');
       if (!allJudged(state)) fail('Önce bütün açık uçlu cevaplara karar verilmeli');
-      return { ...state, phase: 'over' };
+      // on one phone a single tap ends it; online each player confirms, so the two devices
+      // cannot end with different judgments (a late judge move is rejected once its owner is done)
+      const done = ctx.mode === 'online' ? state.done.map((d, p) => d || p === player) : [true, true];
+      return { ...state, done, phase: done[0] && done[1] ? 'over' : 'compare' };
     }
     default:
       fail(`Bilinmeyen hamle: ${move.type}`);
@@ -186,7 +192,7 @@ export function autoMove(state, player) {
 export function getTurn(state) {
   if (state.phase !== 'play') return null; // comparison and result are looked at together
   const p = state.finished[0] ? (state.finished[1] ? null : 1) : 0;
-  return p == null ? null : { player: p, private: true };
+  return p == null ? null : { player: p, private: true, simultaneous: true };
 }
 
 export function getResult(state) {
@@ -209,23 +215,30 @@ function questionCard(q, no, total, categories, intro) {
   );
 }
 
-function answerInput(q, onSubmit) {
+// Half-typed open answers survive the re-render caused by the opponent's moves (online).
+const drafts = new Map(); // `${viewer}:${step}:${index}` -> text
+let draftsFor = null;     // state.id the drafts belong to
+
+function answerInput(q, onSubmit, draftKey) {
   if (q.type === 'choice') {
     return el('div', { class: 'options' }, q.options.map((o) =>
       el('button', { type: 'button', class: 'btn btn-secondary', onClick: () => onSubmit(o) }, o)));
   }
   const input = el('input', { type: 'text', class: 'input', maxlength: 80, autocomplete: 'off', placeholder: 'Cevabın…', 'aria-label': 'Cevap' });
-  const form = el('form', { onSubmit: (e) => { e.preventDefault(); onSubmit(input.value); } },
+  if (draftKey && drafts.has(draftKey)) input.value = drafts.get(draftKey);
+  input.addEventListener('input', () => { if (draftKey) drafts.set(draftKey, input.value); });
+  const form = el('form', { onSubmit: (e) => { e.preventDefault(); if (draftKey) drafts.delete(draftKey); onSubmit(input.value); } },
     el('div', { class: 'field' }, input),
     el('button', { type: 'submit', class: 'btn btn-primary btn-block' }, 'Kaydet'),
   );
-  queueMicrotask(() => input.focus());
+  queueMicrotask(() => { if (document.activeElement !== input && !(document.activeElement && document.activeElement.tagName === 'INPUT')) input.focus(); });
   return form;
 }
 
 const VERDICT_LABEL = { match: 'Tuttu', close: 'Yakın', miss: 'Tutmadı' };
 
 export function render(state, viewer, container, sendMove, ctx = {}) {
+  if (draftsFor !== state.id) { drafts.clear(); draftsFor = state.id; }
   const players = ctx.players || ['Oyuncu 1', 'Oyuncu 2'];
   const categories = (ctx.questions && ctx.questions.categories) || {};
   const online = ctx.mode === 'online';
@@ -247,7 +260,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
         el('div', { class: 'status-line' }, el('strong', {}, `${players[viewer]}, kendin hakkında cevapla`)),
         el('p', { class: 'hint' }, `1. adım: kendi cevapların (${i + 1}/${total}) · 2. adım: ${nameSuffix(players[opp], 'in')} cevaplarını tahmin et`),
         questionCard(state.questions[i], i + 1, total, categories, null),
-        answerInput(state.questions[i], (value) => sendMove({ type: 'answer', index: i, secret: { value } })),
+        answerInput(state.questions[i], (value) => sendMove({ type: 'answer', index: i, secret: { value } }), `${viewer}:answer:${i}`),
       );
       return null;
     }
@@ -256,7 +269,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       el('div', { class: 'status-line' }, el('strong', {}, `${players[viewer]}, ${nameSuffix(players[opp], 'in')} cevabını tahmin et`)),
       el('p', { class: 'hint' }, `2. adım: tahminler (${i + 1}/${total})`),
       questionCard(state.questions[i], i + 1, total, categories, `${nameSuffix(players[opp], 'e')} de bu soru soruldu — sence ne cevap verdi?`),
-      answerInput(state.questions[i], (value) => sendMove({ type: 'guess', index: i, value })),
+      answerInput(state.questions[i], (value) => sendMove({ type: 'guess', index: i, value }), `${viewer}:guess:${i}`),
     );
     return null;
   }
@@ -267,7 +280,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     return null;
   }
   const pts = points(state);
-  const canJudge = (owner) => state.phase === 'compare' && (!online || viewer === owner);
+  const canJudge = (owner) => state.phase === 'compare' && !state.done[owner] && (!online || viewer === owner);
   const pairRow = (owner, i) => {
     const guesser = 1 - owner;
     const verdict = state.judgments[owner][i];
@@ -293,12 +306,15 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     el('div', {}, el('strong', {}, `${players[1]}, ${nameSuffix(players[0], 'i')} ${total} üzerinden ${formatPoints(pts[1])} tanıyor`)),
   );
   const done = allJudged(state);
+  const mineDone = online && state.done[viewer];
   draw(container,
     summary,
     state.phase === 'compare' && !done ? el('p', { class: 'hint' }, 'Açık uçlu cevaplara Tuttu / Yakın / Tutmadı diyerek karar verin.') : null,
     el('div', { class: 'compare-list' }, items),
     state.phase === 'compare' ? el('div', { class: 'section' },
-      el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block', disabled: !done, onClick: () => sendMove({ type: 'finish' }) }, 'Sonucu gör'),
+      mineDone
+        ? el('p', { class: 'hint' }, `${players[opp]} sonucu onaylayınca bitecek…`)
+        : el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block', disabled: !done, onClick: () => sendMove({ type: 'finish' }) }, 'Sonucu gör'),
     ) : null,
   );
   return null;

@@ -35,7 +35,7 @@ test('beni tanı: kurulum — aynı tohum aynı soruları seçer, iki oyuncuya t
   assert.equal(new Set(a.questions.map((q) => q.id)).size, 5);
   assert.notEqual(JSON.stringify(a.questions), JSON.stringify(fresh({ seed: 12 }).questions));
   assert.equal(a.phase, 'play');
-  assert.deepEqual(game.getTurn(a), { player: 0, private: true });
+  assert.deepEqual(game.getTurn(a), { player: 0, private: true, simultaneous: true });
 });
 
 test('beni tanı: özel sorular önce gelir / karışır / kullanılmaz', () => {
@@ -58,11 +58,11 @@ test('beni tanı: önce kendi cevapların, sonra tahminler; ikisi bitince karş�
   assert.throws(() => game.applyMove(s, 0, { type: 'answer', index: 1, secret: { value: 'A' } }), 'sırayla');
   for (let i = 0; i < 5; i++) s = game.applyMove(s, 0, { type: 'answer', index: i, secret: { value: val(qs[i], 'ben0') } });
   assert.equal(s.answered[0], 5);
-  assert.deepEqual(game.getTurn(s), { player: 0, private: true }, 'still player 0: guesses come next');
+  assert.deepEqual(game.getTurn(s), { player: 0, private: true, simultaneous: true }, 'still player 0: guesses come next');
   for (let i = 0; i < 5; i++) s = game.applyMove(s, 0, { type: 'guess', index: i, value: val(qs[i], 'tahmin0') });
   assert.equal(s.finished[0], true);
   assert.equal(s.phase, 'play');
-  assert.deepEqual(game.getTurn(s), { player: 1, private: true });
+  assert.deepEqual(game.getTurn(s), { player: 1, private: true, simultaneous: true });
   assert.throws(() => game.applyMove(s, 0, { type: 'answer', index: 5, secret: { value: 'A' } }), 'Bitirdin');
   // player 1 answers B for choice questions (so player 0's guesses "A" miss) and guesses A (match player 0)
   for (let i = 0; i < 5; i++) s = game.applyMove(s, 1, { type: 'answer', index: i, secret: { value: qs[i].type === 'choice' ? 'B' : 'ben1' } });

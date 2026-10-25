@@ -20,6 +20,9 @@ test('hafıza: diziliş, eşleşme, kapanma ve sıra', () => {
   s = game.applyMove(s, p, { type: 'flip', card: other });
   assert.equal(s.open.length, 2);
   assert.throws(() => game.applyMove(s, p, { type: 'flip', card: partner }), 'Önce kartlar kapanmalı');
+  // either device may close the pair (the mover's device may have dropped); the turn still passes once
+  const byOther = game.applyMove(s, 1 - p, { type: 'hide' });
+  assert.equal(byOther.turn, 1 - p);
   s = game.applyMove(s, p, { type: 'hide' });
   assert.equal(s.turn, 1 - p);
   assert.deepEqual(s.open, []);

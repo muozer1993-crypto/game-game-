@@ -97,7 +97,7 @@ a { color: var(--primary); }
 /* top bar */
 .topbar {
   display: grid;
-  grid-template-columns: 44px 1fr 44px;
+  grid-template-columns: 44px minmax(0, 1fr) auto;
   align-items: center;
   gap: 8px;
   padding: 8px 0 12px;
@@ -187,12 +187,12 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 /* scoreboard */
 .scoreboard {
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
   gap: 8px;
   margin: 4px 0 12px;
 }
-.score-cell { text-align: center; padding: 6px 4px; border-radius: 10px; border: 2px solid transparent; }
+.score-cell { text-align: center; padding: 6px 4px; border-radius: 10px; border: 2px solid transparent; min-width: 0; }
 .score-cell.active { border-color: var(--primary); }
 .score-name { font-size: 0.9rem; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .score-cell.active .score-name { color: var(--fg); font-weight: 600; }
@@ -350,13 +350,13 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .sea-cell.pending { background: var(--secondary); }
 .tv-board {
   display: grid;
-  grid-template-columns: repeat(6, 1fr) 20px repeat(6, 1fr) 30px;
+  grid-template-columns: repeat(6, minmax(0, 1fr)) 16px repeat(6, minmax(0, 1fr)) 24px;
   grid-template-rows: 150px 150px;
-  gap: 2px;
-  padding: 6px;
+  gap: 2px 0;
+  padding: 6px 2px;
   border-radius: 10px;
   background: #8d6e63;
-  margin: 8px 0;
+  margin: 8px -10px; /* bleeds into the gutter so each point stays a usable tap target */
 }
 .tv-point {
   position: relative;
@@ -507,7 +507,7 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .mem-card.matched.p0 { border-color: #e53935; }
 .mem-card.matched.p1 { border-color: var(--primary); }
 .mem-card:disabled { cursor: default; }
-.pool-wrap { max-width: 300px; margin: 8px auto; }
+.pool-wrap { max-width: min(300px, calc((100vh - 300px) / 2)); margin: 8px auto; }
 .pool-canvas { width: 100%; height: auto; display: block; border-radius: 8px; touch-action: none; }
 .dab-wrap { max-width: 420px; margin: 8px auto; }
 .dab-board { width: 100%; height: auto; display: block; color: var(--fg); touch-action: manipulation; }

@@ -38,8 +38,12 @@ function clean(q) {
 export function pickQuestions(pool, count, level, seed) {
   const rng = createRng(seed);
   let all = (pool || []).map(clean).filter(Boolean);
-  if (level === 'easy') all = all.filter((q) => q.difficulty <= 2);
-  if (level === 'hard') all = all.filter((q) => q.difficulty >= 2);
+  if (level === 'easy' || level === 'hard') {
+    const want = level === 'easy' ? 1 : 3;
+    const strict = all.filter((q) => q.difficulty === want);
+    // fall back to the neighbouring level when the pool is too small for a varied round
+    all = strict.length >= count * 2 ? strict : all.filter((q) => (level === 'easy' ? q.difficulty <= 2 : q.difficulty >= 2));
+  }
   if (!all.length) fail('Soru havuzu boş');
   const shuffled = shuffle(rng, all);
   const cats = new Set(shuffled.map((q) => q.category));
@@ -100,7 +104,7 @@ export function applyMove(state, player, move) {
 export function getTurn(state) {
   if (state.phase !== 'play') return null;
   const p = state.answers[0].length >= state.count ? (state.answers[1].length >= state.count ? null : 1) : 0;
-  return p == null ? null : { player: p, private: true };
+  return p == null ? null : { player: p, private: true, simultaneous: true };
 }
 
 export function getResult(state) {
@@ -113,6 +117,10 @@ export function getResult(state) {
 }
 
 // ----------------------------------------------------------------- render
+// When the question was first shown on this device (the opponent's moves re-render the screen
+// but must not restart the clock).
+const shownAt = new WeakMap(); // container -> { viewer, index, at }
+
 export function render(state, viewer, container, sendMove, ctx = {}) {
   const players = ctx.players || ['Oyuncu 1', 'Oyuncu 2'];
   const categories = (ctx.trivia && ctx.trivia.categories) || {};
@@ -131,7 +139,12 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     }
     const i = mineDone;
     const q = state.questions[i];
-    const startedAt = Date.now();
+    let shown = shownAt.get(container);
+    if (!shown || shown.viewer !== viewer || shown.index !== i || shown.questions !== state.questions) {
+      shown = { viewer, index: i, questions: state.questions, at: Date.now() };
+      shownAt.set(container, shown);
+    }
+    const startedAt = shown.at;
     const limitMs = state.timeLimit * 1000;
     const prev = i > 0 ? state.answers[viewer][i - 1] : null;
     const prevQ = i > 0 ? state.questions[i - 1] : null;
@@ -143,7 +156,10 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     };
     const timerBox = el('div');
     let timer = null;
-    if (limitMs) timer = createTimer(timerBox, { deadline: startedAt + limitMs, total: limitMs, onExpire: () => send(-1) });
+    if (limitMs) {
+      if (startedAt + limitMs <= Date.now()) queueMicrotask(() => send(-1)); // already expired while re-rendering
+      else timer = createTimer(timerBox, { deadline: startedAt + limitMs, total: limitMs, onExpire: () => send(-1) });
+    }
     const feedback = prev
       ? el('p', { class: `hint ${prev.choice === prevQ.answer ? 'notice' : 'rejected-note'}` },
         prev.choice === prevQ.answer ? 'Önceki soru: doğru!' : `Önceki soru: ${prev.choice === -1 ? 'süre doldu' : 'yanlış'} — doğru cevap: ${prevQ.options[prevQ.answer]}`)

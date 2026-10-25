@@ -32,6 +32,7 @@ function fail(msg) {
 export function setup(options = {}) {
   const size = Number(options.size) === 10 ? 10 : 8;
   return {
+    id: String(options.seed ?? ''), // new every game: placement drafts are kept per game
     size,
     ships: FLEETS[size].slice(),
     phase: 'place',      // place | play | over
@@ -247,6 +248,8 @@ export function getResult(state) {
 
 // ----------------------------------------------------------------- render
 const LETTERS = 'ABCDEFGHIJ';
+const drafts = new Map(); // placement in progress per viewer: survives re-renders caused by remote moves
+let draftsFor = null;     // state.id the drafts belong to
 const RESULT_TEXT = { miss: 'İska', hit: 'Vurdu!', sunk: 'Batırdı!' };
 
 function grid(size, cellFn, opts = {}) {
@@ -261,6 +264,7 @@ function grid(size, cellFn, opts = {}) {
 }
 
 export function render(state, viewer, container, sendMove, ctx = {}) {
+  if (draftsFor !== state.id) { drafts.clear(); draftsFor = state.id; }
   const players = ctx.players || ['Oyuncu 1', 'Oyuncu 2'];
   const online = ctx.mode === 'online';
   const opp = 1 - viewer;
@@ -277,8 +281,12 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       );
       return null;
     }
-    let fleet = [];
-    let horizontal = true;
+    const draftKey = `${viewer}:${state.size}`;
+    if (!drafts.has(draftKey)) drafts.set(draftKey, { fleet: [], horizontal: true });
+    const draft = drafts.get(draftKey);
+    let fleet = draft.fleet;
+    let horizontal = draft.horizontal;
+    const keep = () => { draft.fleet = fleet; draft.horizontal = horizontal; };
     const remaining = () => {
       const left = state.ships.slice();
       for (const s of fleet) { const k = left.indexOf(s.length); if (k >= 0) left.splice(k, 1); }
@@ -307,9 +315,11 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
         for (const nb of neighbors8(size, i)) if (occ.has(nb)) { toast('Gemiler birbirine değemez', { kind: 'error' }); return; }
       }
       fleet = fleet.concat([cells]);
+      keep();
       redraw();
     };
     const redraw = () => {
+      keep();
       const left = remaining();
       const occ = occupied();
       orientBtn.textContent = horizontal ? 'Yön: yatay ↔' : 'Yön: dikey ↕';
@@ -337,10 +347,11 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
         el('button', { type: 'button', class: 'btn btn-small', onClick: () => { fleet = []; redraw(); } }, 'Temizle'),
       ),
       boardBox,
-      el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block', style: { marginTop: '10px' }, onClick: () => sendMove({ type: 'place', secret: { fleet } }) }, 'Hazır'),
+      el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block', style: { marginTop: '10px' }, onClick: () => { const f = fleet; drafts.delete(draftKey); sendMove({ type: 'place', secret: { fleet: f } }); if (!state.ready[viewer]) { /* rejected: keep the draft */ } } }, 'Hazır'),
     );
     return null;
   }
+  drafts.delete(`${viewer}:${state.size}`);
 
   // ---- target grid (viewer's shots at the opponent's sea)
   const myShots = new Map(state.shots[viewer].map((s) => [s.idx, s]));
@@ -404,7 +415,13 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     targetGrid,
     el('div', { class: 'col-title', style: { marginTop: '10px' } }, 'Senin denizin'),
     !online && state.phase !== 'over'
-      ? el('button', { type: 'button', class: 'btn btn-small', onClick: () => { showShips = !showShips; drawOwn(); } }, 'Gemilerimi göster / gizle')
+      ? el('button', {
+        type: 'button', class: 'btn btn-small', style: { touchAction: 'none' },
+        onPointerdown: (e) => { e.preventDefault(); showShips = true; drawOwn(); },
+        onPointerup: () => { showShips = false; drawOwn(); },
+        onPointercancel: () => { showShips = false; drawOwn(); },
+        onPointerleave: () => { if (showShips) { showShips = false; drawOwn(); } },
+      }, 'Gemilerimi göster (basılı tut)')
       : null,
     ownBox,
     mine && !myPending ? el('div', { class: 'row', style: { marginTop: '10px' } },
