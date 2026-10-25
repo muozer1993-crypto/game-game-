@@ -6,7 +6,7 @@ import { el, render, clear, toast } from './ui/dom.js';
 import { createScoreboard } from './ui/scoreboard.js';
 import { load, save, remove, keys } from './lib/storage.js';
 import { loadDictionary, loadCommonWords } from './lib/words.js';
-import { randomSeed } from './lib/rng.js';
+import { randomSeed, shuffle, createRng } from './lib/rng.js';
 import { nameSuffix, capitalizeTR } from './lib/tr.js';
 import { generateRoomCode, createHost, joinRoom, normalizeRoomCode } from './net/peer.js';
 
@@ -65,6 +65,7 @@ async function loadGameData(game) {
 // ---------------------------------------------------------------- navigation
 let currentScreen = 'menu';
 let teardown = null; // called when leaving the current screen
+let tournament = null; // { ids, index, wins, draws, results, players, onlineHost } while a tournament runs
 
 function setScreen(name, cleanupFn) {
   if (teardown) { try { teardown(); } catch (err) { console.warn(err); } }
@@ -102,6 +103,7 @@ function header(title, { onBack, right } = {}) {
 // ---------------------------------------------------------------- menu
 export function showMenu() {
   if (online.transport || online.resuming || reconnectOverlay) { closeReconnect(); leaveOnline(); } // tells the other device we left
+  tournament = null;
   setScreen('menu');
   const themeSelect = el('select', { class: 'select', 'aria-label': 'Tema', onChange: (e) => applyTheme(e.target.value) },
     el('option', { value: 'auto' }, 'Tema: Sistem'),
@@ -116,7 +118,8 @@ export function showMenu() {
     quickRow((game) => showSetup(game)),
     gameSections((game) => showSetup(game)),
     el('section', { class: 'section' },
-      el('button', { type: 'button', class: 'btn btn-secondary btn-block', onClick: showOnline }, '📶 İki telefonda oyna (oda kodu)'),
+      el('button', { type: 'button', class: 'btn btn-secondary btn-block', onClick: () => showTournamentSetup() }, '🏆 Oyun gecesi turnuvası (art arda birkaç oyun)'),
+      el('button', { type: 'button', class: 'btn btn-secondary btn-block', style: { marginTop: '8px' }, onClick: showOnline }, '📶 İki telefonda oyna (oda kodu)'),
     ),
     el('footer', { class: 'footer muted' },
       el('button', { type: 'button', class: 'linkish', onClick: showRecords }, 'Skor tablosu'), ' · ',
@@ -159,6 +162,104 @@ export function showRecords() {
   render(app,
     header('Skor tablosu', { onBack: showMenu }),
     sections.length ? sections : el('p', { class: 'lead' }, 'Henüz kayıtlı skor yok. Bir oyun bitince kazanan burada birikir (oyuncu adlarına göre).'),
+  );
+}
+
+// ---------------------------------------------------------------- tournament
+/** Pick several games to play back to back; every game's winner scores a point. */
+export function showTournamentSetup({ onlineHost = false } = {}) {
+  setScreen('tournament');
+  const names = prefs.players.slice();
+  const chosen = new Set(games.map((g) => g.id));
+  let count = 5;
+  const nameFields = onlineHost
+    ? el('div', { class: 'field' }, el('div', { class: 'muted' }, `Oyuncular: ${online.players[0]} (sen) ve ${online.players[1]}`))
+    : el('div', { class: 'names' }, [0, 1].map((i) => el('div', { class: 'field' },
+      el('label', { for: `name-${i}` }, `${i + 1}. oyuncu`),
+      el('input', { type: 'text', class: 'input', id: `name-${i}`, maxlength: 20, autocomplete: 'off', value: names[i], onInput: (e) => { names[i] = e.target.value; } }))));
+  const countSelect = el('select', { class: 'select', id: 'tour-count', onChange: (e) => { count = Number(e.target.value); } },
+    [3, 5, 7].map((n) => el('option', { value: String(n) }, `${n} oyun`)), el('option', { value: '0' }, 'Seçilen oyunların hepsi'));
+  countSelect.value = '5';
+  const boxes = [];
+  const groupBox = (g) => {
+    const list = games.filter((game) => game.meta.group === g.id);
+    return el('div', { class: 'tour-group' },
+      el('div', { class: 'col-title' }, g.title),
+      el('div', { class: 'tour-games' }, list.map((game) => {
+        const cb = el('input', { type: 'checkbox', id: `tour-${game.id}`, onChange: (e) => { if (e.target.checked) chosen.add(game.id); else chosen.delete(game.id); } });
+        cb.checked = true;
+        boxes.push(cb);
+        return el('label', { class: 'tour-game', for: `tour-${game.id}` }, cb, ` ${game.meta.icon || ''} ${game.meta.name}`);
+      })));
+  };
+  const setAll = (on) => { boxes.forEach((cb) => { cb.checked = on; }); games.forEach((g) => (on ? chosen.add(g.id) : chosen.delete(g.id))); };
+  const start = () => {
+    const pool = games.filter((g) => chosen.has(g.id));
+    if (!pool.length) { toast('En az bir oyun seç', { kind: 'error' }); return; }
+    const players = onlineHost ? online.players : names.map((n, i) => n.trim() || DEFAULT_PLAYERS[i]);
+    if (!onlineHost) { prefs.players = players; save('players', players); }
+    const order = shuffle(createRng(randomSeed()), pool).map((g) => g.id);
+    const ids = count ? Array.from({ length: count }, (_, i) => order[i % order.length]) : order;
+    tournament = { ids, index: 0, wins: [0, 0], draws: 0, results: [], players, onlineHost };
+    startTournamentGame();
+  };
+  render(app,
+    header('Oyun gecesi turnuvası', { onBack: () => (onlineHost ? showOnlineLobby() : showMenu()) }),
+    el('p', { class: 'lead' }, 'Seçtiğin oyunlardan rastgele bir sıra kurulur; her oyunun kazananı 1 puan alır, sonda toplam puana bakılır. Her oyun kendi kayıtlı ayarlarıyla başlar.'),
+    el('section', { class: 'section' }, nameFields, el('div', { class: 'field' }, el('label', { for: 'tour-count' }, 'Kaç oyun?'), countSelect)),
+    el('section', { class: 'section card' },
+      el('div', { class: 'row', style: { justifyContent: 'space-between' } },
+        el('h2', { class: 'section-title', style: { margin: 0 } }, 'Oyunlar'),
+        el('span', {}, el('button', { type: 'button', class: 'btn btn-small', onClick: () => setAll(true) }, 'Hepsi'), ' ', el('button', { type: 'button', class: 'btn btn-small', onClick: () => setAll(false) }, 'Hiçbiri'))),
+      groups.map(groupBox)),
+    el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block', onClick: start }, 'Turnuvayı başlat'),
+  );
+}
+
+async function startTournamentGame() {
+  const t = tournament;
+  if (!t) { showMenu(); return; }
+  const game = findGame(t.ids[t.index]);
+  if (!game) { showMenu(); return; }
+  const options = { ...settingsForm(game).values, seed: randomSeed() };
+  try {
+    const ctx = await loadGameData(game);
+    if (tournament !== t) return; // the user left meanwhile
+    const info = { index: t.index, total: t.ids.length, wins: t.wins.slice() };
+    if (t.onlineHost) {
+      if (!online.transport) { showMenu(); return; }
+      startOnlineGame(game, options, ctx, [0, 0], info);
+    } else {
+      showPlay({ game, options, players: t.players, ctx, mode: 'local', self: null, scores: [0, 0] });
+    }
+  } catch (err) {
+    console.error(err);
+    toast(err.message || 'Veri yüklenemedi', { kind: 'error', duration: 4000 });
+    showMenu();
+  }
+}
+
+function showTournamentResult() {
+  const t = tournament;
+  if (!t) { showMenu(); return; }
+  setScreen('tournament-result');
+  const [a, b] = t.wins;
+  const line = a === b ? `Berabere: ${a}–${b}` : `${t.players[a > b ? 0 : 1]} turnuvayı kazandı: ${Math.max(a, b)}–${Math.min(a, b)}`;
+  const onlineHost = t.onlineHost;
+  const results = t.results.slice();
+  const players = t.players;
+  render(app,
+    header('Turnuva sonucu', { onBack: () => (onlineHost ? showOnlineLobby({ notify: true }) : showMenu()) }),
+    el('div', { class: 'result-banner' }, line),
+    el('p', { class: 'muted', style: { textAlign: 'center' } }, `${results.length} oyun${t.draws ? `, ${t.draws} berabere` : ''}`),
+    el('section', { class: 'section card' }, el('div', { class: 'records-list' }, results.map((r, i) => {
+      const game = findGame(r.id);
+      return el('div', { class: 'records-row' }, el('span', {}, `${i + 1}. ${game ? `${game.meta.icon || ''} ${game.meta.name}` : r.id}`), el('span', { class: 'records-score' }, r.winner == null ? 'berabere' : players[r.winner]));
+    }))),
+    el('div', { class: 'row', style: { justifyContent: 'center', gap: '8px', marginTop: '12px' } },
+      el('button', { type: 'button', class: 'btn btn-primary btn-big', onClick: () => showTournamentSetup({ onlineHost }) }, 'Yeni turnuva'),
+      el('button', { type: 'button', class: 'btn btn-secondary btn-big', onClick: () => (onlineHost ? showOnlineLobby({ notify: true }) : showMenu()) }, onlineHost ? 'Lobiye dön' : 'Ana menü'),
+    ),
   );
 }
 
@@ -390,19 +491,44 @@ export function showPlay(p) {
         text = `${p.players[result.winner]} kazandı!${pts > 1 ? ` (+${pts} puan)` : ''}`;
       }
       updateScore();
-      const again = el('button', { type: 'button', class: 'btn btn-primary btn-big' }, 'Yeni tur');
-      if (isOnline && p.self !== 0) {
-        again.textContent = 'Yeni tur iste';
-        again.addEventListener('click', () => { online.transport.send({ t: 'rematch' }); again.disabled = true; again.textContent = 'İstek gönderildi'; });
+      // tournament bookkeeping: the host (or the single phone) keeps the tally; the guest shows what the host sent
+      const t = tournament && (!isOnline || p.self === 0) ? tournament : null;
+      let tally = null;
+      if (t) {
+        if (result.draw) t.draws += 1; else t.wins[result.winner] += 1;
+        t.results.push({ id: p.game.id, winner: result.draw ? null : result.winner });
+        t.index += 1;
+        tally = { index: t.index, total: t.ids.length, wins: t.wins };
+      } else if (isOnline && online.tournament) {
+        const info = online.tournament;
+        const wins = Array.isArray(info.wins) ? info.wins.slice() : [0, 0];
+        if (!result.draw) wins[result.winner] += 1;
+        tally = { index: Number(info.index) + 1, total: Number(info.total), wins };
+      }
+      const tallyLine = tally ? el('div', { class: 'muted' }, `Turnuva ${tally.index}/${tally.total}: ${p.players[0]} ${tally.wins[0]} – ${tally.wins[1]} ${p.players[1]}`) : null;
+      let again;
+      if (t) {
+        const last = t.index >= t.ids.length;
+        const nextGame = last ? null : findGame(t.ids[t.index]);
+        again = el('button', { type: 'button', class: 'btn btn-primary btn-big', onClick: () => (last ? showTournamentResult() : startTournamentGame()) },
+          last ? 'Turnuva sonucu' : `Sonraki oyun: ${nextGame ? nextGame.meta.name : '?'}`);
+      } else if (isOnline && online.tournament) {
+        again = el('span', { class: 'muted' }, tally && tally.index >= tally.total ? 'Turnuva bitti.' : 'Ev sahibi sonraki oyunu başlatacak…');
       } else {
-        again.addEventListener('click', () => {
-          const options = { ...p.options, seed: randomSeed() };
-          if (isOnline) startOnlineGame(p.game, options, p.ctx, scores);
-          else showPlay({ ...p, options, scores });
-        });
+        again = el('button', { type: 'button', class: 'btn btn-primary btn-big' }, 'Yeni tur');
+        if (isOnline && p.self !== 0) {
+          again.textContent = 'Yeni tur iste';
+          again.addEventListener('click', () => { online.transport.send({ t: 'rematch' }); again.disabled = true; again.textContent = 'İstek gönderildi'; });
+        } else {
+          again.addEventListener('click', () => {
+            const options = { ...p.options, seed: randomSeed() };
+            if (isOnline) startOnlineGame(p.game, options, p.ctx, scores);
+            else showPlay({ ...p, options, scores });
+          });
+        }
       }
       render(actions,
-        el('div', { class: 'result-banner' }, text),
+        el('div', { class: 'result-banner' }, text, tallyLine),
         el('div', { class: 'row' }, again, el('button', { type: 'button', class: 'btn btn-secondary btn-big', onClick: exit }, isOnline ? 'Lobiye dön' : 'Ana menü')),
       );
       actions.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -686,12 +812,14 @@ function showOnlineWaiting(code) {
 
 function showOnlineLobby({ notify = false } = {}) {
   if (!online.transport || !online.players) { showMenu(); return; }
+  tournament = null;
   if (notify) online.transport.send({ t: 'lobby' });
   if (online.role === 'host') {
     setScreen('online-lobby');
     render(app,
       header('Oyun seç', { onBack: () => { leaveOnline(); showMenu(); } }),
       el('p', { class: 'lead' }, `${online.players[1]} bağlandı. Bir oyun seç.`),
+      el('button', { type: 'button', class: 'btn btn-secondary btn-block', style: { marginBottom: '12px' }, onClick: () => showTournamentSetup({ onlineHost: true }) }, '🏆 Turnuva (art arda birkaç oyun)'),
       gameSections((game) => showSetup(game, { onlineHost: true })),
     );
   } else {
@@ -706,9 +834,9 @@ function showOnlineLobby({ notify = false } = {}) {
   }
 }
 
-function startOnlineGame(game, options, ctx, scores) {
+function startOnlineGame(game, options, ctx, scores, tournamentInfo = null) {
   const state0 = game.setup(options, { ...ctx, players: online.players, mode: 'online', self: 0, options });
-  online.transport.send({ t: 'start', gameId: game.id, options, state0, players: online.players, scores: scores || [0, 0] });
+  online.transport.send({ t: 'start', gameId: game.id, options, state0, players: online.players, scores: scores || [0, 0], tournament: tournamentInfo });
   showPlay({ game, options, players: online.players, ctx, mode: 'online', self: 0, initialState: state0, scores });
 }
 
@@ -775,6 +903,7 @@ async function handleOnlineMessage(msg) {
         const ctx = online.ctxCache[game.id] || (online.ctxCache[game.id] = await loadGameData(game));
         if (round !== online.round || !online.transport) return; // a newer start/lobby/leave won
         online.busy = false;
+        online.tournament = msg.tournament && typeof msg.tournament === 'object' ? msg.tournament : null;
         showPlay({ game, options: msg.options, players: msg.players || online.players, ctx, mode: 'online', self: 1, initialState: msg.state0, scores: msg.scores });
       } catch (err) {
         if (round !== online.round) return;

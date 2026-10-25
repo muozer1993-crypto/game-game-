@@ -775,3 +775,8 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .kt-tile { width: 44px; height: 52px; font-size: 1.4rem; }
 .kt-tile:disabled { opacity: 0.3; }
 .kt-rack { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin: 8px 0; }
+
+.tour-group { margin-top: 8px; }
+.tour-games { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 8px; }
+.tour-game { display: flex; align-items: center; gap: 6px; font-size: 0.95rem; padding: 4px 0; }
+.result-banner .muted { font-size: 0.95rem; font-weight: 600; margin-top: 4px; }

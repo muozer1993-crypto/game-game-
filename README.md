@@ -38,6 +38,8 @@ Tek telefonda elden ele ya da iki telefonda oda koduyla oynanır. Ana ekrana ekl
 | **Taş Kağıt Makas** | Gizli seçim, birlikte açılır; beşte üç. |
 | **Refleks** | Ekran yeşile dönünce ilk dokunan eli alır, erken dokunan kaybeder; tek telefonda iki bölge, iki telefonda kendi süren ölçülür. |
 
+**Oyun gecesi turnuvası**: ana menüden (ya da online lobiden) seçilen oyunlardan rastgele 3/5/7 oyun art arda oynanır; her oyunun kazananı 1 puan alır, sonda turnuva sonucu gösterilir.
+
 Ana menünün altındaki **Skor tablosu**, oyuncu adlarına göre biriken tüm sonuçları (oyun oyun) gösterir ve çift bazında sıfırlanabilir.
 
 ## Yerelde çalıştırma
