@@ -30,6 +30,7 @@ Tek telefonda elden ele ya da iki telefonda oda koduyla oynanır. Ana ekrana ekl
 | **Hafıza** | Kart eşleştirme; eşleşen devam eder. 12–36 kart. |
 | **XOX** | Klasik üç taş. |
 | **Taş Kağıt Makas** | Gizli seçim, birlikte açılır; beşte üç. |
+| **Refleks** | Ekran yeşile dönünce ilk dokunan eli alır, erken dokunan kaybeder; tek telefonda iki bölge, iki telefonda kendi süren ölçülür. |
 
 ## Yerelde çalıştırma
 

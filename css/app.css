@@ -682,3 +682,17 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .tb-chip.ok { background: var(--correct); color: #fff; }
 .tb-chip.taboo { background: var(--danger); color: #fff; }
 .tb-rounds { display: grid; gap: 8px; margin-top: 8px; }
+
+/* ---- Refleks */
+.rf-board { display: grid; gap: 8px; margin: 6px 0; }
+.rf-zone {
+  border: 0; border-radius: 16px; background: #c62828; color: #fff; min-height: 30vh; padding: 12px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+  touch-action: none; user-select: none; -webkit-user-select: none; cursor: pointer;
+}
+.rf-zone.single { min-height: 62vh; }
+.rf-zone.flip { transform: rotate(180deg); }
+.rf-zone.go { background: #2e7d32; }
+.rf-name { font-size: 1rem; opacity: 0.85; font-weight: 600; }
+.rf-text { font-size: 2.2rem; font-weight: 900; }
+.rf-history { display: grid; gap: 4px; margin-top: 8px; text-align: center; }
