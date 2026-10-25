@@ -1,5 +1,5 @@
 import { test, assert } from './runner.js';
-import game, { simulate, W, H, R, aimFromPointer, predictContact, CANCEL_R, PULL_FULL, MIN_POWER } from '../games/bilardo.js';
+import game, { simulate, W, H, R, aimFromPointer, predictContact, CANCEL_R, PULL_FULL, MIN_POWER, fullPull } from '../games/bilardo.js';
 
 test('bilardo: diziliş ve deterministik simülasyon', () => {
   const s = game.setup({ balls: 9, seed: 0 });
@@ -114,4 +114,15 @@ test('bilardo: güç parmağın konduğu yerden ölçülür — uzağa dokunup k
   assert.ok(Math.abs(into.y - 128) < 1e-9);
   const away = predictContact(balls, 100, 128, 0, 1);
   assert.equal(away.ball, null);
+});
+
+test('bilardo: kenara yakın topta tam güç, ekranda kalan alana sığar', () => {
+  assert.equal(fullPull(500, CANCEL_R), PULL_FULL, 'open table: the normal pull');
+  const near = fullPull(60, CANCEL_R);
+  assert.ok(near < PULL_FULL && near >= 32, 'little room: a shorter full pull');
+  const cue = { x: 8, y: 250 };
+  const atEdge = aimFromPointer(cue, { x: 8 - 58, y: 250 }, cue, near);
+  assert.equal(atEdge.power, 1, 'reaching the screen edge is full power');
+  assert.ok(Math.abs(atEdge.dx - 1) < 1e-9);
+  assert.equal(fullPull(10, 40), 32, 'never twitchier than the minimum');
 });

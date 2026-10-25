@@ -70,6 +70,8 @@
 
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; }
+/* no pull-to-refresh: a downward swipe at the top must not reload the page and lose a game in progress */
+html, body { overscroll-behavior-y: contain; }
 body {
   background: var(--bg);
   color: var(--fg);

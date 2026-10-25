@@ -39,6 +39,7 @@ const SUB = 4; // sub-steps per step so that a fast ball never skips over anothe
 export const CANCEL_R = R * 1.6;   // finger on the ball: no direction, no shot
 export const PULL_FULL = 80;       // pull back this far from where the finger went down for full power
 export const MIN_POWER = 0.08;     // = a 6.4-unit pull: a tap or a small slip never shoots
+const MIN_FULL_PULL = 32;          // even right at the screen edge, power never gets twitchier than this
 
 function fail(msg) {
   throw new Error(msg);
@@ -154,13 +155,22 @@ export function simulate(balls0, shot, withFrames = false) {
  * since it went down at `start`, so where you first touch does not matter and a slip does not
  * shoot. null = no direction (finger on the ball).
  */
-export function aimFromPointer(cue, p, start = cue) {
+export function aimFromPointer(cue, p, start = cue, full = PULL_FULL) {
   const dx = cue.x - p.x;
   const dy = cue.y - p.y;
   const d = Math.sqrt(dx * dx + dy * dy);
   if (d < CANCEL_R) return null;
   const d0 = Math.max(CANCEL_R, Math.hypot(cue.x - start.x, cue.y - start.y));
-  return { dx: dx / d, dy: dy / d, power: Math.min(1, Math.max(0, (d - d0) / PULL_FULL)) };
+  return { dx: dx / d, dy: dy / d, power: Math.min(1, Math.max(0, (d - d0) / full)) };
+}
+
+/**
+ * The pull that gives full power. Normally PULL_FULL, but when the ball is near the screen edge on
+ * the finger's side (a ball on a side cushion, say) there is not that much room: then the room up to
+ * the edge (`room`, in table units from the ball) is the full pull, so full power stays reachable.
+ */
+export function fullPull(room, d0) {
+  return Math.max(MIN_FULL_PULL, Math.min(PULL_FULL, room - d0 - 2));
 }
 
 /**
@@ -448,9 +458,25 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   let dragging = false;
   let pointerId = null;
   let start = null;
+  // room from the cue ball to the edge of the screen in the pull direction (-dx, -dy), in table units
+  const roomBehind = (q, dx, dy) => {
+    const rect = canvas.getBoundingClientRect();
+    const unit = rect.width / W;
+    const bx = rect.left + q.x * unit;
+    const by = rect.top + q.y * unit;
+    const ux = -dx;
+    const uy = -dy;
+    const tx = ux > 1e-6 ? (innerWidth - 1 - bx) / ux : ux < -1e-6 ? (bx - 1) / -ux : Infinity;
+    const ty = uy > 1e-6 ? (innerHeight - 1 - by) / uy : uy < -1e-6 ? (by - 1) / -uy : Infinity;
+    return Math.min(tx, ty) / unit;
+  };
   const aimAt = (p) => {
     const q = cue();
-    const a = aimFromPointer(q, p, start);
+    let a = aimFromPointer(q, p, start);
+    if (a) {
+      const d0 = Math.max(CANCEL_R, Math.hypot(q.x - start.x, q.y - start.y));
+      a = aimFromPointer(q, p, start, fullPull(roomBehind(q, a.dx, a.dy), d0));
+    }
     // while the finger is down the table shows the cue and the power (drawn on the canvas, so
     // nothing around the table changes size and moves under the finger)
     aim = a ? { x0: q.x, y0: q.y, ...a } : { cancel: true, x0: q.x, y0: q.y };
