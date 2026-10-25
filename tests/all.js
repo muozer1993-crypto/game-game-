@@ -28,3 +28,4 @@ import './hesap-yarisi.test.js';
 import './durak.test.js';
 import './version.test.js';
 import './mayin-tarlasi.test.js';
+import './sudoku.test.js';

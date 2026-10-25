@@ -754,3 +754,18 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .ms-cell.wrong { background: var(--present); }
 .ms-cell.n1 { color: #1e88e5; } .ms-cell.n2 { color: #43a047; } .ms-cell.n3 { color: #e53935; } .ms-cell.n4 { color: #5e35b1; }
 .ms-cell.n5 { color: #8d6e63; } .ms-cell.n6 { color: #00acc1; } .ms-cell.n7 { color: #111; } .ms-cell.n8 { color: #777; }
+
+/* ---- Sudoku */
+.sd-grid { display: grid; grid-template-columns: repeat(9, 1fr); max-width: 380px; margin: 6px auto; border: 2px solid var(--fg); background: var(--border); gap: 1px; }
+.sd-cell { aspect-ratio: 1; border: 0; padding: 0; background: var(--card); color: var(--primary); font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; cursor: pointer; touch-action: manipulation; }
+.sd-cell.given { color: var(--fg); font-weight: 800; background: var(--secondary); }
+.sd-cell:disabled { cursor: default; }
+.sd-cell.vb { border-right: 2px solid var(--fg); }
+.sd-cell.hb { border-bottom: 2px solid var(--fg); }
+.sd-cell.same { background: #fff3cd; }
+.sd-cell.sel { background: #cfe0ff; outline: 2px solid var(--primary); outline-offset: -2px; }
+.sd-cell.bad { color: var(--danger); background: rgba(198, 40, 40, 0.15); }
+:root[data-theme="dark"] .sd-cell.same, :root:not([data-theme="light"]) .sd-cell.same { background: rgba(255, 213, 79, 0.25); }
+:root[data-theme="dark"] .sd-cell.sel, :root:not([data-theme="light"]) .sd-cell.sel { background: rgba(91, 140, 255, 0.35); }
+.sd-pad { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; max-width: 380px; margin: 8px auto; }
+.sd-key { padding: 12px 0; font-size: 1.2rem; font-weight: 800; }
