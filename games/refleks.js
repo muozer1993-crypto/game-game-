@@ -69,8 +69,9 @@ export function applyMove(state, player, move, ctx = {}) {
       if (typeof t === 'number' && !Number.isFinite(t)) fail('Geçersiz süre');
       const times = state.times.slice();
       times[who] = t;
-      // an early tap ends the round at once; otherwise wait for both reports
-      const done = t === 'early' || (times[0] != null && times[1] != null);
+      // on one phone an early tap ends the round at once; online both reports are needed so
+      // that the two devices resolve the round the same way whatever order the taps arrive in
+      const done = (t === 'early' && ctx.mode !== 'online') || (times[0] != null && times[1] != null);
       if (!done) return { ...state, times };
       const winner = roundWinner(times);
       const scores = state.scores.slice();
@@ -161,13 +162,18 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     zoneEls.forEach((z) => { z.classList.add('go'); z.querySelector('.rf-text').textContent = 'ŞİMDİ!'; });
   };
   const timers = [];
+  // the opponent already jumped the gun: the round is decided, report at once instead of waiting
+  if (online && state.times[1 - viewer] === 'early' && state.times[viewer] == null) {
+    reported.add(viewer);
+    timers.push(setTimeout(() => sendMove({ type: 'tap', who: viewer, time: 'none' }), 0));
+  }
   const wait = go - Date.now();
   if (wait <= 0) setGo(); else timers.push(setTimeout(setGo, wait));
   // nobody reacted: report it so the round can end (the opponent may have tapped)
   timers.push(setTimeout(() => { zones.forEach((p) => { if (!reported.has(p) && state.times[p] == null) { reported.add(p); sendMove({ type: 'tap', who: p, time: 'none' }); } }); }, Math.max(0, wait) + NO_TAP_MS));
   draw(container,
     el('div', { class: 'rf-board' }, zoneEls),
-    online && state.times[1 - viewer] != null ? el('p', { class: 'hint' }, `${players[1 - viewer]} dokundu, senin dokunman bekleniyor…`) : null,
+    online && state.times[1 - viewer] === 'early' ? el('p', { class: 'hint' }, `${players[1 - viewer]} erken dokundu!`) : (online && state.times[1 - viewer] != null ? el('p', { class: 'hint' }, `${players[1 - viewer]} dokundu, senin dokunman bekleniyor…`) : null),
     online && state.times[viewer] != null ? el('p', { class: 'hint' }, `Senin süren: ${fmt(state.times[viewer])}. ${players[1 - viewer]} bekleniyor…`) : null,
   );
   return () => timers.forEach((t) => clearTimeout(t));

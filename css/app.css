@@ -828,10 +828,11 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .kb-cell.w2 { background: #f7cfd0; color: #a8201e; }
 .kb-cell.w3 { background: #ef8c8a; color: #6b0d0b; }
 .kb-cell.star { font-size: 1rem; }
-.kb-cell.tile { background: #f6e2a8; color: #1b1d24; font-weight: 800; font-size: 0.95rem; box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.2); }
+.kb-cell.tile { background: #f6e2a8; color: #1b1d24; font-weight: 800; font-size: 0.85rem; box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.2); }
 .kb-cell.pending { background: #ffd54f; outline: 2px solid var(--primary); outline-offset: -2px; }
 .kb-cell.last { box-shadow: inset 0 0 0 2px var(--present); }
-.kb-letter sub, .kb-tile sub { font-size: 0.5em; font-weight: 600; margin-left: 1px; vertical-align: -0.3em; }
+.kb-letter { display: inline-flex; align-items: baseline; line-height: 1; }
+.kb-letter sub, .kb-tile sub { font-size: 0.5em; font-weight: 600; margin-left: 1px; vertical-align: baseline; line-height: 1; }
 .kb-rack { display: flex; justify-content: center; gap: 6px; margin: 6px 0; flex-wrap: wrap; }
 .kb-tile { width: 42px; height: 48px; border: 0; border-radius: 8px; background: #f6e2a8; color: #1b1d24; font-weight: 800; font-size: 1.2rem; cursor: pointer; touch-action: manipulation; box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.2); }
 .kb-tile.sel { outline: 3px solid var(--primary); transform: translateY(-4px); }

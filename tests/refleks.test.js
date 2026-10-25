@@ -35,6 +35,15 @@ test('refleks: tek telefonda bölgeler, erken dokunma, çoğunluk alan kazanır'
   let e = game.applyMove(s, 0, { type: 'tap', who: 0, time: 'early' });
   assert.equal(e.phase, 'result');
   assert.deepEqual(e.scores, [0, 1]);
+  // online: an early tap alone does not end the round; the result is the same whatever the order
+  const online = { mode: 'online' };
+  const a1 = game.applyMove(s, 0, { type: 'tap', who: 0, time: 'early' }, online);
+  assert.equal(a1.phase, 'wait', 'waits for the other report online');
+  const ab = game.applyMove(a1, 1, { type: 'tap', who: 1, time: 'none' }, online);
+  const ba = game.applyMove(game.applyMove(s, 1, { type: 'tap', who: 1, time: 'none' }, online), 0, { type: 'tap', who: 0, time: 'early' }, online);
+  assert.deepEqual(ab.scores, ba.scores);
+  assert.deepEqual(ab.scores, [0, 1]);
+  assert.equal(ab.phase, 'result');
   // online: a device may only report for its own player
   assert.throws(() => game.applyMove(s, 0, { type: 'tap', who: 1, time: 100 }, { mode: 'online' }), 'Başkası adına');
   const o = game.applyMove(s, 1, { type: 'tap', who: 1, time: 100 }, { mode: 'online' });
