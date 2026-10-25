@@ -609,3 +609,17 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
   .tile { width: 42px; height: 42px; font-size: 1.2rem; }
   .key { height: 48px; font-size: 0.9rem; }
 }
+
+/* ---- Adam Asmaca */
+.hm-gallows { width: 110px; height: 128px; display: block; margin: 2px auto; color: var(--fg); }
+.hm-word { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin: 8px 0; }
+.hm-slot {
+  width: 26px; height: 36px; border-bottom: 3px solid var(--tile-border);
+  display: inline-flex; align-items: flex-end; justify-content: center; padding-bottom: 2px;
+  font-size: 1.3rem; font-weight: 800; text-transform: uppercase;
+}
+.hm-slot.filled { border-color: var(--fg); }
+.hm-slot.cursor { border-color: var(--primary); }
+.hm-misses { text-align: center; letter-spacing: 0.12em; min-height: 1.4em; font-weight: 600; }
+.hm-history { display: grid; gap: 6px; margin-top: 10px; }
+.hm-hist-row { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }

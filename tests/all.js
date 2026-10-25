@@ -17,3 +17,4 @@ import './tas-kagit-makas.test.js';
 import './mangala.test.js';
 import './dama.test.js';
 import './pisti.test.js';
+import './adam-asmaca.test.js';
