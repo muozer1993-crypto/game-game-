@@ -25,6 +25,7 @@ Tek telefonda elden ele ya da iki telefonda oda koduyla oynanır. Ana ekrana ekl
 | **Mangala** | Türk mangalası: bir taş bırak, dağıt, çift yakala, hazne. |
 | **Dokuz Taş** | Dokuzar taş koy, sür; üçlü yapan rakibin taşını alır. Üç taşta uçma ayarı. |
 | **Pişti** | Klasik pişti: aynı değer ya da vale alır, pişti 10/20, 151'e kadar. |
+| **Durak** | 36 kart, koz; saldır, kır ya da al; deste bitince elinde kart kalan durak olur. |
 | **Bilardo** | Sürükleyerek nişan al; topu ceplayan devam eder. Fizik deterministik, iki cihaz aynı vuruşu aynı görür. |
 | **Dört Bağlantı** | 6×7 tahtada taş bırak, dördü yan yana getir. |
 | **Reversi** | Rakibin taşlarını arada bırak, rengine çevir; oynayamayan geçer, çok taşı olan kazanır. |
