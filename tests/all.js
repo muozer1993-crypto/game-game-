@@ -39,3 +39,4 @@ import './isim-sehir.test.js';
 import './yalanci-zar.test.js';
 import './zar-pokeri.test.js';
 import './sekizler.test.js';
+import './poker.test.js';

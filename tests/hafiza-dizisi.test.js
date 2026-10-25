@@ -24,7 +24,7 @@ test('hafıza dizisi: dizi tohuma göre aynı; doğru dokunuşlar uzatır, yanl�
   assert.deepEqual(game.getTurn(s), { player: 1, private: true, simultaneous: true });
   // player 1 fails at once: 2 (rounds completed before the mistake = START_LEN - 1)
   const quick = game.applyMove(s, 1, { type: 'tap', pad: (seq[0] + 1) % 4 });
-  assert.equal(quick.reached[1], START_LEN - 1);
+  assert.equal(quick.reached[1], 0, 'a mistake before completing any round credits nothing');
   assert.equal(quick.phase, 'over');
   assert.deepEqual(game.getResult(quick), { winner: 0 });
   // a draw when both reach the same

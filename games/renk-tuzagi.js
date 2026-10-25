@@ -134,7 +134,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   if (state.finished[viewer]) {
     draw(container,
       el('div', { class: 'status-line' }, el('strong', {}, `Bitirdin: ${line(viewer)}`)),
-      el('p', { class: 'hint' }, `${players[opp]} oynuyor… (${state.answers[opp].length} cevap)`),
+      el('p', { class: 'hint' }, state.started[opp] ? `${players[opp]} oynuyor… (${state.answers[opp].length} cevap)` : `${players[opp]} henüz başlamadı…`),
       el('div', { class: 'spinner', 'aria-hidden': 'true' }),
     );
     return null;

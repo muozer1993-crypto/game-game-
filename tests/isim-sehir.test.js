@@ -50,6 +50,10 @@ test('isim şehir: akış — bitir, karşılaştır, itiraz, sonraki tur, biti�
   s = game.applyMove(s, 1, { type: 'veto', category: 4, on: false });
   s = game.applyMove(s, 0, { type: 'veto', target: 1, category: 0, on: true });
   assert.deepEqual(roundTotals(s.entries[0], L[0]), [50, 20], 'a vetoed shared answer leaves the other one alone at 10');
+  // a 'next' carrying a veto snapshot scores from that snapshot (both phones agree even when a veto crossed it)
+  const snap = game.applyMove(s, 0, { type: 'next', vetoes: [[false, false, false, false, true], [true, false, false, false, false]] });
+  assert.deepEqual(snap.scores, [40, 20]);
+  assert.equal(snap.entries[0].vetoes[0][4], true, 'the snapshot is stored');
   s = game.applyMove(s, 0, { type: 'next' });
   assert.deepEqual(s.scores, [50, 20]);
   assert.equal(s.round, 1);

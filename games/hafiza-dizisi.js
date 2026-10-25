@@ -65,7 +65,7 @@ export function applyMove(state, player, move) {
     r[player] = reached;
     return { ...state, done, reached: r, phase: done[0] && done[1] ? 'over' : 'play' };
   };
-  if (pad !== state.sequence[pos]) return finish(len - 1); // mistake: credit the rounds completed
+  if (pad !== state.sequence[pos]) return finish(state.reached[player]); // mistake: credit the rounds completed (0 before the first)
   const next = { ...state, pos: state.pos.slice(), length: state.length.slice(), reached: state.reached.slice() };
   if (pos + 1 < len) { next.pos[player] = pos + 1; return next; }
   next.reached[player] = len;
@@ -123,24 +123,31 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const enable = (on) => padEls.forEach((b) => { b.disabled = !on; });
   const flash = (k, ms) => { padEls[k].classList.add('lit'); timers.push(setTimeout(() => padEls[k].classList.remove('lit'), ms)); };
 
-  const playback = () => {
-    shown.set(key, true);
+  // The playback is scheduled relative to its start time (kept in `shown`), so a re-render in the
+  // middle of it (the opponent's tap arriving online) resumes the remaining flashes instead of
+  // dropping them and unlocking the pads on a sequence the player never saw.
+  const playback = (startedAt) => {
     enable(false);
     setStatus(`${len} adımlık diziyi izle…`);
+    const now = Date.now();
     for (let i = 0; i < len; i++) {
-      timers.push(setTimeout(() => flash(state.sequence[i], stepMs * 0.6), 400 + i * stepMs));
+      const at = startedAt + 400 + i * stepMs - now;
+      if (at + stepMs * 0.6 <= 0) continue; // already flashed
+      timers.push(setTimeout(() => flash(state.sequence[i], stepMs * 0.6), Math.max(0, at)));
     }
-    timers.push(setTimeout(() => { setStatus(`Şimdi sen: ${len} adımı aynı sırayla dokun`); enable(true); }, 400 + len * stepMs));
+    timers.push(setTimeout(() => { setStatus(`Şimdi sen: ${len} adımı aynı sırayla dokun`); enable(true); }, Math.max(0, startedAt + 400 + len * stepMs - now)));
   };
-  const showBtn = el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block', onClick: () => { showBtn.remove(); playback(); } }, pos === 0 && len === START_LEN ? 'Başla' : `${len}. adımı göster`);
+  const showBtn = el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block', onClick: () => { showBtn.remove(); const t = Date.now(); shown.set(key, t); playback(t); } }, pos === 0 && len === START_LEN ? 'Başla' : `${len} adımlık diziyi göster`);
   draw(container,
     status,
     el('p', { class: 'hint' }, `${players[viewer]} · tur ${len - START_LEN + 1} · ulaşılan: ${state.reached[viewer]}${pos ? ` · ${pos}/${len} dokunuldu` : ''}`),
     el('div', { class: 'sm-pads' }, padEls),
     pos === 0 && !shown.has(key) ? showBtn : null,
   );
-  if (pos === 0 && !shown.has(key)) setStatus(len === START_LEN ? 'Hazır olunca başla.' : `Doğru! Sıradaki dizi ${len} adım.`);
-  else { setStatus(`Devam et: ${pos}/${len} dokunuldu`); enable(true); }
+  const startedAt = shown.get(key);
+  if (pos === 0 && startedAt == null) setStatus(len === START_LEN ? 'Hazır olunca başla.' : `Doğru! Sıradaki dizi ${len} adım.`);
+  else if (pos === 0 && Date.now() < startedAt + 400 + len * stepMs) playback(startedAt); // re-rendered mid-playback
+  else { setStatus(pos ? `Devam et: ${pos}/${len} dokunuldu` : `Şimdi sen: ${len} adımı aynı sırayla dokun`); enable(true); }
   return () => timers.forEach((t) => clearTimeout(t));
 }
 

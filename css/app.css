@@ -857,7 +857,7 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .is-cell.vetoed .is-ans { text-decoration: line-through; opacity: 0.6; }
 .is-ans { overflow-wrap: anywhere; }
 .is-pts { font-size: 0.78rem; color: var(--muted); }
-.is-veto { align-self: flex-start; font-size: 0.75rem; padding: 2px 8px; min-height: 28px; }
+.is-veto { align-self: flex-start; font-size: 0.85rem; padding: 4px 10px; min-height: 40px; }
 .is-rounds { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
 .is-round { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; }
 
@@ -910,3 +910,15 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .ce-suit { font-size: 1.6rem; min-width: 52px; line-height: 1; padding: 6px 8px; }
 .ce-suit.red { color: #d32f2f; }
 .ce-hand .pcard:disabled { opacity: 0.4; } /* cards that do not fit the pile */
+
+/* ---- Poker */
+.pk-table { padding: 10px 8px; text-align: center; margin: 6px 0; }
+.pk-board { display: flex; justify-content: center; gap: 5px; }
+.pk-pot { margin-top: 8px; font-weight: 700; }
+.pk-mine { text-align: center; margin: 8px 0; }
+.ce-row.big { gap: 8px; justify-content: center; display: flex; }
+.pk-actions { display: flex; gap: 8px; margin: 8px 0; }
+.pk-actions .btn { flex: 1; min-height: 52px; }
+.pk-amounts { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: center; margin: 8px 0; }
+.pk-hands { display: flex; gap: 12px; justify-content: center; margin: 8px 0; flex-wrap: wrap; }
+.pk-hand { text-align: center; }

@@ -126,10 +126,17 @@ export function applyMove(state, player, move) {
     }
     case 'next': {
       if (state.phase !== 'compare') fail('Bu tur henüz bitmedi');
-      const pts = roundTotals(entry, state.letters[state.round]);
+      // the vetoes as the presser saw them travel with the move: a veto and a 'next' crossing on the
+      // wire would otherwise score the round differently on the two phones
+      const n = state.categories.length;
+      const given = move.vetoes;
+      const vetoes = Array.isArray(given) && given.length === 2 && given.every((l) => Array.isArray(l) && l.length === n)
+        ? given.map((l) => l.map(Boolean)) : entry.vetoes;
+      const scored = { ...entry, vetoes };
+      const pts = roundTotals(scored, state.letters[state.round]);
       const scores = [state.scores[0] + pts[0], state.scores[1] + pts[1]];
       const round = state.round + 1;
-      return { ...state, scores, round: Math.min(round, state.rounds - 1), phase: round >= state.rounds ? 'over' : 'write' };
+      return { ...state, scores, entries: replaceEntry(scored), round: Math.min(round, state.rounds - 1), phase: round >= state.rounds ? 'over' : 'write' };
     }
     default:
       fail(`Bilinmeyen hamle: ${move.type}`);
@@ -202,7 +209,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
         cats.flatMap((name, c) => [el('div', { class: 'is-cat' }, name), cell(0, c), cell(1, c)]),
       ),
       el('p', { class: 'hint' }, online ? 'Rakibinin uydurma cevabına "Geçersiz" diyebilirsin.' : 'Uydurma bir cevaba "Geçersiz" deyin; puan tura geçerken yazılır.'),
-      el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block', style: { marginTop: '12px' }, onClick: () => sendMove({ type: 'next' }) },
+      el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block', style: { marginTop: '12px' }, onClick: () => sendMove({ type: 'next', vetoes: entry.vetoes }) },
         state.round + 1 >= state.rounds ? 'Sonucu gör' : 'Sonraki tur'),
     );
     return null;
@@ -249,7 +256,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     el('div', { class: 'is-letter' }, upperTR(letter)),
     online && entry.answers[opp] ? el('p', { class: 'hint rejected-note' }, `${players[opp]} bitirdi! ${GRACE_MS / 1000} saniyen var.`) : null,
     el('div', { class: 'is-form' }, cats.map((name, c) => el('div', { class: 'is-row' }, el('label', { for: `is-in-${c}` }, name), inputs[c]))),
-    el('p', { class: 'hint' }, `Her cevap ${upperTR(letter)} ile başlamalı; boş bırakılan 0 puan.${!online && !state.seconds ? ` Bitirince telefon ${nameSuffix(players[opp], 'e')} geçer.` : ''}`),
+    el('p', { class: 'hint' }, `Her cevap ${upperTR(letter)} ile başlamalı; boş bırakılan 0 puan.${online ? '' : entry.answers[opp] ? ' Bitirince karşılaştırma ekranı ikinize gelir.' : ` Bitirince telefon ${nameSuffix(players[opp], 'e')} geçer.`}`),
     el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block', style: { marginTop: '8px' }, onClick: finish }, 'Bitir'),
     scoreLine,
   );
