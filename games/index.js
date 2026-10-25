@@ -12,8 +12,9 @@ import tavla from './tavla.js';
 import genelKultur from './genel-kultur.js';
 import bilardo from './bilardo.js';
 import hafiza from './hafiza.js';
+import tasKagitMakas from './tas-kagit-makas.js';
 
-export const games = [sonHece, gizliKelime, gizliSayi, beniTani, genelKultur, amiralBatti, tavla, bilardo, dortBaglanti, noktalarKutular, hafiza, xox];
+export const games = [sonHece, gizliKelime, gizliSayi, beniTani, genelKultur, amiralBatti, tavla, bilardo, dortBaglanti, noktalarKutular, hafiza, xox, tasKagitMakas];
 
 /** Menu sections, in display order. A game's meta.group picks its section. */
 export const groups = [

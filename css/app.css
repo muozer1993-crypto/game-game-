@@ -418,6 +418,11 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .tv-key.p0::before, .tv-key.p1::before { content: ''; display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 6px; border: 1px solid rgba(0,0,0,0.3); vertical-align: -1px; }
 .tv-key.p0::before { background: #fafafa; }
 .tv-key.p1::before { background: #263238; }
+.rps-choices { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 12px 0; }
+.rps-btn { flex-direction: column; min-height: 96px; font-size: 1rem; }
+.rps-icon { font-size: 2.2rem; }
+.rps-last { text-align: center; margin-top: 8px; }
+.rps-faces { display: flex; justify-content: center; gap: 12px; font-size: 1.6rem; margin: 4px 0; }
 .mem-board { display: grid; gap: 8px; max-width: 420px; margin: 10px auto; }
 .mem-card {
   aspect-ratio: 1;

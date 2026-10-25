@@ -21,6 +21,7 @@ Tek telefonda elden ele ya da iki telefonda oda koduyla oynanır. Ana ekrana ekl
 | **Noktalar ve Kutular** | Çizgi çek, kutuyu kapat, bir daha oyna. 3×3 – 6×6. |
 | **Hafıza** | Kart eşleştirme; eşleşen devam eder. 12–36 kart. |
 | **XOX** | Klasik üç taş. |
+| **Taş Kağıt Makas** | Gizli seçim, birlikte açılır; beşte üç. |
 
 ## Yerelde çalıştırma
 
