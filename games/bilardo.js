@@ -1,5 +1,6 @@
-// Bilardo — a simple two-player pocket billiards game. Players shoot in turn; pocketing a
-// ball scores a point and keeps the turn; the player with more balls at the end wins.
+// Bilardo — two-player pocket billiards in two flavours: "çok top sokan kazanır" (pocketing a
+// ball scores a point and keeps the turn; more balls wins) and classic 8-ball (solids against
+// stripes, fouls give the opponent ball in hand, the 8 last).
 //
 // The physics are deterministic (fixed time step, no trigonometry), so applyMove can run
 // the whole shot on both devices and reach exactly the same final positions; render()
@@ -10,15 +11,17 @@ export const meta = {
   group: 'masa',
   name: 'Bilardo',
   icon: '🎱',
-  description: 'Istakayı geri çeker gibi nişan al ve vur; topu cebe sokan puan alır ve devam eder. Çok top ceplayan kazanır.',
+  description: 'Istakayı geri çeker gibi nişan al ve vur. Çok top sokan kazanır ya da klasik 8 top: düzler çizgililere karşı, 8 numara en son.',
   rules: [
     'Istakayı geri çeker gibi nişan al: parmağını beyaz topun arkasına koy ve topu göndermek istediğin yönün tersine doğru çek. Top parmağının tersi yönüne gider; parmağını koyduğun yerden ne kadar geri çekersen o kadar sert vurur. Kesik çizgi topun yolunu, sarı çizgi değeceği topun gideceği yönü gösterir. Bırakınca vuruş yapılır; vazgeçmek için parmağını başladığın yere ya da beyaz topun üstüne geri getirip bırak.',
-    'Bir topu cebe sokan 1 puan alır ve bir daha vurur. Top girmezse ya da beyaz top cebe düşerse sıra rakibe geçer (beyaz top başlangıç noktasına konur).',
-    'Masadaki bütün toplar bitince çok topu olan kazanır.',
+    'Çok top sokan kazanır: bir topu cebe sokan 1 puan alır ve bir daha vurur. Top girmezse ya da beyaz top cebe düşerse sıra rakibe geçer (beyaz top başlangıç noktasına konur). Masadaki bütün toplar bitince çok topu olan kazanır.',
+    'Klasik 8 top: 1–7 düz, 9–15 çizgili toplar. Açılıştan sonra ilk top sokan oyuncu o topun grubunu alır, rakip öbür grubu. Kendi grubundan top sokan bir daha vurur. Beyaz top önce kendi grubundan bir topa değmeli (masa açıkken 8 dışında herhangi bir topa); değmezse, hiçbir topa değmezse ya da beyaz top cebe düşerse faul olur ve rakip beyaz topu istediği yere elle koyar.',
+    'Grubunu bitiren 8 numarayı hedefler ve onu sokan kazanır. 8 numara grubun bitmeden girerse ya da 8\'i sokarken faul yaparsan kaybedersin. Açılışta 8 girerse yerine konur.',
   ].join('\n'),
   data: [],
   settings: [
-    { key: 'balls', label: 'Top sayısı', type: 'select', default: 9, options: [{ value: 9, label: '9 top (hızlı)' }, { value: 15, label: '15 top' }] },
+    { key: 'mode', label: 'Oyun türü', type: 'select', default: 'sayi', options: [{ value: 'sayi', label: 'Çok top sokan kazanır' }, { value: '8top', label: 'Klasik 8 top' }] },
+    { key: 'balls', label: 'Top sayısı', type: 'select', default: 9, options: [{ value: 9, label: '9 top (hızlı)' }, { value: 15, label: '15 top' }], help: 'Klasik 8 topta her zaman 15 top.' },
   ],
 };
 
@@ -45,27 +48,56 @@ function fail(msg) {
   throw new Error(msg);
 }
 
-function rack(count) {
+// 8-ball rack: the 8 in the middle of the third row, a solid and a stripe in the back corners
+const RACK8 = [[1], [9, 2], [10, 8, 3], [11, 7, 14, 4], [5, 13, 15, 6, 12]];
+export const FOOT_SPOT = { x: W / 2, y: Math.round(H * 0.28) };
+
+function rack(count, eightBall = false) {
   const balls = [{ id: 0, x: W / 2, y: H * 0.78, pocketed: false }];
-  const apexY = H * 0.28;
+  const apexY = FOOT_SPOT.y;
   const dy = R * 1.7320508 + 0.2; // sqrt(3) * R, slightly apart
-  const rows = count === 9 ? [1, 2, 3, 2, 1] : [1, 2, 3, 4, 5];
+  const rows = eightBall ? RACK8.map((r) => r.length) : count === 9 ? [1, 2, 3, 2, 1] : [1, 2, 3, 4, 5];
   let id = 1;
   rows.forEach((n, k) => {
     const y = apexY - k * dy;
     for (let j = 0; j < n; j++) {
       const x = W / 2 + (j - (n - 1) / 2) * (2 * R + 0.4);
-      balls.push({ id: id++, x: Math.round(x * 100) / 100, y: Math.round(y * 100) / 100, pocketed: false });
+      balls.push({ id: eightBall ? RACK8[k][j] : id++, x: Math.round(x * 100) / 100, y: Math.round(y * 100) / 100, pocketed: false });
     }
   });
-  return balls;
+  return balls.sort((a, b) => a.id - b.id);
+}
+
+/** 8-ball groups: 'duz' (1–7), 'cizgili' (9–15); the 8 is its own. */
+export const groupOf = (id) => (id === 8 ? 'sekiz' : id < 8 ? 'duz' : 'cizgili');
+export const GROUP_NAME = { duz: 'düz', cizgili: 'çizgili' };
+const left = (balls, group) => balls.filter((b) => b.id && !b.pocketed && groupOf(b.id) === group).length;
+
+/** The balls the shooter must hit first: their group, the 8 once it is cleared, anything but the 8 on an open table. */
+export function targetsOf(state, player) {
+  const g = state.groups && state.groups[player];
+  if (!g) return state.balls.filter((b) => b.id && b.id !== 8 && !b.pocketed).map((b) => b.id);
+  const mine = state.balls.filter((b) => b.id && !b.pocketed && groupOf(b.id) === g).map((b) => b.id);
+  return mine.length ? mine : [8];
+}
+
+/** Can the cue ball be put down here (ball in hand)? On the cloth, clear of the pockets and the other balls. */
+export function canPlaceCue(balls, x, y) {
+  if (!(x >= R && x <= W - R && y >= R && y <= H - R)) return false;
+  if (POCKETS.some(([px, py]) => (x - px) ** 2 + (y - py) ** 2 < (POCKET_R + R) ** 2)) return false;
+  return balls.every((b) => b.id === 0 || b.pocketed || (b.x - x) ** 2 + (b.y - y) ** 2 >= (2 * R + 0.5) ** 2);
 }
 
 export function setup(options = {}) {
-  const count = Number(options.balls) === 15 ? 15 : 9;
+  const eight = options.mode === '8top';
+  const count = eight || Number(options.balls) === 15 ? 15 : 9;
   return {
+    mode: eight ? '8top' : 'sayi',
     count,
-    balls: rack(count),   // { id, x, y, pocketed }
+    balls: rack(count, eight),   // { id, x, y, pocketed }
+    groups: [null, null],  // 8-ball: 'duz' | 'cizgili' per player once decided
+    ballInHand: false,     // 8-ball: after a foul the shooter may put the cue ball anywhere
+    winner: null,
     turn: (Number(options.seed) || 0) % 2,
     scores: [0, 0],
     shots: 0,
@@ -74,7 +106,7 @@ export function setup(options = {}) {
   };
 }
 
-/** Deterministic shot simulation. Returns { balls, pocketed, frames }. */
+/** Deterministic shot simulation. Returns { balls, pocketed (in order), firstHit (id the cue ball touched first, or null), frames }. */
 export function simulate(balls0, shot, withFrames = false) {
   const balls = balls0.map((b) => ({ ...b, vx: 0, vy: 0 }));
   const cue = balls.find((b) => b.id === 0);
@@ -82,6 +114,7 @@ export function simulate(balls0, shot, withFrames = false) {
   cue.vy = shot.dy * shot.power * SPEED;
   const pocketed = [];
   const frames = [];
+  let firstHit = null;
   const inPocket = (b) => {
     for (const [px, py] of POCKETS) {
       const dx = b.x - px;
@@ -122,6 +155,7 @@ export function simulate(balls0, shot, withFrames = false) {
           a.x -= nx * overlap / 2; a.y -= ny * overlap / 2;
           b.x += nx * overlap / 2; b.y += ny * overlap / 2;
           const dvn = (b.vx - a.vx) * nx + (b.vy - a.vy) * ny;
+          if (dvn < 0 && firstHit === null && (a.id === 0 || b.id === 0)) firstHit = a.id === 0 ? b.id : a.id;
           if (dvn < 0) {
             const jn = -(1 + RESTITUTION) * dvn / 2;
             a.vx -= jn * nx; a.vy -= jn * ny;
@@ -146,7 +180,7 @@ export function simulate(balls0, shot, withFrames = false) {
     if (!moving) break;
   }
   const out = balls.map(({ id, x, y, pocketed: p }) => ({ id, x: Math.round(x * 1000) / 1000, y: Math.round(y * 1000) / 1000, pocketed: p }));
-  return { balls: out, pocketed, frames };
+  return { balls: out, pocketed, firstHit, frames };
 }
 
 /**
@@ -228,6 +262,7 @@ export function applyMove(state, player, move) {
   const len2 = dx * dx + dy * dy;
   if (len2 < 0.9 || len2 > 1.1) fail('Geçersiz yön');
   const shot = { dx, dy, power };
+  if (state.mode === '8top') return applyEightBall(state, player, move, shot);
   const before = state.balls.map((b) => ({ ...b }));
   const sim = simulate(state.balls, shot, false);
   const balls = sim.balls;
@@ -249,12 +284,81 @@ export function applyMove(state, player, move) {
   };
 }
 
+const summarize = (l) => (l ? { by: l.by, pocketed: l.pocketed, scratch: l.scratch, foul: l.foul || null, eight: l.eight || null, assigned: l.assigned || null } : null);
+
+/** Put the 8 back on the foot spot (or the nearest free spot above or below it on the long line). */
+function respotEight(balls) {
+  const eight = balls.find((b) => b.id === 8);
+  for (let k = 0; k < 60; k++) {
+    const off = (k % 2 ? -1 : 1) * Math.ceil(k / 2) * (2 * R + 1);
+    const y = FOOT_SPOT.y + off;
+    if (y < R || y > H - R) continue;
+    if (balls.every((b) => b.id === 8 || b.pocketed || (b.x - FOOT_SPOT.x) ** 2 + (b.y - y) ** 2 >= (2 * R + 0.5) ** 2)) {
+      eight.x = FOOT_SPOT.x; eight.y = y; eight.pocketed = false;
+      return;
+    }
+  }
+}
+
+function applyEightBall(state, player, move, shot) {
+  const opp = 1 - player;
+  let start = state.balls;
+  if (move.cue != null) {
+    if (!state.ballInHand) fail('Beyaz topu şimdi elle koyamazsın');
+    const x = Number(move.cue.x);
+    const y = Number(move.cue.y);
+    if (!canPlaceCue(state.balls, x, y)) fail('Beyaz top oraya konamaz');
+    start = state.balls.map((b) => (b.id === 0 ? { ...b, x, y, pocketed: false } : b));
+  }
+  const before = start.map((b) => ({ ...b }));
+  const targets = targetsOf({ ...state, balls: start }, player);
+  const onEight = targets.length === 1 && targets[0] === 8;
+  const isBreak = state.shots === 0;
+  const sim = simulate(start, shot, false);
+  const balls = sim.balls;
+  const scratch = sim.pocketed.includes(0);
+  const wrong = sim.firstHit !== null && !isBreak && !targets.includes(sim.firstHit);
+  const foul = scratch ? 'scratch' : sim.firstHit === null ? 'none' : wrong ? 'wrong' : null;
+  const groups = state.groups.slice();
+  let winner = null;
+  let eight = null;
+  const eightIn = sim.pocketed.includes(8);
+  if (eightIn) {
+    if (isBreak) { eight = 'break'; respotEight(balls); }
+    else if (onEight && !foul) { eight = 'win'; winner = player; }
+    else { eight = onEight ? 'foul' : 'early'; winner = opp; }
+  }
+  const objects = sim.pocketed.filter((id) => id !== 0 && id !== 8);
+  let assigned = null;
+  if (!groups[player] && !isBreak && !foul && objects.length) {
+    groups[player] = groupOf(objects[0]);
+    groups[opp] = groups[player] === 'duz' ? 'cizgili' : 'duz';
+    assigned = groups[player];
+  }
+  const mine = groups[player] ? objects.filter((id) => groupOf(id) === groups[player]) : objects;
+  const keepTurn = winner === null && !foul && mine.length > 0;
+  if (scratch) respotCue(balls);
+  const over = winner !== null;
+  return {
+    ...state,
+    balls,
+    groups,
+    shots: state.shots + 1,
+    turn: over || keepTurn ? player : opp,
+    ballInHand: !over && !!foul,
+    winner,
+    over,
+    last: { by: player, before, shot, pocketed: sim.pocketed.filter((id) => id !== 0), scratch, foul, eight, assigned, firstHit: sim.firstHit, prevGroups: state.groups.slice(), prevNote: summarize(state.last) },
+  };
+}
+
 export function getTurn(state) {
   return state.over ? null : { player: state.turn, private: false };
 }
 
 export function getResult(state) {
   if (!state.over) return null;
+  if (state.mode === '8top') return { winner: state.winner };
   const [a, b] = state.scores;
   if (a === b) return { draw: true };
   return { winner: a > b ? 0 : 1 };
@@ -263,7 +367,45 @@ export function getResult(state) {
 // ----------------------------------------------------------------- render
 const animated = new WeakSet(); // state.last objects whose animation already played on this device
 
-function drawTable(ctxc, scale, balls, aim) {
+function drawBall(c, b) {
+  const col = COLORS[b.id] || '#999';
+  c.save();
+  c.beginPath();
+  c.arc(b.x, b.y, R, 0, Math.PI * 2);
+  if (b.id > 8) { // stripe: a white ball with a coloured band
+    c.fillStyle = '#f7f7f2';
+    c.fill();
+    c.clip();
+    c.fillStyle = col;
+    c.fillRect(b.x - R, b.y - R * 0.55, 2 * R, R * 1.1);
+  } else {
+    c.fillStyle = col;
+    c.fill();
+  }
+  c.restore();
+  c.beginPath();
+  c.arc(b.x, b.y, R, 0, Math.PI * 2);
+  c.lineWidth = 1;
+  c.strokeStyle = 'rgba(0,0,0,0.5)';
+  c.stroke();
+  if (b.id > 0) {
+    c.beginPath();
+    c.arc(b.x, b.y, R * 0.48, 0, Math.PI * 2);
+    c.fillStyle = '#fff';
+    c.fill();
+    c.fillStyle = '#111';
+    c.font = 'bold 6px system-ui, sans-serif';
+    c.textAlign = 'center';
+    c.textBaseline = 'middle';
+    c.fillText(String(b.id), b.x, b.y + 0.4);
+  }
+}
+
+/**
+ * opts.targets: ids the shooter may hit first (8-ball) — a ghost ball on any other ball turns red;
+ * opts.placing: { x, y, ok } while the cue ball is being put down by hand.
+ */
+function drawTable(ctxc, scale, balls, aim, opts = {}) {
   const c = ctxc;
   c.save();
   c.scale(scale, scale);
@@ -279,31 +421,19 @@ function drawTable(ctxc, scale, balls, aim) {
     c.fill();
   }
   const contact = aim && !aim.cancel && aim.power >= MIN_POWER ? predictContact(balls, aim.x0, aim.y0, aim.dx, aim.dy) : null;
+  const foulHit = !!(contact && contact.ball && opts.targets && !opts.targets.has(contact.ball.id));
   if (contact) drawAimPath(c, aim, contact);
-  for (const b of balls) {
-    if (b.pocketed) continue;
+  for (const b of balls) if (!b.pocketed) drawBall(c, b);
+  if (opts.placing) {
     c.beginPath();
-    c.arc(b.x, b.y, R, 0, Math.PI * 2);
-    c.fillStyle = COLORS[b.id] || '#999';
-    c.fill();
-    c.lineWidth = 1;
-    c.strokeStyle = 'rgba(0,0,0,0.5)';
+    c.arc(opts.placing.x, opts.placing.y, R + 3, 0, Math.PI * 2);
+    c.strokeStyle = opts.placing.ok ? '#7bd88f' : '#ef5350';
+    c.lineWidth = 2;
+    c.setLineDash([3, 3]);
     c.stroke();
-    if (b.id > 8) { // striped look: inner ring
-      c.beginPath();
-      c.arc(b.x, b.y, R * 0.55, 0, Math.PI * 2);
-      c.fillStyle = '#fff';
-      c.fill();
-    }
-    if (b.id > 0) {
-      c.fillStyle = b.id > 8 ? '#222' : '#fff';
-      c.font = 'bold 7px system-ui, sans-serif';
-      c.textAlign = 'center';
-      c.textBaseline = 'middle';
-      c.fillText(String(b.id), b.x, b.y + 0.5);
-    }
+    c.setLineDash([]);
   }
-  if (contact) drawContact(c, aim, contact);
+  if (contact) drawContact(c, aim, contact, foulHit);
   if (aim && !aim.cancel) drawCue(c, aim);
   if (aim) drawPower(c, aim, contact);
   c.restore();
@@ -352,15 +482,15 @@ function drawAimPath(c, aim, hit) {
   c.restore();
 }
 
-/** Ghost ball at the contact and the direction the struck ball will take (drawn over the balls). */
-function drawContact(c, aim, hit) {
+/** Ghost ball at the contact and the direction the struck ball will take (drawn over the balls); red = a foul (not your ball). */
+function drawContact(c, aim, hit, foulHit = false) {
   c.save();
   c.beginPath();
   c.arc(hit.x, hit.y, R, 0, Math.PI * 2);
-  c.strokeStyle = 'rgba(255,255,255,0.8)';
-  c.lineWidth = 1.5;
+  c.strokeStyle = foulHit ? '#ff5252' : 'rgba(255,255,255,0.8)';
+  c.lineWidth = foulHit ? 2.5 : 1.5;
   c.stroke();
-  if (hit.ball) {
+  if (hit.ball && !foulHit) {
     const nx = hit.ball.x - hit.x;
     const ny = hit.ball.y - hit.y;
     const n = Math.sqrt(nx * nx + ny * ny) || 1;
@@ -405,27 +535,58 @@ function drawCue(c, aim) {
   c.restore();
 }
 
+// ball in hand (8-ball): where this device has put the cue ball for the coming shot
+let hand = { key: null, x: 0, y: 0, placing: false };
+
 export function render(state, viewer, container, sendMove, ctx = {}) {
   const players = ctx.players || ['Oyuncu 1', 'Oyuncu 2'];
   const mine = !state.over && viewer === state.turn;
+  const eight = state.mode === '8top';
   const canvas = el('canvas', { class: 'pool-canvas', width: W * 2, height: H * 2, 'aria-label': 'Bilardo masası' });
   const c2d = canvas.getContext('2d');
   const scale = 2;
-  let balls = state.balls;
   let aim = null;
   let animating = false;
   let raf = null;
+  let placingAt = null; // { x, y, ok } while the finger drags the cue ball
   const info = el('div', { class: 'status-line' });
 
+  // ball in hand: this device keeps the chosen spot until the shot is sent
+  const inHand = eight && mine && state.ballInHand;
+  const handKey = `${state.shots}:${state.turn}`;
+  if (inHand && hand.key !== handKey) {
+    const q0 = state.balls.find((b) => b.id === 0);
+    hand = { key: handKey, x: q0.x, y: q0.y, placing: true };
+  }
+  const restBalls = () => (inHand ? state.balls.map((b) => (b.id === 0 ? { ...b, x: hand.x, y: hand.y, pocketed: false } : b)) : state.balls);
+  let balls = restBalls();
+  const targets = eight && mine && state.shots > 0 ? new Set(targetsOf(state, viewer)) : null;
+
+  const groupText = (q, groups, list) => {
+    const g = groups[q];
+    if (!g) return `${players[q]}: —`;
+    const n = left(list, g);
+    return n ? `${players[q]}: ${GROUP_NAME[g]} (${n})` : `${players[q]}: sıra 8'de`;
+  };
   const setStatus = () => {
     let text;
-    if (state.over) text = state.scores[0] === state.scores[1] ? 'Berabere!' : `${players[state.scores[0] > state.scores[1] ? 0 : 1]} daha çok top cepledi!`;
-    else if (animating) text = 'Toplar yuvarlanıyor…';
-    else if (mine) text = `Sıra sende, ${players[viewer]}: ıstakayı geri çeker gibi nişan al`;
+    if (state.over) {
+      if (eight) text = `${players[state.winner]} kazandı!`;
+      else text = state.scores[0] === state.scores[1] ? 'Berabere!' : `${players[state.scores[0] > state.scores[1] ? 0 : 1]} daha çok top cepledi!`;
+    } else if (animating) text = 'Toplar yuvarlanıyor…';
+    else if (mine && inHand) text = `${players[viewer]}, beyaz top elinde: istediğin yere koy, sonra vur`;
+    else if (mine && eight) {
+      const t = targetsOf(state, viewer);
+      const what = state.shots === 0 ? 'açılış vuruşu' : !state.groups[viewer] ? 'masa açık' : t[0] === 8 ? 'hedef 8 numara!' : `hedef ${GROUP_NAME[state.groups[viewer]]}`;
+      text = `Sıra sende, ${players[viewer]}: ${what}`;
+    } else if (mine) text = `Sıra sende, ${players[viewer]}: ıstakayı geri çeker gibi nişan al`;
     else text = `${players[state.turn]} vuruyor…`;
     draw(info, el('strong', {}, text));
   };
-  const paint = () => { c2d.clearRect(0, 0, canvas.width, canvas.height); drawTable(c2d, scale, balls, aim); };
+  const paint = () => {
+    c2d.clearRect(0, 0, canvas.width, canvas.height);
+    drawTable(c2d, scale, balls, aim, { targets: aim ? targets : null, placing: placingAt });
+  };
 
   // animate the last shot once (both on the shooter's and the other device)
   const willAnimate = state.last && !animated.has(state.last);
@@ -443,7 +604,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
         paint();
         k += 2;
         if (k < frames.length) raf = requestAnimationFrame(tick);
-        else { animating = false; balls = state.balls; paint(); setStatus(); }
+        else { animating = false; balls = restBalls(); paint(); setStatus(); drawHandBar(); }
       };
       raf = requestAnimationFrame(tick);
     }
@@ -482,6 +643,14 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     aim = a ? { x0: q.x, y0: q.y, ...a } : { cancel: true, x0: q.x, y0: q.y };
     paint();
   };
+  // ball in hand: the cue ball follows the finger; it stays where it is put if the spot is free
+  const placeAt = (p) => {
+    const x = Math.round(Math.min(W - R, Math.max(R, p.x)) * 1000) / 1000;
+    const y = Math.round(Math.min(H - R, Math.max(R, p.y)) * 1000) / 1000;
+    placingAt = { x, y, ok: canPlaceCue(state.balls, x, y) };
+    balls = state.balls.map((b) => (b.id === 0 ? { ...b, x, y, pocketed: false } : b));
+    paint();
+  };
   // the touch area reaches a little past the table, so a ball resting on a cushion can still be
   // grabbed from behind
   const pad = el('div', { class: 'pool-hit', 'aria-hidden': 'true' });
@@ -491,27 +660,40 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     pointerId = e.pointerId;
     start = toTable(e);
     try { pad.setPointerCapture(e.pointerId); } catch { /* ignore */ }
-    aimAt(start);
+    if (inHand && hand.placing) placeAt(start); else aimAt(start);
   };
   const onMove = (e) => {
     if (!dragging || e.pointerId !== pointerId) return;
-    aimAt(toTable(e));
+    if (inHand && hand.placing) placeAt(toTable(e)); else aimAt(toTable(e));
   };
   const onCancel = (e) => {
     if (!dragging || e.pointerId !== pointerId) return;
     dragging = false;
     aim = null;
+    placingAt = null;
+    balls = restBalls();
     paint();
   };
   const onUp = (e) => {
     if (!dragging || e.pointerId !== pointerId) return;
     dragging = false;
+    if (inHand && hand.placing) {
+      // put the ball down where the finger left it (a blocked spot keeps the old one); then aim
+      if (placingAt && placingAt.ok) { hand.x = placingAt.x; hand.y = placingAt.y; hand.placing = false; }
+      placingAt = null;
+      balls = restBalls();
+      paint();
+      drawHandBar();
+      return;
+    }
     // power is measured from where the finger went down, so a tap or a small slip stays below MIN_POWER
     if (aim && !aim.cancel && aim.power >= MIN_POWER) {
       const dx = Math.round(aim.dx * 10000) / 10000;
       const dy = Math.round(aim.dy * 10000) / 10000;
       const n = Math.sqrt(dx * dx + dy * dy) || 1;
-      sendMove({ type: 'shot', dx: Math.round((dx / n) * 10000) / 10000, dy: Math.round((dy / n) * 10000) / 10000, power: Math.round(aim.power * 100) / 100 });
+      const move = { type: 'shot', dx: Math.round((dx / n) * 10000) / 10000, dy: Math.round((dy / n) * 10000) / 10000, power: Math.round(aim.power * 100) / 100 };
+      if (inHand) move.cue = { x: hand.x, y: hand.y };
+      sendMove(move);
     }
     aim = null;
     paint();
@@ -521,22 +703,54 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   pad.addEventListener('pointerup', onUp);
   pad.addEventListener('pointercancel', onCancel);
 
+  // ball in hand: one button switches between putting the ball down and aiming (always the same height)
+  const handBar = el('div', { class: 'pool-hand' });
+  const drawHandBar = () => {
+    if (!inHand) { handBar.replaceChildren(); return; }
+    draw(handBar, hand.placing
+      ? el('button', { type: 'button', class: 'btn btn-secondary btn-small', disabled: animating, onClick: () => { hand.placing = false; drawHandBar(); } }, 'Top burada kalsın, nişan al')
+      : el('button', { type: 'button', class: 'btn btn-secondary btn-small', disabled: animating, onClick: () => { hand.placing = true; drawHandBar(); } }, 'Beyaz topu taşı'),
+    el('span', { class: 'muted' }, hand.placing ? 'Beyaz topu parmağınla sürükle' : 'Topun yerini değiştirebilirsin'));
+  };
+
   // while the shot is still rolling, show the numbers from before the shot (no spoilers)
-  const noteOf = (l) => (l ? `${players[l.by]}: ${l.pocketed.length ? `${l.pocketed.length} top cepledi` : 'top giremedi'}${l.scratch ? ', beyaz top cebe düştü' : ''}.` : 'Topun arkasından geri çek ve bırak: top ters yöne gider, çektikçe sertleşir.');
+  const FOUL = { scratch: 'beyaz top cebe düştü', wrong: 'beyaz top önce başka bir topa değdi', none: 'beyaz top hiçbir topa değmedi' };
+  const noteOf = (l) => {
+    if (!l) return 'Topun arkasından geri çek ve bırak: top ters yöne gider, çektikçe sertleşir.';
+    const by = players[l.by];
+    const other = players[1 - l.by];
+    if (!eight) return `${by}: ${l.pocketed.length ? `${l.pocketed.length} top cepledi` : 'top giremedi'}${l.scratch ? ', beyaz top cebe düştü' : ''}.`;
+    if (l.eight === 'win') return `${by} 8 numarayı soktu ve kazandı!`;
+    if (l.eight === 'early') return `${by} 8 numarayı grubunu bitirmeden soktu: ${other} kazandı.`;
+    if (l.eight === 'foul') return `${by} 8 numarayı sokarken faul yaptı (${FOUL[l.foul]}): ${other} kazandı.`;
+    const n = l.pocketed.filter((id) => id !== 8).length;
+    let t = `${by}: ${n ? `${n} top soktu` : 'top giremedi'}.`;
+    if (l.eight === 'break') t += ' 8 numara açılışta girdi, yerine kondu.';
+    if (l.assigned) t += ` ${by} ${GROUP_NAME[l.assigned]}, ${other} ${GROUP_NAME[l.assigned === 'duz' ? 'cizgili' : 'duz']} toplarla oynuyor.`;
+    if (l.foul) t += ` Faul: ${FOUL[l.foul]}. ${other} beyaz topu elle yerleştirir.`;
+    return t;
+  };
   const legend = el('div', { class: 'c4-legend' });
   const lastNote = el('p', { class: 'hint' });
   const drawInfo = () => {
     const pre = animating && state.last;
-    const scores = pre ? state.last.prevScores : state.scores;
-    const onTable = pre ? state.last.prevOnTable : state.balls.filter((b) => b.id && !b.pocketed).length;
-    draw(legend, el('span', {}, `${players[0]}: ${scores[0]}`), el('span', {}, `${players[1]}: ${scores[1]}`), el('span', { class: 'muted' }, `Masada: ${onTable}`));
+    if (eight) {
+      const list = pre ? state.last.before : state.balls;
+      const groups = pre ? state.last.prevGroups : state.groups;
+      draw(legend, el('span', {}, groupText(0, groups, list)), el('span', {}, groupText(1, groups, list)),
+        groups[0] ? null : el('span', { class: 'muted' }, 'masa açık'));
+    } else {
+      const scores = pre ? state.last.prevScores : state.scores;
+      const onTable = pre ? state.last.prevOnTable : state.balls.filter((b) => b.id && !b.pocketed).length;
+      draw(legend, el('span', {}, `${players[0]}: ${scores[0]}`), el('span', {}, `${players[1]}: ${scores[1]}`), el('span', { class: 'muted' }, `Masada: ${onTable}`));
+    }
     lastNote.textContent = pre ? noteOf(state.last.prevNote) : noteOf(state.last);
   };
-  const baseSetStatus = setStatus;
-  const refresh = () => { baseSetStatus(); drawInfo(); };
+  const refresh = () => { setStatus(); drawInfo(); drawHandBar(); };
   refresh();
   paint();
-  draw(container, info, legend, el('div', { class: 'pool-wrap' }, canvas, pad), lastNote);
+  // the oversized touch area only while it is this device's turn (it must not cover anything else)
+  draw(container, info, legend, el('div', { class: 'pool-wrap' }, canvas, mine ? pad : null), handBar, lastNote);
   if (willAnimate) {
     // when the animation ends, the completion branch calls setStatus(); refresh the numbers too
     const check = () => { if (animating) { raf2 = requestAnimationFrame(check); } else drawInfo(); };

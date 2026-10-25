@@ -43,7 +43,7 @@ Tek telefonda elden ele ya da iki telefonda oda koduyla oynanır. Ana ekrana ekl
 | **Poker** | Texas Hold'em bire bir: körler, bekle/gör/yükselt/pas, rest ve iade, yedi karttan en iyi beşli; fişi biten kaybeder. |
 | **Yalancı Zar** | Gizli zarlar, blöf: "masada en az 3 tane 5 var" de ya da "Yalan!" diye yakala; birler joker. Zarı biten kaybeder. |
 | **Zar Pokeri** | Beş zar, üç atış, 15 hane (birler–altılar + 63 bonusu, çift, iki çift, üçlü, dörtlü, kentler, full, şans, beşli). |
-| **Bilardo** | Istakayı geri çeker gibi nişan al (top parmağın tersi yönüne gider, kesik çizgi ilk değeceği topu gösterir); topu ceplayan devam eder. Fizik deterministik, iki cihaz aynı vuruşu aynı görür. |
+| **Bilardo** | Istakayı geri çeker gibi nişan al (top parmağın tersi yönüne gider, kesik çizgi ilk değeceği topu gösterir). İki tür: çok top sokan kazanır ya da klasik 8 top (düz/çizgili, faulde top elde, 8 en son). Fizik deterministik, iki cihaz aynı vuruşu aynı görür. |
 | **Dört Bağlantı** | 6×7 tahtada taş bırak, dördü yan yana getir. |
 | **Beş Taş** | 11–15'lik tahtada sırayla taş koy; beşi yan yana getiren kazanır (gomoku). |
 | **Hex** | Altıgen tahtada kendi iki kenarını bağlayan kazanır; berabere olmaz. |

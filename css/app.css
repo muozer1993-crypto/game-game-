@@ -1033,3 +1033,4 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .piece-canvas { display: block; width: 100%; height: 100%; }
 .board-backdrop { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: 12px; }
 .key-dot { display: inline-block; width: 14px; height: 14px; margin-right: 6px; vertical-align: -2px; }
+.pool-hand { position: relative; z-index: 2; /* above the touch area that spills past the table */ display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; min-height: 0; margin: 4px 0; font-size: 0.85rem; }
