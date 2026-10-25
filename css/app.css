@@ -897,3 +897,16 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 
 .gm-board.dense { gap: 1px; margin-left: -12px; margin-right: -12px; max-width: none; } /* 15×15 needs the gutter */
 .gm-board.dense .gm-cell { border-radius: 2px; }
+
+/* ---- Sekizler */
+.ce-table { display: flex; justify-content: center; align-items: center; gap: 28px; margin: 8px 0; }
+.ce-pile, .ce-deck { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.ce-want { font-weight: 700; font-size: 0.9rem; }
+.pcard.back { background: var(--primary); color: var(--primary-fg); justify-content: center; font-weight: 700; }
+.ce-hand { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin: 4px 0 8px; }
+.ce-row { display: inline-flex; flex-wrap: wrap; gap: 4px; vertical-align: middle; }
+.pcard.sel { outline: 3px solid var(--primary); transform: translateY(-4px); }
+.ce-suits { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 4px 0 8px; flex-wrap: wrap; }
+.ce-suit { font-size: 1.6rem; min-width: 52px; line-height: 1; padding: 6px 8px; }
+.ce-suit.red { color: #d32f2f; }
+.ce-hand .pcard:disabled { opacity: 0.4; } /* cards that do not fit the pile */

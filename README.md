@@ -1,6 +1,6 @@
 # Oyun Gecesi
 
-İki kişilik, Türkçe arayüzlü, telefonda rahat oynanan oyun koleksiyonu: 36 oyun (kelime, soru-cevap, masa).
+İki kişilik, Türkçe arayüzlü, telefonda rahat oynanan oyun koleksiyonu: 37 oyun (kelime, soru-cevap, masa).
 Düz HTML + CSS + JavaScript (ES modules); framework yok, build adımı yok, npm yok.
 Tek telefonda elden ele ya da iki telefonda oda koduyla oynanır. Ana ekrana eklenebilir
 (manifest + service worker) ve bir kez yüklendikten sonra tek telefon modu çevrimdışı çalışır.
@@ -31,6 +31,7 @@ Tek telefonda elden ele ya da iki telefonda oda koduyla oynanır. Ana ekrana ekl
 | **Dokuz Taş** | Dokuzar taş koy, sür; üçlü yapan rakibin taşını alır. Üç taşta uçma ayarı. |
 | **Pişti** | Klasik pişti: aynı değer ya da vale alır, pişti 10/20, 151'e kadar. |
 | **Durak** | 36 kart, koz; saldır, kır ya da al; deste bitince elinde kart kalan durak olur. |
+| **Sekizler** | Aynı renk ya da aynı sayıyı at, sekiz jokerdir ve renk seçtirir; çek/pas; elini bitiren rakibin kalan kartlarının puanını alır. |
 | **Yalancı Zar** | Gizli zarlar, blöf: "masada en az 3 tane 5 var" de ya da "Yalan!" diye yakala; birler joker. Zarı biten kaybeder. |
 | **Zar Pokeri** | Beş zar, üç atış, 15 hane (birler–altılar + 63 bonusu, çift, iki çift, üçlü, dörtlü, kentler, full, şans, beşli). |
 | **Bilardo** | Sürükleyerek nişan al; topu ceplayan devam eder. Fizik deterministik, iki cihaz aynı vuruşu aynı görür. |
