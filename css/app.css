@@ -623,3 +623,23 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .hm-misses { text-align: center; letter-spacing: 0.12em; min-height: 1.4em; font-weight: 600; }
 .hm-history { display: grid; gap: 6px; margin-top: 10px; }
 .hm-hist-row { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+
+/* ---- Reversi */
+.rv-board {
+  display: grid; grid-template-columns: repeat(8, 1fr); gap: 2px;
+  max-width: 400px; margin: 10px auto; padding: 4px; background: #2e7d32; border-radius: 8px;
+}
+.rv-cell {
+  aspect-ratio: 1; border: 0; padding: 0; background: #388e3c; border-radius: 3px;
+  display: flex; align-items: center; justify-content: center; cursor: pointer; touch-action: manipulation;
+}
+.rv-cell:disabled { cursor: default; }
+.rv-cell .disc { width: 80%; height: 80%; border-radius: 50%; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4); }
+.rv-cell.black .disc { background: #111; }
+.rv-cell.white .disc { background: #f5f5f5; }
+.rv-cell.legal .disc { width: 28%; height: 28%; background: rgba(0, 0, 0, 0.35); box-shadow: none; }
+.rv-cell.last .disc { outline: 3px solid var(--primary); outline-offset: -3px; }
+.rv-cell.flipped .disc { box-shadow: 0 0 0 2px #ffd54f; }
+.rv-key::before { content: ''; display: inline-block; width: 14px; height: 14px; border-radius: 50%; margin-right: 6px; vertical-align: -2px; border: 1px solid var(--muted); }
+.rv-key.black::before { background: #111; }
+.rv-key.white::before { background: #f5f5f5; }
