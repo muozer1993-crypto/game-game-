@@ -219,7 +219,15 @@ function play(state, move) {
   if (move.to === sq(7, 7)) drop('K');
   if (move.to === sq(0, 0)) drop('q');
   if (move.to === sq(0, 7)) drop('k');
-  const ep = move.double ? sq((rowOf(move.from) + rowOf(move.to)) / 2, colOf(move.from)) : null;
+  // the en passant square only matters (and only changes the position) when an enemy pawn
+  // stands beside the pushed pawn; otherwise it would spoil repetition detection
+  let ep = null;
+  if (move.double) {
+    const enemyPawn = `${other(colour)}p`;
+    const r = rowOf(move.to);
+    const c = colOf(move.to);
+    if ((c > 0 && cells[sq(r, c - 1)] === enemyPawn) || (c < 7 && cells[sq(r, c + 1)] === enemyPawn)) ep = sq((rowOf(move.from) + r) / 2, c);
+  }
   return { cells, castling: castling || '-', ep, captured, piece };
 }
 

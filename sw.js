@@ -1,6 +1,6 @@
 // Minimal service worker: precache the app shell, serve cache-first, fall back to network.
 // Bump VERSION whenever files change so that old caches are dropped.
-const VERSION = 'v44';
+const VERSION = 'v45';
 const CACHE = `oyun-gecesi-${VERSION}`;
 const SHELL = [
   './',
@@ -66,6 +66,7 @@ const SHELL = [
   './icons/icon-512.png',
   './icons/icon-512-maskable.png',
   './README.md',
+  './data/LICENSES.md',
   './tests/index.html',
   './tests/runner.js',
   './tests/all.js',

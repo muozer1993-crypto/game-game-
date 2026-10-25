@@ -21,11 +21,12 @@ test('satranç: geçersiz hamleler, şah, rok, geçerken alma, terfi', () => {
   assert.throws(() => game.applyMove(s, 1, { type: 'move', from: index('e7'), to: index('e5') }), 'Sıra sende değil');
   assert.throws(() => mv(s, 'e7', 'e5'), 'Kendi taşını');
   s = mv(s, 'e2', 'e4');
-  assert.equal(s.ep, index('e3'), 'en passant square after a double push');
+  assert.equal(s.ep, null, 'no enemy pawn beside e4: no en passant square recorded');
   assert.equal(s.turn, 'b');
   s = mv(s, 'd7', 'd5');
   s = mv(s, 'e4', 'e5');
   s = mv(s, 'f7', 'f5');
+  assert.equal(s.ep, index('f6'), 'white pawn on e5 can capture: square recorded');
   const ep = mv(s, 'e5', 'f6');
   assert.equal(ep.cells[index('f5')], null, 'the pawn passed over is taken');
   assert.equal(ep.cells[index('f6')], 'wp');
