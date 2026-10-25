@@ -181,7 +181,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const statusText = (p) => {
     const x = state.boards[p];
     const base = `${x.revealed.length}/${total} güvenli kare`;
-    if (x.status === 'cleared') return `temizledi (${(x.ms / 1000).toFixed(1)} sn)`;
+    if (x.status === 'cleared') return `temizledi (${(x.ms / 1000).toFixed(1).replace('.', ',')} sn)`;
     if (x.status === 'dead') return `mayına bastı, ${base}`;
     if (x.status === 'time') return `süre doldu, ${base}`;
     if (x.status === 'quit') return `bıraktı, ${base}`;
@@ -232,7 +232,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
 
   if (state.finished[viewer]) {
     draw(container,
-      el('div', { class: 'status-line' }, el('strong', {}, b.status === 'cleared' ? `Temizledin! ${(b.ms / 1000).toFixed(1)} sn` : b.status === 'dead' ? 'Mayına bastın!' : b.status === 'quit' ? 'Bıraktın.' : 'Süre doldu.')),
+      el('div', { class: 'status-line' }, el('strong', {}, b.status === 'cleared' ? `Temizledin! ${(b.ms / 1000).toFixed(1).replace('.', ',')} sn` : b.status === 'dead' ? 'Mayına bastın!' : b.status === 'quit' ? 'Bıraktın.' : 'Süre doldu.')),
       el('p', { class: 'hint' }, `${statusText(viewer)}. ${players[opp]} oynuyor… (${progress(state, opp)}/${total})`),
       el('div', { class: 'spinner', 'aria-hidden': 'true' }),
       grid(viewer, { showMines: true }),

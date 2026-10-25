@@ -14,7 +14,7 @@ export const meta = {
   description: 'Aynı harfle isim, şehir, hayvan, bitki, eşya yaz; farklı cevap 10, aynı cevap 5 puan.',
   rules: [
     'Her turda bir harf gelir. O harfle başlayan bir isim, şehir, hayvan, bitki ve eşya (geniş sette ülke, meslek ve yemek de) yazarsın; süre dolunca ya da "Bitir"e basınca cevapların kilitlenir.',
-    'Puan: ikiniz farklı cevap yazdıysanız 10, aynı cevabı yazdıysanız 5, boş ya da harfe uymayan cevap 0. Karşılaştırma ekranında rakibinin uydurma cevabına "Geçersiz" diyebilirsin (0 puan).',
+    'Puan: ikiniz farklı cevap yazdıysanız 10, aynı cevabı yazdıysanız 5, boş ya da harfe uymayan cevap 0. Karşılaştırma ekranında rakibinin uydurma cevabına "Geçersiz" diyebilirsin (0 puan); seninkiyle aynı cevaba "Geçersiz" dersen seninki de geçersiz sayılır.',
     'İki telefonda biri bitirince diğerinin 15 saniyesi kalır ("Bitti!" kuralı). Tek telefonda sırayla yazılır, sonra karşılaştırma ekranı ikinize gelir.',
   ].join('\n'),
   data: [],
@@ -49,6 +49,15 @@ export function pickLetters(count, seed) {
 }
 
 export const normalize = (s) => lowerTR(String(s == null ? '' : s)).replace(/\s+/g, ' ').trim();
+/**
+ * The answer as compared and checked against the letter. A capital "I" typed first is read as
+ * "İ": phones with an English keyboard capitalise "istanbul" to "Istanbul", which is not an
+ * ı-word.
+ */
+export const answerKey = (s) => {
+  const n = normalize(s);
+  return String(s == null ? '' : s).trim().startsWith('I') && n.startsWith('ı') ? `i${n.slice(1)}` : n;
+};
 const cleanAnswer = (s) => String(s == null ? '' : s).replace(/\s+/g, ' ').trim().slice(0, MAX_LEN);
 
 export function setup(options = {}) {
@@ -71,7 +80,7 @@ export function setup(options = {}) {
 
 /** Is this answer worth anything: non-empty, starts with the round's letter, not vetoed? */
 export function isValid(answer, letter, vetoed) {
-  const a = normalize(answer);
+  const a = answerKey(answer);
   return !!a && a.startsWith(letter) && !vetoed;
 }
 
@@ -82,10 +91,12 @@ export function scoreRound(entry, letter) {
   for (let c = 0; c < n; c++) {
     const a = entry.answers[0] ? entry.answers[0][c] : '';
     const b = entry.answers[1] ? entry.answers[1][c] : '';
-    const va = isValid(a, letter, entry.vetoes[0][c]);
-    const vb = isValid(b, letter, entry.vetoes[1][c]);
+    // the same answer stands or falls for both: vetoing the opponent's copy of your own answer vetoes yours too
+    const same = !!answerKey(a) && answerKey(a) === answerKey(b);
+    const veto = entry.vetoes[0][c] || entry.vetoes[1][c];
+    const va = isValid(a, letter, same ? veto : entry.vetoes[0][c]);
+    const vb = isValid(b, letter, same ? veto : entry.vetoes[1][c]);
     if (va && vb) {
-      const same = normalize(a) === normalize(b);
       pts[0].push(same ? 5 : 10);
       pts[1].push(same ? 5 : 10);
     } else {
@@ -243,11 +254,11 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     const input = el('input', {
       type: 'text', class: 'input', value: draft.answers[c], maxlength: MAX_LEN, autocomplete: 'off', autocapitalize: 'words', enterkeyhint: c === cats.length - 1 ? 'done' : 'next',
       placeholder: `${upperTR(letter)}…`, 'aria-label': name, id: `is-in-${c}`,
-      onInput: (e) => { draft.answers[c] = e.target.value; input.classList.toggle('is-bad', !!normalize(e.target.value) && !normalize(e.target.value).startsWith(letter)); },
+      onInput: (e) => { draft.answers[c] = e.target.value; input.classList.toggle('is-bad', !!answerKey(e.target.value) && !answerKey(e.target.value).startsWith(letter)); },
       onFocus: () => { draft.focus = c; },
       onKeydown: (e) => { if (e.key === 'Enter') { e.preventDefault(); if (c < cats.length - 1) inputs[c + 1].focus(); else finish(); } },
     });
-    if (normalize(draft.answers[c]) && !normalize(draft.answers[c]).startsWith(letter)) input.classList.add('is-bad');
+    if (answerKey(draft.answers[c]) && !answerKey(draft.answers[c]).startsWith(letter)) input.classList.add('is-bad');
     return input;
   });
   draw(container,

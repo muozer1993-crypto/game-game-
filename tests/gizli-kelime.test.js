@@ -125,15 +125,21 @@ test('gizli kelime: ortak kelime modu — tek kelime, ev sahibi puanlar', () => 
   assert.equal(fb1.guesser, 1);
   s = game.applyMove(s, 0, fb1, ctx);
   assert.deepEqual(s.guesses[0][0].result, s.guesses[1][0].result, 'same word, same feedback');
-  // both find it in the same round -> draw
+  // the first to find the shared word wins at once: the other cannot copy it off the screen for a draw
+  const before = s;
   s = game.applyMove(s, 0, { type: 'guess', word: s.secrets[0] }, ctx);
   s = runAuto(game, s, [0]);
-  assert.equal(s.phase, 'play');
-  s = game.applyMove(s, 1, { type: 'guess', word: s.secrets[0] }, ctx);
-  s = runAuto(game, s, [0]);
   assert.equal(s.phase, 'over');
-  assert.deepEqual(game.getResult(s), { draw: true });
+  assert.deepEqual(game.getResult(s), { winner: 0 });
   assert.equal(s.revealed[0], s.secrets[0]);
+  assert.throws(() => game.applyMove(s, 1, { type: 'guess', word: s.secrets[0] }, ctx), 'tahmin yapılamaz');
+  // player 0 misses, player 1 finds it: player 1 wins
+  let t = game.applyMove(before, 0, { type: 'guess', word: ['kalem', 'tahta', 'elmas'].find((w) => w !== before.secrets[0]) }, ctx);
+  t = runAuto(game, t, [0]);
+  t = game.applyMove(t, 1, { type: 'guess', word: before.secrets[0] }, ctx);
+  t = runAuto(game, t, [0]);
+  assert.equal(t.phase, 'over');
+  assert.deepEqual(game.getResult(t), { winner: 1 });
 });
 
 test('gizli kelime: varsayılan mod herkes kendi seçer', () => {

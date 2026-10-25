@@ -645,6 +645,9 @@ export function showPlay(p) {
         el('div', { class: 'row' }, again, el('button', { type: 'button', class: 'btn btn-secondary btn-big', onClick: exit }, isOnline ? 'Lobiye dön' : 'Ana menü')),
         shareBtn ? el('div', { class: 'row', style: { justifyContent: 'center', marginTop: '6px' } }, shareBtn) : null,
       );
+      // a game can end on a quick tap (Refleks): that tap must not also press a button that appears under the finger
+      const shownAt = Date.now();
+      actions.addEventListener('click', (e) => { if (Date.now() - shownAt < 600) { e.stopPropagation(); e.preventDefault(); } }, { capture: true });
       actions.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     },
   });

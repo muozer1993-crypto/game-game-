@@ -146,6 +146,9 @@ export function createGame(cfg) {
   function checkOver(state) {
     const [n0, n1] = [state.guesses[0].length, state.guesses[1].length];
     if (pendingOf(state, 0) >= 0 || pendingOf(state, 1) >= 0) return state;
+    // shared word: both see every guess, so the first to find it wins at once (the other could
+    // otherwise just copy the answer off the screen to draw)
+    if (state.shared && (state.solved[0] != null || state.solved[1] != null)) return { ...state, phase: 'over' };
     if (n0 !== n1) return state;
     const anySolved = state.solved[0] != null || state.solved[1] != null;
     const exhausted = state.maxGuesses > 0 && n0 >= state.maxGuesses;

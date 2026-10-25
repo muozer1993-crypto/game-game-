@@ -75,19 +75,29 @@ export function applyMove(state, player, move, ctx = {}) {
       if (state.current.swapped) fail('Bir kart yalnızca bir kez değiştirilir');
       const kind = state.current.kind;
       const index = nextIndex(state, kind);
-      return { ...state, used: { ...state.used, [kind]: state.used[kind] + 1 }, current: { kind, index, swapped: true } };
+      return { ...state, used: { ...state.used, [kind]: state.used[kind] + 1 }, current: { kind, index, swapped: true, prev: state.current.index } };
     }
     case 'resolve': {
       if (state.phase !== 'prompt') fail('Sonuçlanacak kart yok');
       if (online && player === state.turn) fail('Hakem diğer oyuncu'); // online: only the other phone judges
       const done = !!move.done;
+      // the verdict names the card it was given for. Online, the player's "Başka kart" and the
+      // judge's verdict can cross: the judge's phone then refuses the swap (the card is already
+      // decided), so this phone undoes it, and both phones end up in the same place.
+      let { used } = state;
+      let index = state.current.index;
+      if (move.card != null && Number(move.card) !== index) {
+        if (!state.current.swapped || Number(move.card) !== state.current.prev) fail('Kart değişti');
+        index = state.current.prev;
+        used = { ...used, [state.current.kind]: used[state.current.kind] - 1 };
+      }
       const scores = state.scores.slice();
       if (done) scores[state.turn] += SCORE[state.current.kind];
       const played = state.played.slice();
       played[state.turn] += 1;
-      const history = state.history.concat([{ player: state.turn, kind: state.current.kind, index: state.current.index, done }]);
+      const history = state.history.concat([{ player: state.turn, kind: state.current.kind, index, done }]);
       const over = played[0] >= state.rounds && played[1] >= state.rounds;
-      return { ...state, scores, played, history, current: null, phase: over ? 'over' : 'choose', turn: 1 - state.turn };
+      return { ...state, used, scores, played, history, current: null, phase: over ? 'over' : 'choose', turn: 1 - state.turn };
     }
     default:
       fail(`Bilinmeyen hamle: ${move.type}`);
@@ -152,8 +162,8 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     amPlayer && !cur.swapped ? el('button', { type: 'button', class: 'btn btn-small', onClick: () => sendMove({ type: 'swap' }) }, 'Başka kart (bir kez)') : null,
     el('p', { class: 'hint' }, amJudge ? `${players[judge]} hakem: ${cur.kind === 'dare' ? 'görev yapıldı mı?' : 'cevap verildi mi?'}` : `${players[judge]} karar verecek…`),
     amJudge ? el('div', { class: 'row', style: { justifyContent: 'center', gap: '8px' } },
-      el('button', { type: 'button', class: 'btn btn-primary btn-big', onClick: () => sendMove({ type: 'resolve', done: true }) }, `Yaptı (+${SCORE[cur.kind]})`),
-      el('button', { type: 'button', class: 'btn btn-secondary btn-big', onClick: () => sendMove({ type: 'resolve', done: false }) }, 'Pas (0)'),
+      el('button', { type: 'button', class: 'btn btn-primary btn-big', onClick: () => sendMove({ type: 'resolve', done: true, card: cur.index }) }, `Yaptı (+${SCORE[cur.kind]})`),
+      el('button', { type: 'button', class: 'btn btn-secondary btn-big', onClick: () => sendMove({ type: 'resolve', done: false, card: cur.index }) }, 'Pas (0)'),
     ) : null,
     legend, historyView,
   );

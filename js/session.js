@@ -200,7 +200,7 @@ export class Session {
           this.lastViewer = viewer;
           showHandoff(this.container, {
             name: this.players[turn.player],
-            note: this.game.meta.handoffNote || null,
+            note: turn.note || this.game.meta.handoffNote || null, // a turn may carry its own note
             onReady: () => this.render(),
           });
           this.onChange(this.state);

@@ -25,6 +25,10 @@ test('isim şehir: puanlama — farklı 10, aynı 5, boş/yanlış harf/geçersi
   assert.deepEqual(roundTotals(entry, 'k'), [40, 30]);
   assert.equal(normalize('  İzmir  '), 'izmir');
   assert.equal(normalize('ISPARTA'), 'ısparta', 'Turkish lowercasing');
+  // an English keyboard capitalises "istanbul" to "Istanbul": still an i-word, and the same answer as "İstanbul"
+  const e2 = { answers: [['Istanbul'], ['İstanbul']], vetoes: [[false], [false]] };
+  assert.deepEqual(scoreRound(e2, 'i'), [[5], [5]]);
+  assert.deepEqual(scoreRound({ answers: [['ılgın'], ['']], vetoes: [[false], [false]] }, 'i'), [[0], [0]], 'a typed ı is still ı');
 });
 
 test('isim şehir: akış — bitir, karşılaştır, itiraz, sonraki tur, bitiş', () => {
@@ -49,25 +53,25 @@ test('isim şehir: akış — bitir, karşılaştır, itiraz, sonraki tur, biti�
   assert.deepEqual(roundTotals(s.entries[0], L[0]), [35, 25]);
   s = game.applyMove(s, 1, { type: 'veto', category: 4, on: false });
   s = game.applyMove(s, 0, { type: 'veto', target: 1, category: 0, on: true });
-  assert.deepEqual(roundTotals(s.entries[0], L[0]), [50, 20], 'a vetoed shared answer leaves the other one alone at 10');
+  assert.deepEqual(roundTotals(s.entries[0], L[0]), [40, 20], 'vetoing the opponent\'s copy of your own answer vetoes yours too');
   // a 'next' carrying a veto snapshot scores from that snapshot (both phones agree even when a veto crossed it)
   const snap = game.applyMove(s, 0, { type: 'next', vetoes: [[false, false, false, false, true], [true, false, false, false, false]] });
-  assert.deepEqual(snap.scores, [40, 20]);
+  assert.deepEqual(snap.scores, [30, 20]);
   assert.equal(snap.entries[0].vetoes[0][4], true, 'the snapshot is stored');
   s = game.applyMove(s, 0, { type: 'next' });
-  assert.deepEqual(s.scores, [50, 20]);
+  assert.deepEqual(s.scores, [40, 20]);
   assert.equal(s.round, 1);
   assert.equal(s.phase, 'write');
   // finish with no answers at all is allowed (time out)
   s = game.applyMove(s, 1, { type: 'finish' });
   s = game.applyMove(s, 0, { type: 'finish', answers: ans(L[1]) });
   s = game.applyMove(s, 1, { type: 'next' });
-  assert.deepEqual(s.scores, [100, 20]);
+  assert.deepEqual(s.scores, [90, 20]);
   s = game.applyMove(s, 0, { type: 'finish', answers: ans(L[2]) });
   s = game.applyMove(s, 1, { type: 'finish', answers: ans(L[2]) });
   s = game.applyMove(s, 0, { type: 'next' });
   assert.equal(s.phase, 'over');
-  assert.deepEqual(s.scores, [125, 45]);
+  assert.deepEqual(s.scores, [115, 45]);
   assert.deepEqual(game.getResult(s), { winner: 0 });
   assert.throws(() => game.applyMove(s, 0, { type: 'next' }), 'Oyun bitti');
 });

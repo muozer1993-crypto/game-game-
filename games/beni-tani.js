@@ -41,9 +41,20 @@ function fail(msg) {
   throw new Error(msg);
 }
 
+/** Options without blanks and repeats ("Çay" and "çay " are the same option). */
+export function uniqueOptions(options) {
+  const seen = new Set();
+  return (options || []).map((o) => String(o).trim()).filter((o) => {
+    const k = o.toLocaleLowerCase('tr-TR');
+    if (!o || seen.has(k)) return false;
+    seen.add(k);
+    return true;
+  });
+}
+
 function cleanQuestion(q, i) {
   const base = { id: String(q.id || `q-${i}`), category: q.category || 'ozel', type: q.type === 'choice' ? 'choice' : 'open', text: String(q.text || '').trim() };
-  if (base.type === 'choice') base.options = (q.options || []).map((o) => String(o).trim()).filter(Boolean);
+  if (base.type === 'choice') base.options = uniqueOptions(q.options);
   if (!base.text) return null;
   if (base.type === 'choice' && base.options.length < 2) return null;
   return base;
@@ -351,8 +362,9 @@ export function setupExtra(container, storage) {
     const q = { id: `custom-${Date.now()}`, category: 'ozel', type: typeSel.value, text: text.value.trim() };
     if (!q.text) { text.focus(); return; }
     if (q.type === 'choice') {
-      q.options = optInputs.map((o) => o.value.trim()).filter(Boolean);
-      if (q.options.length < 2) { optInputs[0].focus(); return; }
+      q.options = uniqueOptions(optInputs.map((o) => o.value));
+      // at least two different options, or the answer would always "match"
+      if (q.options.length < 2) { optInputs[q.options.length ? 1 : 0].focus(); return; }
     }
     list = list.concat([q]);
     storage.save(KEY, list);

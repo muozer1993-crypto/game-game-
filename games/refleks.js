@@ -103,6 +103,7 @@ export function getResult(state) {
 
 // ------------------------------------------------------------------ rendering
 const goAt = new Map(); // `${id}:${round}` -> timestamp when this device turns green
+const TAP_GUARD_MS = 600;
 
 const fmt = (t) => (t == null ? '—' : t === 'early' ? 'erken!' : t === 'none' ? 'dokunmadı' : `${t} ms`);
 
@@ -123,12 +124,15 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     return null;
   }
   if (state.phase === 'result') {
+    // the round ends on a tap: the button that appears under that finger waits a moment, or the
+    // same tap would also skip the result
+    const next = el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block', style: { marginTop: '12px' }, disabled: true, onClick: () => sendMove({ type: 'next' }) }, 'Sonraki el');
+    const t = setTimeout(() => { next.disabled = false; }, TAP_GUARD_MS);
     draw(container,
       el('div', { class: 'status-line' }, el('strong', {}, last.winner == null ? 'Bu eli kimse almadı.' : `${players[last.winner]} bu eli aldı!`)),
-      score, lastLine,
-      el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block', style: { marginTop: '12px' }, onClick: () => sendMove({ type: 'next' }) }, 'Sonraki el'),
+      score, lastLine, next,
     );
-    return null;
+    return () => clearTimeout(t);
   }
   if (state.phase === 'ready') {
     draw(container,

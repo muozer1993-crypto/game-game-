@@ -36,7 +36,7 @@ export function setup(options = {}) {
     turnMs: seconds * 1000,
     ghRule: options.ghRule === 'forbid' ? 'forbid' : 'skip',
     phase: 'ready', // ready | play | challenge | over
-    turn: 0,
+    turn: (Number(options.seed) || 0) % 2, // who says the first word: from the seed, so it changes from game to game
     words: [],      // { player, word, syllables, challenged }
     required: '',
     deadline: null,

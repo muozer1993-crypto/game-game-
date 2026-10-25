@@ -12,7 +12,7 @@ export const meta = {
   rules: [
     'Her oyuncu torbadan yedi harf alır. Sırası gelen, harflerini tek bir satıra ya da sütuna, tahtadaki harflere bitişik olacak şekilde dizer; ilk kelime ortadaki yıldızdan geçer.',
     'Oluşan bütün kelimeler (yan kelimeler dahil) kelime listesinde olmalı. Puan: harf değerleri toplamı; mavi kareler harfi 2× / 3×, kırmızı kareler kelimeyi 2× / 3× katlar (yalnızca o tur konan harfler için). Yedi harfi birden koyan +50 alır.',
-    'Pas geçilebilir ya da (torbada en az 7 harf varken) harf değiştirilebilir. Torba bitip bir oyuncunun harfi tükenince ya da art arda dört puansız hamle (pas ya da değiştirme) olunca oyun biter; kalan harflerin değeri sahibinden düşülür. Çok puan kazanır.',
+    'Pas geçilebilir ya da (torbada en az 7 harf varken) harf değiştirilebilir. Torba bitip bir oyuncunun harfi tükenince ya da art arda dört puansız hamle (pas ya da değiştirme) olunca oyun biter. Harflerini bitiren, rakibinin elinde kalan harflerin değerini kendi puanına ekler (rakipten düşülür); puansız hamlelerle biterse herkesin kalan harfleri kendisinden düşülür. Çok puan kazanır.',
   ].join('\n'),
   data: ['dictionary'],
   handoffNote: 'Rafındaki harfleri rakibin görmemeli.',

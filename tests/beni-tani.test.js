@@ -1,5 +1,5 @@
 import { test, assert } from './runner.js';
-import game, { pickQuestions, points, formatPoints, allJudged } from '../games/beni-tani.js';
+import game, { uniqueOptions, pickQuestions, points, formatPoints, allJudged } from '../games/beni-tani.js';
 
 const pool = [];
 for (let i = 0; i < 30; i++) {
@@ -124,4 +124,11 @@ test('beni tanı: prototip anahtarı karar olarak kabul edilmez, berabere ve pua
   s = { ...s, phase: 'over', judgments: [['match', 'close', null, null, null], ['match', 'close', null, null, null]] };
   assert.deepEqual(points(s), [1.5, 1.5]);
   assert.deepEqual(game.getResult(s), { draw: true });
+});
+
+test('beni tanı: kendi sorusunda aynı seçenek iki kez sayılmaz', () => {
+  assert.deepEqual(uniqueOptions(['Çay', ' çay ', 'Kahve', '', 'ÇAY']), ['Çay', 'Kahve']);
+  // a custom question whose options are all the same is dropped (the guess would always match)
+  const qs = pickQuestions([{ id: 'b1', type: 'open', text: 'Soru?' }], [{ id: 'c1', type: 'choice', text: 'Hangisi?', options: ['Elma', 'elma'] }], 1, 'first', 1);
+  assert.equal(qs[0].id, 'b1');
 });

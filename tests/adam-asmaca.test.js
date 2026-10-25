@@ -27,7 +27,7 @@ test('adam asmaca: kelime tutma — doğrulama, gizli alan, uzunluk', () => {
   assert.equal(s.secret, 'kitap', 'normalized the Turkish way');
   assert.equal(s.phase, 'play');
   assert.deepEqual(s.revealed, [null, null, null, null, null]);
-  assert.deepEqual(game.getTurn(s), { player: 1, private: false });
+  assert.deepEqual(game.getTurn(s), { player: 1, private: false, note: 'Kelime tutuldu: harf tahmin etme sırası sende.' });
   assert.equal(game.autoMove(s, 0, ctx), null, 'nothing to score yet');
 });
 
@@ -61,7 +61,7 @@ test('adam asmaca: harf tahmini, puanlama, yanlış harf can götürür, kelime 
   assert.equal(s.points, 5);
   assert.deepEqual(s.scores, [0, 5]);
   assert.equal(s.word, 'kitap');
-  assert.deepEqual(game.getTurn(s), { player: 1, private: false }, 'the guesser keeps the phone through the result');
+  assert.deepEqual(game.getTurn(s), { player: 1, private: false, note: 'Kelime tutuldu: harf tahmin etme sırası sende.' }, 'the guesser keeps the phone through the result');
   assert.equal(game.getResult(s), null, 'not over: the second word is still to come');
 });
 

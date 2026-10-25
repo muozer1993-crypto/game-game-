@@ -154,7 +154,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
 
   if (state.phase === 'summary') {
     draw(container,
-      el('div', { class: 'status-line' }, el('strong', {}, `${state.round + 1}. tur bitti: ${nameSuffix(players[d], 'in')} ${mime ? 'canlandırdığı' : 'anlattığı'} ${tally('ok')} kart bilindi${tally('taboo') ? `, ${tally('taboo')} ${mime ? 'konuştu' : 'tabu'}` : ''}${tally('pass') ? `, ${tally('pass')} pas` : ''}. Tur puanı ${roundScore(entries) > 0 ? '+' : ''}${roundScore(entries)}.`)),
+      el('div', { class: 'status-line' }, el('strong', {}, `${state.round + 1}. tur bitti: ${nameSuffix(players[d], 'in')} ${mime ? 'canlandırdığı' : 'anlattığı'} ${tally('ok')} kart bilindi${tally('taboo') ? `, ${tally('taboo')} ${mime ? 'kartta konuşuldu' : 'tabu'}` : ''}${tally('pass') ? `, ${tally('pass')} pas` : ''}. Tur puanı ${roundScore(entries) > 0 ? '+' : ''}${roundScore(entries)}.`)),
       score,
       el('div', { class: 'tb-list' }, entries.map((e) => el('span', { class: `tb-chip ${e.result}` }, `${MARK[e.result]} ${cards[e.card] ? cards[e.card].word : '?'}`))),
       el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block', style: { marginTop: '12px' }, onClick: () => sendMove({ type: 'next' }) },

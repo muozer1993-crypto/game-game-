@@ -189,7 +189,7 @@ export function getTurn(state) {
   if (state.phase === 'secret') return { player: state.setter, private: state.secretMode === 'manual' };
   // the guesser also "has" the result screen: on one phone they then type the next word
   // without a handoff, since the roles swap
-  if (state.phase === 'play' || state.phase === 'result') return { player: 1 - state.setter, private: false };
+  if (state.phase === 'play' || state.phase === 'result') return { player: 1 - state.setter, private: false, note: 'Kelime tutuldu: harf tahmin etme sırası sende.' };
   return null;
 }
 

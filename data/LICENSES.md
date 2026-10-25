@@ -21,6 +21,8 @@ Birleşimi:
    8, çok ekli biçimler (evimizdekiler) en az 20 kez geçiyorsa. Ünlüsüz diziler, uzatmalar
    (tamaaam) ve İngilizce sıklık listesinin ilk 20 bininde yer alan altyazı artıkları
    (`content/2018/en/en_50k.txt`, yalnızca süzgeç olarak kullanılır, dağıtılmaz) atıldı.
+   Türkçe harfsiz yazılmış biçimler (buyuk, degil, icin) Türkçe yazılışları en az 10 kat daha
+   sık geçiyorsa, aynı harfin üst üste üç kez geçtiği kelimeler (aaa) de sözlükler dahil atıldı.
    Kaynak: https://github.com/hermitdave/FrequencyWords (master dalı, 24 Ekim 2026'da
    indirildi; depoda etiket/sürüm yok).
    Lisans: içerik CC BY-SA 4.0 (kod MIT). Bu dosya türev bir çalışmadır ve aynı

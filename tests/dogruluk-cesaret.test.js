@@ -47,3 +47,26 @@ test('doğruluk mu cesaret mi: seçim, kart sırası, değiştirme, hakem, puan,
   assert.deepEqual(game.getResult(s), { winner: 0 });
   assert.throws(() => game.applyMove(s, 0, { type: 'pick', kind: 'truth' }), 'Oyun bitti');
 });
+
+test('doğruluk mu cesaret mi: iki telefonda "Başka kart" ile hakemin kararı çaprazlanınca iki telefon aynı yere varır', () => {
+  const on = { mode: 'online' };
+  let s = game.setup({ rounds: 3, seed: 4 }, { dogruluk: { truths: ['a', 'b', 'c', 'd'], dares: ['w', 'x', 'y', 'z'] } });
+  const p = s.turn;
+  s = game.applyMove(s, p, { type: 'pick', kind: 'dare' }, on);
+  const card = s.current.index;
+  // the player's phone: swap first, then the judge's verdict (for the old card) arrives
+  const swapped = game.applyMove(s, p, { type: 'swap' }, on);
+  assert.notEqual(swapped.current.index, card);
+  const atPlayer = game.applyMove(swapped, 1 - p, { type: 'resolve', done: true, card }, on);
+  // the judge's phone: verdict first, then the swap arrives and is refused
+  const atJudge = game.applyMove(s, 1 - p, { type: 'resolve', done: true, card }, on);
+  assert.throws(() => game.applyMove(atJudge, p, { type: 'swap' }, on), 'Önce bir kart seç');
+  assert.deepEqual(atPlayer, atJudge, 'both phones agree: the swap is undone');
+  assert.equal(atPlayer.history.at(-1).index, card, 'the judged card is recorded');
+  // a verdict for the new card after the swap is the normal case
+  const normal = game.applyMove(swapped, 1 - p, { type: 'resolve', done: false, card: swapped.current.index }, on);
+  assert.equal(normal.history.at(-1).index, swapped.current.index);
+  assert.equal(normal.used.dare, swapped.used.dare);
+  // a verdict for some other card is refused
+  assert.throws(() => game.applyMove(swapped, 1 - p, { type: 'resolve', done: true, card: 99 }, on), 'Kart değişti');
+});

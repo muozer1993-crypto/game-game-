@@ -121,9 +121,13 @@ export function setup(options = {}) {
   };
 }
 
-/** Replay a step list against the puzzle numbers; returns the pool after them, or null when illegal. */
+/**
+ * Replay a step list against the puzzle numbers; returns the pool after them (and `derived`: which
+ * pool entries are results of steps), or null when illegal.
+ */
 export function replay(numbers, steps) {
   let pool = numbers.slice();
+  let derived = numbers.map(() => false);
   const clean = [];
   for (const s of Array.isArray(steps) ? steps : []) {
     const a = Number(s.a);
@@ -137,9 +141,11 @@ export function replay(numbers, steps) {
     const r = calc(a, op, b);
     if (r == null) return null;
     pool = rest.filter((_, k) => k !== j).concat([r]);
+    const dRest = derived.filter((_, k) => k !== i);
+    derived = dRest.filter((_, k) => k !== j).concat([true]);
     clean.push({ a, op, b, r });
   }
-  return { pool, steps: clean };
+  return { pool, steps: clean, derived };
 }
 
 export const closest = (pool, target) => pool.reduce((best, n) => (Math.abs(n - target) < Math.abs(best - target) ? n : best), pool[0]);
@@ -265,7 +271,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     const rp = replay(puzzle.numbers, draft.steps);
     const pool = rp.pool;
     poolBox.replaceChildren(...pool.map((n, i) => el('button', {
-      type: 'button', class: `btn hs-num ${draft.sel === i ? 'sel' : ''} ${i >= puzzle.numbers.length - draft.steps.length ? 'derived' : ''}`,
+      type: 'button', class: `btn hs-num ${draft.sel === i ? 'sel' : ''} ${rp.derived[i] ? 'derived' : ''}`,
       onClick: () => {
         if (draft.sel == null || draft.op == null) { draft.sel = draft.sel === i ? null : i; draft.op = null; redraw(); return; }
         if (draft.sel === i) { draft.sel = null; draft.op = null; redraw(); return; }

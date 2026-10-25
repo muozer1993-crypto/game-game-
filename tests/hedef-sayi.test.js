@@ -12,6 +12,13 @@ test('hedef sayı: işlemler, çözücü, bulmaca üretimi', () => {
   assert.equal(s.value, 735);
   // every step is legal and reaches the value
   const rp = replay([100, 7, 3, 2, 9, 5], s.steps);
+  // results of steps are marked (the board shows them dashed); a result used again is gone
+  const d = replay([4, 6, 2], [{ a: 4, op: '+', b: 6 }]);
+  assert.deepEqual(d.pool, [2, 10]);
+  assert.deepEqual(d.derived, [false, true]);
+  const d2 = replay([4, 6, 2], [{ a: 4, op: '+', b: 6 }, { a: 10, op: '×', b: 2 }]);
+  assert.deepEqual(d2.pool, [20]);
+  assert.deepEqual(d2.derived, [true]);
   assert.ok(rp && rp.pool.includes(735));
   assert.equal(solve([1, 2, 3], 999).value, 9, 'closest when unreachable: (1+2)×3');
   const p = makePuzzle(42, 1);

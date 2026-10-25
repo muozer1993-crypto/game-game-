@@ -15,6 +15,7 @@ Usage:  python3 tools/build-words.py            (downloads sources into tools/ca
         python3 tools/build-words.py --min-count 20 --min-count-simple 8 --common 600,900,900
 """
 import argparse
+import itertools
 import json
 import os
 import re
@@ -54,6 +55,27 @@ def fetch(name):
 
 def fold(word):
     return word.replace('â', 'a').replace('î', 'i').replace('û', 'u').lower()
+
+
+ASCII_TWINS = {'c': 'cç', 'g': 'gğ', 'i': 'iı', 'o': 'oö', 's': 'sş', 'u': 'uü'}
+
+
+def turkish_twin(word, freq):
+    """The most frequent spelling of `word` with Turkish letters put back (degil -> değil), or None."""
+    if any(ch in 'çğıöşü' for ch in word):
+        return None
+    slots = [ASCII_TWINS.get(ch, ch) for ch in word]
+    n = 1
+    for s in slots:
+        n *= len(s)
+    if n > 4096:
+        return None
+    best = None
+    for combo in itertools.product(*slots):
+        cand = ''.join(combo)
+        if cand != word and cand in freq and (best is None or freq[cand] > freq[best]):
+            best = cand
+    return best
 
 
 def tr_lower(s):
@@ -209,6 +231,7 @@ def main():
     ap.add_argument('--english-rank', type=int, default=20000, help='drop derived tokens that are within this rank in the English list')
     ap.add_argument('--common', default='600,900,900', help='target sizes for 4,5,6-letter common lists')
     ap.add_argument('--max-rank', type=int, default=30000, help='ignore corpus words rarer than this rank for common words')
+    ap.add_argument('--ascii-ratio', type=int, default=10, help='drop a corpus form spelt without Turkish letters when its Turkish spelling is this many times more frequent')
     ap.add_argument('--out', default=os.path.join(ROOT, 'data'))
     args = ap.parse_args()
 
@@ -282,7 +305,7 @@ def main():
 
     deriver = Deriver(stems, attrs_of)
     words = set(lemmas) | stems
-    admitted = rejected = english_dropped = 0
+    admitted = rejected = english_dropped = ascii_dropped = 0
     for w, c in freq.items():
         if c < args.min_count_simple or len(w) < 3 or w in words or not has_vowel(w) or ELONGATION_RE.search(w):
             continue
@@ -293,9 +316,16 @@ def main():
         if w in english:
             english_dropped += 1
             continue
+        # subtitles typed without Turkish letters (buyuk, degil, icin, simdi): drop a form whose
+        # Turkish-lettered spelling is far more common; real pairs (kasın/kaşın) are close in count
+        twin = turkish_twin(w, freq)
+        if twin and freq[twin] >= args.ascii_ratio * c:
+            ascii_dropped += 1
+            continue
         words.add(w)
         admitted += 1
-    words = {w for w in words if len(w) >= 2 and has_vowel(w)}
+    # no length-3 runs of one letter, even in the dictionaries (interjections such as aaa, hıııı)
+    words = {w for w in words if len(w) >= 2 and has_vowel(w) and not ELONGATION_RE.search(w)}
 
     os.makedirs(args.out, exist_ok=True)
     out_words = os.path.join(args.out, 'words-tr.txt')
@@ -332,7 +362,7 @@ def main():
         json.dump(common, f, ensure_ascii=False, indent=0)
         f.write('\n')
 
-    print(f'lemmas: {len(lemmas)}, stems: {len(stems)}, admitted inflected: {admitted}, rejected: {rejected}, english dropped: {english_dropped}, total words: {len(words)}')
+    print(f'lemmas: {len(lemmas)}, stems: {len(stems)}, admitted inflected: {admitted}, rejected: {rejected}, english dropped: {english_dropped}, ascii misspellings dropped: {ascii_dropped}, total words: {len(words)}')
     print('common: ' + ', '.join(f'{k}: {len(v)}' for k, v in common.items()))
     print(f'wrote {out_words} ({os.path.getsize(out_words)} bytes) and {out_common}')
 

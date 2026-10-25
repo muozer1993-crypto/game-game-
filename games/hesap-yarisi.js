@@ -194,8 +194,8 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   });
   draw(container,
     el('div', { class: 'status-line' },
-      el('div', {}, el('strong', {}, `${players[0]}: ${scores[0].correct}/${total} doğru (${(scores[0].ms / 1000).toFixed(1)} sn)`)),
-      el('div', {}, el('strong', {}, `${players[1]}: ${scores[1].correct}/${total} doğru (${(scores[1].ms / 1000).toFixed(1)} sn)`)),
+      el('div', {}, el('strong', {}, `${players[0]}: ${scores[0].correct}/${total} doğru (${(scores[0].ms / 1000).toFixed(1).replace('.', ',')} sn)`)),
+      el('div', {}, el('strong', {}, `${players[1]}: ${scores[1].correct}/${total} doğru (${(scores[1].ms / 1000).toFixed(1).replace('.', ',')} sn)`)),
     ),
     el('div', { class: 'compare-list' }, rows),
   );
