@@ -1,6 +1,6 @@
 // Minimal service worker: precache the app shell, serve cache-first, fall back to network.
 // Bump VERSION whenever files change so that old caches are dropped.
-const VERSION = 'v77';
+const VERSION = 'v78';
 const CACHE = `oyun-gecesi-${VERSION}`;
 const SHELL = [
   './',
@@ -76,6 +76,18 @@ const SHELL = [
   './data/common-tr.json',
   './data/words-tr.txt',
   './icons/icon.svg',
+  './img/chess/wk.svg',
+  './img/chess/wq.svg',
+  './img/chess/wr.svg',
+  './img/chess/wb.svg',
+  './img/chess/wn.svg',
+  './img/chess/wp.svg',
+  './img/chess/bk.svg',
+  './img/chess/bq.svg',
+  './img/chess/br.svg',
+  './img/chess/bb.svg',
+  './img/chess/bn.svg',
+  './img/chess/bp.svg',
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/icon-512-maskable.png',

@@ -186,6 +186,7 @@ Bkz. [PLAN.md](PLAN.md).
   ayrıntı ve üretim adımları [data/LICENSES.md](data/LICENSES.md) içinde.
   Yeniden üretmek için `python3 tools/build-words.py` (kaynakları kendisi indirir).
 - Sorular: bu proje için yazıldı (MIT). `data/questions.json` dosyasını düzenleyerek soru ekleyebilirsiniz.
+- Satranç taşı görselleri: Colin M.L. Burnett (Cburnett), Wikimedia Commons, 3 maddeli BSD (`img/chess/LICENSE.txt`).
 - PeerJS 1.5.5: MIT (`vendor/peerjs.LICENSE`).
 
 ## Heceleme kuralları

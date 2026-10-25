@@ -54,3 +54,5 @@ PeerJS 1.5.5 — MIT, Copyright (c) 2015 Michelle Bu and Eric Zhang. Lisans metn
 - MIT: ../LICENSE
 
 - `dogruluk.json`: Doğruluk mu Cesaret mi? kartları, bu proje için yazıldı (MIT).
+
+- `img/chess/*.svg`: satranç taşları, Colin M.L. Burnett (Cburnett), Wikimedia Commons; 3 maddeli BSD lisansıyla kullanılıyor, tam metin `img/chess/LICENSE.txt`.

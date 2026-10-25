@@ -309,7 +309,13 @@ export function getResult(state) {
 }
 
 // ------------------------------------------------------------------ rendering
-const GLYPH = { wk: '♔', wq: '♕', wr: '♖', wb: '♗', wn: '♘', wp: '♙', bk: '♚', bq: '♛', br: '♜', bb: '♝', bn: '♞', bp: '♟' };
+// Pieces are drawn as images (Cburnett's set, see data/LICENSES.md): the Unicode chess symbols
+// render differently on every phone (outlines, filled shapes or emoji), so white could look black.
+const PIECE_URL = {};
+for (const p of ['wk', 'wq', 'wr', 'wb', 'wn', 'wp', 'bk', 'bq', 'br', 'bb', 'bn', 'bp']) PIECE_URL[p] = new URL(`../img/chess/${p}.svg`, import.meta.url).href;
+const PIECE_NAME = { k: 'şah', q: 'vezir', r: 'kale', b: 'fil', n: 'at', p: 'piyon' };
+const pieceName = (p) => `${p[0] === 'w' ? 'beyaz' : 'siyah'} ${PIECE_NAME[p[1]]}`;
+const pieceImg = (p, cls = 'ch-piece') => el('img', { class: cls, src: PIECE_URL[p], alt: pieceName(p), draggable: 'false' });
 const REASON = { mate: 'şah mat', stalemate: 'pat', material: 'yetersiz materyal', fifty: 'elli hamle kuralı', repetition: 'üç kez tekrar', resign: 'pes' };
 let selected = null;
 let selectedFor = null;
@@ -340,7 +346,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       board.append(el('button', {
         type: 'button',
         class: `ch-cell ${dark ? 'dark' : 'light'} ${isLast ? 'last' : ''} ${selected === i ? 'sel' : ''} ${targets.has(i) ? (p ? 'capture' : 'target') : ''} ${i === kingInCheck ? 'check' : ''} ${p ? p[0] : ''}`,
-        'aria-label': `${name(i)}${p ? `, ${GLYPH[p]}` : ''}`,
+        'aria-label': `${name(i)}${p ? `, ${pieceName(p)}` : ''}`,
         disabled: !mine || !(canPick || targets.has(i) || selected != null),
         onClick: () => {
           if (targets.has(i)) {
@@ -356,7 +362,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
           drawPromo();
           boardBox.replaceChildren(drawBoard());
         },
-      }, p ? el('span', { class: 'ch-piece' }, GLYPH[p]) : null));
+      }, p ? pieceImg(p) : null));
     }
     return board;
   };
@@ -368,7 +374,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       el('div', { class: 'row', style: { justifyContent: 'center', gap: '8px' } },
         [['q', 'Vezir'], ['r', 'Kale'], ['b', 'Fil'], ['n', 'At']].map(([promo, label]) =>
           el('button', { type: 'button', class: 'btn btn-secondary', onClick: () => { pendingPromo = null; selected = null; sendMove({ type: 'move', from, to, promo }); } },
-            `${GLYPH[`${state.turn}${promo}`]} ${label}`)))));
+            pieceImg(`${state.turn}${promo}`, 'ch-mini'), ` ${label}`)))));
   };
   boardBox.append(drawBoard());
   drawPromo();
@@ -380,11 +386,15 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   } else if (mine) status = `${state.check ? 'Şah! ' : ''}Sıra sende, ${players[viewer]} (${colourName(myColour)})${selected != null ? ': nereye?' : ''}`;
   else status = `${state.check ? 'Şah! ' : ''}${players[playerOf(state, state.turn)]} (${colourName(state.turn)}) düşünüyor…`;
   const material = (c) => state.captured[c].reduce((s, t) => s + PIECE_VALUE[t], 0);
-  const capLine = (c) => el('span', {}, `${players[playerOf(state, c)]} aldı: ${state.captured[c].map((t) => GLYPH[`${other(c)}${t}`]).join('') || '—'}${material(c) > material(other(c)) ? ` (+${material(c) - material(other(c))})` : ''}`);
+  const capLine = (c) => el('span', { class: 'ch-cap' }, `${players[playerOf(state, c)]} aldı: `, state.captured[c].length ? state.captured[c].map((t) => pieceImg(`${other(c)}${t}`, 'ch-mini')) : '—', material(c) > material(other(c)) ? ` (+${material(c) - material(other(c))})` : '');
+  const tag = (c) => el('div', { class: `ch-side ${c}` }, pieceImg(`${c}k`, 'ch-mini'), ` ${colourName(c)}: ${players[playerOf(state, c)]}${!state.over && state.turn === c ? ' · sırada' : ''}`);
+  const topColour = flip ? 'w' : 'b';
   draw(container,
     el('div', { class: 'status-line' }, el('strong', {}, status)),
     el('div', { class: 'c4-legend ch-legend' }, capLine('w'), capLine('b')),
+    tag(topColour),
     boardBox,
+    tag(topColour === 'w' ? 'b' : 'w'),
     promoBox,
     mine ? el('div', { class: 'row', style: { justifyContent: 'center', marginTop: '10px' } },
       el('button', { type: 'button', class: 'btn btn-secondary btn-small', onClick: () => { if (confirm('Pes ediyor musun?')) sendMove({ type: 'resign' }); } }, 'Pes')) : null,

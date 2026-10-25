@@ -712,8 +712,10 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .ch-cell.check { box-shadow: inset 0 0 0 100px rgba(229, 57, 53, 0.55); }
 .ch-cell.target::after { content: ''; width: 30%; height: 30%; border-radius: 50%; background: rgba(0, 0, 0, 0.3); }
 .ch-cell.capture::before { content: ''; position: absolute; inset: 6%; border-radius: 50%; border: 4px solid rgba(0, 0, 0, 0.3); }
-.ch-piece { color: #111; text-shadow: 0 0 2px rgba(255, 255, 255, 0.6); }
-.ch-cell.w .ch-piece { color: #fff; text-shadow: 0 0 2px #000, 0 0 2px #000, 0 1px 1px #000; }
+.ch-piece { width: 88%; height: 88%; pointer-events: none; user-select: none; -webkit-user-drag: none; }
+.ch-mini { width: 1.35em; height: 1.35em; vertical-align: -0.3em; }
+.ch-cap { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 1px; }
+.ch-side { display: flex; align-items: center; justify-content: center; gap: 4px; font-size: 0.9rem; font-weight: 600; margin: 4px 0; }
 .ch-legend { font-size: 0.9rem; flex-wrap: wrap; }
 .ch-promo { text-align: center; padding: 10px; margin-top: 8px; }
 
