@@ -418,6 +418,31 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .tv-key.p0::before, .tv-key.p1::before { content: ''; display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 6px; border: 1px solid rgba(0,0,0,0.3); vertical-align: -1px; }
 .tv-key.p0::before { background: #fafafa; }
 .tv-key.p1::before { background: #263238; }
+.mg-board { display: grid; grid-template-columns: 56px 1fr 56px; gap: 6px; align-items: stretch; margin: 10px 0; }
+.mg-rows { display: grid; gap: 6px; }
+.mg-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px; }
+.mg-pit {
+  min-height: 64px;
+  border: 2px solid var(--border);
+  border-radius: 14px;
+  background: var(--card);
+  color: var(--fg);
+  font: inherit;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.mg-pit:disabled { cursor: default; }
+.mg-pit.legal { border-color: var(--primary); background: color-mix(in srgb, var(--primary) 12%, var(--card)); }
+.mg-pit.last { box-shadow: inset 0 0 0 2px var(--present); }
+.mg-count { font-weight: 800; font-size: 1.1rem; }
+.mg-stones { font-size: 0.45rem; letter-spacing: 1px; line-height: 1; color: var(--muted); max-width: 100%; overflow: hidden; }
+.mg-store { border: 2px solid var(--border); border-radius: 14px; background: var(--secondary); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 0.75rem; text-align: center; padding: 4px 2px; }
+.mg-store .mg-count { font-size: 1.4rem; }
 .rps-choices { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 12px 0; }
 .rps-btn { flex-direction: column; min-height: 96px; font-size: 1rem; }
 .rps-icon { font-size: 2.2rem; }

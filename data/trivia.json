@@ -15,7 +15,7 @@
       "id": "cografya-001",
       "category": "cografya",
       "difficulty": 1,
-      "text": "Türkiye'nin en uzun nehri hangisidir?",
+      "text": "Tamamı Türkiye sınırları içinde kalan en uzun nehir hangisidir?",
       "options": [
         "Kızılırmak",
         "Fırat",
@@ -1767,19 +1767,6 @@
       "answer": 2
     },
     {
-      "id": "spor-008",
-      "category": "spor",
-      "difficulty": 1,
-      "text": "Türkiye'nin 'ata sporu' olarak bilinen spor hangisidir?",
-      "options": [
-        "Okçuluk",
-        "Cirit",
-        "Binicilik",
-        "Güreş"
-      ],
-      "answer": 3
-    },
-    {
       "id": "spor-009",
       "category": "spor",
       "difficulty": 1,
@@ -2017,7 +2004,7 @@
       "id": "spor-027",
       "category": "spor",
       "difficulty": 3,
-      "text": "Olimpiyat halkalarındaki renklerden biri aşağıdakilerden hangisi DEĞİLDİR?",
+      "text": "Aşağıdakilerden hangisi Olimpiyat halkalarındaki renklerden biri DEĞİLDİR?",
       "options": [
         "Siyah",
         "Yeşil",
@@ -2329,7 +2316,7 @@
       "id": "gunluk-020",
       "category": "gunluk",
       "difficulty": 2,
-      "text": "Bir sayının yüzde 50'si neyin eşitidir?",
+      "text": "Bir sayının yüzde 50'si neye eşittir?",
       "options": [
         "Çeyreği",
         "İki katı",
@@ -2635,7 +2622,7 @@
         "İzmir",
         "Kırklareli"
       ],
-      "answer": 1
+      "answer": 0
     },
     {
       "id": "turkiye-014",
@@ -2667,7 +2654,7 @@
       "id": "turkiye-016",
       "category": "turkiye",
       "difficulty": 2,
-      "text": "Türkiye'nin en kurak bölgesi hangisidir?",
+      "text": "Türkiye'nin en az yağış alan bölgesi hangisidir?",
       "options": [
         "İç Anadolu",
         "Karadeniz",

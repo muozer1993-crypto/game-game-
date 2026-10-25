@@ -14,3 +14,4 @@ import './genel-kultur.test.js';
 import './bilardo.test.js';
 import './hafiza.test.js';
 import './tas-kagit-makas.test.js';
+import './mangala.test.js';

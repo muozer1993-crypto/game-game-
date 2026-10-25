@@ -16,6 +16,7 @@ Tek telefonda elden ele ya da iki telefonda oda koduyla oynanır. Ana ekrana ekl
 | **Genel Kültür Düellosu** | Aynı sorular ikinize; doğru sayısı, eşitlikte hız. 240+ soruluk havuz. |
 | **Amiral Battı** | Gemilerini gizle, rakibin denizine ateş et; atışlar gemi sahibinin cihazında değerlendirilir. |
 | **Tavla** | Klasik tavla; kırma, bardan giriş, toplama, mars (2 puan), geri al. |
+| **Mangala** | Türk mangalası: bir taş bırak, dağıt, çift yakala, hazne. |
 | **Bilardo** | Sürükleyerek nişan al; topu ceplayan devam eder. Fizik deterministik, iki cihaz aynı vuruşu aynı görür. |
 | **Dört Bağlantı** | 6×7 tahtada taş bırak, dördü yan yana getir. |
 | **Noktalar ve Kutular** | Çizgi çek, kutuyu kapat, bir daha oyna. 3×3 – 6×6. |
