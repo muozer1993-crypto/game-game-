@@ -18,6 +18,7 @@ Tek telefonda elden ele ya da iki telefonda oda koduyla oynanır. Ana ekrana ekl
 | **Beni Ne Kadar Tanıyorsun?** | Aynı sorular ikinize; önce kendi cevabın, sonra rakibin tahmini; karşılaştırma otomatik. Hazır havuz + kendi sorularınız. |
 | **Genel Kültür Düellosu** | Aynı sorular ikinize; doğru sayısı, eşitlikte hız. 240+ soruluk havuz. |
 | **Amiral Battı** | Gemilerini gizle, rakibin denizine ateş et; atışlar gemi sahibinin cihazında değerlendirilir. |
+| **Satranç** | Klasik satranç: rok, geçerken alma, terfi seçimi, şah mat, pat, yetersiz materyal, elli hamle, üç tekrar. |
 | **Tavla** | Klasik tavla; kırma, bardan giriş, toplama, mars (2 puan), geri al. |
 | **Dama** | Türk daması: ileri/yana, atlayarak alma zorunlu, en çok alan dizi, dama. |
 | **Mangala** | Türk mangalası: bir taş bırak, dağıt, çift yakala, hazne. |

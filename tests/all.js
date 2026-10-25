@@ -23,3 +23,4 @@ import './dokuz-tas.test.js';
 import './harf-avi.test.js';
 import './tabu.test.js';
 import './refleks.test.js';
+import './satranc.test.js';
