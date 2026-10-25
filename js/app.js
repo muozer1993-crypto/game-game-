@@ -598,9 +598,19 @@ export function showPlay(p) {
           });
         }
       }
+      const shareText = `${p.game.meta.name}: ${p.players[0]} ${scores[0]} – ${scores[1]} ${p.players[1]}${result.draw ? ' (son el berabere)' : ` (son eli ${p.players[result.winner]} aldı)`} · Oyun Gecesi ${location.origin}${location.pathname}`;
+      const shareBtn = (navigator.share || (navigator.clipboard && navigator.clipboard.writeText))
+        ? el('button', { type: 'button', class: 'btn btn-small linkish-btn', onClick: async () => {
+          try {
+            if (navigator.share) await navigator.share({ text: shareText });
+            else { await navigator.clipboard.writeText(shareText); toast('Sonuç panoya kopyalandı'); }
+          } catch (err) { if (!err || err.name !== 'AbortError') toast('Paylaşılamadı', { kind: 'error' }); }
+        } }, '📤 Sonucu paylaş')
+        : null;
       render(actions,
         el('div', { class: 'result-banner' }, text, tallyLine),
         el('div', { class: 'row' }, again, el('button', { type: 'button', class: 'btn btn-secondary btn-big', onClick: exit }, isOnline ? 'Lobiye dön' : 'Ana menü')),
+        shareBtn ? el('div', { class: 'row', style: { justifyContent: 'center', marginTop: '6px' } }, shareBtn) : null,
       );
       actions.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     },
@@ -611,11 +621,36 @@ export function showPlay(p) {
   render(app,
     header(p.game.meta.name, { onBack: exit, right: rulesBtn }),
     scoreBox,
+    isOnline ? emojiBar() : null,
     gameBox,
     actions,
   );
   session.start(p.initialState);
   if (isOnline) flushOnlineQueue();
+}
+
+// ---------------------------------------------------------------- emoji reactions (two phones)
+const EMOJIS = ['👍', '😂', '😮', '😅', '🔥', '🤝'];
+let lastEmojiAt = 0;
+function emojiBar() {
+  return el('div', { class: 'emoji-bar', role: 'group', 'aria-label': 'Tepki gönder' }, EMOJIS.map((e) => el('button', {
+    type: 'button', class: 'emoji-btn', 'aria-label': `tepki ${e}`,
+    onClick: () => {
+      if (!online.transport || Date.now() - lastEmojiAt < 1200) return; // no flooding
+      lastEmojiAt = Date.now();
+      online.transport.send({ t: 'emoji', e });
+      showReaction(e, null);
+    },
+  }, e)));
+}
+let reactionTimer = null;
+function showReaction(e, name) {
+  let box = document.getElementById('reaction');
+  if (!box) { box = el('div', { id: 'reaction', class: 'reaction', role: 'status', 'aria-live': 'polite' }); document.body.append(box); }
+  box.replaceChildren(el('span', { class: 'reaction-emoji' }, e), name ? el('span', { class: 'reaction-name' }, name) : null);
+  box.classList.add('show');
+  clearTimeout(reactionTimer);
+  reactionTimer = setTimeout(() => box.classList.remove('show'), 1600);
 }
 
 function showRulesOverlay(game) {
@@ -1001,6 +1036,11 @@ async function handleOnlineMessage(msg) {
     }
     case 'rematch': {
       toast(`${online.players ? online.players[1] : 'Rakip'} yeni tur istiyor`, { duration: 3000 });
+      return;
+    }
+    case 'emoji': {
+      if (!EMOJIS.includes(msg.e) || !online.players) return;
+      showReaction(msg.e, online.players[online.role === 'host' ? 1 : 0]);
       return;
     }
     case 'lobby': {

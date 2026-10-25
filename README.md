@@ -107,6 +107,9 @@ genel sunucusu (`0.peerjs.com`) kullanılır, oyun verisi doğrudan iki telefon 
 durumda veri Open Relay Project'in ücretsiz genel TURN sunucuları üzerinden aktarılır
 (`js/net/peer.js` içindeki `iceServers`; sunucu ulaşılamazsa yalnızca doğrudan bağlantı denenir).
 
+Oyun ekranındaki küçük emoji çubuğu (👍 😂 😮 😅 🔥 🤝) rakibin telefonunda büyükçe belirir; sonuç
+ekranındaki **Sonucu paylaş** skoru paylaşım menüsüne (ya da panoya) verir.
+
 **Bağlantı koparsa:** iki telefonda da "Bağlantı koptu — Yeniden bağlan" penceresi çıkar. Aynı oda
 koduyla yeniden eşleşilir ve kopukluk sırasında yapılan hamleler karşıya aktarılır; oyun kaldığı
 yerden sürer. (Sayfa yenilenirse oyun durumu kaybolur; o zaman lobiden yeni oyun kurulur.)
