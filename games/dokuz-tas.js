@@ -161,14 +161,16 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     const root = svg('svg', { viewBox: '0 0 700 700', class: 'nm-board', role: 'img', 'aria-label': 'Dokuz Taş tahtası' });
     const line = (a, b) => { const [x1, y1] = pos(a); const [x2, y2] = pos(b); root.append(svg('line', { x1, y1, x2, y2, stroke: 'currentColor', 'stroke-width': 4, 'stroke-linecap': 'round', opacity: 0.6 })); };
     for (const [a, , c] of MILLS) line(a, c);
-    const targets = new Set(selected != null ? moves.filter((m) => m.from === selected).map((m) => m.to) : (placing ? moves.map((m) => m.to) : []));
+    // empty points are plain dots; only the targets of a picked-up piece are highlighted
+    const targets = new Set(state.mustRemove ? [] : (selected != null ? moves.filter((m) => m.from === selected).map((m) => m.to) : (placing ? moves.map((m) => m.to) : [])));
+    const marked = new Set(selected != null ? targets : []);
     const movable = new Set(!placing && !state.mustRemove ? moves.map((m) => m.from) : []);
     for (let i = 0; i < 24; i++) {
       const [x, y] = pos(i);
       const v = state.points[i];
       const isLast = state.last && (state.last.to === i);
       if (v === null) {
-        root.append(svg('circle', { cx: x, cy: y, r: targets.has(i) ? 14 : 8, fill: targets.has(i) ? COLORS[viewer] : 'currentColor', opacity: targets.has(i) ? 0.55 : 0.5 }));
+        root.append(svg('circle', { cx: x, cy: y, r: marked.has(i) ? 14 : 8, fill: marked.has(i) ? COLORS[viewer] : 'currentColor', opacity: marked.has(i) ? 0.55 : 0.5 }));
       } else {
         root.append(svg('circle', {
           cx: x, cy: y, r: 30, fill: COLORS[v],

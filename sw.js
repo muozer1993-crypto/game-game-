@@ -1,6 +1,6 @@
 // Minimal service worker: precache the app shell, serve cache-first, fall back to network.
 // Bump VERSION whenever files change so that old caches are dropped.
-const VERSION = 'v19';
+const VERSION = 'v20';
 const CACHE = `oyun-gecesi-${VERSION}`;
 const SHELL = [
   './',
@@ -102,7 +102,8 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(request.url);
   if (url.origin !== location.origin) return; // never touch third-party requests (PeerJS, etc.)
   event.respondWith(
-    caches.match(request).then((cached) => {
+    // an invite link (?oda=KOD) is the same app shell
+    caches.match(request, request.mode === 'navigate' ? { ignoreSearch: true } : undefined).then((cached) => {
       if (cached) return cached;
       return fetch(request).then((response) => {
         if (response.ok && response.type === 'basic') {

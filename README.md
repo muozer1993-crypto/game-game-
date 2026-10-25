@@ -70,8 +70,9 @@ Online mod için HTTPS gerekir; GitHub Pages bunu zaten sağlar.
 ## Online mod (iki telefon)
 
 Ana menüden **İki telefonda oyna** → biri **Oda kur** der, 5 karakterlik kodu söyler; diğeri
-**Odaya katıl** ile kodu yazar. Ev sahibi oyunu ve ayarları seçer, iki telefon da aynı hamleleri
-aynı sırayla uygular.
+**Odaya katıl** ile kodu yazar. Ev sahibi **Davet bağlantısını gönder** ile `…?oda=KOD` biçiminde
+bir bağlantı da paylaşabilir (WhatsApp vb.); bağlantıyı açan doğrudan kod dolu katılma ekranına gelir.
+Ev sahibi oyunu ve ayarları seçer, iki telefon da aynı hamleleri aynı sırayla uygular.
 
 Bağlantı katmanı **PeerJS** (WebRTC, `vendor/peerjs.min.js`, MIT). Seçilme nedeni: sıfır kurulum.
 Hesap, API anahtarı, sunucu, yapılandırma dosyası gerekmez; eşleştirme için PeerJS'in ücretsiz

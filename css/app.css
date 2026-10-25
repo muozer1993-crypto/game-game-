@@ -648,3 +648,5 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .nm-board { width: 100%; max-width: 420px; display: block; margin: 6px auto; color: var(--fg); touch-action: manipulation; }
 .nm-hit { cursor: pointer; }
 .nm-key::before { content: ''; display: inline-block; width: 14px; height: 14px; border-radius: 50%; margin-right: 6px; vertical-align: -2px; background: var(--c); }
+
+.invite-link { font-size: 0.8rem; word-break: break-all; margin: 8px 0 4px; user-select: all; -webkit-user-select: all; }

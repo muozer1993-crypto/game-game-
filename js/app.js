@@ -426,7 +426,28 @@ function leaveOnline({ silent = false } = {}) {
   online.round++;
 }
 
-export function showOnline() {
+/** The link a friend opens to land on the join screen with the code filled in. */
+export function inviteLink(code) {
+  const url = new URL(location.pathname, location.href);
+  url.search = `?oda=${code}`;
+  return url.href;
+}
+
+async function shareInvite(code) {
+  const url = inviteLink(code);
+  const text = `Oyun Gecesi: odaya katıl, kod ${code}`;
+  if (navigator.share) {
+    try { await navigator.share({ title: 'Oyun Gecesi', text, url }); return; } catch (err) { if (err && err.name === 'AbortError') return; }
+  }
+  try {
+    await navigator.clipboard.writeText(url);
+    toast('Davet bağlantısı kopyalandı; arkadaşına gönder');
+  } catch {
+    toast('Kopyalanamadı: bağlantıyı elle seçip kopyala', { kind: 'error' });
+  }
+}
+
+export function showOnline({ code: presetCode = '' } = {}) {
   setScreen('online');
   let name = prefs.onlineName;
   const nameInput = el('input', {
@@ -437,6 +458,7 @@ export function showOnline() {
     type: 'text', class: 'input input-code', id: 'room-code', maxlength: 5, autocapitalize: 'characters', autocomplete: 'off',
     placeholder: 'ODA KODU', onInput: (e) => { e.target.value = e.target.value.toLocaleUpperCase('tr-TR').replace(/[^A-Z0-9]/g, ''); },
   });
+  if (presetCode) codeInput.value = normalizeRoomCode(presetCode);
   const status = el('p', { class: 'muted status' });
   const getName = () => { const n = name.trim() || 'Oyuncu'; prefs.onlineName = n; save('online-name', n); return n; };
 
@@ -482,7 +504,9 @@ export function showOnline() {
 
   render(app,
     header('İki telefonda oyna', { onBack: showMenu }),
-    el('p', { class: 'lead' }, 'Biriniz oda kurar, kodu söyler; diğeri kodu yazıp katılır. İkiniz de internete bağlı olmalısınız.'),
+    el('p', { class: 'lead' }, presetCode
+      ? `Davet bağlantısıyla geldin: oda kodu ${normalizeRoomCode(presetCode)}. Adını yaz ve "Odaya katıl"a bas.`
+      : 'Biriniz oda kurar, kodu söyler ya da davet bağlantısını gönderir; diğeri katılır. İkiniz de internete bağlı olmalısınız.'),
     el('section', { class: 'section' }, el('div', { class: 'field' }, el('label', { for: 'online-name' }, 'Adın'), nameInput)),
     el('section', { class: 'section card' }, el('h2', { class: 'section-title' }, 'Oda kur'), hostBtn),
     el('section', { class: 'section card' },
@@ -592,8 +616,10 @@ function showOnlineWaiting(code) {
       el('div', { class: 'muted' }, 'Oda kodu'),
       el('div', { class: 'room-code' }, code),
       isHost
-        ? el('p', {}, 'Kodu arkadaşına söyle. Katılınca oyun seçimi açılacak.')
+        ? el('p', {}, 'Kodu arkadaşına söyle ya da davet bağlantısını gönder. Katılınca oyun seçimi açılacak.')
         : el('p', {}, 'Bağlanıldı, ev sahibinin oyun seçmesi bekleniyor…'),
+      isHost ? el('button', { type: 'button', class: 'btn btn-primary btn-block', onClick: () => shareInvite(code) }, 'Davet bağlantısını gönder') : null,
+      isHost ? el('div', { class: 'invite-link muted' }, inviteLink(code)) : null,
       el('div', { class: 'spinner', 'aria-hidden': 'true' }),
     ),
   );
@@ -743,4 +769,11 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
   });
 }
 
-showMenu();
+// A friend's invite link (…?oda=KOD) opens the join screen with the code filled in.
+const invitedCode = new URLSearchParams(location.search).get('oda');
+if (invitedCode) {
+  history.replaceState(null, '', location.pathname);
+  showOnline({ code: invitedCode });
+} else {
+  showMenu();
+}
