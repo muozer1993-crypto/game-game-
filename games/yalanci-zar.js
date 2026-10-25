@@ -13,7 +13,7 @@ export const meta = {
   icon: '🎲',
   description: 'Zarların gizli; masadaki zarlar üstüne blöf yap, rakibin blöfünü yakala.',
   rules: [
-    'İkiniz de zarlarınızı gizlice atarsınız (varsayılan 5 zar). Sırası gelen, masadaki bütün zarlar hakkında bir teklif verir: "en az 3 tane 5 var" gibi. Birler jokerdir: teklif edilen yüz yerine sayılır (ayarlardan kapatılabilir).',
+    'İkiniz de zarlarınızı gizlice atarsınız (varsayılan 5 zar). Sırası gelen, masadaki bütün zarlar hakkında bir teklif verir: "en az 3 tane 5 var" gibi. Birler jokerdir: teklif edilen yüz yerine sayılır (ayarlardan kapatılabilir; kapalıyken birler de teklif edilebilen sıradan bir yüzdür).',
     'Rakip ya teklifi yükseltir (daha çok zar, ya da aynı sayıda daha yüksek yüz) ya da "Yalan!" der. O zaman zarlar açılır: teklif tutuyorsa "Yalan!" diyen, tutmuyorsa teklifi veren bir zar kaybeder.',
     'Zarı kaybeden yeni eli başlatır. Zarı kalmayan oyunu kaybeder. Tek telefonda sıra her teklifte el değiştirir; iki telefonda herkes kendi zarını görür.',
   ].join('\n'),
@@ -66,18 +66,21 @@ export function countFace(dice, face, wild) {
 
 export const totalDice = (state) => state.counts[0] + state.counts[1];
 
+/** Lowest face that can be bid: ones are wild (never bid on their own) unless that rule is off. */
+export const lowFace = (wild = true) => (wild ? 2 : 1);
+
 /** Is {q, f} a legal raise over the current bid? */
-export function isRaise(bid, q, f, total) {
-  if (!Number.isInteger(q) || !Number.isInteger(f) || q < 1 || q > total || f < 2 || f > 6) return false;
+export function isRaise(bid, q, f, total, wild = true) {
+  if (!Number.isInteger(q) || !Number.isInteger(f) || q < 1 || q > total || f < lowFace(wild) || f > 6) return false;
   if (!bid) return true;
   return q > bid.q || (q === bid.q && f > bid.f);
 }
 
 /** The smallest legal raise, or null when the bid is already at the top. */
-export function minRaise(bid, total) {
-  if (!bid) return { q: 1, f: 2 };
+export function minRaise(bid, total, wild = true) {
+  if (!bid) return { q: 1, f: lowFace(wild) };
   if (bid.f < 6) return { q: bid.q, f: bid.f + 1 };
-  return bid.q < total ? { q: bid.q + 1, f: 2 } : null;
+  return bid.q < total ? { q: bid.q + 1, f: lowFace(wild) } : null;
 }
 
 export function applyMove(state, player, move) {
@@ -90,7 +93,7 @@ export function applyMove(state, player, move) {
       if (player !== state.turn) fail('Sıra sende değil');
       const q = Number(move.q);
       const f = Number(move.f);
-      if (!isRaise(state.bid, q, f, totalDice(state))) fail('Teklif öncekinden yüksek olmalı');
+      if (!isRaise(state.bid, q, f, totalDice(state), state.wild)) fail('Teklif öncekinden yüksek olmalı');
       return { ...state, bid: { q, f, by: player }, turn: 1 - player };
     }
     case 'challenge': {
@@ -185,16 +188,16 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     return null;
   }
   const key = `${state.id}:${state.round}:${viewer}:${state.bid ? `${state.bid.q}${state.bid.f}` : ''}`;
-  const min = minRaise(state.bid, total);
+  const min = minRaise(state.bid, total, state.wild);
   const draft = drafts.get(key) || { ...(min || { q: total, f: 6 }) };
   drafts.set(key, draft);
   const qLabel = el('strong', { class: 'yz-q' });
-  const bidBtn = el('button', { type: 'button', class: 'btn btn-primary btn-big', onClick: () => { if (isRaise(state.bid, draft.q, draft.f, total)) sendMove({ type: 'bid', q: draft.q, f: draft.f }); } });
-  const faceBtns = [2, 3, 4, 5, 6].map((f) => el('button', { type: 'button', class: 'btn btn-secondary yz-face', 'aria-label': `yüz ${f}`, onClick: () => { draft.f = f; update(); } }, FACES[f]));
+  const bidBtn = el('button', { type: 'button', class: 'btn btn-primary btn-big', onClick: () => { if (isRaise(state.bid, draft.q, draft.f, total, state.wild)) sendMove({ type: 'bid', q: draft.q, f: draft.f }); } });
+  const faceBtns = [1, 2, 3, 4, 5, 6].filter((f) => f >= lowFace(state.wild)).map((f) => el('button', { type: 'button', class: 'btn btn-secondary yz-face', 'aria-label': `yüz ${f}`, onClick: () => { draft.f = f; update(); } }, FACES[f]));
   const update = () => {
     qLabel.textContent = String(draft.q);
     faceBtns.forEach((b, i) => b.classList.toggle('selected', i + 2 === draft.f));
-    const ok = isRaise(state.bid, draft.q, draft.f, total);
+    const ok = isRaise(state.bid, draft.q, draft.f, total, state.wild);
     bidBtn.disabled = !ok;
     bidBtn.textContent = min ? `Teklif: en az ${draft.q} × ${FACES[draft.f]}` : 'Teklif yükseltilemez';
   };

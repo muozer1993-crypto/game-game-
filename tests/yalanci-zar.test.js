@@ -14,6 +14,11 @@ test('yalancı zar: zarlar tohuma göre aynı, 1–6 arası, sıralı; sayım ve
   assert.ok(isRaise({ q: 2, f: 4 }, 2, 5, 10) && isRaise({ q: 2, f: 4 }, 3, 2, 10));
   assert.ok(!isRaise({ q: 2, f: 4 }, 2, 4, 10) && !isRaise({ q: 2, f: 4 }, 1, 6, 10) && !isRaise({ q: 2, f: 4 }, 2, 3, 10));
   assert.deepEqual(minRaise(null, 10), { q: 1, f: 2 });
+  // ones not wild: ones are a face like any other (the lowest)
+  assert.ok(isRaise(null, 1, 1, 10, false) && !isRaise(null, 1, 1, 10, true));
+  assert.deepEqual(minRaise(null, 10, false), { q: 1, f: 1 });
+  assert.deepEqual(minRaise({ q: 2, f: 6 }, 10, false), { q: 3, f: 1 });
+  assert.ok(isRaise({ q: 2, f: 1 }, 2, 2, 10, false));
   assert.deepEqual(minRaise({ q: 2, f: 4 }, 10), { q: 2, f: 5 });
   assert.deepEqual(minRaise({ q: 2, f: 6 }, 10), { q: 3, f: 2 });
   assert.equal(minRaise({ q: 10, f: 6 }, 10), null);

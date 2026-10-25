@@ -13,7 +13,7 @@ export const meta = {
   description: 'Üstteki kartla aynı renk ya da aynı sayıyı at; sekiz jokerdir, renk seçtirir.',
   rules: [
     'Yedişer kart dağıtılır, bir kart açılır. Sırası gelen, açık kartla aynı renkten (♠♥♦♣) ya da aynı sayıdan bir kart atar. Sekizler her zaman atılır ve atan yeni rengi söyler.',
-    'Atacak kartın yoksa desteden bir kart çekersin; uyuyorsa atabilirsin, uymuyorsa pas geçersin. Deste bitince atılan kartlar karıştırılıp deste olur.',
+    'Atacak kartın yoksa (ya da atmak istemiyorsan) desteden bir kart çekersin; çektiğin ya da elindeki uyan bir kartı atabilir ya da pas geçebilirsin. Deste bitince atılan kartlar karıştırılıp deste olur.',
     'Elini ilk bitiren, rakibinin elinde kalan kartların puanını alır: sekiz 50, J/Q/K 10, as 1, diğerleri üzerindeki sayı. Hedef puana ulaşan kazanır.',
   ].join('\n'),
   data: [],

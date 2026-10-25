@@ -13,7 +13,7 @@ export const meta = {
   description: 'Altışar kart, açık koz, evlilikler; eli ilk 66 puanı toplayan alır.',
   rules: [
     'Yirmi dört kart (9, 10, J, Q, K, A), altışar dağıtılır; bir kart koz olarak açılır. Puanlar: A 11, 10 10, K 4, Q 3, J 2, 9 0. Eli kazanan önce desteden çeker, sonra diğeri çeker ve kazanan açar.',
-    'Deste açıkken istediğin kartı atabilirsin. Deste bitince ya da "Kapat" denince renk uymak, uyuyorsa büyüğünü atmak, renk yoksa koz atmak zorunludur. Aynı renkten K+Q ile açarken evlilik: 20, kozda 40 (en az bir el almış olmalısın). Elinde koz 9 varsa açık kozla değişebilirsin.',
+    'Deste açıkken istediğin kartı atabilirsin. Deste bitince ya da "Kapat" denince renk uymak, uyuyorsa büyüğünü atmak, renk yoksa koz atmak zorunludur. Aynı renkten K+Q ile açarken evlilik: 20, kozda 40 (en az bir el almış olmalısın). Elinde koz 9 varsa, en az bir el almışken ve açarken (destede en az iki kart varken) açık kozla değişebilirsin.',
     'Puanı 66\'ya ulaşan eli alır: rakip 33 ve üstüyse 1, altıysa 2, hiç el almadıysa 3 oyun puanı. Kapatan 66\'ya ulaşamazsa rakip 2 (kapatıldığında eli yoksa 3) alır. Son eli alan +10 alır (kapatılmadıysa). 7 oyun puanına ulaşan kazanır.',
   ].join('\n'),
   data: [],
@@ -165,7 +165,8 @@ export function applyMove(state, player, move) {
           marriages[player].push({ s: card.s, pts: marriage });
         }
       }
-      const table = state.table.concat([{ player, card }]);
+      // a marriage is declared with the lead: it rides on the table entry so both players see it
+      const table = state.table.concat([marriage ? { player, card, marriage } : { player, card }]);
       if (table.length < 2) {
         const next = { ...state, hands, points, marriages, table, turn: opp };
         return checkEnd(next); // a marriage alone can reach 66
@@ -182,7 +183,7 @@ export function applyMove(state, player, move) {
         hands[winner] = hands[winner].concat([deck.pop()]);
         hands[loser] = hands[loser].concat([deck.pop()]);
       }
-      const lastTrick = { winner, cards: [lead.card, table[1].card], pts: POINTS[lead.card.r] + POINTS[table[1].card.r], marriage: marriage ? { player, pts: marriage } : null };
+      const lastTrick = { winner, cards: [lead.card, table[1].card], pts: POINTS[lead.card.r] + POINTS[table[1].card.r], marriage: lead.marriage ? { player: lead.player, pts: lead.marriage } : null };
       let next = { ...state, hands, deck, points, marriages, tricks, table: [], leader: winner, turn: winner, lastTrick };
       if (!hands[0].length && !hands[1].length && !state.closed && points[winner] < 66) {
         points = points.slice();
@@ -230,18 +231,19 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     el('div', { class: 'ss-slot' }, el('span', { class: 'muted' }, 'Koz'), tc && !state.closed ? cardEl(tc, { small: true, trump: true }) : el('span', { class: 'pcard small empty' }, SUITS[state.trump]), el('span', { class: 'ok-note' }, `${['maça', 'kupa', 'karo', 'sinek'][state.trump]} · deste ${state.closed ? 'kapalı' : state.deck.length}`)),
     el('div', { class: 'ss-slot' }, el('span', { class: 'muted' }, 'Masa'), el('div', { class: 'ce-row' }, state.table.length ? state.table.map((t) => cardEl(t.card, { small: true })) : [el('span', { class: 'pcard small empty' }, '–')])),
   );
+  const declared = state.table.length && state.table[0].marriage ? el('p', { class: 'hint notice' }, `${players[state.table[0].player]} evlilik ilan etti: +${state.table[0].marriage}`) : null;
   const L = state.lastTrick;
   const lastLine = L ? el('p', { class: 'hint' }, `Son el: ${players[L.winner]} aldı (${L.cards.map((c) => `${RANK_TEXT[c.r]}${SUITS[c.s]}`).join(', ')}) +${L.pts}${L.bonus ? ' (son el +10)' : ''}${L.marriage ? ` · ${players[L.marriage.player]} evlilik +${L.marriage.pts}` : ''}`) : null;
 
   if (state.phase === 'handOver' || state.phase === 'over') {
     const R = state.result;
-    const how = { sixtysix: '66 puana ulaştı', closerFailed: `kapatan ${nameSuffix(players[1 - R.winner], 'in')} 66'ya ulaşamadı`, lastTrick: 'son eli aldı (kimse 66 yapamadı)' }[R.how];
+    const how = { sixtysix: '66 puana ulaştı', closerFailed: `kapatan ${players[1 - R.winner]} 66'ya ulaşamadı`, lastTrick: 'son eli aldı (kimse 66 yapamadı)' }[R.how];
     const line = `${players[R.winner]} eli aldı: ${how}, +${R.pts} oyun puanı. (${players[0]} ${state.points[0]} – ${state.points[1]} ${players[1]})`;
     const [a, b] = state.gamePoints;
     draw(container,
       el('div', { class: 'status-line' }, el('strong', {}, state.phase === 'over' ? (a === b ? `Berabere: ${a}–${b}` : `${players[a > b ? 0 : 1]} kazandı: ${Math.max(a, b)}–${Math.min(a, b)}`) : line)),
       state.phase === 'over' ? el('p', { class: 'hint' }, line) : null,
-      legend, lastLine,
+      legend, declared, lastLine,
       state.phase === 'handOver' ? el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block', style: { marginTop: '12px' }, onClick: () => sendMove({ type: 'next' }) }, 'Sonraki el') : null,
     );
     return null;
@@ -254,7 +256,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     draw(container,
       el('div', { class: 'status-line' }, el('strong', {}, `${players[opp]} oynuyor…`)),
       el('div', { class: 'spinner', 'aria-hidden': 'true' }),
-      table, lastLine, myPts,
+      table, declared, lastLine, myPts,
       el('div', { class: 'col-title' }, 'Kartların'), el('div', { class: 'ce-hand' }, hand.map((c) => cardEl(c, { small: true }))),
       legend,
     );
@@ -267,7 +269,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const marriageSuits = leading && hasTrick(state, viewer) ? [0, 1, 2, 3].filter((s) => hand.some((c) => c.r === 13 && c.s === s) && hand.some((c) => c.r === 12 && c.s === s)) : [];
   draw(container,
     el('div', { class: 'status-line' }, el('strong', {}, leading ? `${players[viewer]}, sen aç` : `${players[viewer]}, cevap ver`)),
-    table, lastLine, myPts,
+    table, declared, lastLine, myPts,
     el('div', { class: 'col-title' }, `Kartların (${hand.length})`),
     el('div', { class: 'ce-hand' }, hand.map((c) => cardEl(c, { button: true, disabled: !legal.some((x) => sameCard(x, c)), onClick: () => sendMove({ type: 'play', r: c.r, s: c.s }) }))),
     marriageSuits.length ? el('p', { class: 'hint notice' }, `Evlilik hazır: ${marriageSuits.map((s) => `${SUITS[s]} K+Q (${s === state.trump ? 40 : 20})`).join(', ')} — K ya da Q ile aç.`) : null,

@@ -44,10 +44,12 @@ test('66: dağıtım, açık deste serbestliği, çekme, evlilik, değişim, kap
   s = game.applyMove(s, 0, { type: 'play', r: 13, s: 1 });
   assert.equal(s.points[0], 61);
   assert.deepEqual(s.marriages[0], [{ s: 1, pts: 40 }]);
+  assert.equal(s.table[0].marriage, 40, 'the declaration is on the table for both to see');
   assert.equal(s.phase, 'play');
   // player 1 replies with 9♦ (stock still open: free) -> player 0 wins 4 points -> 65... play then 66 after next trick
   s = game.applyMove(s, 1, { type: 'play', r: 9, s: 2 });
   assert.equal(s.points[0], 65);
+  assert.deepEqual(s.lastTrick.marriage, { player: 0, pts: 40 }, 'the trick summary names the marriage');
   assert.equal(s.deck.length, 0, 'stock exhausted');
   assert.ok(!s.hands[0].some((c) => c.r === 9 && c.s === 1) || true);
   // now strict rules: player 0 leads Q♥ (trump) -> player 1 must play a trump if any (has 9♥ drawn last) else anything

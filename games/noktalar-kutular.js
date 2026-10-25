@@ -97,6 +97,9 @@ export function getResult(state) {
 const COLORS = ['#e53935', '#3b6ef6'];
 
 export function render(state, viewer, container, sendMove, ctx = {}) {
+  // box marks: each player's initial, or 1 and 2 when the initials are the same ("Oyuncu 1"/"Oyuncu 2")
+  const initials = [0, 1].map((q) => ([...String((ctx.players || [])[q] || '')][0] || '?').toLocaleUpperCase('tr-TR'));
+  const marks = initials[0] === initials[1] ? ['1', '2'] : initials;
   const players = ctx.players || ['Oyuncu 1', 'Oyuncu 2'];
   const { n } = state;
   const mine = !state.over && viewer === state.turn;
@@ -111,7 +114,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       const owner = state.boxes[r * n + c];
       if (owner === null) continue;
       root.append(svg('rect', { x: M + c * S + 4, y: M + r * S + 4, width: S - 8, height: S - 8, rx: 6, fill: COLORS[owner], opacity: 0.25 }));
-      root.append(svg('text', { x: M + c * S + S / 2, y: M + r * S + S / 2 + 7, 'text-anchor': 'middle', 'font-size': 20, 'font-weight': 700, fill: COLORS[owner], text: ([...String(players[owner] || '')][0] || '?').toLocaleUpperCase('tr-TR') }));
+      root.append(svg('text', { x: M + c * S + S / 2, y: M + r * S + S / 2 + 7, 'text-anchor': 'middle', 'font-size': 20, 'font-weight': 700, fill: COLORS[owner], text: marks[owner] }));
     }
   }
   // lines (taken + free hit areas)
