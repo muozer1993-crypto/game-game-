@@ -8,8 +8,12 @@ import dortBaglanti from './dort-baglanti.js';
 import xox from './xox.js';
 import noktalarKutular from './noktalar-kutular.js';
 import amiralBatti from './amiral-batti.js';
+import tavla from './tavla.js';
+import genelKultur from './genel-kultur.js';
+import bilardo from './bilardo.js';
+import hafiza from './hafiza.js';
 
-export const games = [sonHece, gizliKelime, gizliSayi, beniTani, amiralBatti, dortBaglanti, noktalarKutular, xox];
+export const games = [sonHece, gizliKelime, gizliSayi, beniTani, genelKultur, amiralBatti, tavla, bilardo, dortBaglanti, noktalarKutular, hafiza, xox];
 
 export function findGame(id) {
   return games.find((g) => g.id === id) || null;

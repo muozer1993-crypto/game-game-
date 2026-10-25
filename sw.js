@@ -1,6 +1,6 @@
 // Minimal service worker: precache the app shell, serve cache-first, fall back to network.
 // Bump VERSION whenever files change so that old caches are dropped.
-const VERSION = 'v4';
+const VERSION = 'v5';
 const CACHE = `oyun-gecesi-${VERSION}`;
 const SHELL = [
   './',
@@ -31,7 +31,12 @@ const SHELL = [
   './games/xox.js',
   './games/noktalar-kutular.js',
   './games/amiral-batti.js',
+  './games/tavla.js',
+  './games/genel-kultur.js',
+  './games/bilardo.js',
+  './games/hafiza.js',
   './data/questions.json',
+  './data/trivia.json',
   './data/common-tr.json',
   './data/words-tr.txt',
   './icons/icon.svg',
@@ -54,8 +59,9 @@ const SHELL = [
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE)
-      // cache: 'reload' bypasses the HTTP cache so a VERSION bump really fetches new files
-      .then((cache) => cache.addAll(SHELL.map((url) => new Request(url, { cache: 'reload' }))))
+      // cache: 'reload' bypasses the HTTP cache so a VERSION bump really fetches new files;
+      // one missing file must not break the whole install, so files are added one by one
+      .then((cache) => Promise.allSettled(SHELL.map((url) => cache.add(new Request(url, { cache: 'reload' })))))
       .then(() => self.skipWaiting()),
   );
 });

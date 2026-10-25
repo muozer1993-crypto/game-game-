@@ -1,0 +1,3330 @@
+{
+  "version": 1,
+  "categories": {
+    "cografya": "Coğrafya",
+    "tarih": "Tarih",
+    "bilim": "Bilim",
+    "sanat": "Sanat & Edebiyat",
+    "spor": "Spor",
+    "gunluk": "Günlük Hayat",
+    "turkiye": "Türkiye",
+    "dunya": "Dünya"
+  },
+  "questions": [
+    {
+      "id": "cografya-001",
+      "category": "cografya",
+      "difficulty": 1,
+      "text": "Türkiye'nin en uzun nehri hangisidir?",
+      "options": [
+        "Kızılırmak",
+        "Fırat",
+        "Sakarya",
+        "Yeşilırmak"
+      ],
+      "answer": 0
+    },
+    {
+      "id": "cografya-002",
+      "category": "cografya",
+      "difficulty": 1,
+      "text": "Dünyanın en büyük okyanusu hangisidir?",
+      "options": [
+        "Atlas Okyanusu",
+        "Büyük Okyanus",
+        "Hint Okyanusu",
+        "Arktik Okyanusu"
+      ],
+      "answer": 1
+    },
+    {
+      "id": "cografya-003",
+      "category": "cografya",
+      "difficulty": 1,
+      "text": "Avustralya'nın başkenti hangi şehirdir?",
+      "options": [
+        "Sidney",
+        "Melbourne",
+        "Canberra",
+        "Perth"
+      ],
+      "answer": 2
+    },
+    {
+      "id": "cografya-004",
+      "category": "cografya",
+      "difficulty": 1,
+      "text": "Dünyanın en yüksek dağı hangisidir?",
+      "options": [
+        "K2",
+        "Kangchenjunga",
+        "Lhotse",
+        "Everest"
+      ],
+      "answer": 3
+    },
+    {
+      "id": "cografya-005",
+      "category": "cografya",
+      "difficulty": 1,
+      "text": "Kanada'nın başkenti hangi şehirdir?",
+      "options": [
+        "Ottawa",
+        "Toronto",
+        "Vancouver",
+        "Montreal"
+      ],
+      "answer": 0
+    },
+    {
+      "id": "cografya-006",
+      "category": "cografya",
+      "difficulty": 1,
+      "text": "Sahra Çölü hangi kıtada yer alır?",
+      "options": [
+        "Asya",
+        "Afrika",
+        "Avustralya",
+        "Güney Amerika"
+      ],
+      "answer": 1
+    },
+    {
+      "id": "cografya-007",
+      "category": "cografya",
+      "difficulty": 1,
+      "text": "Dünyanın en büyük kıtası hangisidir?",
+      "options": [
+        "Afrika",
+        "Kuzey Amerika",
+        "Asya",
+        "Avrupa"
+      ],
+      "answer": 2
+    },
+    {
+      "id": "cografya-008",
+      "category": "cografya",
+      "difficulty": 1,
+      "text": "Nil Nehri hangi denize dökülür?",
+      "options": [
+        "Kızıldeniz",
+        "Hint Okyanusu",
+        "Karadeniz",
+        "Akdeniz"
+      ],
+      "answer": 3
+    },
+    {
+      "id": "cografya-009",
+      "category": "cografya",
+      "difficulty": 1,
+      "text": "İtalya'nın başkenti hangi şehirdir?",
+      "options": [
+        "Roma",
+        "Milano",
+        "Napoli",
+        "Venedik"
+      ],
+      "answer": 0
+    },
+    {
+      "id": "cografya-010",
+      "category": "cografya",
+      "difficulty": 1,
+      "text": "Japonya'nın başkenti hangi şehirdir?",
+      "options": [
+        "Osaka",
+        "Tokyo",
+        "Kyoto",
+        "Nagoya"
+      ],
+      "answer": 1
+    },
+    {
+      "id": "cografya-011",
+      "category": "cografya",
+      "difficulty": 1,
+      "text": "Amazon Nehri hangi kıtadadır?",
+      "options": [
+        "Afrika",
+        "Asya",
+        "Güney Amerika",
+        "Kuzey Amerika"
+      ],
+      "answer": 2
+    },
+    {
+      "id": "cografya-012",
+      "category": "cografya",
+      "difficulty": 1,
+      "text": "Fuji Dağı hangi ülkededir?",
+      "options": [
+        "Çin",
+        "Güney Kore",
+        "Nepal",
+        "Japonya"
+      ],
+      "answer": 3
+    },
+    {
+      "id": "cografya-013",
+      "category": "cografya",
+      "difficulty": 1,
+      "text": "Yüzölçümü bakımından dünyanın en büyük ülkesi hangisidir?",
+      "options": [
+        "Rusya",
+        "Kanada",
+        "Çin",
+        "ABD"
+      ],
+      "answer": 0
+    },
+    {
+      "id": "cografya-014",
+      "category": "cografya",
+      "difficulty": 2,
+      "text": "Brezilya'nın başkenti hangi şehirdir?",
+      "options": [
+        "Rio de Janeiro",
+        "Brasília",
+        "São Paulo",
+        "Salvador"
+      ],
+      "answer": 1
+    },
+    {
+      "id": "cografya-015",
+      "category": "cografya",
+      "difficulty": 2,
+      "text": "Dünyanın en derin gölü hangisidir?",
+      "options": [
+        "Hazar Denizi",
+        "Tanganika Gölü",
+        "Baykal Gölü",
+        "Victoria Gölü"
+      ],
+      "answer": 2
+    },
+    {
+      "id": "cografya-016",
+      "category": "cografya",
+      "difficulty": 2,
+      "text": "Dünyanın en küçük kıtası hangisidir?",
+      "options": [
+        "Avrupa",
+        "Antarktika",
+        "Güney Amerika",
+        "Avustralya"
+      ],
+      "answer": 3
+    },
+    {
+      "id": "cografya-017",
+      "category": "cografya",
+      "difficulty": 2,
+      "text": "Alp Dağları'nın en yüksek zirvesi hangisidir?",
+      "options": [
+        "Mont Blanc",
+        "Matterhorn",
+        "Jungfrau",
+        "Eiger"
+      ],
+      "answer": 0
+    },
+    {
+      "id": "cografya-018",
+      "category": "cografya",
+      "difficulty": 2,
+      "text": "Hangi ülke hem Avrupa hem Asya kıtasında toprağa sahiptir?",
+      "options": [
+        "Yunanistan",
+        "Türkiye",
+        "Bulgaristan",
+        "Polonya"
+      ],
+      "answer": 1
+    },
+    {
+      "id": "cografya-019",
+      "category": "cografya",
+      "difficulty": 2,
+      "text": "Dünyanın en yüksek şelalesi Angel Şelalesi hangi ülkededir?",
+      "options": [
+        "Brezilya",
+        "Kolombiya",
+        "Venezuela",
+        "Peru"
+      ],
+      "answer": 2
+    },
+    {
+      "id": "cografya-020",
+      "category": "cografya",
+      "difficulty": 2,
+      "text": "İsviçre'nin başkenti hangi şehirdir?",
+      "options": [
+        "Zürih",
+        "Cenevre",
+        "Basel",
+        "Bern"
+      ],
+      "answer": 3
+    },
+    {
+      "id": "cografya-021",
+      "category": "cografya",
+      "difficulty": 2,
+      "text": "Dünyanın en büyük adası hangisidir?",
+      "options": [
+        "Grönland",
+        "Yeni Gine",
+        "Borneo",
+        "Madagaskar"
+      ],
+      "answer": 0
+    },
+    {
+      "id": "cografya-022",
+      "category": "cografya",
+      "difficulty": 2,
+      "text": "Hindistan'ın başkenti hangi şehirdir?",
+      "options": [
+        "Mumbai",
+        "Yeni Delhi",
+        "Kalküta",
+        "Bangalor"
+      ],
+      "answer": 1
+    },
+    {
+      "id": "cografya-023",
+      "category": "cografya",
+      "difficulty": 2,
+      "text": "Ekvator çizgisi aşağıdaki ülkelerden hangisinden geçer?",
+      "options": [
+        "Mısır",
+        "Güney Afrika",
+        "Kenya",
+        "Fas"
+      ],
+      "answer": 2
+    },
+    {
+      "id": "cografya-024",
+      "category": "cografya",
+      "difficulty": 2,
+      "text": "Hangi çöl Güney Amerika'da yer alır?",
+      "options": [
+        "Gobi",
+        "Kalahari",
+        "Namib",
+        "Atacama"
+      ],
+      "answer": 3
+    },
+    {
+      "id": "cografya-025",
+      "category": "cografya",
+      "difficulty": 2,
+      "text": "Tuna Nehri hangi denize dökülür?",
+      "options": [
+        "Karadeniz",
+        "Adriyatik Denizi",
+        "Baltık Denizi",
+        "Ege Denizi"
+      ],
+      "answer": 0
+    },
+    {
+      "id": "cografya-026",
+      "category": "cografya",
+      "difficulty": 3,
+      "text": "Avrupa'nın en uzun nehri hangisidir?",
+      "options": [
+        "Tuna",
+        "Volga",
+        "Ren",
+        "Dinyeper"
+      ],
+      "answer": 1
+    },
+    {
+      "id": "cografya-027",
+      "category": "cografya",
+      "difficulty": 3,
+      "text": "Dünyanın en büyük sıcak çölü hangisidir?",
+      "options": [
+        "Arabistan Çölü",
+        "Gobi",
+        "Sahra",
+        "Kalahari"
+      ],
+      "answer": 2
+    },
+    {
+      "id": "cografya-028",
+      "category": "cografya",
+      "difficulty": 3,
+      "text": "Hangi ülkenin başkenti Ulan Batur'dur?",
+      "options": [
+        "Kazakistan",
+        "Kırgızistan",
+        "Tacikistan",
+        "Moğolistan"
+      ],
+      "answer": 3
+    },
+    {
+      "id": "cografya-029",
+      "category": "cografya",
+      "difficulty": 3,
+      "text": "Afrika'nın en yüksek dağı hangisidir?",
+      "options": [
+        "Kilimanjaro",
+        "Kenya Dağı",
+        "Atlas",
+        "Ruwenzori"
+      ],
+      "answer": 0
+    },
+    {
+      "id": "cografya-030",
+      "category": "cografya",
+      "difficulty": 3,
+      "text": "Kuzey Amerika'nın en yüksek zirvesi hangisidir?",
+      "options": [
+        "Logan",
+        "Denali",
+        "Whitney",
+        "Rainier"
+      ],
+      "answer": 1
+    },
+    {
+      "id": "tarih-001",
+      "category": "tarih",
+      "difficulty": 1,
+      "text": "İstanbul hangi yılda fethedildi?",
+      "options": [
+        "1402",
+        "1517",
+        "1453",
+        "1389"
+      ],
+      "answer": 2
+    },
+    {
+      "id": "tarih-002",
+      "category": "tarih",
+      "difficulty": 1,
+      "text": "Türkiye Cumhuriyeti hangi yılda ilan edildi?",
+      "options": [
+        "1920",
+        "1922",
+        "1924",
+        "1923"
+      ],
+      "answer": 3
+    },
+    {
+      "id": "tarih-003",
+      "category": "tarih",
+      "difficulty": 1,
+      "text": "Birinci Dünya Savaşı hangi yılda başladı?",
+      "options": [
+        "1914",
+        "1912",
+        "1916",
+        "1918"
+      ],
+      "answer": 0
+    },
+    {
+      "id": "tarih-004",
+      "category": "tarih",
+      "difficulty": 1,
+      "text": "İkinci Dünya Savaşı hangi yılda sona erdi?",
+      "options": [
+        "1943",
+        "1945",
+        "1944",
+        "1946"
+      ],
+      "answer": 1
+    },
+    {
+      "id": "tarih-005",
+      "category": "tarih",
+      "difficulty": 1,
+      "text": "Amerika kıtasına 1492'de ulaşan denizci kimdir?",
+      "options": [
+        "Vasco da Gama",
+        "Macellan",
+        "Kristof Kolomb",
+        "Amerigo Vespucci"
+      ],
+      "answer": 2
+    },
+    {
+      "id": "tarih-006",
+      "category": "tarih",
+      "difficulty": 1,
+      "text": "Osmanlı Devleti'nin kurucusu kimdir?",
+      "options": [
+        "Orhan Bey",
+        "Ertuğrul Gazi",
+        "Yıldırım Bayezid",
+        "Osman Bey"
+      ],
+      "answer": 3
+    },
+    {
+      "id": "tarih-007",
+      "category": "tarih",
+      "difficulty": 1,
+      "text": "Fransız Devrimi hangi yılda başladı?",
+      "options": [
+        "1789",
+        "1776",
+        "1799",
+        "1804"
+      ],
+      "answer": 0
+    },
+    {
+      "id": "tarih-008",
+      "category": "tarih",
+      "difficulty": 1,
+      "text": "Berlin Duvarı hangi yılda yıkıldı?",
+      "options": [
+        "1985",
+        "1989",
+        "1991",
+        "1979"
+      ],
+      "answer": 1
+    },
+    {
+      "id": "tarih-009",
+      "category": "tarih",
+      "difficulty": 1,
+      "text": "Malazgirt Savaşı hangi yılda yapıldı?",
+      "options": [
+        "1048",
+        "1096",
+        "1071",
+        "1176"
+      ],
+      "answer": 2
+    },
+    {
+      "id": "tarih-010",
+      "category": "tarih",
+      "difficulty": 1,
+      "text": "Türkiye Büyük Millet Meclisi hangi yılda açıldı?",
+      "options": [
+        "1919",
+        "1921",
+        "1923",
+        "1920"
+      ],
+      "answer": 3
+    },
+    {
+      "id": "tarih-011",
+      "category": "tarih",
+      "difficulty": 1,
+      "text": "Ay'a ilk insanlı iniş hangi yılda gerçekleşti?",
+      "options": [
+        "1969",
+        "1965",
+        "1971",
+        "1961"
+      ],
+      "answer": 0
+    },
+    {
+      "id": "tarih-012",
+      "category": "tarih",
+      "difficulty": 1,
+      "text": "Çanakkale Deniz Zaferi hangi tarihte kazanıldı?",
+      "options": [
+        "18 Mart 1914",
+        "18 Mart 1915",
+        "18 Mart 1916",
+        "30 Ağustos 1915"
+      ],
+      "answer": 1
+    },
+    {
+      "id": "tarih-013",
+      "category": "tarih",
+      "difficulty": 1,
+      "text": "Soyadı Kanunu Türkiye'de hangi yılda kabul edildi?",
+      "options": [
+        "1928",
+        "1930",
+        "1934",
+        "1937"
+      ],
+      "answer": 2
+    },
+    {
+      "id": "tarih-014",
+      "category": "tarih",
+      "difficulty": 2,
+      "text": "Osmanlı Devleti'nin son padişahı kimdir?",
+      "options": [
+        "II. Abdülhamid",
+        "V. Mehmed Reşad",
+        "Abdülmecid Efendi",
+        "VI. Mehmed (Vahdettin)"
+      ],
+      "answer": 3
+    },
+    {
+      "id": "tarih-015",
+      "category": "tarih",
+      "difficulty": 2,
+      "text": "Kanuni Sultan Süleyman hangi yılda tahta çıktı?",
+      "options": [
+        "1520",
+        "1512",
+        "1526",
+        "1566"
+      ],
+      "answer": 0
+    },
+    {
+      "id": "tarih-016",
+      "category": "tarih",
+      "difficulty": 2,
+      "text": "Magna Carta hangi yılda imzalandı?",
+      "options": [
+        "1066",
+        "1215",
+        "1348",
+        "1492"
+      ],
+      "answer": 1
+    },
+    {
+      "id": "tarih-017",
+      "category": "tarih",
+      "difficulty": 2,
+      "text": "Amerika Birleşik Devletleri bağımsızlığını hangi yılda ilan etti?",
+      "options": [
+        "1783",
+        "1765",
+        "1776",
+        "1801"
+      ],
+      "answer": 2
+    },
+    {
+      "id": "tarih-018",
+      "category": "tarih",
+      "difficulty": 2,
+      "text": "İlk Türk devletlerinden Göktürkler hangi yüzyılda kuruldu?",
+      "options": [
+        "4. yüzyıl",
+        "8. yüzyıl",
+        "10. yüzyıl",
+        "6. yüzyıl"
+      ],
+      "answer": 3
+    },
+    {
+      "id": "tarih-019",
+      "category": "tarih",
+      "difficulty": 2,
+      "text": "Lozan Barış Antlaşması hangi yılda imzalandı?",
+      "options": [
+        "1923",
+        "1920",
+        "1922",
+        "1924"
+      ],
+      "answer": 0
+    },
+    {
+      "id": "tarih-020",
+      "category": "tarih",
+      "difficulty": 2,
+      "text": "Roma İmparatorluğu'nun ilk imparatoru kimdir?",
+      "options": [
+        "Julius Caesar",
+        "Augustus",
+        "Nero",
+        "Tiberius"
+      ],
+      "answer": 1
+    },
+    {
+      "id": "tarih-021",
+      "category": "tarih",
+      "difficulty": 2,
+      "text": "Preveze Deniz Savaşı'nı kazanan Osmanlı amirali kimdir?",
+      "options": [
+        "Piri Reis",
+        "Turgut Reis",
+        "Barbaros Hayreddin Paşa",
+        "Kılıç Ali Paşa"
+      ],
+      "answer": 2
+    },
+    {
+      "id": "tarih-022",
+      "category": "tarih",
+      "difficulty": 2,
+      "text": "Napolyon'un 1815'te kesin yenilgiye uğradığı savaş hangisidir?",
+      "options": [
+        "Austerlitz",
+        "Trafalgar",
+        "Leipzig",
+        "Waterloo"
+      ],
+      "answer": 3
+    },
+    {
+      "id": "tarih-023",
+      "category": "tarih",
+      "difficulty": 2,
+      "text": "Mustafa Kemal Atatürk hangi yılda vefat etti?",
+      "options": [
+        "1938",
+        "1935",
+        "1940",
+        "1942"
+      ],
+      "answer": 0
+    },
+    {
+      "id": "tarih-024",
+      "category": "tarih",
+      "difficulty": 2,
+      "text": "Matbaayı Avrupa'da hareketli harflerle geliştiren kişi kimdir?",
+      "options": [
+        "Leonardo da Vinci",
+        "Johannes Gutenberg",
+        "Martin Luther",
+        "Galileo Galilei"
+      ],
+      "answer": 1
+    },
+    {
+      "id": "tarih-025",
+      "category": "tarih",
+      "difficulty": 2,
+      "text": "İstanbul'u fetheden Osmanlı padişahı kimdir?",
+      "options": [
+        "I. Murad",
+        "II. Murad",
+        "II. Mehmed",
+        "I. Bayezid"
+      ],
+      "answer": 2
+    },
+    {
+      "id": "tarih-026",
+      "category": "tarih",
+      "difficulty": 2,
+      "text": "Türkiye'de kadınlara milletvekili seçme ve seçilme hakkı hangi yılda verildi?",
+      "options": [
+        "1923",
+        "1930",
+        "1946",
+        "1934"
+      ],
+      "answer": 3
+    },
+    {
+      "id": "tarih-027",
+      "category": "tarih",
+      "difficulty": 2,
+      "text": "Antik Yunan'da ilk Olimpiyat Oyunları hangi şehirde düzenlendi?",
+      "options": [
+        "Olympia",
+        "Atina",
+        "Sparta",
+        "Korint"
+      ],
+      "answer": 0
+    },
+    {
+      "id": "tarih-028",
+      "category": "tarih",
+      "difficulty": 2,
+      "text": "Sakarya Meydan Muharebesi hangi yılda yapıldı?",
+      "options": [
+        "1920",
+        "1921",
+        "1922",
+        "1919"
+      ],
+      "answer": 1
+    },
+    {
+      "id": "tarih-029",
+      "category": "tarih",
+      "difficulty": 3,
+      "text": "Mohaç Meydan Muharebesi hangi yılda yapıldı?",
+      "options": [
+        "1514",
+        "1532",
+        "1526",
+        "1541"
+      ],
+      "answer": 2
+    },
+    {
+      "id": "tarih-030",
+      "category": "tarih",
+      "difficulty": 3,
+      "text": "Kadeş Antlaşması hangi iki devlet arasında imzalandı?",
+      "options": [
+        "Asurlar ve Mısır",
+        "Hititler ve Babil",
+        "Persler ve Lidya",
+        "Hititler ve Mısır"
+      ],
+      "answer": 3
+    },
+    {
+      "id": "tarih-031",
+      "category": "tarih",
+      "difficulty": 3,
+      "text": "Yüz Yıl Savaşları hangi iki ülke arasında yapıldı?",
+      "options": [
+        "İngiltere ve Fransa",
+        "İspanya ve Portekiz",
+        "Fransa ve Almanya",
+        "İngiltere ve İspanya"
+      ],
+      "answer": 0
+    },
+    {
+      "id": "tarih-032",
+      "category": "tarih",
+      "difficulty": 3,
+      "text": "Çaldıran Savaşı'nda Osmanlı ordusuna komuta eden padişah kimdir?",
+      "options": [
+        "Kanuni Sultan Süleyman",
+        "Yavuz Sultan Selim",
+        "II. Bayezid",
+        "Fatih Sultan Mehmed"
+      ],
+      "answer": 1
+    },
+    {
+      "id": "tarih-033",
+      "category": "tarih",
+      "difficulty": 3,
+      "text": "Osmanlı Devleti'nde Tanzimat Fermanı hangi yılda ilan edildi?",
+      "options": [
+        "1826",
+        "1856",
+        "1839",
+        "1876"
+      ],
+      "answer": 2
+    },
+    {
+      "id": "bilim-001",
+      "category": "bilim",
+      "difficulty": 1,
+      "text": "Suyun kimyasal formülü nedir?",
+      "options": [
+        "CO2",
+        "O2",
+        "H2O2",
+        "H2O"
+      ],
+      "answer": 3
+    },
+    {
+      "id": "bilim-002",
+      "category": "bilim",
+      "difficulty": 1,
+      "text": "Güneş Sistemi'nde Güneş'e en yakın gezegen hangisidir?",
+      "options": [
+        "Merkür",
+        "Venüs",
+        "Mars",
+        "Dünya"
+      ],
+      "answer": 0
+    },
+    {
+      "id": "bilim-003",
+      "category": "bilim",
+      "difficulty": 1,
+      "text": "İnsan vücudundaki en büyük organ hangisidir?",
+      "options": [
+        "Karaciğer",
+        "Deri",
+        "Akciğer",
+        "Beyin"
+      ],
+      "answer": 1
+    },
+    {
+      "id": "bilim-004",
+      "category": "bilim",
+      "difficulty": 1,
+      "text": "Su deniz seviyesinde kaç derecede kaynar?",
+      "options": [
+        "90 °C",
+        "110 °C",
+        "100 °C",
+        "80 °C"
+      ],
+      "answer": 2
+    },
+    {
+      "id": "bilim-005",
+      "category": "bilim",
+      "difficulty": 1,
+      "text": "Altının kimyasal sembolü nedir?",
+      "options": [
+        "Ag",
+        "Al",
+        "Ar",
+        "Au"
+      ],
+      "answer": 3
+    },
+    {
+      "id": "bilim-006",
+      "category": "bilim",
+      "difficulty": 1,
+      "text": "Güneş Sistemi'nin en büyük gezegeni hangisidir?",
+      "options": [
+        "Jüpiter",
+        "Satürn",
+        "Neptün",
+        "Uranüs"
+      ],
+      "answer": 0
+    },
+    {
+      "id": "bilim-007",
+      "category": "bilim",
+      "difficulty": 1,
+      "text": "Bitkiler fotosentez sırasında hangi gazı üretir?",
+      "options": [
+        "Karbondioksit",
+        "Oksijen",
+        "Azot",
+        "Hidrojen"
+      ],
+      "answer": 1
+    },
+    {
+      "id": "bilim-008",
+      "category": "bilim",
+      "difficulty": 1,
+      "text": "Dünya'nın tek doğal uydusu hangisidir?",
+      "options": [
+        "Titan",
+        "Europa",
+        "Ay",
+        "Ganymede"
+      ],
+      "answer": 2
+    },
+    {
+      "id": "bilim-009",
+      "category": "bilim",
+      "difficulty": 1,
+      "text": "Işık hızı yaklaşık saniyede kaç kilometredir?",
+      "options": [
+        "30.000 km",
+        "3.000.000 km",
+        "150.000 km",
+        "300.000 km"
+      ],
+      "answer": 3
+    },
+    {
+      "id": "bilim-010",
+      "category": "bilim",
+      "difficulty": 1,
+      "text": "Yetişkin bir insanın vücudunda kaç kemik bulunur?",
+      "options": [
+        "206",
+        "186",
+        "226",
+        "256"
+      ],
+      "answer": 0
+    },
+    {
+      "id": "bilim-011",
+      "category": "bilim",
+      "difficulty": 1,
+      "text": "Elektrik akımının birimi nedir?",
+      "options": [
+        "Volt",
+        "Amper",
+        "Watt",
+        "Ohm"
+      ],
+      "answer": 1
+    },
+    {
+      "id": "bilim-012",
+      "category": "bilim",
+      "difficulty": 1,
+      "text": "Kırmızı Gezegen olarak bilinen gezegen hangisidir?",
+      "options": [
+        "Venüs",
+        "Jüpiter",
+        "Mars",
+        "Merkür"
+      ],
+      "answer": 2
+    },
+    {
+      "id": "bilim-013",
+      "category": "bilim",
+      "difficulty": 1,
+      "text": "Yerçekimi yasasını ortaya koyan bilim insanı kimdir?",
+      "options": [
+        "Albert Einstein",
+        "Galileo Galilei",
+        "Nikola Tesla",
+        "Isaac Newton"
+      ],
+      "answer": 3
+    },
+    {
+      "id": "bilim-014",
+      "category": "bilim",
+      "difficulty": 2,
+      "text": "Periyodik tabloda 'Fe' sembolü hangi elementi gösterir?",
+      "options": [
+        "Demir",
+        "Flor",
+        "Fosfor",
+        "Fermiyum"
+      ],
+      "answer": 0
+    },
+    {
+      "id": "bilim-015",
+      "category": "bilim",
+      "difficulty": 2,
+      "text": "İzafiyet (görelilik) teorisini geliştiren bilim insanı kimdir?",
+      "options": [
+        "Isaac Newton",
+        "Albert Einstein",
+        "Niels Bohr",
+        "Max Planck"
+      ],
+      "answer": 1
+    },
+    {
+      "id": "bilim-016",
+      "category": "bilim",
+      "difficulty": 2,
+      "text": "DNA'nın açılımı nedir?",
+      "options": [
+        "Dinükleik asit",
+        "Deoksiribonükleotit asit",
+        "Deoksiribonükleik asit",
+        "Diribonükleik asit"
+      ],
+      "answer": 2
+    },
+    {
+      "id": "bilim-017",
+      "category": "bilim",
+      "difficulty": 2,
+      "text": "Hangi vitamin güneş ışığı yardımıyla deride üretilir?",
+      "options": [
+        "C vitamini",
+        "A vitamini",
+        "B12 vitamini",
+        "D vitamini"
+      ],
+      "answer": 3
+    },
+    {
+      "id": "bilim-018",
+      "category": "bilim",
+      "difficulty": 2,
+      "text": "Penisilini keşfeden bilim insanı kimdir?",
+      "options": [
+        "Alexander Fleming",
+        "Louis Pasteur",
+        "Robert Koch",
+        "Edward Jenner"
+      ],
+      "answer": 0
+    },
+    {
+      "id": "bilim-019",
+      "category": "bilim",
+      "difficulty": 2,
+      "text": "Güneş Sistemi'nde halkalarıyla en çok bilinen gezegen hangisidir?",
+      "options": [
+        "Jüpiter",
+        "Satürn",
+        "Uranüs",
+        "Neptün"
+      ],
+      "answer": 1
+    },
+    {
+      "id": "bilim-020",
+      "category": "bilim",
+      "difficulty": 2,
+      "text": "Kuvvetin SI birimi nedir?",
+      "options": [
+        "Joule",
+        "Pascal",
+        "Newton",
+        "Watt"
+      ],
+      "answer": 2
+    },
+    {
+      "id": "bilim-021",
+      "category": "bilim",
+      "difficulty": 2,
+      "text": "Hücrenin enerji üreten organeli hangisidir?",
+      "options": [
+        "Ribozom",
+        "Lizozom",
+        "Golgi cisimciği",
+        "Mitokondri"
+      ],
+      "answer": 3
+    },
+    {
+      "id": "bilim-022",
+      "category": "bilim",
+      "difficulty": 2,
+      "text": "Dünya atmosferinde en bol bulunan gaz hangisidir?",
+      "options": [
+        "Azot",
+        "Oksijen",
+        "Karbondioksit",
+        "Argon"
+      ],
+      "answer": 0
+    },
+    {
+      "id": "bilim-023",
+      "category": "bilim",
+      "difficulty": 2,
+      "text": "Sodyumun kimyasal sembolü nedir?",
+      "options": [
+        "So",
+        "Na",
+        "Sd",
+        "S"
+      ],
+      "answer": 1
+    },
+    {
+      "id": "bilim-024",
+      "category": "bilim",
+      "difficulty": 2,
+      "text": "İnsan vücudundaki en küçük kemik hangi organda bulunur?",
+      "options": [
+        "Burun",
+        "El",
+        "Kulak",
+        "Ayak"
+      ],
+      "answer": 2
+    },
+    {
+      "id": "bilim-025",
+      "category": "bilim",
+      "difficulty": 2,
+      "text": "Hangi kan grubu 'genel verici' olarak bilinir?",
+      "options": [
+        "AB Rh pozitif",
+        "A Rh pozitif",
+        "B Rh negatif",
+        "0 Rh negatif"
+      ],
+      "answer": 3
+    },
+    {
+      "id": "bilim-026",
+      "category": "bilim",
+      "difficulty": 2,
+      "text": "Dünya'nın Güneş etrafındaki bir tam dönüşü yaklaşık kaç gün sürer?",
+      "options": [
+        "365",
+        "360",
+        "350",
+        "380"
+      ],
+      "answer": 0
+    },
+    {
+      "id": "bilim-027",
+      "category": "bilim",
+      "difficulty": 2,
+      "text": "Evrim teorisini 'Türlerin Kökeni' adlı eseriyle açıklayan bilim insanı kimdir?",
+      "options": [
+        "Gregor Mendel",
+        "Charles Darwin",
+        "Alfred Wallace",
+        "Jean Lamarck"
+      ],
+      "answer": 1
+    },
+    {
+      "id": "bilim-028",
+      "category": "bilim",
+      "difficulty": 3,
+      "text": "Mutlak sıfır sıcaklığı yaklaşık kaç santigrat derecedir?",
+      "options": [
+        "-100 °C",
+        "-200 °C",
+        "-273 °C",
+        "-373 °C"
+      ],
+      "answer": 2
+    },
+    {
+      "id": "bilim-029",
+      "category": "bilim",
+      "difficulty": 3,
+      "text": "Radyoaktiviteyi inceleyerek iki Nobel Ödülü kazanan bilim insanı kimdir?",
+      "options": [
+        "Lise Meitner",
+        "Rosalind Franklin",
+        "Dorothy Hodgkin",
+        "Marie Curie"
+      ],
+      "answer": 3
+    },
+    {
+      "id": "bilim-030",
+      "category": "bilim",
+      "difficulty": 3,
+      "text": "Periyodik tablonun ilk halini oluşturan kimyager kimdir?",
+      "options": [
+        "Dmitri Mendeleyev",
+        "Antoine Lavoisier",
+        "John Dalton",
+        "Robert Boyle"
+      ],
+      "answer": 0
+    },
+    {
+      "id": "bilim-031",
+      "category": "bilim",
+      "difficulty": 3,
+      "text": "İnsan vücudunda kaç çift kromozom bulunur?",
+      "options": [
+        "21",
+        "23",
+        "24",
+        "46"
+      ],
+      "answer": 1
+    },
+    {
+      "id": "bilim-032",
+      "category": "bilim",
+      "difficulty": 3,
+      "text": "Elektromanyetik indüksiyon yasasını bulan bilim insanı kimdir?",
+      "options": [
+        "James Clerk Maxwell",
+        "André-Marie Ampère",
+        "Michael Faraday",
+        "Georg Ohm"
+      ],
+      "answer": 2
+    },
+    {
+      "id": "sanat-001",
+      "category": "sanat",
+      "difficulty": 1,
+      "text": "Mona Lisa tablosunun ressamı kimdir?",
+      "options": [
+        "Michelangelo",
+        "Raffaello",
+        "Botticelli",
+        "Leonardo da Vinci"
+      ],
+      "answer": 3
+    },
+    {
+      "id": "sanat-002",
+      "category": "sanat",
+      "difficulty": 1,
+      "text": "'Romeo ve Juliet' adlı eserin yazarı kimdir?",
+      "options": [
+        "William Shakespeare",
+        "Charles Dickens",
+        "Victor Hugo",
+        "Lord Byron"
+      ],
+      "answer": 0
+    },
+    {
+      "id": "sanat-003",
+      "category": "sanat",
+      "difficulty": 1,
+      "text": "'Çalıkuşu' romanının yazarı kimdir?",
+      "options": [
+        "Halide Edib Adıvar",
+        "Reşat Nuri Güntekin",
+        "Yakup Kadri Karaosmanoğlu",
+        "Halit Ziya Uşaklıgil"
+      ],
+      "answer": 1
+    },
+    {
+      "id": "sanat-004",
+      "category": "sanat",
+      "difficulty": 1,
+      "text": "İstiklal Marşı'nın söz yazarı kimdir?",
+      "options": [
+        "Yahya Kemal Beyatlı",
+        "Namık Kemal",
+        "Mehmet Akif Ersoy",
+        "Tevfik Fikret"
+      ],
+      "answer": 2
+    },
+    {
+      "id": "sanat-005",
+      "category": "sanat",
+      "difficulty": 1,
+      "text": "'Yıldızlı Gece' tablosunun ressamı kimdir?",
+      "options": [
+        "Claude Monet",
+        "Pablo Picasso",
+        "Paul Gauguin",
+        "Vincent van Gogh"
+      ],
+      "answer": 3
+    },
+    {
+      "id": "sanat-006",
+      "category": "sanat",
+      "difficulty": 1,
+      "text": "'Küçük Prens' kitabının yazarı kimdir?",
+      "options": [
+        "Antoine de Saint-Exupéry",
+        "Jules Verne",
+        "Albert Camus",
+        "Victor Hugo"
+      ],
+      "answer": 0
+    },
+    {
+      "id": "sanat-007",
+      "category": "sanat",
+      "difficulty": 1,
+      "text": "'Suç ve Ceza' romanının yazarı kimdir?",
+      "options": [
+        "Lev Tolstoy",
+        "Fyodor Dostoyevski",
+        "Anton Çehov",
+        "Nikolay Gogol"
+      ],
+      "answer": 1
+    },
+    {
+      "id": "sanat-008",
+      "category": "sanat",
+      "difficulty": 1,
+      "text": "'Sefiller' romanının yazarı kimdir?",
+      "options": [
+        "Gustave Flaubert",
+        "Honoré de Balzac",
+        "Victor Hugo",
+        "Émile Zola"
+      ],
+      "answer": 2
+    },
+    {
+      "id": "sanat-009",
+      "category": "sanat",
+      "difficulty": 1,
+      "text": "'Nutuk' adlı eser kime aittir?",
+      "options": [
+        "İsmet İnönü",
+        "Ziya Gökalp",
+        "Namık Kemal",
+        "Mustafa Kemal Atatürk"
+      ],
+      "answer": 3
+    },
+    {
+      "id": "sanat-010",
+      "category": "sanat",
+      "difficulty": 1,
+      "text": "Keman hangi çalgı ailesine aittir?",
+      "options": [
+        "Yaylı çalgılar",
+        "Nefesli çalgılar",
+        "Vurmalı çalgılar",
+        "Tuşlu çalgılar"
+      ],
+      "answer": 0
+    },
+    {
+      "id": "sanat-011",
+      "category": "sanat",
+      "difficulty": 1,
+      "text": "Dünyaca ünlü 'Guernica' tablosunun ressamı kimdir?",
+      "options": [
+        "Salvador Dalí",
+        "Pablo Picasso",
+        "Joan Miró",
+        "Francisco Goya"
+      ],
+      "answer": 1
+    },
+    {
+      "id": "sanat-012",
+      "category": "sanat",
+      "difficulty": 1,
+      "text": "'Kuyucaklı Yusuf' romanının yazarı kimdir?",
+      "options": [
+        "Orhan Kemal",
+        "Kemal Tahir",
+        "Sabahattin Ali",
+        "Yaşar Kemal"
+      ],
+      "answer": 2
+    },
+    {
+      "id": "sanat-013",
+      "category": "sanat",
+      "difficulty": 1,
+      "text": "Hangi yazar 'Oliver Twist' romanını yazmıştır?",
+      "options": [
+        "Jane Austen",
+        "Mark Twain",
+        "Emily Brontë",
+        "Charles Dickens"
+      ],
+      "answer": 3
+    },
+    {
+      "id": "sanat-014",
+      "category": "sanat",
+      "difficulty": 1,
+      "text": "'İnce Memed' romanının yazarı kimdir?",
+      "options": [
+        "Yaşar Kemal",
+        "Orhan Kemal",
+        "Fakir Baykurt",
+        "Kemal Tahir"
+      ],
+      "answer": 0
+    },
+    {
+      "id": "sanat-015",
+      "category": "sanat",
+      "difficulty": 2,
+      "text": "'Saatleri Ayarlama Enstitüsü' romanının yazarı kimdir?",
+      "options": [
+        "Oğuz Atay",
+        "Ahmet Hamdi Tanpınar",
+        "Peyami Safa",
+        "Sait Faik Abasıyanık"
+      ],
+      "answer": 1
+    },
+    {
+      "id": "sanat-016",
+      "category": "sanat",
+      "difficulty": 2,
+      "text": "'Ay Işığı Sonatı'nın bestecisi kimdir?",
+      "options": [
+        "Wolfgang Amadeus Mozart",
+        "Johann Sebastian Bach",
+        "Ludwig van Beethoven",
+        "Franz Schubert"
+      ],
+      "answer": 2
+    },
+    {
+      "id": "sanat-017",
+      "category": "sanat",
+      "difficulty": 2,
+      "text": "'Tutunamayanlar' romanının yazarı kimdir?",
+      "options": [
+        "Yusuf Atılgan",
+        "Bilge Karasu",
+        "Ferit Edgü",
+        "Oğuz Atay"
+      ],
+      "answer": 3
+    },
+    {
+      "id": "sanat-018",
+      "category": "sanat",
+      "difficulty": 2,
+      "text": "'Don Kişot' romanının yazarı kimdir?",
+      "options": [
+        "Miguel de Cervantes",
+        "Lope de Vega",
+        "Federico García Lorca",
+        "Gabriel García Márquez"
+      ],
+      "answer": 0
+    },
+    {
+      "id": "sanat-019",
+      "category": "sanat",
+      "difficulty": 2,
+      "text": "Sistine Şapeli'nin tavan fresklerini yapan sanatçı kimdir?",
+      "options": [
+        "Leonardo da Vinci",
+        "Michelangelo",
+        "Raffaello",
+        "Donatello"
+      ],
+      "answer": 1
+    },
+    {
+      "id": "sanat-020",
+      "category": "sanat",
+      "difficulty": 2,
+      "text": "'Savaş ve Barış' romanının yazarı kimdir?",
+      "options": [
+        "Fyodor Dostoyevski",
+        "İvan Turgenyev",
+        "Lev Tolstoy",
+        "Aleksandr Puşkin"
+      ],
+      "answer": 2
+    },
+    {
+      "id": "sanat-021",
+      "category": "sanat",
+      "difficulty": 2,
+      "text": "'Düşünen Adam' heykelinin sanatçısı kimdir?",
+      "options": [
+        "Michelangelo",
+        "Donatello",
+        "Constantin Brâncuși",
+        "Auguste Rodin"
+      ],
+      "answer": 3
+    },
+    {
+      "id": "sanat-022",
+      "category": "sanat",
+      "difficulty": 2,
+      "text": "'Memleketimden İnsan Manzaraları' adlı eser hangi şaire aittir?",
+      "options": [
+        "Nâzım Hikmet",
+        "Orhan Veli Kanık",
+        "Cahit Sıtkı Tarancı",
+        "Attilâ İlhan"
+      ],
+      "answer": 0
+    },
+    {
+      "id": "sanat-023",
+      "category": "sanat",
+      "difficulty": 2,
+      "text": "'Simyacı' romanının yazarı kimdir?",
+      "options": [
+        "Jorge Luis Borges",
+        "Paulo Coelho",
+        "Gabriel García Márquez",
+        "Isabel Allende"
+      ],
+      "answer": 1
+    },
+    {
+      "id": "sanat-024",
+      "category": "sanat",
+      "difficulty": 2,
+      "text": "'1984' romanının yazarı kimdir?",
+      "options": [
+        "Aldous Huxley",
+        "Ray Bradbury",
+        "George Orwell",
+        "H. G. Wells"
+      ],
+      "answer": 2
+    },
+    {
+      "id": "sanat-025",
+      "category": "sanat",
+      "difficulty": 2,
+      "text": "Opera türünün doğduğu ülke hangisidir?",
+      "options": [
+        "Fransa",
+        "Almanya",
+        "Avusturya",
+        "İtalya"
+      ],
+      "answer": 3
+    },
+    {
+      "id": "sanat-026",
+      "category": "sanat",
+      "difficulty": 2,
+      "text": "'Garip' şiir akımının öncülerinden biri kimdir?",
+      "options": [
+        "Orhan Veli Kanık",
+        "Nâzım Hikmet",
+        "Necip Fazıl Kısakürek",
+        "Ahmet Haşim"
+      ],
+      "answer": 0
+    },
+    {
+      "id": "sanat-027",
+      "category": "sanat",
+      "difficulty": 2,
+      "text": "'Yaban' romanının yazarı kimdir?",
+      "options": [
+        "Halide Edib Adıvar",
+        "Yakup Kadri Karaosmanoğlu",
+        "Refik Halit Karay",
+        "Reşat Nuri Güntekin"
+      ],
+      "answer": 1
+    },
+    {
+      "id": "sanat-028",
+      "category": "sanat",
+      "difficulty": 2,
+      "text": "'İlahi Komedya' adlı eserin yazarı kimdir?",
+      "options": [
+        "Petrarca",
+        "Boccaccio",
+        "Dante Alighieri",
+        "Machiavelli"
+      ],
+      "answer": 2
+    },
+    {
+      "id": "sanat-029",
+      "category": "sanat",
+      "difficulty": 3,
+      "text": "'Dört Mevsim' adlı keman konçertolarının bestecisi kimdir?",
+      "options": [
+        "Johann Sebastian Bach",
+        "Georg Friedrich Händel",
+        "Arcangelo Corelli",
+        "Antonio Vivaldi"
+      ],
+      "answer": 3
+    },
+    {
+      "id": "sanat-030",
+      "category": "sanat",
+      "difficulty": 3,
+      "text": "'Dönüşüm' adlı öykünün yazarı kimdir?",
+      "options": [
+        "Franz Kafka",
+        "Thomas Mann",
+        "Hermann Hesse",
+        "Stefan Zweig"
+      ],
+      "answer": 0
+    },
+    {
+      "id": "sanat-031",
+      "category": "sanat",
+      "difficulty": 3,
+      "text": "'Belleğin Azmi' (eriyen saatler) tablosunun ressamı kimdir?",
+      "options": [
+        "René Magritte",
+        "Salvador Dalí",
+        "Max Ernst",
+        "Joan Miró"
+      ],
+      "answer": 1
+    },
+    {
+      "id": "sanat-032",
+      "category": "sanat",
+      "difficulty": 3,
+      "text": "Divan edebiyatının ünlü şairi Fuzûlî'nin en bilinen mesnevisi hangisidir?",
+      "options": [
+        "Hüsn ü Aşk",
+        "Harnâme",
+        "Leylâ vü Mecnûn",
+        "Mantıku't-Tayr"
+      ],
+      "answer": 2
+    },
+    {
+      "id": "sanat-033",
+      "category": "sanat",
+      "difficulty": 3,
+      "text": "'Ulysses' romanının yazarı kimdir?",
+      "options": [
+        "Virginia Woolf",
+        "Samuel Beckett",
+        "T. S. Eliot",
+        "James Joyce"
+      ],
+      "answer": 3
+    },
+    {
+      "id": "spor-001",
+      "category": "spor",
+      "difficulty": 1,
+      "text": "Bir futbol takımı sahada kaç oyuncuyla oynar?",
+      "options": [
+        "11",
+        "10",
+        "12",
+        "9"
+      ],
+      "answer": 0
+    },
+    {
+      "id": "spor-002",
+      "category": "spor",
+      "difficulty": 1,
+      "text": "Basketbolda bir takım sahada kaç oyuncuyla oynar?",
+      "options": [
+        "6",
+        "5",
+        "7",
+        "4"
+      ],
+      "answer": 1
+    },
+    {
+      "id": "spor-003",
+      "category": "spor",
+      "difficulty": 1,
+      "text": "Modern Olimpiyat Oyunları kaç yılda bir düzenlenir?",
+      "options": [
+        "2",
+        "3",
+        "4",
+        "5"
+      ],
+      "answer": 2
+    },
+    {
+      "id": "spor-004",
+      "category": "spor",
+      "difficulty": 1,
+      "text": "Voleybolda bir takım sahada kaç oyuncuyla oynar?",
+      "options": [
+        "5",
+        "7",
+        "8",
+        "6"
+      ],
+      "answer": 3
+    },
+    {
+      "id": "spor-005",
+      "category": "spor",
+      "difficulty": 1,
+      "text": "Olimpiyat bayrağında kaç halka vardır?",
+      "options": [
+        "5",
+        "4",
+        "6",
+        "7"
+      ],
+      "answer": 0
+    },
+    {
+      "id": "spor-006",
+      "category": "spor",
+      "difficulty": 1,
+      "text": "Wimbledon turnuvası hangi sporda düzenlenir?",
+      "options": [
+        "Golf",
+        "Tenis",
+        "Kriket",
+        "Badminton"
+      ],
+      "answer": 1
+    },
+    {
+      "id": "spor-007",
+      "category": "spor",
+      "difficulty": 1,
+      "text": "Maraton koşusu yaklaşık kaç kilometredir?",
+      "options": [
+        "30",
+        "50",
+        "42",
+        "21"
+      ],
+      "answer": 2
+    },
+    {
+      "id": "spor-008",
+      "category": "spor",
+      "difficulty": 1,
+      "text": "Türkiye'nin 'ata sporu' olarak bilinen spor hangisidir?",
+      "options": [
+        "Okçuluk",
+        "Cirit",
+        "Binicilik",
+        "Güreş"
+      ],
+      "answer": 3
+    },
+    {
+      "id": "spor-009",
+      "category": "spor",
+      "difficulty": 1,
+      "text": "Bir futbol maçının normal süresi kaç dakikadır?",
+      "options": [
+        "90",
+        "80",
+        "100",
+        "60"
+      ],
+      "answer": 0
+    },
+    {
+      "id": "spor-010",
+      "category": "spor",
+      "difficulty": 1,
+      "text": "Modern Olimpiyat Oyunları ilk kez hangi şehirde düzenlendi?",
+      "options": [
+        "Paris",
+        "Atina",
+        "Londra",
+        "Roma"
+      ],
+      "answer": 1
+    },
+    {
+      "id": "spor-011",
+      "category": "spor",
+      "difficulty": 1,
+      "text": "Satranç tahtasında kaç kare bulunur?",
+      "options": [
+        "36",
+        "81",
+        "64",
+        "100"
+      ],
+      "answer": 2
+    },
+    {
+      "id": "spor-012",
+      "category": "spor",
+      "difficulty": 1,
+      "text": "Satrançta her oyuncu oyuna kaç taşla başlar?",
+      "options": [
+        "12",
+        "20",
+        "32",
+        "16"
+      ],
+      "answer": 3
+    },
+    {
+      "id": "spor-013",
+      "category": "spor",
+      "difficulty": 2,
+      "text": "İlk modern Olimpiyat Oyunları hangi yılda düzenlendi?",
+      "options": [
+        "1896",
+        "1900",
+        "1892",
+        "1904"
+      ],
+      "answer": 0
+    },
+    {
+      "id": "spor-014",
+      "category": "spor",
+      "difficulty": 2,
+      "text": "FIFA Dünya Kupası ilk kez hangi ülkede düzenlendi?",
+      "options": [
+        "Brezilya",
+        "Uruguay",
+        "İtalya",
+        "Fransa"
+      ],
+      "answer": 1
+    },
+    {
+      "id": "spor-015",
+      "category": "spor",
+      "difficulty": 2,
+      "text": "Bir basketbol maçında üçlük çizgisinin gerisinden atılan sayı kaç puandır?",
+      "options": [
+        "2",
+        "4",
+        "3",
+        "1"
+      ],
+      "answer": 2
+    },
+    {
+      "id": "spor-016",
+      "category": "spor",
+      "difficulty": 2,
+      "text": "Türkiye, ilk Olimpiyat altın madalyasını hangi sporda kazanmıştır?",
+      "options": [
+        "Halter",
+        "Atletizm",
+        "Boks",
+        "Güreş"
+      ],
+      "answer": 3
+    },
+    {
+      "id": "spor-017",
+      "category": "spor",
+      "difficulty": 2,
+      "text": "Judo hangi ülkede doğmuş bir spordur?",
+      "options": [
+        "Japonya",
+        "Çin",
+        "Kore",
+        "Tayland"
+      ],
+      "answer": 0
+    },
+    {
+      "id": "spor-018",
+      "category": "spor",
+      "difficulty": 2,
+      "text": "Tenis maçında sıfır puan hangi terimle ifade edilir?",
+      "options": [
+        "Zero",
+        "Love",
+        "Nil",
+        "Deuce"
+      ],
+      "answer": 1
+    },
+    {
+      "id": "spor-019",
+      "category": "spor",
+      "difficulty": 2,
+      "text": "Hentbolda bir takım sahada kaç oyuncuyla oynar?",
+      "options": [
+        "6",
+        "8",
+        "7",
+        "9"
+      ],
+      "answer": 2
+    },
+    {
+      "id": "spor-020",
+      "category": "spor",
+      "difficulty": 2,
+      "text": "Tour de France hangi spor dalında düzenlenen bir yarıştır?",
+      "options": [
+        "Maraton",
+        "Otomobil",
+        "Motosiklet",
+        "Bisiklet"
+      ],
+      "answer": 3
+    },
+    {
+      "id": "spor-021",
+      "category": "spor",
+      "difficulty": 2,
+      "text": "Naim Süleymanoğlu hangi spor dalında ünlenmiştir?",
+      "options": [
+        "Halter",
+        "Güreş",
+        "Boks",
+        "Atletizm"
+      ],
+      "answer": 0
+    },
+    {
+      "id": "spor-022",
+      "category": "spor",
+      "difficulty": 2,
+      "text": "Buz hokeyinde bir takım buzda kaç oyuncuyla oynar?",
+      "options": [
+        "5",
+        "6",
+        "7",
+        "8"
+      ],
+      "answer": 1
+    },
+    {
+      "id": "spor-023",
+      "category": "spor",
+      "difficulty": 2,
+      "text": "Basketbol sporu hangi ülkede icat edilmiştir?",
+      "options": [
+        "Kanada",
+        "İngiltere",
+        "ABD",
+        "Fransa"
+      ],
+      "answer": 2
+    },
+    {
+      "id": "spor-024",
+      "category": "spor",
+      "difficulty": 2,
+      "text": "Bir bowling pistinde kaç kuka dizilir?",
+      "options": [
+        "9",
+        "12",
+        "8",
+        "10"
+      ],
+      "answer": 3
+    },
+    {
+      "id": "spor-025",
+      "category": "spor",
+      "difficulty": 2,
+      "text": "Rugby topu hangi şekildedir?",
+      "options": [
+        "Oval",
+        "Küre",
+        "Silindir",
+        "Küp"
+      ],
+      "answer": 0
+    },
+    {
+      "id": "spor-026",
+      "category": "spor",
+      "difficulty": 2,
+      "text": "Hangi spor dalında 'dekatlon' terimi kullanılır?",
+      "options": [
+        "Jimnastik",
+        "Atletizm",
+        "Yüzme",
+        "Eskrim"
+      ],
+      "answer": 1
+    },
+    {
+      "id": "spor-027",
+      "category": "spor",
+      "difficulty": 3,
+      "text": "Olimpiyat halkalarındaki renklerden biri aşağıdakilerden hangisi DEĞİLDİR?",
+      "options": [
+        "Siyah",
+        "Yeşil",
+        "Mor",
+        "Kırmızı"
+      ],
+      "answer": 2
+    },
+    {
+      "id": "spor-028",
+      "category": "spor",
+      "difficulty": 3,
+      "text": "Yaz Olimpiyatları 1896'dan sonra ikinci kez hangi şehirde düzenlendi?",
+      "options": [
+        "Londra",
+        "St. Louis",
+        "Stockholm",
+        "Paris"
+      ],
+      "answer": 3
+    },
+    {
+      "id": "spor-029",
+      "category": "spor",
+      "difficulty": 3,
+      "text": "Bir kriket takımı sahada kaç oyuncuyla oynar?",
+      "options": [
+        "11",
+        "9",
+        "13",
+        "15"
+      ],
+      "answer": 0
+    },
+    {
+      "id": "spor-030",
+      "category": "spor",
+      "difficulty": 3,
+      "text": "Masa tenisinde bir set standart kurallarda kaç puanda sona erer?",
+      "options": [
+        "15",
+        "11",
+        "21",
+        "7"
+      ],
+      "answer": 1
+    },
+    {
+      "id": "spor-031",
+      "category": "spor",
+      "difficulty": 3,
+      "text": "Bir standart golf sahasında kaç delik bulunur?",
+      "options": [
+        "9",
+        "12",
+        "18",
+        "24"
+      ],
+      "answer": 2
+    },
+    {
+      "id": "gunluk-001",
+      "category": "gunluk",
+      "difficulty": 1,
+      "text": "Bir yılda kaç ay vardır?",
+      "options": [
+        "10",
+        "11",
+        "13",
+        "12"
+      ],
+      "answer": 3
+    },
+    {
+      "id": "gunluk-002",
+      "category": "gunluk",
+      "difficulty": 1,
+      "text": "Bir saatte kaç dakika vardır?",
+      "options": [
+        "60",
+        "50",
+        "100",
+        "90"
+      ],
+      "answer": 0
+    },
+    {
+      "id": "gunluk-003",
+      "category": "gunluk",
+      "difficulty": 1,
+      "text": "Bir haftada kaç gün vardır?",
+      "options": [
+        "5",
+        "7",
+        "6",
+        "8"
+      ],
+      "answer": 1
+    },
+    {
+      "id": "gunluk-004",
+      "category": "gunluk",
+      "difficulty": 1,
+      "text": "Bir kilometre kaç metredir?",
+      "options": [
+        "100",
+        "10000",
+        "1000",
+        "500"
+      ],
+      "answer": 2
+    },
+    {
+      "id": "gunluk-005",
+      "category": "gunluk",
+      "difficulty": 1,
+      "text": "Trafik ışığında kırmızı ışık ne anlama gelir?",
+      "options": [
+        "Geç",
+        "Yavaşla",
+        "Hazırlan",
+        "Dur"
+      ],
+      "answer": 3
+    },
+    {
+      "id": "gunluk-006",
+      "category": "gunluk",
+      "difficulty": 1,
+      "text": "Bir düzine kaç adettir?",
+      "options": [
+        "12",
+        "10",
+        "6",
+        "24"
+      ],
+      "answer": 0
+    },
+    {
+      "id": "gunluk-007",
+      "category": "gunluk",
+      "difficulty": 1,
+      "text": "Ekmek yapımında hamuru kabartan malzeme hangisidir?",
+      "options": [
+        "Tuz",
+        "Maya",
+        "Şeker",
+        "Yağ"
+      ],
+      "answer": 1
+    },
+    {
+      "id": "gunluk-008",
+      "category": "gunluk",
+      "difficulty": 1,
+      "text": "Bir litre kaç mililitredir?",
+      "options": [
+        "100",
+        "10",
+        "1000",
+        "10000"
+      ],
+      "answer": 2
+    },
+    {
+      "id": "gunluk-009",
+      "category": "gunluk",
+      "difficulty": 1,
+      "text": "Bir yüzyıl kaç yıldır?",
+      "options": [
+        "10",
+        "50",
+        "1000",
+        "100"
+      ],
+      "answer": 3
+    },
+    {
+      "id": "gunluk-010",
+      "category": "gunluk",
+      "difficulty": 1,
+      "text": "Gökkuşağında kaç renk sayılır?",
+      "options": [
+        "7",
+        "5",
+        "6",
+        "8"
+      ],
+      "answer": 0
+    },
+    {
+      "id": "gunluk-011",
+      "category": "gunluk",
+      "difficulty": 1,
+      "text": "Zeytinyağı hangi meyveden elde edilir?",
+      "options": [
+        "Üzüm",
+        "Zeytin",
+        "Ceviz",
+        "Mısır"
+      ],
+      "answer": 1
+    },
+    {
+      "id": "gunluk-012",
+      "category": "gunluk",
+      "difficulty": 1,
+      "text": "Bir günde kaç saat vardır?",
+      "options": [
+        "12",
+        "20",
+        "24",
+        "36"
+      ],
+      "answer": 2
+    },
+    {
+      "id": "gunluk-013",
+      "category": "gunluk",
+      "difficulty": 1,
+      "text": "Hangi gün hafta sonu günlerinden biridir?",
+      "options": [
+        "Çarşamba",
+        "Perşembe",
+        "Salı",
+        "Pazar"
+      ],
+      "answer": 3
+    },
+    {
+      "id": "gunluk-014",
+      "category": "gunluk",
+      "difficulty": 1,
+      "text": "Bir ton kaç kilogramdır?",
+      "options": [
+        "1000",
+        "100",
+        "500",
+        "10000"
+      ],
+      "answer": 0
+    },
+    {
+      "id": "gunluk-015",
+      "category": "gunluk",
+      "difficulty": 1,
+      "text": "Peynir hangi temel gıdadan yapılır?",
+      "options": [
+        "Un",
+        "Süt",
+        "Yumurta",
+        "Et"
+      ],
+      "answer": 1
+    },
+    {
+      "id": "gunluk-016",
+      "category": "gunluk",
+      "difficulty": 2,
+      "text": "Bir çeyrek saat kaç dakikadır?",
+      "options": [
+        "10",
+        "20",
+        "15",
+        "30"
+      ],
+      "answer": 2
+    },
+    {
+      "id": "gunluk-017",
+      "category": "gunluk",
+      "difficulty": 2,
+      "text": "Türk kahvesi geleneksel olarak hangi kapta pişirilir?",
+      "options": [
+        "Tencere",
+        "Çaydanlık",
+        "Tava",
+        "Cezve"
+      ],
+      "answer": 3
+    },
+    {
+      "id": "gunluk-018",
+      "category": "gunluk",
+      "difficulty": 2,
+      "text": "Artık yıllarda şubat ayı kaç gün çeker?",
+      "options": [
+        "29",
+        "28",
+        "30",
+        "31"
+      ],
+      "answer": 0
+    },
+    {
+      "id": "gunluk-019",
+      "category": "gunluk",
+      "difficulty": 2,
+      "text": "Hangi malzeme yoğurdun temel ham maddesidir?",
+      "options": [
+        "Un",
+        "Süt",
+        "Su",
+        "Yumurta"
+      ],
+      "answer": 1
+    },
+    {
+      "id": "gunluk-020",
+      "category": "gunluk",
+      "difficulty": 2,
+      "text": "Bir sayının yüzde 50'si neyin eşitidir?",
+      "options": [
+        "Çeyreği",
+        "İki katı",
+        "Yarısı",
+        "Üçte biri"
+      ],
+      "answer": 2
+    },
+    {
+      "id": "gunluk-021",
+      "category": "gunluk",
+      "difficulty": 2,
+      "text": "Hangi ay 30 gün çeker?",
+      "options": [
+        "Ocak",
+        "Mart",
+        "Mayıs",
+        "Nisan"
+      ],
+      "answer": 3
+    },
+    {
+      "id": "gunluk-022",
+      "category": "gunluk",
+      "difficulty": 2,
+      "text": "İnsan vücudunun normal sıcaklığı yaklaşık kaç santigrat derecedir?",
+      "options": [
+        "36,5–37 °C",
+        "35 °C",
+        "38,5 °C",
+        "40 °C"
+      ],
+      "answer": 0
+    },
+    {
+      "id": "gunluk-023",
+      "category": "gunluk",
+      "difficulty": 2,
+      "text": "Elektrik enerjisinin ev faturalarındaki ölçü birimi nedir?",
+      "options": [
+        "Amper",
+        "Kilowatt-saat",
+        "Volt",
+        "Joule"
+      ],
+      "answer": 1
+    },
+    {
+      "id": "gunluk-024",
+      "category": "gunluk",
+      "difficulty": 2,
+      "text": "Bir çay kaşığı yaklaşık kaç mililitredir?",
+      "options": [
+        "15",
+        "10",
+        "5",
+        "2"
+      ],
+      "answer": 2
+    },
+    {
+      "id": "gunluk-025",
+      "category": "gunluk",
+      "difficulty": 2,
+      "text": "Türkiye'de ve Avrupa'da ortak kullanılan acil çağrı numarası hangisidir?",
+      "options": [
+        "911",
+        "999",
+        "100",
+        "112"
+      ],
+      "answer": 3
+    },
+    {
+      "id": "gunluk-026",
+      "category": "gunluk",
+      "difficulty": 3,
+      "text": "Bir inç yaklaşık kaç santimetredir?",
+      "options": [
+        "2,54",
+        "3,54",
+        "1,54",
+        "2,00"
+      ],
+      "answer": 0
+    },
+    {
+      "id": "gunluk-027",
+      "category": "gunluk",
+      "difficulty": 3,
+      "text": "Bir mil yaklaşık kaç kilometredir?",
+      "options": [
+        "1,0",
+        "1,6",
+        "2,2",
+        "0,8"
+      ],
+      "answer": 1
+    },
+    {
+      "id": "gunluk-028",
+      "category": "gunluk",
+      "difficulty": 3,
+      "text": "Ampulün parlaklığını ifade eden ışık akısı birimi hangisidir?",
+      "options": [
+        "Watt",
+        "Kelvin",
+        "Lümen",
+        "Lüks"
+      ],
+      "answer": 2
+    },
+    {
+      "id": "gunluk-029",
+      "category": "gunluk",
+      "difficulty": 3,
+      "text": "Standart bir A4 kâğıdın boyutları kaç milimetredir?",
+      "options": [
+        "200 × 300",
+        "215 × 280",
+        "210 × 300",
+        "210 × 297"
+      ],
+      "answer": 3
+    },
+    {
+      "id": "gunluk-030",
+      "category": "gunluk",
+      "difficulty": 2,
+      "text": "Bir kilogramın binde biri kaç gramdır?",
+      "options": [
+        "1",
+        "10",
+        "100",
+        "0,1"
+      ],
+      "answer": 0
+    },
+    {
+      "id": "turkiye-001",
+      "category": "turkiye",
+      "difficulty": 1,
+      "text": "Türkiye'nin başkenti hangi şehirdir?",
+      "options": [
+        "İstanbul",
+        "Ankara",
+        "İzmir",
+        "Bursa"
+      ],
+      "answer": 1
+    },
+    {
+      "id": "turkiye-002",
+      "category": "turkiye",
+      "difficulty": 1,
+      "text": "Türkiye'nin en kalabalık şehri hangisidir?",
+      "options": [
+        "Ankara",
+        "İzmir",
+        "İstanbul",
+        "Antalya"
+      ],
+      "answer": 2
+    },
+    {
+      "id": "turkiye-003",
+      "category": "turkiye",
+      "difficulty": 1,
+      "text": "Türkiye'nin en yüksek dağı hangisidir?",
+      "options": [
+        "Erciyes",
+        "Uludağ",
+        "Kaçkar",
+        "Ağrı Dağı"
+      ],
+      "answer": 3
+    },
+    {
+      "id": "turkiye-004",
+      "category": "turkiye",
+      "difficulty": 1,
+      "text": "Türkiye kaç coğrafi bölgeye ayrılır?",
+      "options": [
+        "7",
+        "5",
+        "6",
+        "8"
+      ],
+      "answer": 0
+    },
+    {
+      "id": "turkiye-005",
+      "category": "turkiye",
+      "difficulty": 1,
+      "text": "Türkiye'nin en büyük gölü hangisidir?",
+      "options": [
+        "Tuz Gölü",
+        "Van Gölü",
+        "Beyşehir Gölü",
+        "Eğirdir Gölü"
+      ],
+      "answer": 1
+    },
+    {
+      "id": "turkiye-006",
+      "category": "turkiye",
+      "difficulty": 1,
+      "text": "Türkiye'nin kuzeyinde hangi deniz bulunur?",
+      "options": [
+        "Akdeniz",
+        "Ege Denizi",
+        "Karadeniz",
+        "Marmara Denizi"
+      ],
+      "answer": 2
+    },
+    {
+      "id": "turkiye-007",
+      "category": "turkiye",
+      "difficulty": 1,
+      "text": "Peribacaları hangi bölgede yer alır?",
+      "options": [
+        "Pamukkale",
+        "Ihlara",
+        "Göbeklitepe",
+        "Kapadokya"
+      ],
+      "answer": 3
+    },
+    {
+      "id": "turkiye-008",
+      "category": "turkiye",
+      "difficulty": 1,
+      "text": "Pamukkale hangi ilimizdedir?",
+      "options": [
+        "Denizli",
+        "Aydın",
+        "Muğla",
+        "Burdur"
+      ],
+      "answer": 0
+    },
+    {
+      "id": "turkiye-009",
+      "category": "turkiye",
+      "difficulty": 1,
+      "text": "Türkiye'nin plaka kodu 06 olan ili hangisidir?",
+      "options": [
+        "İstanbul",
+        "Ankara",
+        "Adana",
+        "Antalya"
+      ],
+      "answer": 1
+    },
+    {
+      "id": "turkiye-010",
+      "category": "turkiye",
+      "difficulty": 1,
+      "text": "Boğaziçi Köprüsü hangi şehirdedir?",
+      "options": [
+        "Çanakkale",
+        "İzmir",
+        "İstanbul",
+        "Kocaeli"
+      ],
+      "answer": 2
+    },
+    {
+      "id": "turkiye-011",
+      "category": "turkiye",
+      "difficulty": 1,
+      "text": "Türkiye'nin para birimi nedir?",
+      "options": [
+        "Kuruş",
+        "Dinar",
+        "Manat",
+        "Türk lirası"
+      ],
+      "answer": 3
+    },
+    {
+      "id": "turkiye-012",
+      "category": "turkiye",
+      "difficulty": 1,
+      "text": "Anıtkabir hangi şehirdedir?",
+      "options": [
+        "Ankara",
+        "İstanbul",
+        "Selanik",
+        "Samsun"
+      ],
+      "answer": 0
+    },
+    {
+      "id": "turkiye-013",
+      "category": "turkiye",
+      "difficulty": 1,
+      "text": "Türkiye'nin en batı ucundaki il hangisidir?",
+      "options": [
+        "Çanakkale",
+        "Edirne",
+        "İzmir",
+        "Kırklareli"
+      ],
+      "answer": 1
+    },
+    {
+      "id": "turkiye-014",
+      "category": "turkiye",
+      "difficulty": 1,
+      "text": "Efes Antik Kenti hangi ilimizdedir?",
+      "options": [
+        "Aydın",
+        "Muğla",
+        "İzmir",
+        "Denizli"
+      ],
+      "answer": 2
+    },
+    {
+      "id": "turkiye-015",
+      "category": "turkiye",
+      "difficulty": 1,
+      "text": "Türkiye'nin plaka kodu 34 olan ili hangisidir?",
+      "options": [
+        "İzmir",
+        "Ankara",
+        "Bursa",
+        "İstanbul"
+      ],
+      "answer": 3
+    },
+    {
+      "id": "turkiye-016",
+      "category": "turkiye",
+      "difficulty": 2,
+      "text": "Türkiye'nin en kurak bölgesi hangisidir?",
+      "options": [
+        "İç Anadolu",
+        "Karadeniz",
+        "Marmara",
+        "Ege"
+      ],
+      "answer": 0
+    },
+    {
+      "id": "turkiye-017",
+      "category": "turkiye",
+      "difficulty": 2,
+      "text": "Nemrut Dağı'ndaki dev heykeller hangi ilimizdedir?",
+      "options": [
+        "Malatya",
+        "Adıyaman",
+        "Şanlıurfa",
+        "Diyarbakır"
+      ],
+      "answer": 1
+    },
+    {
+      "id": "turkiye-018",
+      "category": "turkiye",
+      "difficulty": 2,
+      "text": "Türkiye'nin yüzölçümü bakımından en büyük ili hangisidir?",
+      "options": [
+        "Sivas",
+        "Ankara",
+        "Konya",
+        "Erzurum"
+      ],
+      "answer": 2
+    },
+    {
+      "id": "turkiye-019",
+      "category": "turkiye",
+      "difficulty": 2,
+      "text": "Sümela Manastırı hangi ilimizdedir?",
+      "options": [
+        "Rize",
+        "Giresun",
+        "Artvin",
+        "Trabzon"
+      ],
+      "answer": 3
+    },
+    {
+      "id": "turkiye-020",
+      "category": "turkiye",
+      "difficulty": 2,
+      "text": "Türkiye'de çay üretimiyle en çok tanınan il hangisidir?",
+      "options": [
+        "Rize",
+        "Ordu",
+        "Giresun",
+        "Samsun"
+      ],
+      "answer": 0
+    },
+    {
+      "id": "turkiye-021",
+      "category": "turkiye",
+      "difficulty": 2,
+      "text": "Türkiye'nin en doğusundaki il hangisidir?",
+      "options": [
+        "Van",
+        "Iğdır",
+        "Hakkâri",
+        "Kars"
+      ],
+      "answer": 1
+    },
+    {
+      "id": "turkiye-022",
+      "category": "turkiye",
+      "difficulty": 2,
+      "text": "Göbeklitepe hangi ilimizdedir?",
+      "options": [
+        "Gaziantep",
+        "Mardin",
+        "Şanlıurfa",
+        "Diyarbakır"
+      ],
+      "answer": 2
+    },
+    {
+      "id": "turkiye-023",
+      "category": "turkiye",
+      "difficulty": 2,
+      "text": "Türkiye'nin en kuzeyindeki il hangisidir?",
+      "options": [
+        "Samsun",
+        "Kastamonu",
+        "Zonguldak",
+        "Sinop"
+      ],
+      "answer": 3
+    },
+    {
+      "id": "turkiye-024",
+      "category": "turkiye",
+      "difficulty": 2,
+      "text": "Türkiye'nin yüzölçümü en küçük ili hangisidir?",
+      "options": [
+        "Yalova",
+        "Kilis",
+        "Bartın",
+        "Bayburt"
+      ],
+      "answer": 0
+    },
+    {
+      "id": "turkiye-025",
+      "category": "turkiye",
+      "difficulty": 2,
+      "text": "Mustafa Kemal'in Samsun'a çıktığı tarih hangisidir?",
+      "options": [
+        "23 Nisan 1920",
+        "19 Mayıs 1919",
+        "30 Ağustos 1922",
+        "29 Ekim 1923"
+      ],
+      "answer": 1
+    },
+    {
+      "id": "turkiye-026",
+      "category": "turkiye",
+      "difficulty": 2,
+      "text": "Türkiye'de fındık üretimiyle ünlü il hangisidir?",
+      "options": [
+        "Antalya",
+        "Konya",
+        "Giresun",
+        "Edirne"
+      ],
+      "answer": 2
+    },
+    {
+      "id": "turkiye-027",
+      "category": "turkiye",
+      "difficulty": 2,
+      "text": "Türkiye'nin en büyük adası hangisidir?",
+      "options": [
+        "Bozcaada",
+        "Marmara Adası",
+        "Büyükada",
+        "Gökçeada"
+      ],
+      "answer": 3
+    },
+    {
+      "id": "turkiye-028",
+      "category": "turkiye",
+      "difficulty": 2,
+      "text": "Kız Kulesi hangi şehirde bulunur?",
+      "options": [
+        "İstanbul",
+        "İzmir",
+        "Antalya",
+        "Trabzon"
+      ],
+      "answer": 0
+    },
+    {
+      "id": "turkiye-029",
+      "category": "turkiye",
+      "difficulty": 3,
+      "text": "Türkiye'nin yüzölçümü yaklaşık kaç kilometrekaredir?",
+      "options": [
+        "650.000 km²",
+        "783.000 km²",
+        "900.000 km²",
+        "550.000 km²"
+      ],
+      "answer": 1
+    },
+    {
+      "id": "turkiye-030",
+      "category": "turkiye",
+      "difficulty": 3,
+      "text": "Türkiye'nin en derin gölü hangisidir?",
+      "options": [
+        "Hazar Gölü",
+        "Beyşehir Gölü",
+        "Van Gölü",
+        "Sapanca Gölü"
+      ],
+      "answer": 2
+    },
+    {
+      "id": "turkiye-031",
+      "category": "turkiye",
+      "difficulty": 3,
+      "text": "Türkiye'nin en uzun nehirlerinden Fırat hangi denize dökülür?",
+      "options": [
+        "Akdeniz",
+        "Hazar Denizi",
+        "Karadeniz",
+        "Basra Körfezi"
+      ],
+      "answer": 3
+    },
+    {
+      "id": "turkiye-032",
+      "category": "turkiye",
+      "difficulty": 3,
+      "text": "Kız Kalesi hangi ilimizdedir?",
+      "options": [
+        "Mersin",
+        "Antalya",
+        "Muğla",
+        "Adana"
+      ],
+      "answer": 0
+    },
+    {
+      "id": "dunya-001",
+      "category": "dunya",
+      "difficulty": 1,
+      "text": "Eyfel Kulesi hangi şehirdedir?",
+      "options": [
+        "Londra",
+        "Paris",
+        "Roma",
+        "Berlin"
+      ],
+      "answer": 1
+    },
+    {
+      "id": "dunya-002",
+      "category": "dunya",
+      "difficulty": 1,
+      "text": "Çin Seddi hangi ülkededir?",
+      "options": [
+        "Japonya",
+        "Hindistan",
+        "Çin",
+        "Moğolistan"
+      ],
+      "answer": 2
+    },
+    {
+      "id": "dunya-003",
+      "category": "dunya",
+      "difficulty": 1,
+      "text": "Avrupa Birliği'nin ortak para birimi nedir?",
+      "options": [
+        "Dolar",
+        "Frank",
+        "Sterlin",
+        "Euro"
+      ],
+      "answer": 3
+    },
+    {
+      "id": "dunya-004",
+      "category": "dunya",
+      "difficulty": 1,
+      "text": "Big Ben saat kulesi hangi şehirdedir?",
+      "options": [
+        "Londra",
+        "Dublin",
+        "Edinburgh",
+        "Manchester"
+      ],
+      "answer": 0
+    },
+    {
+      "id": "dunya-005",
+      "category": "dunya",
+      "difficulty": 1,
+      "text": "Birleşmiş Milletler'in genel merkezi hangi şehirdedir?",
+      "options": [
+        "Cenevre",
+        "New York",
+        "Paris",
+        "Viyana"
+      ],
+      "answer": 1
+    },
+    {
+      "id": "dunya-006",
+      "category": "dunya",
+      "difficulty": 1,
+      "text": "Piza Kulesi hangi ülkededir?",
+      "options": [
+        "İspanya",
+        "Fransa",
+        "İtalya",
+        "Yunanistan"
+      ],
+      "answer": 2
+    },
+    {
+      "id": "dunya-007",
+      "category": "dunya",
+      "difficulty": 1,
+      "text": "Japonya'nın para birimi nedir?",
+      "options": [
+        "Yuan",
+        "Won",
+        "Rupi",
+        "Yen"
+      ],
+      "answer": 3
+    },
+    {
+      "id": "dunya-008",
+      "category": "dunya",
+      "difficulty": 1,
+      "text": "Kolezyum hangi şehirdedir?",
+      "options": [
+        "Roma",
+        "Atina",
+        "İstanbul",
+        "Madrid"
+      ],
+      "answer": 0
+    },
+    {
+      "id": "dunya-009",
+      "category": "dunya",
+      "difficulty": 1,
+      "text": "Hangi ülkenin başkenti Berlin'dir?",
+      "options": [
+        "Avusturya",
+        "Almanya",
+        "İsviçre",
+        "Hollanda"
+      ],
+      "answer": 1
+    },
+    {
+      "id": "dunya-010",
+      "category": "dunya",
+      "difficulty": 1,
+      "text": "Taç Mahal hangi ülkededir?",
+      "options": [
+        "Pakistan",
+        "İran",
+        "Hindistan",
+        "Bangladeş"
+      ],
+      "answer": 2
+    },
+    {
+      "id": "dunya-011",
+      "category": "dunya",
+      "difficulty": 1,
+      "text": "Özgürlük Heykeli hangi şehirdedir?",
+      "options": [
+        "Washington",
+        "Los Angeles",
+        "Chicago",
+        "New York"
+      ],
+      "answer": 3
+    },
+    {
+      "id": "dunya-012",
+      "category": "dunya",
+      "difficulty": 1,
+      "text": "Hangi ülkenin bayrağında akçaağaç yaprağı vardır?",
+      "options": [
+        "Kanada",
+        "ABD",
+        "Avustralya",
+        "İsveç"
+      ],
+      "answer": 0
+    },
+    {
+      "id": "dunya-013",
+      "category": "dunya",
+      "difficulty": 1,
+      "text": "Brezilya'da en çok konuşulan dil hangisidir?",
+      "options": [
+        "İspanyolca",
+        "Portekizce",
+        "Fransızca",
+        "İtalyanca"
+      ],
+      "answer": 1
+    },
+    {
+      "id": "dunya-014",
+      "category": "dunya",
+      "difficulty": 1,
+      "text": "Kremlin Sarayı hangi şehirdedir?",
+      "options": [
+        "St. Petersburg",
+        "Kiev",
+        "Moskova",
+        "Minsk"
+      ],
+      "answer": 2
+    },
+    {
+      "id": "dunya-015",
+      "category": "dunya",
+      "difficulty": 1,
+      "text": "Hangi ülkenin başkenti Madrid'dir?",
+      "options": [
+        "Portekiz",
+        "Meksika",
+        "Arjantin",
+        "İspanya"
+      ],
+      "answer": 3
+    },
+    {
+      "id": "dunya-016",
+      "category": "dunya",
+      "difficulty": 2,
+      "text": "Dünyada en çok ana dil olarak konuşulan dil hangisidir?",
+      "options": [
+        "Çince (Mandarin)",
+        "İngilizce",
+        "İspanyolca",
+        "Hintçe"
+      ],
+      "answer": 0
+    },
+    {
+      "id": "dunya-017",
+      "category": "dunya",
+      "difficulty": 2,
+      "text": "İngiltere'nin para birimi nedir?",
+      "options": [
+        "Euro",
+        "Sterlin",
+        "Dolar",
+        "Frank"
+      ],
+      "answer": 1
+    },
+    {
+      "id": "dunya-018",
+      "category": "dunya",
+      "difficulty": 2,
+      "text": "Hangi ülkenin başkenti Buenos Aires'tir?",
+      "options": [
+        "Şili",
+        "Uruguay",
+        "Arjantin",
+        "Brezilya"
+      ],
+      "answer": 2
+    },
+    {
+      "id": "dunya-019",
+      "category": "dunya",
+      "difficulty": 2,
+      "text": "Machu Picchu antik kenti hangi ülkededir?",
+      "options": [
+        "Meksika",
+        "Bolivya",
+        "Şili",
+        "Peru"
+      ],
+      "answer": 3
+    },
+    {
+      "id": "dunya-020",
+      "category": "dunya",
+      "difficulty": 2,
+      "text": "Kuzey Kutbu'nda yaşamayan hayvan hangisidir?",
+      "options": [
+        "Penguen",
+        "Kutup ayısı",
+        "Ren geyiği",
+        "Kutup tilkisi"
+      ],
+      "answer": 0
+    },
+    {
+      "id": "dunya-021",
+      "category": "dunya",
+      "difficulty": 2,
+      "text": "Hangi ülkenin başkenti Nairobi'dir?",
+      "options": [
+        "Tanzanya",
+        "Kenya",
+        "Uganda",
+        "Etiyopya"
+      ],
+      "answer": 1
+    },
+    {
+      "id": "dunya-022",
+      "category": "dunya",
+      "difficulty": 2,
+      "text": "Akropolis hangi şehirdedir?",
+      "options": [
+        "Roma",
+        "İstanbul",
+        "Atina",
+        "Kahire"
+      ],
+      "answer": 2
+    },
+    {
+      "id": "dunya-023",
+      "category": "dunya",
+      "difficulty": 2,
+      "text": "Petra antik kenti hangi ülkededir?",
+      "options": [
+        "Mısır",
+        "Suriye",
+        "Lübnan",
+        "Ürdün"
+      ],
+      "answer": 3
+    },
+    {
+      "id": "dunya-024",
+      "category": "dunya",
+      "difficulty": 2,
+      "text": "Dünyanın en kalabalık şehirlerinden Tokyo hangi adada yer alır?",
+      "options": [
+        "Honshu",
+        "Hokkaido",
+        "Kyushu",
+        "Shikoku"
+      ],
+      "answer": 0
+    },
+    {
+      "id": "dunya-025",
+      "category": "dunya",
+      "difficulty": 2,
+      "text": "Hangi ülkenin bayrağında beyaz zemin üzerine kırmızı bir daire vardır?",
+      "options": [
+        "Çin",
+        "Japonya",
+        "Güney Kore",
+        "Vietnam"
+      ],
+      "answer": 1
+    },
+    {
+      "id": "dunya-026",
+      "category": "dunya",
+      "difficulty": 2,
+      "text": "Panama Kanalı hangi iki okyanusu birbirine bağlar?",
+      "options": [
+        "Atlas ve Hint",
+        "Hint ve Büyük",
+        "Atlas ve Büyük Okyanus",
+        "Arktik ve Atlas"
+      ],
+      "answer": 2
+    },
+    {
+      "id": "dunya-027",
+      "category": "dunya",
+      "difficulty": 2,
+      "text": "Hangi ülkenin başkenti Lizbon'dur?",
+      "options": [
+        "İspanya",
+        "Brezilya",
+        "Angola",
+        "Portekiz"
+      ],
+      "answer": 3
+    },
+    {
+      "id": "dunya-028",
+      "category": "dunya",
+      "difficulty": 2,
+      "text": "Angkor Wat tapınağı hangi ülkededir?",
+      "options": [
+        "Kamboçya",
+        "Tayland",
+        "Vietnam",
+        "Laos"
+      ],
+      "answer": 0
+    },
+    {
+      "id": "dunya-029",
+      "category": "dunya",
+      "difficulty": 2,
+      "text": "Hangi ülke dünyada en çok kahve üreten ülkedir?",
+      "options": [
+        "Kolombiya",
+        "Brezilya",
+        "Etiyopya",
+        "Vietnam"
+      ],
+      "answer": 1
+    },
+    {
+      "id": "dunya-030",
+      "category": "dunya",
+      "difficulty": 3,
+      "text": "Hangi ülkenin başkenti Wellington'dur?",
+      "options": [
+        "Avustralya",
+        "Fiji",
+        "Yeni Zelanda",
+        "Papua Yeni Gine"
+      ],
+      "answer": 2
+    },
+    {
+      "id": "dunya-031",
+      "category": "dunya",
+      "difficulty": 3,
+      "text": "Dünyanın yüzölçümü en küçük bağımsız devleti hangisidir?",
+      "options": [
+        "Monako",
+        "San Marino",
+        "Lihtenştayn",
+        "Vatikan"
+      ],
+      "answer": 3
+    },
+    {
+      "id": "dunya-032",
+      "category": "dunya",
+      "difficulty": 3,
+      "text": "Hangi ülkenin başkenti Reykjavik'tir?",
+      "options": [
+        "İzlanda",
+        "Norveç",
+        "Finlandiya",
+        "Grönland"
+      ],
+      "answer": 0
+    },
+    {
+      "id": "dunya-033",
+      "category": "dunya",
+      "difficulty": 3,
+      "text": "Süveyş Kanalı hangi ülkededir?",
+      "options": [
+        "Suudi Arabistan",
+        "Mısır",
+        "İsrail",
+        "Sudan"
+      ],
+      "answer": 1
+    },
+    {
+      "id": "dunya-034",
+      "category": "dunya",
+      "difficulty": 3,
+      "text": "Aşağıdaki şehirlerden hangisi Avustralya'da DEĞİLDİR?",
+      "options": [
+        "Brisbane",
+        "Adelaide",
+        "Auckland",
+        "Perth"
+      ],
+      "answer": 2
+    }
+  ]
+}

@@ -12,6 +12,7 @@ import { generateRoomCode, createHost, joinRoom, normalizeRoomCode } from './net
 const app = document.getElementById('app');
 const DEFAULT_PLAYERS = ['Oyuncu 1', 'Oyuncu 2'];
 const QUESTIONS_URL = new URL('../data/questions.json', import.meta.url);
+const TRIVIA_URL = new URL('../data/trivia.json', import.meta.url);
 
 const prefs = {
   players: load('players', DEFAULT_PLAYERS),
@@ -32,15 +33,16 @@ function applyTheme(theme) {
 applyTheme(prefs.theme);
 
 // ---------------------------------------------------------------- data
-let questionsPromise = null;
-function loadQuestions() {
-  if (!questionsPromise) {
-    questionsPromise = fetch(QUESTIONS_URL)
-      .then((r) => { if (!r.ok) throw new Error(`Sorular yüklenemedi (${r.status})`); return r.json(); })
-      .catch((err) => { questionsPromise = null; throw err; });
+const jsonCache = new Map();
+function loadJson(url) {
+  if (!jsonCache.has(url.href)) {
+    jsonCache.set(url.href, fetch(url)
+      .then((r) => { if (!r.ok) throw new Error(`Veri yüklenemedi (${r.status})`); return r.json(); })
+      .catch((err) => { jsonCache.delete(url.href); throw err; }));
   }
-  return questionsPromise;
+  return jsonCache.get(url.href);
 }
+const loadQuestions = () => loadJson(QUESTIONS_URL);
 
 /** Load whatever data the game declares in meta.data and return the ctx for the session. */
 async function loadGameData(game) {
@@ -52,6 +54,7 @@ async function loadGameData(game) {
     ctx.questions = await loadQuestions();
     ctx.customQuestions = load('custom-questions', []);
   }
+  if (needs.includes('trivia')) ctx.trivia = await loadJson(TRIVIA_URL);
   return ctx;
 }
 
@@ -286,7 +289,11 @@ export function showPlay(p) {
     onEnd: (result) => {
       let text;
       if (result.draw) text = 'Berabere!';
-      else { scores[result.winner] += 1; text = `${p.players[result.winner]} kazandı!`; }
+      else {
+        const pts = Number(result.points) > 0 ? Number(result.points) : 1;
+        scores[result.winner] += pts;
+        text = `${p.players[result.winner]} kazandı!${pts > 1 ? ` (+${pts} puan)` : ''}`;
+      }
       updateScore();
       const again = el('button', { type: 'button', class: 'btn btn-primary btn-big' }, 'Yeni tur');
       if (isOnline && p.self !== 0) {

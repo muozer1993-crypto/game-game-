@@ -13,9 +13,13 @@ Tek telefonda elden ele ya da iki telefonda oda koduyla oynanır. Ana ekrana ekl
 | **Gizli Kelime** | Karşılıklı Wordle. 4–6 harf, renkli ya da "+2 −1" modu. İkisi aynı turda bulursa berabere. |
 | **Gizli Sayı** | Rakamları farklı 4 haneli sayı, "+ −" ipuçlarıyla. |
 | **Beni Ne Kadar Tanıyorsun?** | Aynı sorular ikinize; önce kendi cevabın, sonra rakibin tahmini; karşılaştırma otomatik. Hazır havuz + kendi sorularınız. |
+| **Genel Kültür Düellosu** | Aynı sorular ikinize; doğru sayısı, eşitlikte hız. 240+ soruluk havuz. |
 | **Amiral Battı** | Gemilerini gizle, rakibin denizine ateş et; atışlar gemi sahibinin cihazında değerlendirilir. |
+| **Tavla** | Klasik tavla; kırma, bardan giriş, toplama, mars (2 puan), geri al. |
+| **Bilardo** | Sürükleyerek nişan al; topu ceplayan devam eder. Fizik deterministik, iki cihaz aynı vuruşu aynı görür. |
 | **Dört Bağlantı** | 6×7 tahtada taş bırak, dördü yan yana getir. |
 | **Noktalar ve Kutular** | Çizgi çek, kutuyu kapat, bir daha oyna. 3×3 – 6×6. |
+| **Hafıza** | Kart eşleştirme; eşleşen devam eder. 12–36 kart. |
 | **XOX** | Klasik üç taş. |
 
 ## Yerelde çalıştırma

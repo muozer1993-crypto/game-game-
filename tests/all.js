@@ -9,3 +9,7 @@ import './beni-tani.test.js';
 import './dort-baglanti.test.js';
 import './noktalar-kutular.test.js';
 import './amiral-batti.test.js';
+import './tavla.test.js';
+import './genel-kultur.test.js';
+import './bilardo.test.js';
+import './hafiza.test.js';
