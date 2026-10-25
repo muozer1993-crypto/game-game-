@@ -418,6 +418,30 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .tv-key.p0::before, .tv-key.p1::before { content: ''; display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 6px; border: 1px solid rgba(0,0,0,0.3); vertical-align: -1px; }
 .tv-key.p0::before { background: #fafafa; }
 .tv-key.p1::before { background: #263238; }
+.ptable { text-align: center; margin: 10px 0; }
+.phand { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin: 6px 0; }
+.pcard {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 90px;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  background: #fff;
+  color: #1b1d24;
+  font: inherit;
+  font-size: 1.4rem;
+  font-weight: 800;
+  cursor: pointer;
+  touch-action: manipulation;
+  padding: 0;
+}
+.pcard.red { color: #d32f2f; }
+.pcard.empty { color: var(--muted); background: var(--secondary); }
+.pcard:disabled { cursor: default; opacity: 0.85; }
+.pcard .suit { font-size: 1.2rem; }
 .dama-board { display: grid; grid-template-columns: repeat(8, 1fr); gap: 0; max-width: 400px; margin: 8px auto; border: 3px solid #5d4037; border-radius: 6px; overflow: hidden; }
 .dama-sq { aspect-ratio: 1; padding: 0; border: 0; background: #f0d9b5; display: flex; align-items: center; justify-content: center; cursor: pointer; touch-action: manipulation; }
 .dama-sq.dark { background: #b58863; }
