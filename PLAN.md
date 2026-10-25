@@ -28,7 +28,7 @@ js/net/transport.js     Bağlantı arayüzü (send / onMessage)
 js/net/peer.js          PeerJS adaptörü (oda kodu = peer id)
 js/version.js           Uygulama sürümü (sw.js VERSION ile birlikte artırılır; iki telefon karşılaştırır)
 games/index.js          Oyun kaydı (yeni oyun = yeni dosya + bir import satırı)
-games/*.js              31 oyun, her biri tek dosya (aşağıdaki liste)
+games/*.js              32 oyun, her biri tek dosya (aşağıdaki liste)
 data/words-tr.txt       Büyük kelime listesi (doğrulama)
 data/common-tr.json     4/5/6 harfli yaygın kelimeler (gizli kelime seçimi)
 data/questions.json     Beni Ne Kadar Tanıyorsun soru havuzu
@@ -87,6 +87,6 @@ export default {
 
 ## Eklenen oyunlar (faz 2)
 Genel Kültür Düellosu (`data/trivia.json`), Amiral Battı, Tavla, Dama, Mangala, Bilardo,
-Dört Bağlantı, Noktalar ve Kutular, Hafıza, XOX, Taş Kağıt Makas, Adam Asmaca, Harf Avı, Kelime Türetme, Tabu (`data/tabu.json`), Reversi, Beş Taş, Dokuz Taş, Refleks, Satranç, Hesap Yarışı, Renk Tuzağı, Hafıza Dizisi, Durak, Mayın Tarlası, Sudoku Düellosu — her biri `games/` altında tek dosya; `games/index.js`
+Dört Bağlantı, Noktalar ve Kutular, Hafıza, XOX, Taş Kağıt Makas, Adam Asmaca, Harf Avı, Kelime Türetme, Tabu (`data/tabu.json`), Reversi, Beş Taş, Hex, Dokuz Taş, Refleks, Satranç, Hesap Yarışı, Renk Tuzağı, Hafıza Dizisi, Durak, Mayın Tarlası, Sudoku Düellosu — her biri `games/` altında tek dosya; `games/index.js`
 kaydı ve `sw.js` önbellek listesi. Ana menü `meta.group` ile bölümlere ayrılır
 (kelime / soru-cevap / masa).

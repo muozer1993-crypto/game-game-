@@ -1,6 +1,6 @@
 // Minimal service worker: precache the app shell, serve cache-first, fall back to network.
 // Bump VERSION whenever files change so that old caches are dropped.
-const VERSION = 'v43';
+const VERSION = 'v44';
 const CACHE = `oyun-gecesi-${VERSION}`;
 const SHELL = [
   './',
@@ -35,6 +35,7 @@ const SHELL = [
   './games/dort-baglanti.js',
   './games/reversi.js',
   './games/bes-tas.js',
+  './games/hex.js',
   './games/dokuz-tas.js',
   './games/xox.js',
   './games/noktalar-kutular.js',
@@ -91,6 +92,7 @@ const SHELL = [
   './tests/hafiza-dizisi.test.js',
   './tests/harf-avi.test.js',
   './tests/hesap-yarisi.test.js',
+  './tests/hex.test.js',
   './tests/kelime-turetme.test.js',
   './tests/mangala.test.js',
   './tests/mayin-tarlasi.test.js',
