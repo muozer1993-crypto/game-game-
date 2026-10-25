@@ -22,6 +22,7 @@ import tavla from './tavla.js';
 import satranc from './satranc.js';
 import genelKultur from './genel-kultur.js';
 import hesapYarisi from './hesap-yarisi.js';
+import hedefSayi from './hedef-sayi.js';
 import renkTuzagi from './renk-tuzagi.js';
 import hafizaDizisi from './hafiza-dizisi.js';
 import bilardo from './bilardo.js';
@@ -40,7 +41,7 @@ import sekizler from './sekizler.js';
 import poker from './poker.js';
 import kizmaBirader from './kizma-birader.js';
 
-export const games = [sonHece, gizliKelime, gizliSayi, adamAsmaca, harfAvi, kelimeTuretme, kelimeTahtasi, isimSehir, tabu, beniTani, genelKultur, hesapYarisi, renkTuzagi, hafizaDizisi, amiralBatti, satranc, tavla, kizmaBirader, dama, mangala, dokuzTas, pisti, durak, sekizler, poker, yalanciZar, zarPokeri, bilardo, dortBaglanti, besTas, hex, reversi, noktalarKutular, hafiza, mayinTarlasi, sudoku, xox, tasKagitMakas, refleks];
+export const games = [sonHece, gizliKelime, gizliSayi, adamAsmaca, harfAvi, kelimeTuretme, kelimeTahtasi, isimSehir, tabu, beniTani, genelKultur, hesapYarisi, hedefSayi, renkTuzagi, hafizaDizisi, amiralBatti, satranc, tavla, kizmaBirader, dama, mangala, dokuzTas, pisti, durak, sekizler, poker, yalanciZar, zarPokeri, bilardo, dortBaglanti, besTas, hex, reversi, noktalarKutular, hafiza, mayinTarlasi, sudoku, xox, tasKagitMakas, refleks];
 
 /** Menu sections, in display order. A game's meta.group picks its section. */
 export const groups = [

@@ -934,3 +934,16 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .ld-board { display: block; width: 100%; height: auto; touch-action: manipulation; }
 .ld-piece.movable { cursor: pointer; }
 .ld-die { font-size: 1.8rem; line-height: 1; margin-left: 10px; vertical-align: middle; }
+
+/* ---- Hedef Sayı */
+.hs-target { text-align: center; margin: 4px 0 8px; }
+.hs-target strong { display: block; font-size: 2.6rem; line-height: 1.1; }
+.hs-target .muted { font-size: 0.85rem; }
+.hs-pool { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin: 6px 0; } /* 6 × 48px + 5 × 6px fits 328px */
+.hs-num { min-width: 48px; padding: 6px 8px; min-height: 52px; font-size: 1.3rem; font-weight: 700; background: var(--card); color: var(--fg); border: 2px solid var(--border); }
+.hs-num.derived { border-style: dashed; }
+.hs-num.sel { border-color: var(--primary); background: var(--secondary); box-shadow: inset 0 0 0 2px var(--primary); }
+.hs-ops { display: flex; gap: 8px; justify-content: center; margin: 6px 0; }
+.hs-op { min-width: 56px; font-size: 1.4rem; }
+.hs-op.sel { outline: 3px solid var(--primary); outline-offset: -3px; }
+.hs-steps { font-variant-numeric: tabular-nums; font-size: 0.95rem; line-height: 1.6; text-align: center; }
