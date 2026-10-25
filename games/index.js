@@ -10,6 +10,7 @@ import tabu from './tabu.js';
 import beniTani from './beni-tani.js';
 import dortBaglanti from './dort-baglanti.js';
 import reversi from './reversi.js';
+import besTas from './bes-tas.js';
 import dokuzTas from './dokuz-tas.js';
 import xox from './xox.js';
 import noktalarKutular from './noktalar-kutular.js';
@@ -29,7 +30,7 @@ import dama from './dama.js';
 import pisti from './pisti.js';
 import durak from './durak.js';
 
-export const games = [sonHece, gizliKelime, gizliSayi, adamAsmaca, harfAvi, kelimeTuretme, tabu, beniTani, genelKultur, hesapYarisi, amiralBatti, satranc, tavla, dama, mangala, dokuzTas, pisti, durak, bilardo, dortBaglanti, reversi, noktalarKutular, hafiza, mayinTarlasi, sudoku, xox, tasKagitMakas, refleks];
+export const games = [sonHece, gizliKelime, gizliSayi, adamAsmaca, harfAvi, kelimeTuretme, tabu, beniTani, genelKultur, hesapYarisi, amiralBatti, satranc, tavla, dama, mangala, dokuzTas, pisti, durak, bilardo, dortBaglanti, besTas, reversi, noktalarKutular, hafiza, mayinTarlasi, sudoku, xox, tasKagitMakas, refleks];
 
 /** Menu sections, in display order. A game's meta.group picks its section. */
 export const groups = [

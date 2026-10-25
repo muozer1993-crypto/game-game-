@@ -30,3 +30,4 @@ import './version.test.js';
 import './mayin-tarlasi.test.js';
 import './sudoku.test.js';
 import './kelime-turetme.test.js';
+import './bes-tas.test.js';

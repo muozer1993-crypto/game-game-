@@ -780,3 +780,13 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .tour-games { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 8px; }
 .tour-game { display: flex; align-items: center; gap: 6px; font-size: 0.95rem; padding: 4px 0; }
 .result-banner .muted { font-size: 0.95rem; font-weight: 600; margin-top: 4px; }
+
+/* ---- Beş Taş */
+.gm-board { display: grid; gap: 1px; max-width: 400px; margin: 8px auto; padding: 3px; background: #d7b26b; border-radius: 6px; }
+.gm-cell { aspect-ratio: 1; border: 0; padding: 0; background: #e8c88a; display: flex; align-items: center; justify-content: center; cursor: pointer; touch-action: manipulation; }
+.gm-cell:disabled { cursor: default; }
+.gm-cell .stone { width: 84%; height: 84%; border-radius: 50%; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4); }
+.gm-cell.black .stone { background: #111; }
+.gm-cell.white .stone { background: #f7f7f7; }
+.gm-cell.last .stone { outline: 2px solid var(--primary); outline-offset: -2px; }
+.gm-cell.win { background: #ffd54f; }

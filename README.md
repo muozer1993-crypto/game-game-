@@ -1,6 +1,6 @@
 # Oyun Gecesi
 
-İki kişilik, Türkçe arayüzlü, telefonda rahat oynanan oyun koleksiyonu: 28 oyun (kelime, soru-cevap, masa).
+İki kişilik, Türkçe arayüzlü, telefonda rahat oynanan oyun koleksiyonu: 29 oyun (kelime, soru-cevap, masa).
 Düz HTML + CSS + JavaScript (ES modules); framework yok, build adımı yok, npm yok.
 Tek telefonda elden ele ya da iki telefonda oda koduyla oynanır. Ana ekrana eklenebilir
 (manifest + service worker) ve bir kez yüklendikten sonra tek telefon modu çevrimdışı çalışır.
@@ -29,6 +29,7 @@ Tek telefonda elden ele ya da iki telefonda oda koduyla oynanır. Ana ekrana ekl
 | **Durak** | 36 kart, koz; saldır, kır ya da al; deste bitince elinde kart kalan durak olur. |
 | **Bilardo** | Sürükleyerek nişan al; topu ceplayan devam eder. Fizik deterministik, iki cihaz aynı vuruşu aynı görür. |
 | **Dört Bağlantı** | 6×7 tahtada taş bırak, dördü yan yana getir. |
+| **Beş Taş** | 11–15'lik tahtada sırayla taş koy; beşi yan yana getiren kazanır (gomoku). |
 | **Reversi** | Rakibin taşlarını arada bırak, rengine çevir; oynayamayan geçer, çok taşı olan kazanır. |
 | **Noktalar ve Kutular** | Çizgi çek, kutuyu kapat, bir daha oyna. 3×3 – 6×6. |
 | **Hafıza** | Kart eşleştirme; eşleşen devam eder. 12–36 kart. |
