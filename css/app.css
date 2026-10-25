@@ -790,3 +790,18 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .gm-cell.white .stone { background: #f7f7f7; }
 .gm-cell.last .stone { outline: 2px solid var(--primary); outline-offset: -2px; }
 .gm-cell.win { background: #ffd54f; }
+
+/* ---- Renk Tuzağı */
+.rt-card { text-align: center; padding: 26px 10px; margin: 8px 0; }
+.rt-word { font-size: 2.4rem; font-weight: 900; letter-spacing: 0.06em; text-shadow: 0 0 1px rgba(0, 0, 0, 0.25); }
+.rt-demo { text-align: center; margin: 10px 0; }
+.rt-demo .rt-word { font-size: 1.6rem; }
+.rt-pads { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; max-width: 360px; margin: 10px auto; }
+.rt-pad { height: 84px; border: 0; border-radius: 14px; cursor: pointer; touch-action: manipulation; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25); }
+.rt-pad:active { transform: scale(0.97); }
+
+/* ---- Hafıza Dizisi */
+.sm-pads { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; max-width: 340px; margin: 12px auto; }
+.sm-pad { aspect-ratio: 1; border: 0; border-radius: 18px; cursor: pointer; touch-action: manipulation; opacity: 0.45; transition: opacity 80ms; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25); }
+.sm-pad:not(:disabled) { opacity: 0.8; }
+.sm-pad:not(:disabled):active, .sm-pad.lit { opacity: 1; box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.7), 0 0 18px rgba(255, 255, 255, 0.5); }

@@ -1,6 +1,6 @@
 # Oyun Gecesi
 
-İki kişilik, Türkçe arayüzlü, telefonda rahat oynanan oyun koleksiyonu: 29 oyun (kelime, soru-cevap, masa).
+İki kişilik, Türkçe arayüzlü, telefonda rahat oynanan oyun koleksiyonu: 31 oyun (kelime, soru-cevap, masa).
 Düz HTML + CSS + JavaScript (ES modules); framework yok, build adımı yok, npm yok.
 Tek telefonda elden ele ya da iki telefonda oda koduyla oynanır. Ana ekrana eklenebilir
 (manifest + service worker) ve bir kez yüklendikten sonra tek telefon modu çevrimdışı çalışır.
@@ -19,6 +19,8 @@ Tek telefonda elden ele ya da iki telefonda oda koduyla oynanır. Ana ekrana ekl
 | **Beni Ne Kadar Tanıyorsun?** | Aynı sorular ikinize; önce kendi cevabın, sonra rakibin tahmini; karşılaştırma otomatik. Hazır havuz + kendi sorularınız. |
 | **Genel Kültür Düellosu** | Aynı sorular ikinize; doğru sayısı, eşitlikte hız. 240+ soruluk havuz. |
 | **Hesap Yarışı** | Aynı aritmetik işlemler ikinize (kolay/orta/zor); doğru sayısı, eşitlikte hız. |
+| **Renk Tuzağı** | Kelimeye değil yazının rengine dokun (Stroop); süre dolana kadar doğru −yanlış puanı. |
+| **Hafıza Dizisi** | Yanan renk dizisini aynı sırayla dokun; her turda bir uzar, uzun hatırlayan kazanır. |
 | **Amiral Battı** | Gemilerini gizle, rakibin denizine ateş et; atışlar gemi sahibinin cihazında değerlendirilir. |
 | **Satranç** | Klasik satranç: rok, geçerken alma, terfi seçimi, şah mat, pat, yetersiz materyal, elli hamle, üç tekrar. |
 | **Tavla** | Klasik tavla; kırma, bardan giriş, toplama, mars (2 puan), geri al. |

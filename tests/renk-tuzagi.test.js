@@ -1,0 +1,31 @@
+import { test, assert } from './runner.js';
+import game, { makeItems, scoreOf } from '../games/renk-tuzagi.js';
+
+test('renk tuzağı: dizi tohuma göre aynı ve dengeli; cevaplar, puan, sonuç', () => {
+  const items = makeItems(200, 9);
+  assert.deepEqual(items, makeItems(200, 9));
+  assert.ok(items.every((it) => it.word >= 0 && it.word < 4 && it.ink >= 0 && it.ink < 4));
+  const incongruent = items.filter((it) => it.word !== it.ink).length;
+  assert.ok(incongruent > 80 && incongruent < 160, 'mixed congruent/incongruent: ' + incongruent);
+  for (let i = 1; i < items.length; i++) assert.notEqual(items[i].ink, items[i - 1].ink, 'ink colour changes every item');
+  let s = game.setup({ seconds: 20, seed: 9 });
+  assert.deepEqual(game.getTurn(s), { player: 0, private: true, simultaneous: true });
+  assert.throws(() => game.applyMove(s, 0, { type: 'answer', index: 0, choice: 1 }), 'Önce başla');
+  s = game.applyMove(s, 0, { type: 'start' });
+  assert.throws(() => game.applyMove(s, 0, { type: 'answer', index: 1, choice: 1 }), 'Sırayla');
+  s = game.applyMove(s, 0, { type: 'answer', index: 0, choice: s.items[0].ink });
+  s = game.applyMove(s, 0, { type: 'answer', index: 1, choice: (s.items[1].ink + 1) % 4 });
+  s = game.applyMove(s, 0, { type: 'answer', index: 2, choice: s.items[2].ink });
+  assert.deepEqual(scoreOf(s, 0), { right: 2, wrong: 1, score: 1 });
+  s = game.applyMove(s, 0, { type: 'finish' });
+  assert.throws(() => game.applyMove(s, 0, { type: 'answer', index: 3, choice: 0 }), 'Süren doldu');
+  assert.deepEqual(game.getTurn(s), { player: 1, private: true, simultaneous: true });
+  s = game.applyMove(s, 1, { type: 'start' });
+  s = game.applyMove(s, 1, { type: 'answer', index: 0, choice: s.items[0].ink });
+  s = game.applyMove(s, 1, { type: 'finish' });
+  assert.equal(s.phase, 'over');
+  assert.deepEqual(game.getResult(s), { winner: 1 }, 'equal score: fewer wrong answers wins');
+  let d = game.applyMove(game.applyMove(game.setup({ seconds: 20, seed: 9 }), 0, { type: 'start' }), 0, { type: 'finish' });
+  d = game.applyMove(game.applyMove(d, 1, { type: 'start' }), 1, { type: 'finish' });
+  assert.deepEqual(game.getResult(d), { draw: true });
+});
