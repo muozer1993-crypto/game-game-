@@ -1,6 +1,6 @@
 # Oyun Gecesi
 
-İki kişilik, Türkçe arayüzlü, telefonda rahat oynanan oyun koleksiyonu: 43 oyun; kartlardaki ★ ile favoriler üstte toplanır (kelime, soru-cevap, zekâ ve refleks, tahta, kart/zar/taş).
+İki kişilik, Türkçe arayüzlü, telefonda rahat oynanan oyun koleksiyonu: 44 oyun; kartlardaki ★ ile favoriler üstte toplanır (kelime, soru-cevap, zekâ ve refleks, tahta, kart/zar/taş).
 Düz HTML + CSS + JavaScript (ES modules); framework yok, build adımı yok, npm yok.
 Tek telefonda elden ele ya da iki telefonda oda koduyla oynanır. Ana ekrana eklenebilir
 (manifest + service worker) ve bir kez yüklendikten sonra tek telefon modu çevrimdışı çalışır.
@@ -36,6 +36,7 @@ Tek telefonda elden ele ya da iki telefonda oda koduyla oynanır. Ana ekrana ekl
 | **Okey (ikili)** | 106 taş, gösterge ve okey, sahte okey; ortadan çek ya da rakibin attığını al, 14 taşı per/seri ya da yedi çifte diz, 15.yi at. Çifte ve okey atarak bitiş ×2. |
 | **Pişti** | Klasik pişti: aynı değer ya da vale alır, pişti 10/20, 151'e kadar. |
 | **Durak** | 36 kart, koz; saldır, kır ya da al; deste bitince elinde kart kalan durak olur. |
+| **Altmışaltı (66)** | Klasik iki kişilik el oyunu: 24 kart, açık koz, evlilik 20/40, koz 9 değişimi, deste kapatma; 66 puana ulaşan eli alır, 7 oyun puanı. |
 | **Sekizler** | Aynı renk ya da aynı sayıyı at, sekiz jokerdir ve renk seçtirir; çek/pas; elini bitiren rakibin kalan kartlarının puanını alır. |
 | **Poker** | Texas Hold'em bire bir: körler, bekle/gör/yükselt/pas, rest ve iade, yedi karttan en iyi beşli; fişi biten kaybeder. |
 | **Yalancı Zar** | Gizli zarlar, blöf: "masada en az 3 tane 5 var" de ya da "Yalan!" diye yakala; birler joker. Zarı biten kaybeder. |

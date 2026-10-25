@@ -991,3 +991,9 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .go-wrap { max-width: 440px; margin: 8px auto; }
 .go-board { display: block; width: 100%; height: auto; touch-action: manipulation; }
 .go-cell.free { cursor: pointer; }
+
+/* ---- Altmışaltı */
+.ss-table { display: flex; justify-content: space-around; gap: 8px; padding: 8px 6px; margin: 6px 0; }
+.ss-slot { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 0.8rem; }
+.pcard.trump { border-color: #f5b301; }
+.pcard.small.empty { color: var(--muted); }
