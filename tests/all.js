@@ -6,3 +6,6 @@ import './session.test.js';
 import './son-hece.test.js';
 import './gizli-kelime.test.js';
 import './beni-tani.test.js';
+import './dort-baglanti.test.js';
+import './noktalar-kutular.test.js';
+import './amiral-batti.test.js';

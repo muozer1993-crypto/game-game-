@@ -288,6 +288,87 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .challenge-box { text-align: center; }
 .challenge-box .word { font-size: 1.5rem; font-weight: 800; }
 
+/* board games */
+.c4-board {
+  display: grid;
+  gap: 4px;
+  padding: 6px;
+  border-radius: 12px;
+  background: var(--primary);
+  max-width: 420px;
+  margin: 8px auto;
+}
+.c4-cell {
+  aspect-ratio: 1;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--bg);
+  cursor: pointer;
+  touch-action: manipulation;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.c4-cell:disabled { cursor: default; }
+.c4-cell .disc { width: 82%; height: 82%; border-radius: 50%; }
+.c4-cell.p0 .disc { background: #e53935; }
+.c4-cell.p1 .disc { background: #fdd835; }
+.c4-cell.last .disc { box-shadow: 0 0 0 3px var(--fg); }
+.c4-cell.win { background: #fff; }
+.c4-cell.win .disc { box-shadow: 0 0 0 4px var(--fg); }
+.c4-legend { display: flex; justify-content: center; gap: 16px; margin: 4px 0; font-size: 0.95rem; }
+.c4-key::before { content: ''; display: inline-block; width: 14px; height: 14px; border-radius: 50%; margin-right: 6px; vertical-align: -2px; }
+.c4-key.p0::before { background: #e53935; }
+.c4-key.p1::before { background: #fdd835; }
+.sea { display: grid; gap: 2px; max-width: 420px; margin: 4px auto; user-select: none; -webkit-user-select: none; }
+.sea-small { max-width: 240px; }
+.sea-head, .sea-corner { font-size: 0.7rem; color: var(--muted); display: flex; align-items: center; justify-content: center; min-width: 14px; }
+.sea-cell {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--primary) 12%, var(--card));
+  color: var(--fg);
+  font: inherit;
+  font-weight: 800;
+  font-size: 1rem;
+  touch-action: manipulation;
+  cursor: pointer;
+}
+.sea-small .sea-cell { font-size: 0.7rem; border-radius: 3px; }
+.sea-cell:disabled { cursor: default; }
+.sea-cell.ship { background: var(--absent); border-color: var(--absent); }
+.sea-cell.miss { background: var(--secondary); color: var(--muted); }
+.sea-cell.hit { background: var(--present); color: #fff; }
+.sea-cell.sunk { background: var(--danger); color: #fff; }
+.sea-cell.pending { background: var(--secondary); }
+.dab-wrap { max-width: 420px; margin: 8px auto; }
+.dab-board { width: 100%; height: auto; display: block; color: var(--fg); touch-action: manipulation; }
+.dab-hit { cursor: pointer; }
+.dab-key { font-weight: 700; }
+.xox-board { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; max-width: 320px; margin: 12px auto; }
+.xox-cell {
+  aspect-ratio: 1;
+  font: inherit;
+  font-size: 3rem;
+  font-weight: 800;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  background: var(--card);
+  color: var(--fg);
+  cursor: pointer;
+  touch-action: manipulation;
+}
+.xox-cell:disabled { cursor: default; opacity: 1; }
+.xox-cell.p0 { color: #e53935; }
+.xox-cell.p1 { color: var(--primary); }
+.xox-cell.win { background: var(--secondary); border-color: var(--fg); }
+
 /* handoff */
 .handoff { text-align: center; padding: 32px 8px; }
 .handoff-icon { font-size: 3rem; margin-bottom: 8px; }

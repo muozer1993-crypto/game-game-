@@ -12,7 +12,11 @@ Tek telefonda elden ele ya da iki telefonda oda koduyla oynanır. Ana ekrana ekl
 | **Son Hece** | Her kelime bir öncekinin son hecesiyle başlar (kitap → tapınak → nakış). Süre, itiraz/kabul, ğ kuralı. |
 | **Gizli Kelime** | Karşılıklı Wordle. 4–6 harf, renkli ya da "+2 −1" modu. İkisi aynı turda bulursa berabere. |
 | **Gizli Sayı** | Rakamları farklı 4 haneli sayı, "+ −" ipuçlarıyla. |
-| **Beni Ne Kadar Tanıyorsun?** | Biri kendisi hakkında cevaplar, öteki tahmin eder; sonra roller değişir. Hazır havuz + kendi sorularınız. |
+| **Beni Ne Kadar Tanıyorsun?** | Aynı sorular ikinize; önce kendi cevabın, sonra rakibin tahmini; karşılaştırma otomatik. Hazır havuz + kendi sorularınız. |
+| **Amiral Battı** | Gemilerini gizle, rakibin denizine ateş et; atışlar gemi sahibinin cihazında değerlendirilir. |
+| **Dört Bağlantı** | 6×7 tahtada taş bırak, dördü yan yana getir. |
+| **Noktalar ve Kutular** | Çizgi çek, kutuyu kapat, bir daha oyna. 3×3 – 6×6. |
+| **XOX** | Klasik üç taş. |
 
 ## Yerelde çalıştırma
 

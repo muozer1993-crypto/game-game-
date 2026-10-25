@@ -17,6 +17,22 @@ export function el(tag, attrs = {}, ...children) {
   return node;
 }
 
+const SVG_NS = 'http://www.w3.org/2000/svg';
+
+/** Like el() but creates SVG elements. svg('circle', { cx: 10, cy: 10, r: 4 }) */
+export function svg(tag, attrs = {}, ...children) {
+  const node = document.createElementNS(SVG_NS, tag);
+  for (const [key, value] of Object.entries(attrs || {})) {
+    if (value === null || value === undefined || value === false) continue;
+    if (key === 'class') node.setAttribute('class', value);
+    else if (key === 'text') node.textContent = value;
+    else if (key.startsWith('on') && typeof value === 'function') node.addEventListener(key.slice(2).toLowerCase(), value);
+    else node.setAttribute(key, value);
+  }
+  append(node, children);
+  return node;
+}
+
 export function append(parent, children) {
   for (const child of children.flat(Infinity)) {
     if (child === null || child === undefined || child === false) continue;
