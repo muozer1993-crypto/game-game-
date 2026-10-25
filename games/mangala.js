@@ -9,7 +9,7 @@ export const meta = {
   description: 'Türk mangalası: taşları dağıt, çift sayıda yakala, hazneyi doldur.',
   rules: [
     'Her oyuncunun 6 kuyusu ve bir haznesi vardır; her kuyuda 4 taş. Ekranda 1. oyuncu alt sırayı oynar ve haznesi sağdadır; 2. oyuncu üst sırayı oynar ve haznesi soldadır. Taşlar alt sırada sağa, üst sırada sola doğru akar (saat yönünün tersine).',
-    'Sırası gelen kendi kuyularından birini seçer; resmî kurala göre ilk taşı aldığı kuyuya geri bırakır, kalanını sağa doğru birer birer dağıtır (kendi haznesine de bırakır, rakibin haznesini atlar). Kuyuda tek taş varsa o taş bir sonraki kuyuya gider. Ayarlardan "Sonraki kuyudan başla" seçilirse aldığın kuyuya taş bırakılmaz (klasik ev kuralı).',
+    'Sırası gelen kendi kuyularından birini seçer; resmî kurala göre ilk taşı aldığı kuyuya geri bırakır, kalanını saat yönünün tersine birer birer dağıtır (kendi haznesine de bırakır, rakibin haznesini atlar). Kuyuda tek taş varsa o taş bir sonraki kuyuya gider. Ayarlardan "Sonraki kuyudan başla" seçilirse ilk taş aldığın kuyuya bırakılmaz, dağıtım bir sonraki kuyudan başlar (klasik ev kuralı); 13 ya da daha çok taşla tur dönerse o kuyuya da taş düşer.',
     'Son taş kendi haznene düşerse bir daha oynarsın. Son taş rakibin kuyusuna düşer ve oradaki taş sayısını çift yaparsa o kuyudaki taşların hepsini alırsın. Son taş kendi boş kuyuna düşerse ve karşısındaki rakip kuyusu doluysa oradakileri ve kendi taşını alırsın.',
     'Bir oyuncunun kuyuları boşalınca oyun biter. Resmî kurala göre kuyuları ilk boşalan oyuncu, rakibin kuyularında kalan bütün taşları kendi haznesine alır (ayarlardan "herkes kendi tarafındakini alır" seçilebilir). Haznesinde çok taşı olan kazanır; eşitlikte berabere.',
     'Varsayılanlar Türkiye Akıl ve Zekâ Oyunları Federasyonu (TAZOF) ve MEB zekâ oyunları kurallarıdır.',
@@ -154,9 +154,11 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     : '';
   const variant = [state.firstStone === 'next' ? 'sonraki kuyudan başla' : null, state.leftovers === 'owner' ? 'kalan taşlar sahibine' : null].filter(Boolean);
   const note = state.last
-    ? el('p', { class: 'hint' }, `${state.last.captured ? `${state.last.captured} taş alındı. ` : ''}${state.last.again ? 'Son taş hazneye düştü: bir hamle daha. ' : ''}${endNote}`)
-    : el('p', { class: 'hint' }, `${players[0]} alt sıradaki kuyuları oynar, ${players[1]} üst sıradakileri.${variant.length ? ` Ev kuralı: ${variant.join(', ')}.` : ''}`);
-  draw(container, el('div', { class: 'status-line' }, el('strong', {}, status)), board, note);
+    ? el('p', { class: 'hint' }, `${state.last.captured ? `${state.last.captured} taş alındı. ` : ''}${state.last.again && !state.over ? 'Son taş hazneye düştü: bir hamle daha. ' : ''}${endNote}`)
+    : el('p', { class: 'hint' }, `${players[0]} alt sıradaki kuyuları oynar, ${players[1]} üst sıradakileri.`);
+  // the house rules stay visible all game (the guest never saw the host's settings form)
+  const variantLine = variant.length ? el('p', { class: 'hint mg-variant' }, `Ev kuralı: ${variant.join(', ')}.`) : null;
+  draw(container, el('div', { class: 'status-line' }, el('strong', {}, status)), board, note, variantLine);
   return null;
 }
 
