@@ -9,6 +9,13 @@ test('mayın tarlası: tarla tohuma göre aynı, başlangıç bölgesi güvenli,
   const safe = new Set([f.start, ...neighbours(9, f.start)]);
   assert.ok(f.mines.every((m) => !safe.has(m)), 'no mine next to the start');
   assert.equal(f.numbers[f.start], 0);
+  const region = flood(9, f.numbers, [], f.start).length;
+  assert.ok(region >= 3 && region <= 16, 'the opening region is modest: ' + region);
+  for (const seed of [1, 2, 3, 4, 5]) for (const size of [8, 9, 12]) {
+    const g = makeField(size, seed);
+    const n = flood(size, g.numbers, [], g.start).length;
+    assert.ok(n >= 3 && n <= Math.max(4, Math.round(size * size / 10)) * 2, `${size}x${size} seed ${seed}: region ${n}`);
+  }
   f.numbers.forEach((n, i) => {
     if (n === -1) assert.ok(f.mines.includes(i));
     else assert.equal(n, neighbours(9, i).filter((k) => f.mines.includes(k)).length);

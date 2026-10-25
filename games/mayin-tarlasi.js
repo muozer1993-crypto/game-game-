@@ -44,16 +44,29 @@ export function neighbours(size, i) {
   return out;
 }
 
-/** Mines placed away from a seeded start cell and its neighbours, so the start opens a region. */
+/**
+ * A seeded minefield plus a start cell: a zero cell whose region is modest (about a tenth
+ * of the board), so the opening gives a foothold without solving half the field.
+ */
 export function makeField(size, seed) {
   const rng = createRng(seed);
   const n = size * size;
-  const start = Math.floor(rng() * n);
-  const safe = new Set([start, ...neighbours(size, start)]);
-  const candidates = [...Array(n).keys()].filter((i) => !safe.has(i));
-  const mines = new Set(shuffle(rng, candidates).slice(0, MINES[size]));
-  const numbers = Array.from({ length: n }, (_, i) => (mines.has(i) ? -1 : neighbours(size, i).filter((k) => mines.has(k)).length));
-  return { start, mines: [...mines].sort((a, b) => a - b), numbers };
+  const target = Math.max(4, Math.round(n / 10));
+  let fallback = null;
+  for (let attempt = 0; attempt < 60; attempt++) {
+    const mines = new Set(shuffle(rng, [...Array(n).keys()]).slice(0, MINES[size]));
+    const numbers = Array.from({ length: n }, (_, i) => (mines.has(i) ? -1 : neighbours(size, i).filter((k) => mines.has(k)).length));
+    const field = { mines: [...mines].sort((a, b) => a - b), numbers };
+    const zeros = numbers.map((v, i) => (v === 0 ? i : -1)).filter((i) => i >= 0);
+    const sized = zeros.map((i) => ({ i, size: flood(size, numbers, [], i).length }));
+    const good = sized.filter((z) => z.size >= 3 && z.size <= target * 2).sort((a, b) => Math.abs(a.size - target) - Math.abs(b.size - target));
+    if (good.length) return { ...field, start: good[0].i };
+    if (!fallback) {
+      const any = sized.sort((a, b) => a.size - b.size)[0];
+      fallback = { ...field, start: any ? any.i : numbers.findIndex((v) => v >= 0) };
+    }
+  }
+  return fallback;
 }
 
 /** Cells opened by revealing `i`: flood-fills through zeros. */
