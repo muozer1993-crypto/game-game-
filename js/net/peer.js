@@ -140,6 +140,12 @@ function makeTransport(role, code, peer) {
       try { if (conn) conn.close(); } catch { /* ignore */ }
       try { peer.destroy(); } catch { /* ignore */ }
     },
+    /** Test helper: this side alone believes the link is gone (the other phone notices nothing until
+     *  the replacement connection arrives), as when a phone switches networks. */
+    simulateSilentDrop() {
+      closed = true;
+      closeHandlers.forEach((fn) => { try { fn(); } catch (e) { console.warn(e); } });
+    },
     /** Test helper: drop the data channel as if the network failed (handlers do fire). */
     simulateDrop() {
       try { if (conn) conn.close(); } catch { /* ignore */ }

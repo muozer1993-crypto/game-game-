@@ -90,6 +90,18 @@ window.addEventListener('popstate', () => {
     }
     if (online.transport && !online.resuming && !reconnectOverlay) { showOnlineLobby({ notify: true }); return; }
   }
+  // In a room, the back button does what the header arrow does on that screen: back to the
+  // lobby, not out of the room (showMenu would send 'leave' and kick the other phone out too).
+  const inRoom = online.transport && online.players && !online.resuming && !reconnectOverlay;
+  if (inRoom && (currentScreen.startsWith('setup-') || currentScreen === 'tournament' || currentScreen === 'tournament-result')) {
+    showOnlineLobby({ notify: currentScreen === 'tournament-result' });
+    return;
+  }
+  if (currentScreen === 'online-wait' && online.transport) { leaveOnline(); showOnline(); return; }
+  if (currentScreen === 'online-lobby' && online.transport && !confirm('Odadan çıkılsın mı? Rakibin bağlantısı kesilir.')) {
+    history.pushState(null, '', '#online-lobby');
+    return;
+  }
   showMenu();
 });
 
@@ -268,7 +280,7 @@ function showTournamentResult() {
   );
 }
 
-/** Filters the game cards below by name as you type (38 games are a long list). */
+/** Filters the game cards below by name as you type (39 games are a long list). */
 function searchBox() {
   const input = el('input', {
     type: 'search', class: 'input', id: 'game-search', placeholder: 'Oyun ara…', autocomplete: 'off', 'aria-label': 'Oyun ara',
@@ -424,6 +436,12 @@ export function showSetup(game, { onlineHost = false } = {}) {
     try {
       const ctx = await loadGameData(game);
       const options = { ...values, seed: randomSeed() };
+      if (onlineHost && (!online.transport || online.resuming)) { // the room dropped while the data loaded
+        toast('Bağlantı yok; yeniden bağlanınca tekrar dene', { kind: 'error', duration: 4000 });
+        startBtn.disabled = false;
+        startBtn.textContent = 'Başla';
+        return;
+      }
       if (onlineHost) startOnlineGame(game, options, ctx);
       else showPlay({ game, options, players, ctx, mode: 'local', self: null });
     } catch (err) {
@@ -784,8 +802,11 @@ function wireTransport(myName, { resume = false } = {}) {
     showMenu();
   });
   t.onOpen(() => {
-    if (resume && online.session) t.send({ t: 'resume', received: online.session.received, name: myName });
-    else t.send({ t: 'hello', name: myName, v: APP_VERSION });
+    // Decided when the channel opens, not when the handler was registered: the host keeps its
+    // handlers across a replacement connection (the guest reconnecting after a drop the host never
+    // noticed) and must then offer a resume, not a fresh greeting that would reset the guest.
+    if (online.session && !online.session.destroyed) t.send({ t: 'resume', received: online.session.received, name: online.myName });
+    else t.send({ t: 'hello', name: online.myName, v: APP_VERSION });
   });
 }
 
@@ -844,7 +865,7 @@ function closeReconnect() {
   online.resuming = false;
 }
 if (typeof window !== 'undefined' && load('debug', false)) {
-  window.__oyun = { online, drop: () => { if (online.transport) online.transport.simulateDrop(); } };
+  window.__oyun = { online, drop: () => { if (online.transport) online.transport.simulateDrop(); }, dropSilently: () => { if (online.transport) online.transport.simulateSilentDrop(); } };
 }
 
 function showOnlineWaiting(code) {
@@ -869,6 +890,7 @@ function showOnlineLobby({ notify = false } = {}) {
   if (!online.transport || !online.players) { showMenu(); return; }
   tournament = null;
   online.tournament = null;
+  online.session = null; // the lobby has no game: a torn-down session must never be offered for resume
   if (notify) online.transport.send({ t: 'lobby' });
   if (online.role === 'host') {
     setScreen('online-lobby');
@@ -891,6 +913,7 @@ function showOnlineLobby({ notify = false } = {}) {
 }
 
 function startOnlineGame(game, options, ctx, scores, tournamentInfo = null) {
+  if (!online.transport) return;
   const state0 = game.setup(options, { ...ctx, players: online.players, mode: 'online', self: 0, options });
   online.transport.send({ t: 'start', gameId: game.id, options, state0, players: online.players, scores: scores || [0, 0], tournament: tournamentInfo });
   showPlay({ game, options, players: online.players, ctx, mode: 'online', self: 0, initialState: state0, scores });
@@ -988,7 +1011,8 @@ async function handleOnlineMessage(msg) {
       const tournamentDone = currentScreen === 'tournament-result' || (tournament && tournament.index >= tournament.ids.length);
       if (currentScreen !== 'online-lobby' && !tournamentDone) {
         toast('Rakip oyundan ayrıldı', { duration: 3000 });
-        showOnlineLobby();
+        // answer with our own 'lobby' so that a guest whose message crossed our 'start' comes back too
+        showOnlineLobby({ notify: true });
       } else if (tournamentDone && currentScreen !== 'online-lobby') toast('Rakip lobiye döndü', { duration: 3000 });
       return;
     }

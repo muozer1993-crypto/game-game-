@@ -928,3 +928,9 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .game-card-wrap .game-card { padding-right: 46px; }
 .fav-btn { position: absolute; top: 4px; right: 4px; width: 40px; height: 40px; border: 0; background: transparent; font-size: 1.4rem; line-height: 1; color: var(--muted); cursor: pointer; border-radius: 50%; }
 .fav-btn.on { color: #f5b301; }
+
+/* ---- Kızma Birader */
+.ld-wrap { max-width: 440px; margin: 8px auto; }
+.ld-board { display: block; width: 100%; height: auto; touch-action: manipulation; }
+.ld-piece.movable { cursor: pointer; }
+.ld-die { font-size: 1.8rem; line-height: 1; margin-left: 10px; vertical-align: middle; }

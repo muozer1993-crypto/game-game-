@@ -1,6 +1,6 @@
 # Oyun Gecesi
 
-İki kişilik, Türkçe arayüzlü, telefonda rahat oynanan oyun koleksiyonu: 38 oyun; kartlardaki ★ ile favoriler üstte toplanır (kelime, soru-cevap, masa).
+İki kişilik, Türkçe arayüzlü, telefonda rahat oynanan oyun koleksiyonu: 39 oyun; kartlardaki ★ ile favoriler üstte toplanır (kelime, soru-cevap, masa).
 Düz HTML + CSS + JavaScript (ES modules); framework yok, build adımı yok, npm yok.
 Tek telefonda elden ele ya da iki telefonda oda koduyla oynanır. Ana ekrana eklenebilir
 (manifest + service worker) ve bir kez yüklendikten sonra tek telefon modu çevrimdışı çalışır.
@@ -26,6 +26,7 @@ Tek telefonda elden ele ya da iki telefonda oda koduyla oynanır. Ana ekrana ekl
 | **Amiral Battı** | Gemilerini gizle, rakibin denizine ateş et; atışlar gemi sahibinin cihazında değerlendirilir. |
 | **Satranç** | Klasik satranç: rok, geçerken alma, terfi seçimi, şah mat, pat, yetersiz materyal, elli hamle, üç tekrar. |
 | **Tavla** | Klasik tavla; kırma, bardan giriş, toplama, mars (2 puan), geri al. |
+| **Kızma Birader** | Klasik zar yarışı: altıyla çık, rakibi ez, yıldızlı kareler güvenli, tam sayıyla eve gir; 2 ya da 4 taş. |
 | **Dama** | Türk daması: ileri/yana, atlayarak alma zorunlu, en çok alan dizi, dama. |
 | **Mangala** | Türk mangalası: bir taş bırak, dağıt, çift yakala, hazne. |
 | **Dokuz Taş** | Dokuzar taş koy, sür; üçlü yapan rakibin taşını alır. Üç taşta uçma ayarı. |
