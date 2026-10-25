@@ -1,6 +1,7 @@
 // Noktalar ve Kutular — draw lines between dots; closing a box scores it and grants
 // another move. Most boxes wins.
 import { el, svg, render as draw } from '../js/ui/dom.js';
+import { backdrop } from '../js/ui/paint.js';
 
 export const meta = {
   group: 'masa',
@@ -143,7 +144,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       el('span', { class: 'dab-key', style: { color: COLORS[0] } }, `${players[0]}: ${state.scores[0]}`),
       el('span', { class: 'dab-key', style: { color: COLORS[1] } }, `${players[1]}: ${state.scores[1]}`),
     ),
-    el('div', { class: 'dab-wrap' }, root),
+    el('div', { class: 'dab-wrap' }, backdrop(), root),
   );
   return null;
 }

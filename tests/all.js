@@ -41,6 +41,7 @@ import './zar-pokeri.test.js';
 import './sekizler.test.js';
 import './poker.test.js';
 import './kizma-birader.test.js';
+import './bilanco.test.js';
 import './hedef-sayi.test.js';
 import './okey.test.js';
 import './domino.test.js';

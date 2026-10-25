@@ -2,6 +2,7 @@
 // No legal move: the turn passes. Neither can move: whoever has more discs wins.
 import { el, render as draw } from '../js/ui/dom.js';
 import { nameSuffix } from '../js/lib/tr.js';
+import { discCanvas, keyDot, PIECE } from '../js/ui/paint.js';
 
 export const meta = {
   group: 'masa',
@@ -121,7 +122,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       'aria-label': `${String.fromCharCode(97 + (i % N))}${Math.floor(i / N) + 1}${v === null ? '' : `, ${players[v]}`}`,
       disabled: !mine || !legal.has(i),
       onClick: () => sendMove({ type: 'place', cell: i }),
-    }, v === null && !legal.has(i) ? null : el('span', { class: 'disc' })));
+    }, v === null ? (legal.has(i) ? el('span', { class: 'disc' }) : null) : el('span', { class: 'disc' }, discCanvas(PIECE[colour(v)]))));
   }
   let status;
   if (state.over) {
@@ -132,8 +133,8 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     el('div', { class: 'status-line' }, el('strong', {}, status)),
     state.passed != null && !state.over ? el('p', { class: 'hint notice' }, `${players[state.passed]} oynayamadı, sıra yine ${nameSuffix(players[state.turn], 'de')}.`) : null,
     el('div', { class: 'c4-legend' },
-      el('span', { class: `rv-key ${colour(0)}` }, `${players[0]}: ${c0}`),
-      el('span', { class: `rv-key ${colour(1)}` }, `${players[1]}: ${c1}`),
+      el('span', { class: 'rv-key' }, keyDot(PIECE[colour(0)]), `${players[0]}: ${c0}`),
+      el('span', { class: 'rv-key' }, keyDot(PIECE[colour(1)]), `${players[1]}: ${c1}`),
     ),
     board,
   );

@@ -1,5 +1,6 @@
 // Dört Bağlantı — drop discs into a 6×7 grid; four in a row (any direction) wins.
 import { el, render as draw } from '../js/ui/dom.js';
+import { discCanvas, keyDot, PIECE } from '../js/ui/paint.js';
 
 export const meta = {
   group: 'masa',
@@ -101,7 +102,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
         'aria-label': `${r + 1}. satır ${c + 1}. sütun${v == null ? '' : `, ${players[v]}`}`,
         disabled: !mine,
         onClick: () => sendMove({ type: 'drop', col: c }),
-      }, el('span', { class: 'disc' })));
+      }, el('span', { class: 'disc' }, v == null ? null : discCanvas(v === 0 ? PIECE.red : PIECE.yellow))));
     }
   }
   let status;
@@ -110,8 +111,8 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   draw(container,
     el('div', { class: 'status-line' }, el('strong', {}, status)),
     el('div', { class: 'c4-legend' },
-      el('span', { class: 'c4-key p0' }, players[0]),
-      el('span', { class: 'c4-key p1' }, players[1]),
+      el('span', { class: 'c4-key' }, keyDot(PIECE.red), players[0]),
+      el('span', { class: 'c4-key' }, keyDot(PIECE.yellow), players[1]),
     ),
     board,
   );

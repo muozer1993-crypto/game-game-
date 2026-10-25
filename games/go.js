@@ -2,6 +2,7 @@
 // open the counting phase: tap groups to mark them dead, both confirm, komi 6.5 to white.
 import { el, svg, render as draw } from '../js/ui/dom.js';
 import { nameSuffix } from '../js/lib/tr.js';
+import { drawDisc } from '../js/ui/paint.js';
 
 export const meta = {
   group: 'masa',
@@ -192,17 +193,14 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   }
   const stars = n === 9 ? [2, 4, 6] : [3, 6, 9];
   stars.forEach((r) => stars.forEach((c) => { if (n === 9 && (r === 4) !== (c === 4) && !(r === 4 && c === 4)) return; board.append(svg('circle', { cx: pad + c, cy: pad + r, r: 0.09, fill: '#5b4a2a' })); }));
+  const stones = [];
   for (let i = 0; i < n * n; i++) {
     const r = Math.floor(i / n);
     const c = i % n;
     const v = state.board[i];
     const x = pad + c;
     const y = pad + r;
-    if (v !== null) {
-      board.append(svg('circle', { cx: x, cy: y, r: 0.46, fill: v === 0 ? '#111' : '#f7f7f7', stroke: v === 0 ? '#000' : '#999', 'stroke-width': 0.03, class: `go-stone p${v} ${dead.has(i) ? 'dead' : ''}`, opacity: dead.has(i) ? 0.35 : 1 }));
-      if (state.last === i && !counting) board.append(svg('circle', { cx: x, cy: y, r: 0.16, fill: 'none', stroke: v === 0 ? '#fff' : '#111', 'stroke-width': 0.06 }));
-      if (dead.has(i)) board.append(svg('text', { x, y: y + 0.18, 'text-anchor': 'middle', 'font-size': 0.5, fill: '#c62828', text: '×' }));
-    }
+    if (v !== null) stones.push({ x, y, v, i });
     const clickable = counting ? (canMark && v !== null) : (mine && state.phase === 'play' && v === null);
     board.append(svg('rect', {
       x: x - 0.5, y: y - 0.5, width: 1, height: 1, fill: 'transparent', class: `go-cell ${clickable ? 'free' : ''} ${v === null ? 'empty' : ''}`,
@@ -210,13 +208,33 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       onClick: clickable ? () => sendMove({ type: counting ? 'dead' : 'place', cell: i }) : null,
     }));
   }
+  // stones live on a canvas laid over the lines (forced dark modes turned black SVG stones white);
+  // the SVG underneath keeps the board and the tap targets
+  const PX = 720;
+  const k = PX / W;
+  const layer = el('canvas', { class: 'go-stones', width: PX, height: PX, 'aria-hidden': 'true' });
+  const g = layer.getContext && layer.getContext('2d');
+  if (g) {
+    stones.forEach(({ x, y, v, i }) => {
+      drawDisc(g, x * k, y * k, 0.46 * k, v === 0 ? '#151515' : '#f7f7f7', { alpha: dead.has(i) ? 0.35 : 1, rim: v === 0 ? '#000' : '#9a9a9a', lineWidth: 0.03 * k });
+      if (state.last === i && !counting) {
+        g.beginPath(); g.arc(x * k, y * k, 0.16 * k, 0, Math.PI * 2);
+        g.lineWidth = 0.06 * k; g.strokeStyle = v === 0 ? '#fff' : '#111'; g.stroke();
+      }
+      if (dead.has(i)) {
+        g.fillStyle = '#c62828'; g.font = `700 ${Math.round(0.6 * k)}px system-ui, sans-serif`;
+        g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('×', x * k, y * k);
+      }
+    });
+  }
+  const boardBox = el('div', { class: 'go-wrap' }, board, layer);
   const caps = el('div', { class: 'c4-legend' }, el('span', {}, `⚫ ${players[0]}: ${state.captures[0]} esir`), el('span', {}, `⚪ ${players[1]}: ${state.captures[1]} esir`), el('span', { class: 'muted' }, `komi ${KOMI}`));
   if (state.phase === 'over') {
     const R = state.result;
     draw(container,
       el('div', { class: 'status-line' }, el('strong', {}, `${players[R.winner]} kazandı: ${R.total[0]} – ${R.total[1]}`)),
       el('p', { class: 'hint' }, `Alan: siyah ${R.area[0]}, beyaz ${R.area[1]} + komi ${KOMI}.`),
-      el('div', { class: 'go-wrap' }, board), caps,
+      boardBox, caps,
     );
     return null;
   }
@@ -225,7 +243,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     draw(container,
       el('div', { class: 'status-line' }, el('strong', {}, 'Sayım: ölü grupları işaretleyin')),
       el('p', { class: 'hint' }, `Şu an: siyah ${est.total[0]} – beyaz ${est.total[1]} (komi dahil). ${state.agree[0] ? `${players[0]} onayladı. ` : ''}${state.agree[1] ? `${players[1]} onayladı. ` : ''}`),
-      el('div', { class: 'go-wrap' }, board),
+      boardBox,
       el('div', { class: 'row', style: { justifyContent: 'center', gap: '8px' } },
         el('button', { type: 'button', class: 'btn btn-primary', disabled: online && state.agree[viewer], onClick: () => sendMove({ type: 'agree' }) }, online ? (state.agree[viewer] ? 'Onayladın' : 'Onayla') : `Onayla (${players[state.agree[0] ? 1 : 0]})`),
         el('button', { type: 'button', class: 'btn btn-secondary', onClick: () => sendMove({ type: 'resume' }) }, 'Oyuna dön'),
@@ -237,7 +255,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const who = state.turn === 0 ? '⚫' : '⚪';
   draw(container,
     el('div', { class: 'status-line' }, el('strong', {}, mine ? `${who} ${players[state.turn]}, sıra sende${state.passes ? ' (rakip pas geçti)' : ''}` : `${who} ${players[state.turn]} düşünüyor…`)),
-    el('div', { class: 'go-wrap' }, board),
+    boardBox,
     mine ? el('button', { type: 'button', class: 'btn btn-secondary btn-block', onClick: () => sendMove({ type: 'pass' }) }, state.passes ? 'Pas (sayıma geç)' : 'Pas') : null,
     caps,
   );

@@ -1,5 +1,6 @@
 // Beş Taş (gomoku) — place stones on a grid; five in a row in any direction wins.
 import { el, render as draw } from '../js/ui/dom.js';
+import { discCanvas, keyDot, PIECE } from '../js/ui/paint.js';
 
 export const meta = {
   group: 'masa',
@@ -96,7 +97,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       'aria-label': `${Math.floor(i / state.size) + 1}. satır ${(i % state.size) + 1}. sütun${v == null ? '' : `, ${players[v]}`}`,
       disabled: !mine || v !== null,
       onClick: () => sendMove({ type: 'place', cell: i }),
-    }, v === null ? null : el('span', { class: 'stone' })));
+    }, v === null ? null : el('span', { class: 'stone' }, discCanvas(PIECE[colour(v)], { size: state.size >= 13 ? 56 : 80 }))));
   }
   let status;
   if (state.over) status = state.winner == null ? 'Tahta doldu: berabere.' : `${players[state.winner]} beş yaptı!`;
@@ -104,8 +105,8 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   draw(container,
     el('div', { class: 'status-line' }, el('strong', {}, status)),
     el('div', { class: 'c4-legend' },
-      el('span', { class: `rv-key ${colour(0)}` }, players[0]),
-      el('span', { class: `rv-key ${colour(1)}` }, players[1]),
+      el('span', { class: 'rv-key' }, keyDot(PIECE[colour(0)]), players[0]),
+      el('span', { class: 'rv-key' }, keyDot(PIECE[colour(1)]), players[1]),
     ),
     board,
   );

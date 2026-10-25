@@ -2,6 +2,7 @@
 // capture by jumping orthogonally; kings (dama) move any distance. Capturing is mandatory,
 // and the sequence that captures the most pieces must be chosen.
 import { el, render as draw } from '../js/ui/dom.js';
+import { discCanvas, keyDot } from '../js/ui/paint.js';
 
 export const meta = {
   group: 'masa',
@@ -175,6 +176,8 @@ export function getResult(state) {
   return state.winner == null ? { draw: true } : { winner: state.winner };
 }
 
+const DAMA_COLOUR = ['#fafafa', '#263238'];
+
 export function render(state, viewer, container, sendMove, ctx = {}) {
   const players = ctx.players || ['Oyuncu 1', 'Oyuncu 2'];
   const online = ctx.mode === 'online';
@@ -222,7 +225,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
           if (selected === i) { selected = null; partial = []; } else { selected = i; partial = []; }
           drawBoard();
         },
-      }, piece ? el('span', { class: `dama-piece p${piece.p} ${piece.k ? 'king' : ''}` }, piece.k ? '♛' : '') : null));
+      }, piece ? el('span', { class: `dama-piece p${piece.p} ${piece.k ? 'king' : ''}` }, discCanvas(DAMA_COLOUR[piece.p], { mark: piece.k ? '♛' : '', size: 80 })) : null));
     }
     draw(boardBox, cells);
   };
@@ -237,8 +240,8 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   draw(container,
     el('div', { class: 'status-line' }, el('strong', {}, status)),
     el('div', { class: 'c4-legend' },
-      el('span', { class: 'dama-key p0' }, `${players[0]}: ${a.total}${a.kings ? ` (${a.kings} dama)` : ''}`),
-      el('span', { class: 'dama-key p1' }, `${players[1]}: ${b.total}${b.kings ? ` (${b.kings} dama)` : ''}`),
+      el('span', { class: 'dama-key' }, keyDot(DAMA_COLOUR[0]), `${players[0]}: ${a.total}${a.kings ? ` (${a.kings} dama)` : ''}`),
+      el('span', { class: 'dama-key' }, keyDot(DAMA_COLOUR[1]), `${players[1]}: ${b.total}${b.kings ? ` (${b.kings} dama)` : ''}`),
     ),
     boardBox,
     el('p', { class: 'hint' }, flip ? 'Taşların yukarı doğru ilerler.' : `${players[0]} yukarı, ${players[1]} aşağı ilerler.`),

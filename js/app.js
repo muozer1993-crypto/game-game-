@@ -292,7 +292,7 @@ function showTournamentResult() {
   );
 }
 
-/** Filters the game cards below by name as you type (45 games are a long list). */
+/** Filters the game cards below by name as you type (46 games are a long list). */
 function searchBox() {
   const input = el('input', {
     type: 'search', class: 'input', id: 'game-search', placeholder: 'Oyun ara…', autocomplete: 'off', 'aria-label': 'Oyun ara',

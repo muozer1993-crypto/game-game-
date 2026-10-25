@@ -4,6 +4,7 @@
 import { el, render as draw, toast } from '../js/ui/dom.js';
 import { randomSeed } from '../js/lib/rng.js';
 import { nameSuffix } from '../js/lib/tr.js';
+import { discCanvas, keyDot } from '../js/ui/paint.js';
 
 export const meta = {
   group: 'kart',
@@ -224,6 +225,10 @@ export function getResult(state) {
 // ----------------------------------------------------------------- render
 const DIE = ['', '⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
 
+const CHECKER = ['#fafafa', '#263238'];
+/** A checker drawn on canvas (forced dark modes cannot recolour it); `label` is the stack count. */
+const checker = (owner, label) => el('span', { class: `tv-checker p${owner}` }, discCanvas(CHECKER[owner], { mark: label, size: 56 }));
+
 export function render(state, viewer, container, sendMove, ctx = {}) {
   const players = ctx.players || ['Oyuncu 1', 'Oyuncu 2'];
   const online = ctx.mode === 'online';
@@ -252,7 +257,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       const isSource = sources.has(i);
       const isTarget = targets.has(i);
       const checkers = [];
-      for (let k = 0; k < Math.min(cnt, 5); k++) checkers.push(el('span', { class: `tv-checker p${owner}` }, k === 4 && cnt > 5 ? String(cnt) : ''));
+      for (let k = 0; k < Math.min(cnt, 5); k++) checkers.push(checker(owner, k === 4 && cnt > 5 ? String(cnt) : ''));
       return el('button', {
         type: 'button',
         class: `tv-point ${top ? 'top' : 'bottom'} ${d % 2 ? 'odd' : 'even'} ${isSource ? 'source' : ''} ${isTarget ? 'target' : ''} ${selected === i ? 'selected' : ''}`,
@@ -282,8 +287,8 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       'aria-label': `Bar: ${players[0]} ${state.bar[0]}, ${players[1]} ${state.bar[1]}`,
       onClick: () => { selected = selected === -1 ? null : -1; drawBoard(); },
     },
-      el('span', { class: 'tv-stack' }, Array.from({ length: Math.min(state.bar[0], 5) }, (_, k) => el('span', { class: 'tv-checker p0' }, k === 4 && state.bar[0] > 5 ? String(state.bar[0]) : ''))),
-      el('span', { class: 'tv-stack' }, Array.from({ length: Math.min(state.bar[1], 5) }, (_, k) => el('span', { class: 'tv-checker p1' }, k === 4 && state.bar[1] > 5 ? String(state.bar[1]) : ''))),
+      el('span', { class: 'tv-stack' }, Array.from({ length: Math.min(state.bar[0], 5) }, (_, k) => checker(0, k === 4 && state.bar[0] > 5 ? String(state.bar[0]) : ''))),
+      el('span', { class: 'tv-stack' }, Array.from({ length: Math.min(state.bar[1], 5) }, (_, k) => checker(1, k === 4 && state.bar[1] > 5 ? String(state.bar[1]) : ''))),
     );
     const offTarget = targets.has('off');
     const offTray = el('button', {
@@ -321,8 +326,8 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   draw(container,
     info,
     el('div', { class: 'c4-legend' },
-      el('span', { class: 'tv-key p0' }, `${players[0]}: ${pipCount(state, 0)} pip, ${state.off[0]} toplandı`),
-      el('span', { class: 'tv-key p1' }, `${players[1]}: ${pipCount(state, 1)} pip, ${state.off[1]} toplandı`),
+      el('span', { class: 'tv-key' }, keyDot(CHECKER[0]), `${players[0]}: ${pipCount(state, 0)} pip, ${state.off[0]} toplandı`),
+      el('span', { class: 'tv-key' }, keyDot(CHECKER[1]), `${players[1]}: ${pipCount(state, 1)} pip, ${state.off[1]} toplandı`),
     ),
     dice,
     boardBox,

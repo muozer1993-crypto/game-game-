@@ -1,6 +1,6 @@
 # Oyun Gecesi
 
-İki kişilik, Türkçe arayüzlü, telefonda rahat oynanan oyun koleksiyonu: 45 oyun; kartlardaki ★ ile favoriler üstte toplanır (kelime, soru-cevap, zekâ ve refleks, tahta, kart/zar/taş).
+İki kişilik, Türkçe arayüzlü, telefonda rahat oynanan oyun koleksiyonu: 46 oyun; kartlardaki ★ ile favoriler üstte toplanır (kelime, soru-cevap, zekâ ve refleks, tahta, kart/zar/taş).
 Düz HTML + CSS + JavaScript (ES modules); framework yok, build adımı yok, npm yok.
 Tek telefonda elden ele ya da iki telefonda oda koduyla oynanır. Ana ekrana eklenebilir
 (manifest + service worker) ve bir kez yüklendikten sonra tek telefon modu çevrimdışı çalışır.
@@ -30,6 +30,7 @@ Tek telefonda elden ele ya da iki telefonda oda koduyla oynanır. Ana ekrana ekl
 | **Go (9×9)** | 9×9 ya da 13×13: esir alma, intihar yasağı, ko; iki pas sonra ölü taş işaretleme ve karşılıklı onayla alan sayımı, beyaza 6,5 komi. |
 | **Tavla** | Klasik tavla; kırma, bardan giriş, toplama, mars (2 puan), geri al. |
 | **Kızma Birader** | Klasik zar yarışı: altıyla çık, rakibi ez, yıldızlı kareler güvenli, tam sayıyla eve gir; 2 ya da 4 taş. |
+| **Bilanço** | Çerezlik Monopoly: 20 karelik şehir tahtası, satın al, kira topla, çifti tamamlayıp ev kur, şans kartları ve kodes; seçilen tur sayısı (6/10/15) dolunca ya da iflasta biter. |
 | **Dama** | Türk daması: ileri/yana, atlayarak alma zorunlu, en çok alan dizi, dama. |
 | **Mangala** | Türk mangalası (TAZOF/MEB kuralları): ilk taşı aldığın kuyuya bırak, dağıt, çift yakala, boş kuyudan karşıyı al; kuyuları ilk boşalan rakibin kalan taşlarını alır. Ayarlardan ev kuralları: sonraki kuyudan başla, kalan taşlar sahibine. Her hamle taş taş canlandırılır (hız ayarlı, dokununca geçer). Oyun türü olarak **Bantumi** (eski Nokia telefonlarındaki Kalah benzeri sürüm) de seçilebilir. |
 | **Domino** | Yedişer taş, uçlardan birine uyanı ekle, yön seç; oynayamazsan kapalıdan çek, bitince pas. Elini bitiren rakibin noktalarını alır, kilitlenince hafif olan farkı. |

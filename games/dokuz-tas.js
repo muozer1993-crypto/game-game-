@@ -1,6 +1,7 @@
 // Dokuz Taş (nine men's morris) — place nine pieces each, then slide them; three in a
 // line is a mill and takes an opponent's piece. Below three pieces or no move: you lose.
 import { el, svg, render as draw } from '../js/ui/dom.js';
+import { backdrop } from '../js/ui/paint.js';
 import { nameSuffix } from '../js/lib/tr.js';
 
 export const meta = {
@@ -152,7 +153,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const fly = state.flying && !placing && count(state.points, viewer) === 3;
   const moves = mine ? legalMoves(state, viewer) : [];
   const removables = mine && state.mustRemove ? new Set(removable(state.points, opp)) : new Set();
-  const boardBox = el('div');
+  const boardBox = el('div', { class: 'nm-wrap' });
 
   const drawBoard = () => {
     const U = 100;
@@ -185,8 +186,8 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
         if (state.mustRemove) { if (removables.has(i)) { kind = 'take'; action = () => sendMove({ type: 'remove', point: i }); } }
         else if (placing) { if (targets.has(i)) { kind = 'place'; action = () => sendMove({ type: 'place', point: i }); } }
         else if (selected != null && targets.has(i)) { kind = 'target'; action = () => { const from = selected; selected = null; sendMove({ type: 'move', from, to: i }); }; }
-        else if (v === viewer && movable.has(i)) { kind = selected === i ? 'unpick' : 'pick'; action = () => { selected = selected === i ? null : i; boardBox.replaceChildren(drawBoard()); }; }
-        else if (selected != null) { kind = 'unpick'; action = () => { selected = null; boardBox.replaceChildren(drawBoard()); }; }
+        else if (v === viewer && movable.has(i)) { kind = selected === i ? 'unpick' : 'pick'; action = () => { selected = selected === i ? null : i; boardBox.replaceChildren(backdrop(), drawBoard()); }; }
+        else if (selected != null) { kind = 'unpick'; action = () => { selected = null; boardBox.replaceChildren(backdrop(), drawBoard()); }; }
       }
       if (action) {
         root.append(svg('circle', { cx: x, cy: y, r: 46, fill: 'transparent', class: `nm-hit ${kind}`, onClick: action, role: 'button', tabindex: 0, 'aria-label': `${i + 1}. nokta` }));
@@ -194,7 +195,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     }
     return root;
   };
-  boardBox.append(drawBoard());
+  boardBox.append(backdrop(), drawBoard());
 
   let status;
   if (state.over) {
