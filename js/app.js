@@ -1105,11 +1105,13 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
   });
 }
 
-// A friend's invite link (…?oda=KOD) opens the join screen with the code filled in.
-const invitedCode = new URLSearchParams(location.search).get('oda');
-if (invitedCode) {
-  history.replaceState(null, '', location.pathname);
-  showOnline({ code: invitedCode });
-} else {
-  showMenu();
-}
+// A friend's invite link (…?oda=KOD) opens the join screen with the code filled in; the
+// home-screen shortcuts (manifest) open the two-phone screen or a random game directly.
+const bootParams = new URLSearchParams(location.search);
+const invitedCode = bootParams.get('oda');
+const bootScreen = bootParams.get('ekran');
+if (invitedCode || bootScreen) history.replaceState(null, '', location.pathname);
+if (invitedCode) showOnline({ code: invitedCode });
+else if (bootScreen === 'online') { showMenu(); showOnline(); }
+else if (bootScreen === 'rastgele') { showMenu(); showSetup(games[Math.floor(Math.random() * games.length)]); }
+else showMenu();

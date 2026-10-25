@@ -1,7 +1,7 @@
 {
   "name": "Oyun Gecesi",
   "short_name": "Oyun Gecesi",
-  "description": "İki kişilik Türkçe kelime oyunları",
+  "description": "İki kişilik Türkçe oyun koleksiyonu: kelime, soru-cevap, zekâ, tahta, kart ve zar oyunları; tek telefonda ya da iki telefonda.",
   "lang": "tr",
   "start_url": "./",
   "scope": "./",
@@ -10,9 +10,55 @@
   "background_color": "#15171c",
   "theme_color": "#15171c",
   "icons": [
-    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
-    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "icons/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    {
+      "src": "icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "İki telefonda oyna",
+      "short_name": "Oda kur",
+      "description": "Oda kodu ile arkadaşınla oyna",
+      "url": "./?ekran=online",
+      "icons": [
+        {
+          "src": "icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Rastgele oyun",
+      "short_name": "Rastgele",
+      "description": "Rastgele bir oyunla başla",
+      "url": "./?ekran=rastgele",
+      "icons": [
+        {
+          "src": "icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
   ]
 }

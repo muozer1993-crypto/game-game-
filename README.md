@@ -79,6 +79,9 @@ Testler: `http://localhost:8000/tests/` sayfasını aç (ya da terminalden `node
 > Yayınlarken `sw.js` içindeki `VERSION` değerini artırın; yeni sürüm kurulunca ana menüdeki
 > sayfalar kendiliğinden yenilenir, oyun ortasındakiler menüye dönünce yenilenir.
 
+Ana ekrana eklenen uygulamada simgeye uzun basınca **İki telefonda oyna** ve **Rastgele oyun** kısayolları çıkar
+(`manifest.webmanifest` → `shortcuts`; `?ekran=online` / `?ekran=rastgele`).
+
 ## GitHub Pages'e yayınlama
 
 Depoda hazır bir iş akışı var: `.github/workflows/pages.yml`. Her `git push` sonrasında
