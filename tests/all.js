@@ -20,3 +20,4 @@ import './pisti.test.js';
 import './adam-asmaca.test.js';
 import './reversi.test.js';
 import './dokuz-tas.test.js';
+import './harf-avi.test.js';
