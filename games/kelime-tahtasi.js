@@ -267,7 +267,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       const canDrop = mine && state.board[i] === null && !pending.has(i) && draft.selected != null;
       board.append(el('button', {
         type: 'button',
-        class: `kb-cell ${prem ? prem.toLowerCase() : ''} ${letter ? 'tile' : ''} ${pending.has(i) ? 'pending' : ''} ${lastSet.has(i) ? 'last' : ''} ${i === CENTER && !letter ? 'star' : ''}`,
+        class: `kb-cell ${prem ? prem.toLowerCase() : ''} ${letter ? 'filled' : ''} ${pending.has(i) ? 'pending' : ''} ${lastSet.has(i) ? 'last' : ''} ${i === CENTER && !letter ? 'star' : ''}`,
         disabled: !mine || (state.board[i] !== null) || (!pending.has(i) && draft.selected == null),
         'aria-label': `${rowOf(i) + 1}. satır ${colOf(i) + 1}. sütun${letter ? `, ${upperTR(letter)}` : prem ? `, ${prem}` : ''}`,
         onClick: () => {

@@ -821,14 +821,14 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 
 /* ---- Kelime Tahtası */
 .kb-board { display: grid; grid-template-columns: repeat(11, minmax(0, 1fr)); gap: 2px; max-width: 400px; margin: 6px auto; padding: 3px; background: var(--border); border-radius: 6px; }
-.kb-cell { aspect-ratio: 1; min-width: 0; overflow: hidden; border: 0; padding: 0; background: var(--card); border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 0.5rem; line-height: 1; color: var(--muted); cursor: pointer; touch-action: manipulation; position: relative; }
+.kb-cell { aspect-ratio: 1; min-width: 0; overflow: hidden; contain: size; border: 0; padding: 0; background: var(--card); border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 0.5rem; line-height: 1; color: var(--muted); cursor: pointer; touch-action: manipulation; position: relative; }
 .kb-cell:disabled { cursor: default; }
 .kb-cell.l2 { background: #cfe3f7; color: #1e5aa8; }
 .kb-cell.l3 { background: #8dc0ec; color: #0d3c78; }
 .kb-cell.w2 { background: #f7cfd0; color: #a8201e; }
 .kb-cell.w3 { background: #ef8c8a; color: #6b0d0b; }
 .kb-cell.star { font-size: 1rem; }
-.kb-cell.tile { background: #f6e2a8; color: #1b1d24; font-weight: 800; font-size: 0.85rem; box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.2); }
+.kb-cell.filled { background: #f6e2a8; color: #1b1d24; font-weight: 800; font-size: 0.85rem; box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.2); }
 .kb-cell.pending { background: #ffd54f; outline: 2px solid var(--primary); outline-offset: -2px; }
 .kb-cell.last { box-shadow: inset 0 0 0 2px var(--present); }
 .kb-letter { display: inline-flex; align-items: baseline; line-height: 1; }
@@ -838,4 +838,4 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .kb-tile.sel { outline: 3px solid var(--primary); transform: translateY(-4px); }
 .kb-tile.used, .kb-tile:disabled { opacity: 0.35; }
 .kb-tile.swap { outline: 3px solid var(--danger); }
-:root[data-theme="dark"] .kb-cell:not(.tile):not(.l2):not(.l3):not(.w2):not(.w3), :root:not([data-theme="light"]) .kb-cell:not(.tile):not(.l2):not(.l3):not(.w2):not(.w3) { background: var(--secondary); }
+:root[data-theme="dark"] .kb-cell:not(.filled):not(.l2):not(.l3):not(.w2):not(.w3), :root:not([data-theme="light"]) .kb-cell:not(.filled):not(.l2):not(.l3):not(.w2):not(.w3) { background: var(--secondary); }
