@@ -12,7 +12,8 @@ export const meta = {
   description: 'Karttaki kelimeyi yasaklı beş kelimeyi söylemeden anlat (ya da sessiz sinema: hiç konuşmadan canlandır); eşin tahmin etsin.',
   rules: [
     'Anlatan karttaki kelimeyi, altındaki beş yasaklı kelimeyi (ve türevlerini) söylemeden anlatır; tahmin eden yüksek sesle tahmin eder.',
-    'Bilinen kart +1, pas 0, yasaklı kelime kaçarsa anlatan "Tabu" der ve −1. Süre dolunca tur biter, roller değişir.',
+    'Bilinen kart +1, pas 0, yasaklı kelime kaçarsa anlatan "Tabu" der ve −1. Süre dolunca tur biter, roller değişir; o an ekrandaki kart (⌛) bir kenara konur, yeni anlatana yeni kart gelir.',
+    'Kartlar oyundan oyuna tekrar etmez: telefon gösterdiği kartları hatırlar (iki telefonda ikisininki birlikte sayılır), yeni oyunda önce hiç görülmemiş kartlar gelir; hepsi bitince en uzun süredir görülmeyenler döner.',
     'Tek telefonda kartı yalnızca anlatan görür; iki telefonda tahmin edenin ekranında kart görünmez. Yasaklı kelime denetimi anlatanın dürüstlüğüne kalır.',
     'Sessiz sinema türünde yasaklı kelime yoktur: anlatan hiç konuşmadan canlandırır; konuşursa "Konuştu" ile el yanar (−1).',
   ].join('\n'),
@@ -29,7 +30,38 @@ export const meta = {
 };
 
 export const RESULTS = ['ok', 'pass', 'taboo'];
-const POINTS = { ok: 1, pass: 0, taboo: -1 };
+// 'time': the card on the screen when the round ended. It is put aside (0 points): the guesser has
+// already heard it described, so it must not come back to them as the next round's card.
+const POINTS = { ok: 1, pass: 0, taboo: -1, time: 0 };
+const BUCKET = 40; // cards already seen come back oldest first, shuffled within groups of this size
+
+/**
+ * Play order for a new game: cards this phone has never shown come first (shuffled), then the ones
+ * shown before, the longest-unseen first. `recent` lists card words, oldest first (see js/app.js).
+ */
+export function buildDeck(cards, recent, rng) {
+  const rank = new Map();
+  (Array.isArray(recent) ? recent : []).forEach((w, i) => rank.set(String(w), i));
+  const fresh = [];
+  const seen = [];
+  cards.forEach((c, i) => (rank.has(c.word) ? seen : fresh).push(i));
+  seen.sort((a, b) => rank.get(cards[a].word) - rank.get(cards[b].word));
+  const out = shuffle(rng, fresh);
+  for (let k = 0; k < seen.length; k += BUCKET) out.push(...shuffle(rng, seen.slice(k, k + BUCKET)));
+  return out;
+}
+
+/**
+ * Card indexes shown on the describer's screen in this game (resolved, put aside or on screen now), in the
+ * order they were shown. A game that goes through the whole deck counts each card's latest showing.
+ */
+export function shownCards(state) {
+  const n = state.deck.length;
+  const upto = state.cursor + (state.phase === 'play' ? 1 : 0);
+  const out = [];
+  for (let p = Math.max(0, upto - n); p < upto; p++) out.push(state.deck[p % n]);
+  return out;
+}
 
 function fail(msg) {
   throw new Error(msg);
@@ -41,12 +73,14 @@ export function setup(options = {}, ctx = {}) {
   const rounds = [2, 4, 6].includes(Number(options.rounds)) ? Number(options.rounds) : 4;
   const seconds = [45, 60, 90].includes(Number(options.seconds)) ? Number(options.seconds) : 60;
   const rng = createRng(Number(options.seed) || 1);
+  // the phone that sets the game up decides the order; online the other phone gets this state as it is
+  const recent = ctx.tabuHistory && typeof ctx.tabuHistory.get === 'function' ? ctx.tabuHistory.get() : [];
   return {
     id: String(options.seed ?? ''),
     mode: options.mode === 'mime' ? 'mime' : 'tabu',
     rounds,
     seconds,
-    deck: shuffle(rng, [...cards.keys()]), // card indexes in play order, shared by both devices
+    deck: buildDeck(cards, recent, rng), // card indexes in play order, shared by both devices
     cursor: 0,
     round: 0,
     describer: (Number(options.seed) || 0) % 2,
@@ -79,10 +113,14 @@ export function applyMove(state, player, move) {
       scores[state.describer] += POINTS[move.result];
       return { ...state, log, scores, cursor: state.cursor + 1 };
     }
-    case 'end':
+    case 'end': {
       if (state.phase !== 'play') fail('Tur oynanmıyor');
       if (player !== state.describer) fail('Turu anlatan bitirir');
-      return { ...state, phase: 'summary' };
+      // the card on the screen is used up: it is listed as "süre doldu" and the next round starts with a new one
+      const log = state.log.map((r) => r.slice());
+      log[state.round].push({ card: state.deck[state.cursor % state.deck.length], result: 'time' });
+      return { ...state, log, cursor: state.cursor + 1, phase: 'summary' };
+    }
     case 'next': {
       if (state.phase !== 'summary') fail('Tur henüz bitmedi');
       const round = state.round + 1;
@@ -116,7 +154,7 @@ export function roundScore(entries) {
 
 // ------------------------------------------------------------------ rendering
 const starts = new Map(); // `${id}:${round}` -> Date.now() when this device saw the round begin
-const MARK = { ok: '✓', pass: '→', taboo: '✗' };
+const MARK = { ok: '✓', pass: '→', taboo: '✗', time: '⌛' };
 const LABEL = { ok: 'Bildi', pass: 'Pas', taboo: 'Tabu' };
 
 function cardView(card, mime) {
@@ -130,6 +168,11 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const players = ctx.players || ['Oyuncu 1', 'Oyuncu 2'];
   const online = ctx.mode === 'online';
   const cards = ctx.tabu && ctx.tabu.cards ? ctx.tabu.cards : [];
+  // remember on this phone every card shown in this game (including the one on screen), so that the
+  // next games start with cards neither of you has seen yet
+  if (ctx.tabuHistory && typeof ctx.tabuHistory.add === 'function') {
+    ctx.tabuHistory.add(shownCards(state).map((i) => cards[i] && cards[i].word).filter(Boolean));
+  }
   const d = state.describer;
   const g = 1 - d;
   const isDescriber = viewer === d;

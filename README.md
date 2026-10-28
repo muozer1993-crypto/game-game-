@@ -17,7 +17,7 @@ Tek telefonda elden ele ya da iki telefonda oda koduyla oynanır. Ana ekrana ekl
 | **Kelime Türetme** | Aynı 7–9 harften süreye karşı kelime türet; uzun kelime çok puan, ortak kelimeler puan getirmez. |
 | **İsim Şehir** | Klasik kâğıt oyunu: aynı harfle isim, şehir, hayvan, bitki, eşya (+ ülke, meslek, yemek). Farklı cevap 10, aynı 5; rakibin uydurmasına "Geçersiz". |
 | **Kelime Tahtası** | Scrabble benzeri: 11×11 tahta, katlı kareler, yedişer harf, sözlük denetimi, pas/değiştirme. |
-| **Tabu** | Yasaklı beş kelimeyi söylemeden anlat, eşin tahmin etsin; 220+ kart, roller her turda değişir. |
+| **Tabu** | Yasaklı beş kelimeyi söylemeden anlat, eşin tahmin etsin; 220+ kart, roller her turda değişir. Telefon gösterdiği kartları hatırlar: bütün kartlar görülmeden hiçbir kelime tekrar gelmez. |
 | **Beni Ne Kadar Tanıyorsun?** | Aynı sorular ikinize; önce kendi cevabın, sonra rakibin tahmini; karşılaştırma otomatik. Hazır havuz + kendi sorularınız. |
 | **Genel Kültür Düellosu** | Aynı sorular ikinize; doğru sayısı, eşitlikte hız. 240+ soruluk havuz. |
 | **Doğruluk mu Cesaret mi?** | Parti klasiği: sırayla doğruluk (1) ya da cesaret (2) seç, rakibin hakem; 60+50 dostça kart (`data/dogruluk.json`), bir kez kart değiştirme. |

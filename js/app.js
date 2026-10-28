@@ -53,6 +53,46 @@ function loadJson(url) {
 }
 const loadQuestions = () => loadJson(QUESTIONS_URL);
 
+// Tabu cards this phone has shown, as [word, when shown] oldest first. A new game deals the cards not
+// seen yet first, then the longest-unseen ones (games/tabu.js buildDeck). Online, the phone that sets the
+// game up also counts the other phone's list (sent with its greeting); the times say which sighting is
+// more recent, however long either list is.
+const TABU_HISTORY_MAX = 600;
+let tabuMemory = null; // read from storage once, then kept in memory (storage may be off or full)
+const seenEntries = (list) => (Array.isArray(list) ? list.filter((e) => Array.isArray(e) && typeof e[0] === 'string' && Number.isFinite(e[1])) : []);
+const tabuHistory = {
+  /** This phone's list. */
+  own() {
+    if (!tabuMemory) tabuMemory = seenEntries(load('tabu-seen', null)).slice(-TABU_HISTORY_MAX);
+    return tabuMemory.slice();
+  },
+  /** Words a new game should deal last, oldest first: hosting online, the other phone's sightings count too. */
+  get() {
+    const last = new Map();
+    const put = (list) => list.forEach(([w, t]) => { if (!(last.get(w) >= t)) last.set(w, t); });
+    put(tabuHistory.own());
+    if (online.transport && online.role === 'host' && online.peerTabuSeen) put(online.peerTabuSeen);
+    return [...last.keys()].sort((a, b) => last.get(a) - last.get(b));
+  },
+  /** `words`: the cards shown so far in the game on screen, in the order they were shown. */
+  add(words) {
+    if (!words.length) return;
+    const old = tabuHistory.own();
+    const tail = old.slice(-words.length);
+    if (tail.length === words.length && tail.every(([w], i) => w === words[i])) return; // nothing new
+    const shown = new Set(words);
+    const t0 = Math.max(Date.now(), old.length ? old[old.length - 1][1] + 1 : 0);
+    tabuMemory = old.filter(([w]) => !shown.has(w)).concat(words.map((w, i) => [w, t0 + i])).slice(-TABU_HISTORY_MAX);
+    save('tabu-seen', tabuMemory);
+  },
+  /** The other phone's list from its greeting, moved onto this phone's clock (`sentAt`: its clock then). */
+  fromPeer(list, sentAt) {
+    if (!Array.isArray(list)) return null;
+    const shift = Number.isFinite(sentAt) ? Date.now() - sentAt : 0;
+    return seenEntries(list).slice(-TABU_HISTORY_MAX).map(([w, t]) => [w, t + shift]);
+  },
+};
+
 /** Load whatever data the game declares in meta.data and return the ctx for the session. */
 async function loadGameData(game) {
   const needs = game.meta.data || [];
@@ -64,7 +104,10 @@ async function loadGameData(game) {
     ctx.customQuestions = load('custom-questions', []);
   }
   if (needs.includes('trivia')) ctx.trivia = await loadJson(TRIVIA_URL);
-  if (needs.includes('tabu')) ctx.tabu = await loadJson(TABU_URL);
+  if (needs.includes('tabu')) {
+    ctx.tabu = await loadJson(TABU_URL);
+    ctx.tabuHistory = tabuHistory;
+  }
   if (needs.includes('dogruluk')) ctx.dogruluk = await loadJson(DOGRULUK_URL);
   return ctx;
 }
@@ -728,7 +771,11 @@ const online = {
   round: 0,         // bumped on every 'start'/'lobby' so stale loads and moves are dropped
   ctxCache: {},
   tournament: null, // guest side: { index, total, wins } carried by the host's 'start'
+  peerTabuSeen: null, // the other phone's Tabu history, from its 'hello'
 };
+
+/** The greeting: name, build, and the Tabu cards this phone has shown, with its clock to line the times up. */
+const helloMsg = () => ({ t: 'hello', name: online.myName, v: APP_VERSION, tabuSeen: tabuHistory.own(), clock: Date.now() });
 
 function leaveOnline({ silent = false } = {}) {
   if (online.transport) {
@@ -741,6 +788,7 @@ function leaveOnline({ silent = false } = {}) {
   online.code = null;
   online.resuming = false;
   online.players = null;
+  online.peerTabuSeen = null;
   online.session = null;
   online.queue = [];
   online.busy = false;
@@ -877,7 +925,7 @@ function wireTransport(myName, { resume = false } = {}) {
     // handlers across a replacement connection (the guest reconnecting after a drop the host never
     // noticed) and must then offer a resume, not a fresh greeting that would reset the guest.
     if (online.session && !online.session.destroyed) t.send({ t: 'resume', received: online.session.received, name: online.myName, gameNo: online.gameNo || 0 });
-    else t.send({ t: 'hello', name: online.myName, v: APP_VERSION });
+    else t.send(helloMsg());
   });
 }
 
@@ -1003,6 +1051,8 @@ async function handleOnlineMessage(msg) {
   switch (msg.t) {
     case 'hello': {
       const other = String(msg.name || 'Oyuncu').slice(0, 20);
+      // the Tabu cards the other phone has already shown: a game this phone sets up avoids them too
+      online.peerTabuSeen = tabuHistory.fromPeer(msg.tabuSeen, msg.clock);
       online.players = online.role === 'host' ? [online.myName, other] : [other, online.myName];
       // a stale cached build on one phone would desync the games: say so before anything starts
       if (msg.v && msg.v !== APP_VERSION) toast(`Uygulama sürümleri farklı (sende ${APP_VERSION}, rakipte ${msg.v}): ikiniz de ana menüye dönüp sayfayı yenileyin`, { kind: 'error', duration: 8000 });
@@ -1011,7 +1061,7 @@ async function handleOnlineMessage(msg) {
         closeReconnect();
         if (activeSession) { activeSession.destroy(); activeSession = null; }
         online.session = null;
-        online.transport.send({ t: 'hello', name: online.myName, v: APP_VERSION }); // it never got our greeting
+        online.transport.send(helloMsg()); // it never got our greeting
         // with a game running the other side evidently started over; from the lobby it is just the link coming back
         toast(hadGame ? 'Rakip yeniden başladı; oyun baştan kurulacak' : 'Bağlantı yeniden kuruldu', { duration: hadGame ? 4000 : 2500 });
       }
@@ -1024,7 +1074,7 @@ async function handleOnlineMessage(msg) {
         // we have no game to resume (fresh page): treat it as a greeting
         const other = String(msg.name || 'Oyuncu').slice(0, 20);
         online.players = online.role === 'host' ? [online.myName, other] : [other, online.myName];
-        online.transport.send({ t: 'hello', name: online.myName, v: APP_VERSION });
+        online.transport.send(helloMsg());
         showOnlineLobby();
         return;
       }
