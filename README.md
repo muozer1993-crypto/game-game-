@@ -83,7 +83,8 @@ Testler: `http://localhost:8000/tests/` sayfasını aç (ya da terminalden `node
 > sayfalar kendiliğinden yenilenir, oyun ortasındakiler menüye dönünce yenilenir.
 
 Ana ekrana eklenen uygulamada simgeye uzun basınca **İki telefonda oyna** ve **Rastgele oyun** kısayolları çıkar
-(`manifest.webmanifest` → `shortcuts`; `?ekran=online` / `?ekran=rastgele`).
+(`manifest.webmanifest` → `shortcuts`; `?ekran=online` / `?ekran=rastgele`). Bir oyunun kurulum ekranına doğrudan
+bağlantı: `?oyun=<kimlik>` (ör. `?oyun=sarki-suresi`).
 
 ## GitHub Pages'e yayınlama
 

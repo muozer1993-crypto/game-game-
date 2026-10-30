@@ -1182,12 +1182,15 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
 }
 
 // A friend's invite link (…?oda=KOD) opens the join screen with the code filled in; the
-// home-screen shortcuts (manifest) open the two-phone screen or a random game directly.
+// home-screen shortcuts (manifest) open the two-phone screen or a random game directly;
+// …?oyun=<id> (e.g. ?oyun=sarki-suresi) opens that game's setup screen.
 const bootParams = new URLSearchParams(location.search);
 const invitedCode = bootParams.get('oda');
 const bootScreen = bootParams.get('ekran');
-if (invitedCode || bootScreen) history.replaceState(null, '', location.pathname);
+const bootGame = findGame(bootParams.get('oyun') || '');
+if (invitedCode || bootScreen || bootParams.has('oyun')) history.replaceState(null, '', location.pathname);
 if (invitedCode) showOnline({ code: invitedCode });
 else if (bootScreen === 'online') { showMenu(); showOnline(); }
 else if (bootScreen === 'rastgele') { showMenu(); showSetup(games[Math.floor(Math.random() * games.length)]); }
+else if (bootGame) { showMenu(); showSetup(bootGame); }
 else showMenu();
