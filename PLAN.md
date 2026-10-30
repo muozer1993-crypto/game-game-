@@ -28,12 +28,13 @@ js/net/transport.js     Bağlantı arayüzü (send / onMessage)
 js/net/peer.js          PeerJS adaptörü (oda kodu = peer id)
 js/version.js           Uygulama sürümü (sw.js VERSION ile birlikte artırılır; iki telefon karşılaştırır)
 games/index.js          Oyun kaydı (yeni oyun = yeni dosya + bir import satırı)
-games/*.js              46 oyun, her biri tek dosya (aşağıdaki liste)
+games/*.js              47 oyun, her biri tek dosya (aşağıdaki liste)
 data/words-tr.txt       Büyük kelime listesi (doğrulama)
 data/common-tr.json     4/5/6 harfli yaygın kelimeler (gizli kelime seçimi)
 data/questions.json     Beni Ne Kadar Tanıyorsun soru havuzu
 data/trivia.json        Genel kültür soruları
 data/tabu.json          Tabu kartları
+data/sarkilar.json      Şarkı Süresi: şarkı listesi (Spotify listesi + favori grupların katalogları, süreler Deezer/Spotify)
 data/LICENSES.md        Veri lisansları ve kaynakları
 tests/index.html        Tarayıcıda açılan test sayfası (kütüphane yok)
 tests/*.test.js         Saf mantık testleri (node ile de çalışır)
@@ -85,8 +86,8 @@ export default {
 - Testler: `node tests/node.mjs` (saf mantık, 140+ test) ve `tests/index.html` (aynı testler
   tarayıcıda). Tarayıcı akış testleri geliştirme sırasında Playwright ile koşuldu (depoda değil).
 
-## Oyunlar (46)
-Faz 1: Son Hece, Gizli Kelime, Gizli Sayı, Beni Ne Kadar Tanıyorsun? (`data/questions.json`), Doğruluk mu Cesaret mi? (`data/dogruluk.json`).
+## Oyunlar (47)
+Faz 1: Son Hece, Gizli Kelime, Gizli Sayı, Beni Ne Kadar Tanıyorsun? (`data/questions.json`), Doğruluk mu Cesaret mi? (`data/dogruluk.json`), Şarkı Süresi (`data/sarkilar.json`).
 Faz 2: Genel Kültür Düellosu (`data/trivia.json`), Amiral Battı, Tavla, Kızma Birader, Bilanço, Domino, Dama, Mangala, Bilardo,
 Dört Bağlantı, Noktalar ve Kutular, Hafıza, XOX, Taş Kağıt Makas, Adam Asmaca, Harf Avı,
 Kelime Türetme, Kelime Tahtası, İsim Şehir, Tabu (`data/tabu.json`), Reversi, Beş Taş, Hex, Dokuz Taş,

@@ -44,6 +44,15 @@ Bu proje için yazılmış özgün sorular. Lisans: MIT (projeyle aynı).
 
 Bu proje için yazılmış özgün genel kültür soruları ve Tabu kartları. Lisans: MIT (projeyle aynı).
 
+## sarkilar.json (Şarkı Süresi)
+
+Şarkı adı, grup ve süre bilgileri: oyuncunun kendi Spotify listesinin dışa aktarımı
+(`PAPAZ_MİXLER_TOPLU.csv`), Spotify'ın herkese açık embed sayfasındaki liste verisi ve Deezer'ın
+açık API'si (https://developers.deezer.com) — favori grupların (Katatonia, Opeth, Anathema,
+Antimatter) stüdyo albümleri de buradan alındı. Dosyada yalnızca üst veri (ad, grup, süre, kimlik,
+Spotify örnek bağlantısı) vardır; ses dosyası depoda tutulmaz. Zor modda çalan 10 saniyelik örnek,
+Spotify'ın (`p.scdn.co`) ya da Deezer'ın kendi sunucusundan oynatma anında yüklenir.
+
 ## vendor/peerjs.min.js
 
 PeerJS 1.5.5 — MIT, Copyright (c) 2015 Michelle Bu and Eric Zhang. Lisans metni:

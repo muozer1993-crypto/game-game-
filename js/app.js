@@ -17,6 +17,7 @@ const QUESTIONS_URL = new URL('../data/questions.json', import.meta.url);
 const TRIVIA_URL = new URL('../data/trivia.json', import.meta.url);
 const TABU_URL = new URL('../data/tabu.json', import.meta.url);
 const DOGRULUK_URL = new URL('../data/dogruluk.json', import.meta.url);
+const SONGS_URL = new URL('../data/sarkilar.json', import.meta.url);
 
 const prefs = {
   players: load('players', DEFAULT_PLAYERS),
@@ -109,6 +110,7 @@ async function loadGameData(game) {
     ctx.tabuHistory = tabuHistory;
   }
   if (needs.includes('dogruluk')) ctx.dogruluk = await loadJson(DOGRULUK_URL);
+  if (needs.includes('songs')) ctx.songs = await loadJson(SONGS_URL);
   return ctx;
 }
 

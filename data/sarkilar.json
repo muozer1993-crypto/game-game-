@@ -1,0 +1,8568 @@
+{
+"version": 1,
+"note": "Şarkı Süresi şarkı listesi. a: grup, t: şarkı, s: süre (saniye), dz: Deezer parça kimliği (zor modda 10 saniyelik örnek buradan yüklenir), p: Spotify örnek bağlantısı, np: ses örneği yok, g: kaynak (fav favori grup kataloğu, sp Spotify listesi, mix mix listesi). weights: grubun seçilme ağırlığı (yazılmayanlar 1).",
+"weights": {
+"Katatonia": 3,
+"Opeth": 3,
+"Anathema": 3,
+"Antimatter": 3,
+"Alcest": 2,
+"Swallow The Sun": 2,
+"Riverside": 2,
+"Steven Wilson": 2,
+"Pain of Salvation": 2,
+"Empyrium": 2,
+"Officium Triste": 2,
+"Saturnus": 2,
+"Daylight Dies": 2,
+"Woods Of Ypres": 2,
+"Thurisaz": 2,
+"Novembre": 2,
+"Lunatic Soul": 2,
+"The Gathering": 2,
+"Insomnium": 2,
+"On Thorns I Lay": 2,
+"Shamrain": 2,
+"Charon": 2,
+"Entwine": 2,
+"Poisonblack": 2,
+"To/Die/For": 2,
+"Lacuna Coil": 2,
+"Theatre Of Tragedy": 2,
+"Anneke van Giersbergen": 2,
+"The Foreshadowing": 2,
+"Ghost Brigade": 2,
+"Angellore": 2,
+"Ars Onirica": 2,
+"40 Watt Sun": 2,
+"Pallbearer": 2,
+"Les Discrets": 2,
+"Harakiri for the Sky": 2,
+"Gazpacho": 2,
+"Airbag": 2,
+"OSI": 2,
+"The Pineapple Thief": 2,
+"Sleeping Pulse": 2,
+"Chroma Key": 2,
+"Rishloo": 2
+},
+"tracks": [
+{
+"a": "...And Oceans",
+"t": "Inertiae",
+"s": 270,
+"dz": 3205537391,
+"g": "mix"
+},
+{
+"a": "...And Oceans",
+"t": "Prophetical Mercury Implement",
+"s": 416,
+"dz": 3205537431,
+"g": "mix"
+},
+{
+"a": "...And Oceans",
+"t": "Towards the Absence of Light",
+"s": 288,
+"dz": 3205537471,
+"g": "mix"
+},
+{
+"a": "1349",
+"t": "Dødskamp",
+"s": 304,
+"dz": 617608392,
+"g": "mix"
+},
+{
+"a": "1349",
+"t": "Through Eyes of Stone",
+"s": 204,
+"dz": 705893232,
+"g": "mix"
+},
+{
+"a": "1914",
+"t": "Arrival. The Meuse-Argonne",
+"s": 380,
+"dz": 643460302,
+"g": "mix"
+},
+{
+"a": "3 Doors Down",
+"t": "Kryptonite",
+"s": 234,
+"dz": 2511224,
+"g": "mix"
+},
+{
+"a": "35007",
+"t": "Herd",
+"s": 344,
+"dz": 3208590911,
+"g": "mix"
+},
+{
+"a": "40 Watt Sun",
+"t": "Stages",
+"s": 973,
+"dz": 131139830,
+"g": "mix"
+},
+{
+"a": "65daysofstatic",
+"t": "Unmake the Wild Light",
+"s": 383,
+"dz": 108662544,
+"g": "mix"
+},
+{
+"a": "A Life Once Lost",
+"t": "Vulture",
+"s": 203,
+"dz": 902760,
+"g": "mix"
+},
+{
+"a": "A MILLION DEAD BIRDS LAUGHING",
+"t": "Praxis",
+"s": 193,
+"dz": 754003742,
+"g": "mix"
+},
+{
+"a": "A Perfect Circle",
+"t": "Pet",
+"s": 274,
+"dz": 3092703,
+"g": "mix"
+},
+{
+"a": "Abnormality",
+"t": "Mechanisms of Omniscience",
+"s": 213,
+"dz": 120619046,
+"p": "https://p.scdn.co/mp3-preview/68c860c0151e4e60285034494fb1f54aeb11d424",
+"g": "sp"
+},
+{
+"a": "Aborted",
+"t": "Divine Impediment",
+"s": 259,
+"dz": 123345668,
+"p": "https://p.scdn.co/mp3-preview/32a2d202d2d7b1b800cee859edcefb93ef1371e3",
+"g": "sp"
+},
+{
+"a": "Abysmal Dawn",
+"t": "Inanimate",
+"s": 255,
+"dz": 83859572,
+"g": "mix"
+},
+{
+"a": "Acid Bath",
+"t": "Scream of the Butterfly",
+"s": 374,
+"dz": 11063232,
+"g": "mix"
+},
+{
+"a": "Aeon",
+"t": "Still They Pray",
+"s": 229,
+"dz": 70876379,
+"p": "https://p.scdn.co/mp3-preview/5cf520c080e2a02564cd79255bb3a8d5d72cfa89",
+"g": "sp"
+},
+{
+"a": "Aeternam",
+"t": "Rise of Arabia",
+"s": 285,
+"dz": 140405585,
+"g": "mix"
+},
+{
+"a": "Afsky",
+"t": "Altid Veltilfreds",
+"s": 430,
+"dz": 923595872,
+"g": "mix"
+},
+{
+"a": "Agathodaimon",
+"t": "Serpent's Embrace",
+"s": 257,
+"dz": 899380502,
+"g": "mix"
+},
+{
+"a": "Ahab",
+"t": "Old Thunder",
+"s": 594,
+"dz": 137708727,
+"g": "mix"
+},
+{
+"a": "Ahkmed",
+"t": "T=0",
+"s": 460,
+"dz": 129848046,
+"g": "mix"
+},
+{
+"a": "Airbag",
+"t": "Machines and Men",
+"s": 594,
+"dz": 903505422,
+"g": "mix"
+},
+{
+"a": "Akercocke",
+"t": "Leviathan",
+"s": 468,
+"dz": 70981241,
+"g": "mix"
+},
+{
+"a": "Akercocke",
+"t": "Verdelet",
+"s": 285,
+"dz": 70981337,
+"g": "mix"
+},
+{
+"a": "Akhlys",
+"t": "Pnigalion - Edit Version",
+"s": 762,
+"dz": 1083545732,
+"g": "mix"
+},
+{
+"a": "Al-Namrood",
+"t": "Atba'a Al-Namrood",
+"s": 307,
+"dz": 78817170,
+"g": "mix"
+},
+{
+"a": "Alcest",
+"t": "Kodama",
+"s": 547,
+"dz": 1977988217,
+"g": "mix"
+},
+{
+"a": "Alcest",
+"t": "Oiseaux de proie",
+"s": 468,
+"dz": 1977988257,
+"g": "mix"
+},
+{
+"a": "Alcest",
+"t": "Sapphire",
+"s": 300,
+"dz": 721542112,
+"g": "mix"
+},
+{
+"a": "All That Remains",
+"t": "This Calling",
+"s": 218,
+"dz": 1761540237,
+"g": "mix"
+},
+{
+"a": "All Them Witches",
+"t": "Elk.Blood.Heart",
+"s": 353,
+"dz": 65085516,
+"g": "mix"
+},
+{
+"a": "Almora",
+"t": "Kıyamet Senfonisi",
+"s": 320,
+"dz": 144315762,
+"g": "mix"
+},
+{
+"a": "Amenra",
+"t": "A Solitary Reign",
+"s": 539,
+"dz": 405889962,
+"g": "mix"
+},
+{
+"a": "Amesoeurs",
+"t": "Gas in Veins",
+"s": 310,
+"dz": 3083177,
+"g": "mix"
+},
+{
+"a": "Amiensus",
+"t": "Become the Fear",
+"s": 279,
+"dz": 82111392,
+"g": "mix"
+},
+{
+"a": "Anathema",
+"t": "...And I Lust",
+"s": 345,
+"dz": 138785309,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "2000 & Gone",
+"s": 298,
+"dz": 95960368,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "32.63n 117.14w",
+"s": 78,
+"dz": 144965944,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "A Dying Wish",
+"s": 491,
+"dz": 1988417,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "A Fine Day",
+"s": 216,
+"dz": 95960370,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "A Fine Day to Exit",
+"s": 408,
+"dz": 95960386,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "A Natural Disaster",
+"s": 387,
+"dz": 95960324,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Alone",
+"s": 264,
+"dz": 1988359,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Alternative 4",
+"s": 377,
+"dz": 5832709,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Anathema",
+"s": 400,
+"dz": 78354781,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Angelica",
+"s": 350,
+"dz": 138785379,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Anyone, Anywhere",
+"s": 290,
+"dz": 95960366,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Are You There?",
+"s": 298,
+"dz": 95960318,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Ariel",
+"s": 388,
+"dz": 78354779,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Ascension",
+"s": 203,
+"dz": 138785397,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Back to the Start",
+"s": 701,
+"dz": 144965964,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Balance",
+"s": 238,
+"dz": 95960314,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Better Off Dead",
+"s": 262,
+"dz": 5832715,
+"np": 1,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Black Orchid",
+"s": 220,
+"dz": 1988425,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Breaking Down the Barriers",
+"s": 344,
+"dz": 95960382,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Can't Let Go",
+"s": 300,
+"dz": 144965958,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Cerulean Twilight",
+"s": 425,
+"dz": 1988390,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Childhood Dream",
+"s": 130,
+"dz": 95960320,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Close Your Eyes",
+"s": 219,
+"dz": 144965960,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Closer",
+"s": 381,
+"dz": 95960316,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Crestfallen",
+"s": 419,
+"dz": 138785315,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Cries on the Wind",
+"s": 301,
+"dz": 138785395,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Deep",
+"s": 295,
+"dz": 95960344,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Destiny",
+"s": 135,
+"dz": 5832712,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Destiny is Dead",
+"s": 106,
+"dz": 95960350,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Distant Satellites",
+"s": 497,
+"dz": 78354784,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Don't Look Too Far",
+"s": 296,
+"dz": 95960360,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Dreaming: The Romance",
+"s": 1403,
+"dz": 1502930,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Dusk (Dark Is Descending)",
+"s": 360,
+"dz": 78354778,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Electricity",
+"s": 232,
+"dz": 95960328,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Emotional Winter",
+"s": 355,
+"dz": 95960362,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Empty",
+"s": 180,
+"dz": 5832705,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Endless Ways",
+"s": 349,
+"dz": 144965948,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Eternal Rise Of The Sun",
+"s": 398,
+"dz": 1502904,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Eternity (Pt. 1)",
+"s": 335,
+"dz": 138785383,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Everwake",
+"s": 159,
+"dz": 138785313,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Far Away",
+"s": 330,
+"dz": 138785393,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Feel",
+"s": 328,
+"dz": 5832711,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Firelight",
+"s": 163,
+"dz": 78354783,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Flying",
+"s": 357,
+"dz": 95960326,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Forgotten Hopes",
+"s": 230,
+"dz": 95960348,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Fragile Dreams",
+"s": 332,
+"dz": 5832704,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Ghosts",
+"s": 257,
+"dz": 144965956,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Goodbye Cruel World",
+"s": 100,
+"dz": 5832716,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Harmonium",
+"s": 330,
+"dz": 95960312,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Hope",
+"s": 355,
+"dz": 138785387,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Inner Silence",
+"s": 188,
+"dz": 5832708,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Internal Landscapes",
+"s": 532,
+"dz": 3801812442,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "J'ai Fait Une Promesse",
+"s": 158,
+"dz": 1502861,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Judgement",
+"s": 260,
+"dz": 95960358,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Kingdom",
+"s": 571,
+"dz": 138785299,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Leave No Trace",
+"s": 286,
+"dz": 95960374,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Leaving It Behind",
+"s": 267,
+"dz": 144965946,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Lightning Song",
+"s": 325,
+"dz": 3801812392,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Looking Outside Inside",
+"s": 375,
+"dz": 95960384,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Lost Control",
+"s": 349,
+"dz": 5832706,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Lovelorn Rhapsody",
+"s": 383,
+"dz": 1502853,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Make it Right",
+"s": 258,
+"dz": 95960352,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Memento Mori",
+"s": 492,
+"dz": 138785307,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Mine Is Yours to Drown In (Ours Is the New Tribe)",
+"s": 339,
+"dz": 138785301,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Nailed To The Cross/666",
+"s": 249,
+"dz": 1502909,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Nocturnal Emission",
+"s": 259,
+"dz": 1988378,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "One Last Goodbye",
+"s": 323,
+"dz": 95960354,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "One Of The Few",
+"s": 111,
+"dz": 5832714,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Panic",
+"s": 217,
+"dz": 95960380,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Parisienne Moonlight",
+"s": 130,
+"dz": 95960356,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Pentecost III",
+"s": 234,
+"dz": 138785305,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Pitiless",
+"s": 190,
+"dz": 95960346,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Pressure",
+"s": 398,
+"dz": 95960378,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Pulled Under at 2000 Metres a Second",
+"s": 322,
+"dz": 95960322,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Radiance",
+"s": 352,
+"dz": 138785391,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Re-Connect",
+"s": 232,
+"dz": 5832707,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Regret",
+"s": 477,
+"dz": 5832710,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Release",
+"s": 340,
+"dz": 95960372,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Restless Oblivion",
+"s": 481,
+"dz": 1988337,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "San Francisco",
+"s": 299,
+"dz": 144965952,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Scars Of The Old Stream",
+"s": 70,
+"dz": 1502885,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Sentient",
+"s": 180,
+"dz": 138785377,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Shroud Of False",
+"s": 96,
+"dz": 5832703,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Shroud Of Frost",
+"s": 451,
+"dz": 1988349,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Sleep In Sanity",
+"s": 412,
+"dz": 1502881,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Sleepless",
+"s": 251,
+"dz": 1502875,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Sleepless 96",
+"s": 271,
+"dz": 1988445,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Springfield",
+"s": 349,
+"dz": 144965954,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Suicide Veil",
+"s": 310,
+"dz": 138785389,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Sunlight",
+"s": 295,
+"dz": 3801812402,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Sunset Of Age",
+"s": 415,
+"dz": 1988369,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Sweet Tears",
+"s": 253,
+"dz": 1502857,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Take Shelter",
+"s": 367,
+"dz": 78354785,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Temporary Peace",
+"s": 915,
+"dz": 95960388,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "The Beginning And The End",
+"s": 293,
+"dz": 3801812422,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "The Beloved",
+"s": 284,
+"dz": 138785381,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "The Gathering Of The Clouds",
+"s": 207,
+"dz": 3801812382,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "The Lost Child",
+"s": 422,
+"dz": 3801812432,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "The Lost Song, Pt. 1",
+"s": 353,
+"dz": 78354776,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "The Lost Song, Pt. 2",
+"s": 348,
+"dz": 78354777,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "The Lost Song, Pt. 3",
+"s": 322,
+"dz": 78354780,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "The Optimist",
+"s": 337,
+"dz": 144965950,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "The Silent Enigma",
+"s": 264,
+"dz": 1988400,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "The Silent Enigma Orchestral",
+"s": 252,
+"dz": 1988434,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "The Storm Before The Calm",
+"s": 563,
+"dz": 3801812412,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "The Sweet Suffering",
+"s": 401,
+"dz": 138785311,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "They (Will Always) Die",
+"s": 434,
+"dz": 1502868,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Under A Veil (Of Black Lace)",
+"s": 451,
+"dz": 1502891,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Underworld",
+"s": 252,
+"dz": 95960376,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Untouchable",
+"s": 374,
+"dz": 3801812362,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Violence",
+"s": 655,
+"dz": 95960330,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "We, The Gods",
+"s": 598,
+"dz": 138785303,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Where Shadows Dance",
+"s": 118,
+"dz": 1502896,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Wildfires",
+"s": 340,
+"dz": 144965962,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Wings of God",
+"s": 388,
+"dz": 95960364,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "You're Not Alone",
+"s": 206,
+"dz": 78354782,
+"g": "fav"
+},
+{
+"a": "Anathema",
+"t": "Your Possible Pasts",
+"s": 268,
+"dz": 5832713,
+"g": "fav"
+},
+{
+"a": "Anciients",
+"t": "Incantations",
+"s": 444,
+"dz": 130700980,
+"g": "mix"
+},
+{
+"a": "Anciients",
+"t": "Raise the Sun",
+"s": 393,
+"dz": 65281048,
+"g": "mix"
+},
+{
+"a": "And Also The Trees",
+"t": "Your Guess",
+"s": 309,
+"dz": 1856085677,
+"g": "mix"
+},
+{
+"a": "Angellore",
+"t": "A Shrine of Clouds",
+"s": 827,
+"dz": 3886187401,
+"g": "mix"
+},
+{
+"a": "Anneke van Giersbergen",
+"t": "Mental Jungle",
+"s": 224,
+"dz": 108670752,
+"g": "mix"
+},
+{
+"a": "Antimatter",
+"t": "A Place in the Sun",
+"s": 276,
+"dz": 1977464917,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "A Portrait of the Young Man as an Artist",
+"s": 292,
+"dz": 1978703847,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "Angelic",
+"s": 274,
+"dz": 3764833912,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "Another Face in a Window",
+"s": 420,
+"dz": 1977364347,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "Between the Atoms",
+"s": 505,
+"dz": 577165772,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "Black Eyed Man",
+"s": 384,
+"dz": 1977823767,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "Breaking the Machine",
+"s": 225,
+"dz": 2011858037,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "By My Side",
+"s": 205,
+"dz": 132513854,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "Can of Worms",
+"s": 337,
+"dz": 1977823837,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "Comrades",
+"s": 297,
+"dz": 1977823797,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "Conspire",
+"s": 252,
+"dz": 1977364387,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "Dream",
+"s": 354,
+"dz": 1978693727,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "Entheogen",
+"s": 348,
+"dz": 2011858027,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "Epitaph",
+"s": 249,
+"dz": 1978703827,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "Eternity, Pt. 24",
+"s": 525,
+"dz": 1978703877,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "Everything You Know Is Wrong",
+"s": 243,
+"dz": 1978693677,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "Existential",
+"s": 439,
+"dz": 577165732,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "Expire",
+"s": 479,
+"dz": 1978693697,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "Fear of a Unique Identity",
+"s": 328,
+"dz": 1977464857,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "Fighting for a Lost Cause",
+"s": 335,
+"dz": 1977364417,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "Firewalking",
+"s": 484,
+"dz": 1977464867,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "Flowers",
+"s": 311,
+"dz": 3764833922,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "Fold",
+"s": 311,
+"dz": 2011857997,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "Fools Gold",
+"s": 442,
+"dz": 2011858017,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "Ghosts",
+"s": 276,
+"dz": 1977364357,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "God Is Coming",
+"s": 328,
+"dz": 3764833902,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "Going Nowhere",
+"s": 479,
+"dz": 3764833942,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "Goodbye",
+"s": 164,
+"dz": 1977823867,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "Heathen",
+"s": 359,
+"dz": 2011857977,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "Here Come the Men",
+"s": 306,
+"dz": 1977464877,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "Hole",
+"s": 303,
+"dz": 1977823827,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "Holocaust",
+"s": 267,
+"dz": 3764833872,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "In Stone",
+"s": 469,
+"dz": 1978693707,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "Integrity",
+"s": 366,
+"dz": 1977823847,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "Kick the Dog",
+"s": 264,
+"dz": 2011858047,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "Killer",
+"s": 311,
+"dz": 1977822267,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "Landlocked",
+"s": 240,
+"dz": 1977364377,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "Leaving Eden",
+"s": 350,
+"dz": 1977364397,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "Legions",
+"s": 442,
+"dz": 1978703867,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "Lights Out",
+"s": 245,
+"dz": 1978693667,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "Line of Fire",
+"s": 386,
+"dz": 1978703817,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "Liquid Light",
+"s": 374,
+"dz": 577165792,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "Little Piggy",
+"s": 404,
+"dz": 1977823817,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "Monochrome",
+"s": 324,
+"dz": 1977464847,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "Mr. White",
+"s": 245,
+"dz": 1978703837,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "No Contact",
+"s": 325,
+"dz": 2011857957,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "Over Your Shoulder",
+"s": 280,
+"dz": 3764833882,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "Paranoid Carbon",
+"s": 317,
+"dz": 2011857967,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "Paranova",
+"s": 366,
+"dz": 1977464837,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "Partners in Crime",
+"s": 350,
+"dz": 577165702,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "Planetary Confinement",
+"s": 91,
+"dz": 1978703797,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "Psalms",
+"s": 219,
+"dz": 1978687427,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "Pslams",
+"s": 221,
+"dz": 3764833892,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "Reality Clash",
+"s": 465,
+"dz": 1978693717,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "Redemption",
+"s": 367,
+"dz": 1977364337,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "Redshift",
+"s": 334,
+"dz": 2011858007,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "Relapse",
+"s": 301,
+"dz": 1978703857,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "Sanctification",
+"s": 435,
+"dz": 577165722,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "Saviour",
+"s": 187,
+"dz": 3764833862,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "Stillborn Empires",
+"s": 441,
+"dz": 1977822277,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "Templates",
+"s": 316,
+"dz": 2011857987,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "Terminal",
+"s": 464,
+"dz": 1978693737,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "The Art of a Soft Landing",
+"s": 269,
+"dz": 1978693687,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "The Freak Show",
+"s": 310,
+"dz": 1977364367,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "The Immaculate Misconception",
+"s": 311,
+"dz": 1977364407,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "The Judas Table",
+"s": 396,
+"dz": 1977823857,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "The Last Laugh",
+"s": 306,
+"dz": 3764833932,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "The Parade",
+"s": 202,
+"dz": 1977464907,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "The Third Arm",
+"s": 297,
+"dz": 577165642,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "The Weight of the World",
+"s": 283,
+"dz": 1978703807,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "This Is Not Utopia",
+"s": 387,
+"dz": 577165682,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "Too Late",
+"s": 365,
+"dz": 132513852,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "Uniformed & Black",
+"s": 259,
+"dz": 1977464887,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "Welcome to the Machine",
+"s": 401,
+"dz": 132513846,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "What Do You Want Me to Do?",
+"s": 152,
+"dz": 577165752,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "Wide Awake in the Concrete Asylum",
+"s": 407,
+"dz": 1977464897,
+"g": "fav"
+},
+{
+"a": "Antimatter",
+"t": "Wish I Was Here",
+"s": 400,
+"dz": 577165662,
+"g": "fav"
+},
+{
+"a": "Aosoth",
+"t": "An Arrow in Heart",
+"s": 639,
+"dz": 3179047671,
+"p": "https://p.scdn.co/mp3-preview/29cd3f6c7a3784f88d3c54391fc1c5fb1bc4e2d3",
+"g": "sp"
+},
+{
+"a": "Archgoat",
+"t": "Nuns, Cunts & Darkness",
+"s": 220,
+"dz": 94055324,
+"g": "mix"
+},
+{
+"a": "Archive",
+"t": "Again",
+"s": 978,
+"dz": 474290632,
+"g": "mix"
+},
+{
+"a": "Archive",
+"t": "Bullets",
+"s": 353,
+"dz": 476972632,
+"g": "mix"
+},
+{
+"a": "Archspire",
+"t": "A Dark Horizontal",
+"s": 370,
+"dz": 369681591,
+"g": "mix"
+},
+{
+"a": "Arctic Monkeys",
+"t": "Four Out Of Five",
+"s": 312,
+"dz": 497736992,
+"g": "mix"
+},
+{
+"a": "Arctic Monkeys",
+"t": "The View From The Afternoon",
+"s": 222,
+"dz": 4315309,
+"g": "mix"
+},
+{
+"a": "Arcturus",
+"t": "The Arcturian Sign",
+"s": 306,
+"dz": 1977702707,
+"p": "https://p.scdn.co/mp3-preview/a282cab1c929154433147e2cb8f47551a435558d",
+"g": "sp"
+},
+{
+"a": "Ars Onirica",
+"t": "My Heart... Your Tomb",
+"s": 298,
+"dz": 1884839907,
+"g": "mix"
+},
+{
+"a": "Artillery",
+"t": "Beneath the Clay (R.I.P)",
+"s": 288,
+"dz": 1418374432,
+"g": "mix"
+},
+{
+"a": "Artillery",
+"t": "Khomaniac",
+"s": 402,
+"dz": 1418374422,
+"g": "mix"
+},
+{
+"a": "Asafated",
+"t": "Tout Va Bien - Remastered",
+"s": 596,
+"dz": 773548862,
+"g": "mix"
+},
+{
+"a": "Asphyx",
+"t": "Wardroid",
+"s": 280,
+"dz": 133095072,
+"g": "mix"
+},
+{
+"a": "Astarte",
+"t": "Black Mighty Gods",
+"s": 337,
+"dz": 464525842,
+"g": "mix"
+},
+{
+"a": "Astarte",
+"t": "Risen from Within",
+"s": 173,
+"dz": 411724282,
+"g": "mix"
+},
+{
+"a": "Athena",
+"t": "Bu Adam Fezadan",
+"s": 257,
+"dz": 89795209,
+"g": "mix"
+},
+{
+"a": "Athena",
+"t": "Masum Kalamayız",
+"s": 197,
+"dz": 68055413,
+"g": "mix"
+},
+{
+"a": "Atrophy",
+"t": "Preacher, Preacher",
+"s": 257,
+"dz": 682816792,
+"g": "mix"
+},
+{
+"a": "Aura Noir",
+"t": "Condor - Studio",
+"s": 245,
+"dz": 1503252,
+"g": "mix"
+},
+{
+"a": "Autopsy",
+"t": "Disembowel",
+"s": 244,
+"dz": 116970138,
+"g": "mix"
+},
+{
+"a": "Avatar",
+"t": "Lullaby (Death All Over)",
+"s": 466,
+"dz": 355121141,
+"g": "mix"
+},
+{
+"a": "Aversions Crown",
+"t": "Erebus",
+"s": 256,
+"dz": 659720822,
+"p": "https://p.scdn.co/mp3-preview/4f7039aecc471a2dc3e12748d02035294f1a438b",
+"g": "sp"
+},
+{
+"a": "Axel Rudi Pell",
+"t": "Oceans of Time",
+"s": 468,
+"dz": 3717635752,
+"g": "mix"
+},
+{
+"a": "Aylin Aslım",
+"t": "Senin Gibi",
+"s": 313,
+"dz": 3002976801,
+"g": "mix"
+},
+{
+"a": "Balfor",
+"t": "Serpents of the Black Sun",
+"s": 361,
+"dz": 623847662,
+"g": "mix"
+},
+{
+"a": "Baroness",
+"t": "Eula",
+"s": 407,
+"dz": 36440221,
+"g": "mix"
+},
+{
+"a": "Bastardizer",
+"t": "Midnight in Hell",
+"s": 234,
+"dz": 546981112,
+"g": "mix"
+},
+{
+"a": "Bauhaus",
+"t": "Bela Lugosi's Dead (Official Version)",
+"s": 577,
+"dz": 559910652,
+"g": "mix"
+},
+{
+"a": "Behexen",
+"t": "Night of the Blasphemy",
+"s": 285,
+"dz": 67592405,
+"g": "mix"
+},
+{
+"a": "Behexen",
+"t": "Rakkaudesta Saatanaan",
+"s": 520,
+"dz": 121540434,
+"g": "mix"
+},
+{
+"a": "Belphegor",
+"t": "Conjuring the Dead",
+"s": 273,
+"dz": 651522892,
+"g": "mix"
+},
+{
+"a": "Benediction",
+"t": "Nightfear",
+"s": 187,
+"dz": 2104622107,
+"g": "mix"
+},
+{
+"a": "Benighted",
+"t": "A Quiet Day",
+"s": 221,
+"dz": 64525966,
+"g": "mix"
+},
+{
+"a": "Benighted",
+"t": "Lethal Merycism",
+"s": 216,
+"dz": 64525969,
+"g": "mix"
+},
+{
+"a": "Bethlehem",
+"t": "An gestrandeten Sinnen",
+"s": 293,
+"dz": 1978317087,
+"g": "mix"
+},
+{
+"a": "Betrayal",
+"t": "Fighting Perdition",
+"s": 247,
+"p": "https://p.scdn.co/mp3-preview/7b8ff0507f229848a8e01123696f1f29995ea6d5",
+"g": "sp"
+},
+{
+"a": "Billy Idol",
+"t": "Eyes Wide Shut",
+"s": 269,
+"dz": 1892894227,
+"g": "mix"
+},
+{
+"a": "Birds in Row",
+"t": "Noah",
+"s": 397,
+"dz": 1811246467,
+"g": "mix"
+},
+{
+"a": "Black Crown Initiate",
+"t": "Song of the Crippled Bull",
+"s": 276,
+"dz": 71596697,
+"g": "mix"
+},
+{
+"a": "Black Crown Initiate",
+"t": "Stench of the Iron Age",
+"s": 433,
+"dz": 71596694,
+"g": "mix"
+},
+{
+"a": "Black Hill",
+"t": "A wild river to take you home",
+"s": 230,
+"dz": 660830022,
+"g": "mix"
+},
+{
+"a": "black midi",
+"t": "Eat Men Eat",
+"s": 188,
+"dz": 1801098647,
+"g": "mix"
+},
+{
+"a": "black midi",
+"t": "Near DT, MI",
+"s": 140,
+"dz": 696121232,
+"g": "mix"
+},
+{
+"a": "Black Tooth",
+"t": "Destroy",
+"s": 240,
+"dz": 133521934,
+"g": "mix"
+},
+{
+"a": "Black Tooth",
+"t": "Dirty White Couch",
+"s": 256,
+"dz": 2608756262,
+"g": "mix"
+},
+{
+"a": "Black Tooth",
+"t": "Iron Clad",
+"s": 267,
+"dz": 133521942,
+"g": "mix"
+},
+{
+"a": "Bleeding Through",
+"t": "Kill To Believe",
+"s": 237,
+"dz": 1916584957,
+"g": "mix"
+},
+{
+"a": "Blood Red Throne",
+"t": "Homicidal Ecstacy",
+"s": 282,
+"dz": 2075526257,
+"p": "https://p.scdn.co/mp3-preview/879214f7cb743db247caa4298ce7a5fdf44db08a",
+"g": "sp"
+},
+{
+"a": "Blood Red Throne",
+"t": "Primal Recoil",
+"s": 256,
+"dz": 2075526307,
+"p": "https://p.scdn.co/mp3-preview/1f150d5884a9b9b2d47302ff2158ff7caef49424",
+"g": "sp"
+},
+{
+"a": "Blue Öyster Cult",
+"t": "(Don't Fear) The Reaper",
+"s": 308,
+"dz": 82692320,
+"g": "mix"
+},
+{
+"a": "Blue Öyster Cult",
+"t": "Then Came the Last Days of May",
+"s": 211,
+"dz": 127775773,
+"g": "mix"
+},
+{
+"a": "Blut Aus Nord",
+"t": "Seclusion",
+"s": 497,
+"dz": 3538921731,
+"g": "mix"
+},
+{
+"a": "Blut Aus Nord",
+"t": "Shadows Breathe First",
+"s": 435,
+"dz": 3538921721,
+"g": "mix"
+},
+{
+"a": "Born From Pain",
+"t": "Final Collapse",
+"s": 327,
+"dz": 70877902,
+"g": "mix"
+},
+{
+"a": "Born From Pain",
+"t": "Never Die",
+"s": 187,
+"dz": 70877901,
+"g": "mix"
+},
+{
+"a": "Born From Pain",
+"t": "Relentless",
+"s": 218,
+"dz": 70878641,
+"g": "mix"
+},
+{
+"a": "Born From Pain",
+"t": "Sons Of A Dying World",
+"s": 176,
+"dz": 70877899,
+"g": "mix"
+},
+{
+"a": "Born Of Osiris",
+"t": "Divergency",
+"s": 238,
+"dz": 3412821201,
+"g": "mix"
+},
+{
+"a": "Brujeria",
+"t": "Bruja Encabronada",
+"s": 167,
+"dz": 2328883045,
+"g": "mix"
+},
+{
+"a": "Burial Invocation",
+"t": "Through the Void of Obscurity",
+"s": 231,
+"dz": 1146307432,
+"g": "mix"
+},
+{
+"a": "Burzum",
+"t": "A Lost Forgotten Sad Spirit",
+"s": 550,
+"p": "https://p.scdn.co/mp3-preview/f14770b740c978be4f34b47895acebd174beac24",
+"g": "sp"
+},
+{
+"a": "Burzum",
+"t": "Det Som En Gang Var",
+"s": 862,
+"dz": 10578731,
+"p": "https://p.scdn.co/mp3-preview/db7ad9f45c7dc6f6332e44ec1b93fbfdadbba7b1",
+"g": "sp"
+},
+{
+"a": "Burzum",
+"t": "Dunkelheit",
+"s": 425,
+"dz": 10749107,
+"p": "https://p.scdn.co/mp3-preview/c1d8c1be26e2f0041b8c4c2d8a8df7d97bfff4a1",
+"g": "sp"
+},
+{
+"a": "Burzum",
+"t": "Jesus' Tod",
+"s": 519,
+"dz": 10749108,
+"p": "https://p.scdn.co/mp3-preview/8c53747250148eff45e747c91958a867482abb32",
+"g": "sp"
+},
+{
+"a": "Burzum",
+"t": "Lost Wisdom",
+"s": 278,
+"dz": 10749091,
+"p": "https://p.scdn.co/mp3-preview/e4008bf75a568a227c2b1700f13844a70d31b171",
+"g": "sp"
+},
+{
+"a": "Burzum",
+"t": "Spell Of Destruction",
+"s": 299,
+"p": "https://p.scdn.co/mp3-preview/4c0e081c6a4bb92f2b86e998e91fd7d628f899d7",
+"g": "sp"
+},
+{
+"a": "Burzum",
+"t": "Steminen Fra Taarnet",
+"s": 370,
+"dz": 1344849802,
+"p": "https://p.scdn.co/mp3-preview/8cde7f4fe58e3f570fae40cfda8bab336ba88f1c",
+"g": "sp"
+},
+{
+"a": "Buzz Kull",
+"t": "Into the Void",
+"s": 216,
+"dz": 3316658531,
+"g": "mix"
+},
+{
+"a": "Cannabis Corpse",
+"t": "Baptized in Bud",
+"s": 189,
+"dz": 79093224,
+"p": "https://p.scdn.co/mp3-preview/b603e7ac617f67e019dad00a5d304be9a2358a23",
+"g": "sp"
+},
+{
+"a": "Cannibal Corpse",
+"t": "Evisceration Plague",
+"s": 271,
+"p": "https://p.scdn.co/mp3-preview/675b50a57359ee37d04cd2a64fb840d0dd482de7",
+"g": "sp"
+},
+{
+"a": "Cannibal Corpse",
+"t": "Gallery of Suicide",
+"s": 235,
+"p": "https://p.scdn.co/mp3-preview/b5ce4bec450e2267aacaac0bee6446447032c0d1",
+"g": "sp"
+},
+{
+"a": "Cannibal Corpse",
+"t": "Hammer Smashed Face",
+"s": 243,
+"dz": 70877831,
+"p": "https://p.scdn.co/mp3-preview/6dc950217cc11f1f1422d074185d8b7d7e9f694c",
+"g": "sp"
+},
+{
+"a": "Cannibal Corpse",
+"t": "Make Them Suffer",
+"s": 171,
+"dz": 70893102,
+"p": "https://p.scdn.co/mp3-preview/b606295b004ccc736a69b5fd2c85158567a03203",
+"g": "sp"
+},
+{
+"a": "Cannibal Corpse",
+"t": "Unite the Dead",
+"s": 185,
+"dz": 70877749,
+"p": "https://p.scdn.co/mp3-preview/11128442cd5f532cada43e51292623d3bfbc21e7",
+"g": "sp"
+},
+{
+"a": "Carach Angren",
+"t": "Franckensteina Strataemontanus",
+"s": 183,
+"dz": 882614762,
+"g": "mix"
+},
+{
+"a": "Carach Angren",
+"t": "Little Hector, What Have You Done?",
+"s": 295,
+"dz": 62667198,
+"g": "mix"
+},
+{
+"a": "Carnifex",
+"t": "Dark Days",
+"s": 215,
+"dz": 659923782,
+"p": "https://p.scdn.co/mp3-preview/03e9db636dc0d426220676fee9b034ec2182297b",
+"g": "sp"
+},
+{
+"a": "Carnifex",
+"t": "Lie To My Face",
+"s": 181,
+"dz": 2588259,
+"g": "mix"
+},
+{
+"a": "Carnophage",
+"t": "Anomalistic Resurrection",
+"s": 262,
+"p": "https://p.scdn.co/mp3-preview/85771b56616f2b72c448ae377b7215bd2d47039f",
+"g": "sp"
+},
+{
+"a": "Carnophage",
+"t": "Bone Nails",
+"s": 185,
+"dz": 419892722,
+"p": "https://p.scdn.co/mp3-preview/379cc4c300f9dfe9b56f6b58b5b74e72326e5d4c",
+"g": "sp"
+},
+{
+"a": "Carnophage",
+"t": "Clandestine Depravity",
+"s": 259,
+"dz": 419892772,
+"p": "https://p.scdn.co/mp3-preview/41c03d84bf5c9317f763c69372136facf8777a90",
+"g": "sp"
+},
+{
+"a": "Carnophage",
+"t": "Deformed Future/Genetic Nightmare",
+"s": 289,
+"dz": 419892712,
+"p": "https://p.scdn.co/mp3-preview/1cd9bca0e144dc2f6b7dbb77a77a4c83ccee38b3",
+"g": "sp"
+},
+{
+"a": "Carnosus",
+"t": "Deceptive Authority",
+"s": 246,
+"dz": 902683722,
+"g": "mix"
+},
+{
+"a": "Carnosus",
+"t": "Fermenting Blastospheres of Future Putridity",
+"s": 229,
+"dz": 1917307547,
+"g": "mix"
+},
+{
+"a": "Carnosus",
+"t": "In Debt to Oblivion",
+"s": 209,
+"dz": 1917307557,
+"g": "mix"
+},
+{
+"a": "Carpathian Forest",
+"t": "A Forest",
+"s": 357,
+"dz": 1967435,
+"g": "mix"
+},
+{
+"a": "Catafalque",
+"t": "Bloodia (A Raven in the Night)",
+"s": 394,
+"dz": 1379247552,
+"g": "mix"
+},
+{
+"a": "Catafalque",
+"t": "Dreamweaver",
+"s": 253,
+"dz": 1379247532,
+"g": "mix"
+},
+{
+"a": "Cataract",
+"t": "Denial Of Life",
+"s": 294,
+"dz": 70877396,
+"g": "mix"
+},
+{
+"a": "Cataract",
+"t": "Nothing's Left",
+"s": 191,
+"dz": 70876145,
+"g": "mix"
+},
+{
+"a": "Cattle Decapitation",
+"t": "Forced Gender Reassignment",
+"s": 233,
+"dz": 72927650,
+"g": "mix"
+},
+{
+"a": "Cavalera Conspiracy",
+"t": "Inflikted",
+"s": 272,
+"dz": 977799,
+"p": "https://p.scdn.co/mp3-preview/f1e89875c40fa4f8346ae42c8c6afcd19dfb6c0a",
+"g": "sp"
+},
+{
+"a": "Celldweller",
+"t": "Switchback",
+"s": 302,
+"dz": 2485676291,
+"g": "mix"
+},
+{
+"a": "Celtic Frost",
+"t": "A Dying God Coming into Human Flesh",
+"s": 339,
+"dz": 108548140,
+"g": "mix"
+},
+{
+"a": "Cem Karaca",
+"t": "Tamirci Çırağı",
+"s": 296,
+"dz": 67821030,
+"g": "mix"
+},
+{
+"a": "Cemetary",
+"t": "Sweet Tragedy",
+"s": 196,
+"dz": 580288982,
+"g": "mix"
+},
+{
+"a": "Cenotaph",
+"t": "Rancid Gluttonous Morbid Obesity",
+"s": 221,
+"dz": 370306881,
+"g": "mix"
+},
+{
+"a": "Cephalic Carnage",
+"t": "Ohrwurm",
+"s": 296,
+"dz": 11107138,
+"p": "https://p.scdn.co/mp3-preview/77b41a2e76cf27eba46e91d2a73d01a83c5cadbc",
+"g": "sp"
+},
+{
+"a": "Ceremonial Oath",
+"t": "Dreamsong",
+"s": 224,
+"dz": 114838410,
+"g": "mix"
+},
+{
+"a": "Charon",
+"t": "Craving",
+"s": 267,
+"dz": 2075720407,
+"g": "mix"
+},
+{
+"a": "Charon",
+"t": "Little Angel",
+"s": 212,
+"dz": 2075720417,
+"g": "mix"
+},
+{
+"a": "Chelsea Grin",
+"t": "Playing With Fire",
+"s": 236,
+"dz": 1582598332,
+"g": "mix"
+},
+{
+"a": "Chelsea Wolfe",
+"t": "16 Psyche",
+"s": 259,
+"dz": 3324952971,
+"g": "mix"
+},
+{
+"a": "Chelsea Wolfe",
+"t": "Grey Days",
+"s": 320,
+"dz": 3325444551,
+"g": "mix"
+},
+{
+"a": "Chino Moreno",
+"t": "Brief Exchange - from DC's Dark Nights: Metal Soundtrack",
+"s": 288,
+"dz": 505113872,
+"g": "mix"
+},
+{
+"a": "Chris Isaak",
+"t": "Blue Hotel",
+"s": 192,
+"dz": 4124329711,
+"g": "mix"
+},
+{
+"a": "Chris Isaak",
+"t": "The Lonely Ones",
+"s": 195,
+"dz": 4125436471,
+"g": "mix"
+},
+{
+"a": "Chris Isaak",
+"t": "Wicked Game",
+"s": 352,
+"dz": 83518874,
+"g": "mix"
+},
+{
+"a": "Chroma Key",
+"t": "Undertow",
+"s": 289,
+"dz": 68656588,
+"g": "mix"
+},
+{
+"a": "Cinderella",
+"t": "Somebody Save Me",
+"s": 194,
+"dz": 1157038,
+"g": "mix"
+},
+{
+"a": "Coil",
+"t": "Ostia (The Death of Pasolini)",
+"s": 383,
+"dz": 1072785102,
+"g": "mix"
+},
+{
+"a": "Coil",
+"t": "Tattooed Man - Remastered",
+"s": 393,
+"dz": 2002370527,
+"g": "mix"
+},
+{
+"a": "Colter Wall",
+"t": "Nothin'",
+"s": 203,
+"dz": 2416573225,
+"g": "mix"
+},
+{
+"a": "Converge",
+"t": "The Dusk in Us",
+"s": 443,
+"dz": 421783042,
+"g": "mix"
+},
+{
+"a": "Craft",
+"t": "Fuck the Universe",
+"s": 299,
+"dz": 479561932,
+"g": "mix"
+},
+{
+"a": "Craft",
+"t": "Void",
+"s": 510,
+"dz": 479445602,
+"p": "https://p.scdn.co/mp3-preview/b735d958cf8f0b86b5e42edc18cd1699661fb9a5",
+"g": "sp"
+},
+{
+"a": "Creed",
+"t": "My Sacrifice",
+"s": 294,
+"dz": 80274650,
+"g": "mix"
+},
+{
+"a": "Crimson Glory",
+"t": "Lost Reflection",
+"s": 290,
+"dz": 25998821,
+"g": "mix"
+},
+{
+"a": "Crippled Black Phoenix",
+"t": "We Forgotten Who We Are",
+"s": 647,
+"dz": 103622270,
+"g": "mix"
+},
+{
+"a": "Cryptopsy",
+"t": "Slit Your Guts",
+"s": 242,
+"dz": 76075407,
+"p": "https://p.scdn.co/mp3-preview/719786f5edfb0b7f0f577e4232998ef54aff83eb",
+"g": "sp"
+},
+{
+"a": "Cryptopsy",
+"t": "The Pestilence That Walketh In Darkness (Psalm 91: 5-8)",
+"s": 206,
+"dz": 108563258,
+"p": "https://p.scdn.co/mp3-preview/fa4c858f5aa4bd3e251c161aedd9221b31cd0d43",
+"g": "sp"
+},
+{
+"a": "Cryptopsy",
+"t": "Two-Pound Torch",
+"s": 304,
+"dz": 60961801,
+"p": "https://p.scdn.co/mp3-preview/f08007cc30e096c3d88a465130ddb8eb805cc9d2",
+"g": "sp"
+},
+{
+"a": "Cult Of Fire",
+"t": "Kali Ma",
+"s": 367,
+"dz": 589221462,
+"g": "mix"
+},
+{
+"a": "Cult Of Luna",
+"t": "A Greater Call",
+"s": 499,
+"dz": 2829260562,
+"g": "mix"
+},
+{
+"a": "Cynic",
+"t": "Integral Birth",
+"s": 232,
+"dz": 61632560,
+"g": "mix"
+},
+{
+"a": "Dan Swanö",
+"t": "Uncreation",
+"s": 340,
+"dz": 3703048192,
+"g": "mix"
+},
+{
+"a": "Dark Angel",
+"t": "Death is Certain (Life is Not)",
+"s": 255,
+"dz": 102045459,
+"g": "mix"
+},
+{
+"a": "Dark Fortress",
+"t": "Ylem",
+"s": 393,
+"dz": 111863576,
+"g": "mix"
+},
+{
+"a": "Dark Funeral",
+"t": "As One We Shall Conquer",
+"s": 284,
+"dz": 125972365,
+"g": "mix"
+},
+{
+"a": "Dark Funeral",
+"t": "Let the Devil In",
+"s": 280,
+"dz": 1584673752,
+"g": "mix"
+},
+{
+"a": "Dark Funeral",
+"t": "My Funeral",
+"s": 333,
+"dz": 108562478,
+"g": "mix"
+},
+{
+"a": "Dark Funeral",
+"t": "Nail Them to the Cross",
+"s": 283,
+"dz": 125972385,
+"p": "https://p.scdn.co/mp3-preview/284951a8003dae990138d30305114fc414296934",
+"g": "sp"
+},
+{
+"a": "Dark Funeral",
+"t": "Unchain My Soul",
+"s": 322,
+"dz": 125972361,
+"g": "mix"
+},
+{
+"a": "Dark Stares",
+"t": "Pedal Pusher",
+"s": 205,
+"dz": 1849013137,
+"g": "mix"
+},
+{
+"a": "Darkher",
+"t": "Hollow Veil",
+"s": 328,
+"dz": 1977823257,
+"g": "mix"
+},
+{
+"a": "Darkthrone",
+"t": "Quintessence",
+"s": 456,
+"dz": 138799779,
+"g": "mix"
+},
+{
+"a": "David Bowie",
+"t": "Lazarus",
+"s": 384,
+"dz": 2182347897,
+"g": "mix"
+},
+{
+"a": "David Bowie",
+"t": "Space Oddity - 2015 Remaster",
+"s": 318,
+"dz": 107465566,
+"g": "mix"
+},
+{
+"a": "Daylight Dies",
+"t": "A Life Less Lived",
+"s": 503,
+"dz": 2074831957,
+"g": "mix"
+},
+{
+"a": "Daylight Dies",
+"t": "Dismantling Devotion",
+"s": 419,
+"dz": 2074832027,
+"g": "mix"
+},
+{
+"a": "Dead Can Dance",
+"t": "Opium",
+"s": 344,
+"dz": 3502847731,
+"g": "mix"
+},
+{
+"a": "Dead Congregation",
+"t": "Only Ashes Remain",
+"s": 313,
+"dz": 1696497987,
+"g": "mix"
+},
+{
+"a": "Death Angel",
+"t": "The Moth",
+"s": 278,
+"dz": 660091832,
+"g": "mix"
+},
+{
+"a": "Death Angel",
+"t": "Volcanic",
+"s": 214,
+"dz": 651499562,
+"g": "mix"
+},
+{
+"a": "Death From Above 1979",
+"t": "Dead Womb",
+"s": 126,
+"dz": 559247042,
+"g": "mix"
+},
+{
+"a": "Decimation",
+"t": "Entering The Celestial Ruins",
+"s": 162,
+"dz": 546530752,
+"g": "mix"
+},
+{
+"a": "Decrepit Birth",
+"t": "The Living Doorway",
+"s": 263,
+"dz": 419894372,
+"p": "https://p.scdn.co/mp3-preview/9206327d670ffeffea4441c3009f9ab3b06d61d3",
+"g": "sp"
+},
+{
+"a": "Defeated Sanity",
+"t": "Naraka",
+"s": 307,
+"dz": 63433061,
+"g": "mix"
+},
+{
+"a": "Dehumanized",
+"t": "Bloodties",
+"s": 256,
+"dz": 3067295101,
+"p": "https://p.scdn.co/mp3-preview/3ab62a4da127f47a9b80e5e02c4922e6fb565369",
+"g": "sp"
+},
+{
+"a": "Deicide",
+"t": "Fuck Your God",
+"s": 212,
+"dz": 40582451,
+"p": "https://p.scdn.co/mp3-preview/47437088b21e480e34ebc03c6cfcbb494c4b6b15",
+"g": "sp"
+},
+{
+"a": "Deicide",
+"t": "Scars Of The Crucifix",
+"s": 188,
+"dz": 40582421,
+"p": "https://p.scdn.co/mp3-preview/ba3051ac5b75fcc4e857d1909001d5809cbc73d2",
+"g": "sp"
+},
+{
+"a": "Dejavu",
+"t": "Kendin Coş",
+"s": 235,
+"dz": 1924252907,
+"g": "mix"
+},
+{
+"a": "Dekapitator",
+"t": "The Storm Before the Calm",
+"s": 399,
+"dz": 11472851,
+"g": "mix"
+},
+{
+"a": "Demilich",
+"t": "When the Sun Drank the Weight of Water",
+"s": 223,
+"dz": 3614933802,
+"g": "mix"
+},
+{
+"a": "Demolition Hammer",
+"t": "Human Dissection",
+"s": 307,
+"dz": 111894118,
+"g": "mix"
+},
+{
+"a": "Depeche Mode",
+"t": "Personal Jesus",
+"s": 224,
+"dz": 446327552,
+"g": "mix"
+},
+{
+"a": "Der Weg einer Freiheit",
+"t": "Monument",
+"s": 405,
+"dz": 1408422112,
+"g": "mix"
+},
+{
+"a": "dEUS",
+"t": "Bad Timing",
+"s": 428,
+"dz": 88818703,
+"g": "mix"
+},
+{
+"a": "Devin Townsend",
+"t": "Mountaintop",
+"s": 333,
+"dz": 78378990,
+"g": "mix"
+},
+{
+"a": "Devin Townsend Project",
+"t": "Deadhead - Live",
+"s": 469,
+"dz": 112660630,
+"g": "mix"
+},
+{
+"a": "Diabolical Masquerade",
+"t": "Rider On The Bonez",
+"s": 357,
+"dz": 1953900,
+"g": "mix"
+},
+{
+"a": "Diary Of Dreams",
+"t": "King of Nowhere",
+"s": 313,
+"dz": 61906497,
+"g": "mix"
+},
+{
+"a": "Disentomb",
+"t": "Broken Under Your Symbol of Atonement",
+"s": 291,
+"dz": 1182377492,
+"g": "mix"
+},
+{
+"a": "Dr. Skull",
+"t": "Rules for the Fools",
+"s": 337,
+"dz": 614887892,
+"g": "mix"
+},
+{
+"a": "DragonForce",
+"t": "Through The Fire And Flames",
+"s": 439,
+"dz": 2213095667,
+"g": "mix"
+},
+{
+"a": "Drudkh",
+"t": "Furrows of Gods",
+"s": 537,
+"dz": 62665990,
+"p": "https://p.scdn.co/mp3-preview/ebeeb19c0b0ac1339115f0cacf036a65c8b54b65",
+"g": "sp"
+},
+{
+"a": "Duman",
+"t": "En Güzel Günüm Gecem",
+"s": 220,
+"dz": 531223601,
+"g": "mix"
+},
+{
+"a": "Duman",
+"t": "Haberin Yok Ölüyorum",
+"s": 361,
+"dz": 531239241,
+"g": "mix"
+},
+{
+"a": "Dvne",
+"t": "Abode of the Perfect Soul",
+"s": 448,
+"dz": 2617545292,
+"g": "mix"
+},
+{
+"a": "Dvne",
+"t": "Cobalt Sun Necropolis",
+"s": 597,
+"dz": 2617545312,
+"g": "mix"
+},
+{
+"a": "Dying Fetus",
+"t": "Subjected to a Beating",
+"s": 293,
+"dz": 33698671,
+"p": "https://p.scdn.co/mp3-preview/73a132817f591d5b7f80aa5fb0af7f27bb94c1fb",
+"g": "sp"
+},
+{
+"a": "Dyscarnate",
+"t": "Those Who Trespass Against us",
+"s": 229,
+"dz": 408106492,
+"p": "https://p.scdn.co/mp3-preview/ab03014eec936b67a95d8b3eaed763dbef9f7b83",
+"g": "sp"
+},
+{
+"a": "Dååth",
+"t": "Day of Endless Light",
+"s": 253,
+"dz": 2234857117,
+"g": "mix"
+},
+{
+"a": "Dååth",
+"t": "Dead on the Dance Floor",
+"s": 235,
+"dz": 660665,
+"g": "mix"
+},
+{
+"a": "Edge Of Sanity",
+"t": "Crimson, Pt. 1",
+"s": 294,
+"dz": 3221270561,
+"g": "mix"
+},
+{
+"a": "Edge Of Sanity",
+"t": "Darkday - Remaster 2024",
+"s": 267,
+"dz": 3018147561,
+"g": "mix"
+},
+{
+"a": "Edge Of Sanity",
+"t": "Jesus Cries - Remix 2024",
+"s": 297,
+"dz": 3018146151,
+"g": "mix"
+},
+{
+"a": "Ektomorf",
+"t": "Outcast",
+"s": 247,
+"dz": 90595637,
+"g": "mix"
+},
+{
+"a": "Electric Wizard",
+"t": "Funeralopolis - 2004 Remaster",
+"s": 523,
+"dz": 689145272,
+"g": "mix"
+},
+{
+"a": "Ellende",
+"t": "Zwischen Sommer Und Herbst",
+"s": 491,
+"dz": 3660707932,
+"g": "mix"
+},
+{
+"a": "Eluveitie",
+"t": "Inis Mona",
+"s": 249,
+"dz": 668783122,
+"g": "mix"
+},
+{
+"a": "Emilie Autumn",
+"t": "God Help Me",
+"s": 358,
+"dz": 75231428,
+"g": "mix"
+},
+{
+"a": "Emma Ruth Rundle",
+"t": "Darkhorse",
+"s": 372,
+"dz": 3325289091,
+"g": "mix"
+},
+{
+"a": "Emmure",
+"t": "Nemesis",
+"s": 172,
+"dz": 1286099992,
+"g": "mix"
+},
+{
+"a": "Emmure",
+"t": "Protoman",
+"s": 197,
+"dz": 1286025412,
+"g": "mix"
+},
+{
+"a": "Empyrium",
+"t": "Autumn Grey Views",
+"s": 235,
+"dz": 1978646977,
+"g": "mix"
+},
+{
+"a": "Empyrium",
+"t": "Lover's Grief",
+"s": 552,
+"dz": 1978647127,
+"g": "mix"
+},
+{
+"a": "Empyrium",
+"t": "Mourners",
+"s": 557,
+"dz": 1978647107,
+"g": "mix"
+},
+{
+"a": "Empyrium",
+"t": "The Days Before the Fall",
+"s": 338,
+"dz": 1977985777,
+"g": "mix"
+},
+{
+"a": "Enforced",
+"t": "Kill Grid",
+"s": 428,
+"dz": 1173287722,
+"g": "mix"
+},
+{
+"a": "Ensiferum",
+"t": "One Man Army",
+"s": 265,
+"dz": 95945146,
+"g": "mix"
+},
+{
+"a": "Entombed",
+"t": "Left Hand Path",
+"s": 399,
+"dz": 73067709,
+"g": "mix"
+},
+{
+"a": "Entwine",
+"t": "Grace",
+"s": 292,
+"dz": 2137348867,
+"g": "mix"
+},
+{
+"a": "Entwine",
+"t": "Safe In A Dream",
+"s": 358,
+"dz": 2137794937,
+"g": "mix"
+},
+{
+"a": "Epica",
+"t": "Cry for the Moon (The Embrace That Smothers , Pt. 4)",
+"s": 406,
+"dz": 1597804992,
+"g": "mix"
+},
+{
+"a": "Eths",
+"t": "Adonaï",
+"s": 240,
+"dz": 139856215,
+"g": "mix"
+},
+{
+"a": "Eths",
+"t": "Crucifère",
+"s": 215,
+"dz": 66712145,
+"g": "mix"
+},
+{
+"a": "Eths",
+"t": "Détruis-moi",
+"s": 217,
+"dz": 66712146,
+"g": "mix"
+},
+{
+"a": "Eths",
+"t": "Inanis Venter",
+"s": 265,
+"dz": 62666861,
+"g": "mix"
+},
+{
+"a": "Evanescence",
+"t": "Bring Me To Life",
+"s": 235,
+"dz": 80274512,
+"g": "mix"
+},
+{
+"a": "Evereve",
+"t": "On Lucid Wings",
+"s": 255,
+"dz": 622118232,
+"g": "mix"
+},
+{
+"a": "Exumer",
+"t": "Possessed by Fire",
+"s": 300,
+"dz": 719401882,
+"g": "mix"
+},
+{
+"a": "Eye of the Enemy",
+"t": "The Shift",
+"s": 370,
+"dz": 2439085545,
+"g": "mix"
+},
+{
+"a": "Faetooth",
+"t": "Echolalia",
+"s": 306,
+"dz": 3890381441,
+"g": "mix"
+},
+{
+"a": "Faithless",
+"t": "Insomnia",
+"s": 526,
+"dz": 15641322,
+"g": "mix"
+},
+{
+"a": "Fallujah",
+"t": "Amber Gaze",
+"s": 273,
+"dz": 660108692,
+"g": "mix"
+},
+{
+"a": "Fallujah",
+"t": "Carved from Stone",
+"s": 263,
+"dz": 419946792,
+"p": "https://p.scdn.co/mp3-preview/b42cb5f64b2b3a2695cab9594948430e3f314a82",
+"g": "sp"
+},
+{
+"a": "First Fragment",
+"t": "L Entité",
+"s": 330,
+"dz": 419947012,
+"g": "mix"
+},
+{
+"a": "Firtan",
+"t": "Contra Vermes",
+"s": 267,
+"dz": 2851266442,
+"g": "mix"
+},
+{
+"a": "Firtan",
+"t": "Zores",
+"s": 339,
+"dz": 2851266432,
+"g": "mix"
+},
+{
+"a": "Fit For An Autopsy",
+"t": "Absolute Hope Absolute Hell",
+"s": 267,
+"dz": 106206730,
+"g": "mix"
+},
+{
+"a": "Fleshgod Apocalypse",
+"t": "Thru Our Scars",
+"s": 331,
+"dz": 6227961,
+"p": "https://p.scdn.co/mp3-preview/4b594416f20e86ec2d073f40cd7cf08208eed9d4",
+"g": "sp"
+},
+{
+"a": "Fleurety",
+"t": "Fragmenter Av En Fortid - Remastered",
+"s": 572,
+"dz": 612567182,
+"g": "mix"
+},
+{
+"a": "Flotsam & Jetsam",
+"t": "Iron Tears",
+"s": 232,
+"dz": 70879687,
+"g": "mix"
+},
+{
+"a": "Flotsam & Jetsam",
+"t": "Seventh Seal",
+"s": 350,
+"dz": 129820018,
+"g": "mix"
+},
+{
+"a": "For Against",
+"t": "Fate",
+"s": 242,
+"dz": 10973711,
+"g": "mix"
+},
+{
+"a": "Forest of Shadows",
+"t": "Eternal Autumn",
+"s": 564,
+"dz": 14585167,
+"g": "mix"
+},
+{
+"a": "Forgotten Tomb",
+"t": "Springtime Depression",
+"s": 286,
+"dz": 1581923192,
+"g": "mix"
+},
+{
+"a": "Frank Carter & The Rattlesnakes",
+"t": "I Hate You",
+"s": 288,
+"dz": 2024191997,
+"g": "mix"
+},
+{
+"a": "fromjoy",
+"t": "Icarus",
+"s": 219,
+"dz": 2100687377,
+"g": "mix"
+},
+{
+"a": "Funeral Mist",
+"t": "Twilight of the Flesh",
+"s": 578,
+"dz": 1550286022,
+"g": "mix"
+},
+{
+"a": "Furtherial",
+"t": "Beneath the Stars",
+"s": 442,
+"dz": 746886252,
+"g": "mix"
+},
+{
+"a": "Gaerea",
+"t": "Deluge",
+"s": 391,
+"dz": 1713090327,
+"g": "mix"
+},
+{
+"a": "Gaerea",
+"t": "Unknown",
+"s": 264,
+"dz": 2845949432,
+"g": "mix"
+},
+{
+"a": "Gaerea",
+"t": "World Ablaze",
+"s": 209,
+"dz": 2754785611,
+"g": "mix"
+},
+{
+"a": "Gandalf",
+"t": "Hang On To A Dream",
+"s": 252,
+"dz": 17774893,
+"g": "mix"
+},
+{
+"a": "Gazpacho",
+"t": "Dream of Stone",
+"s": 1020,
+"dz": 9575485,
+"g": "mix"
+},
+{
+"a": "Gealdýr",
+"t": "Yggdrasill",
+"s": 276,
+"dz": 1580647012,
+"g": "mix"
+},
+{
+"a": "Gehenna",
+"t": "Angelwings and Ravenclaws, Pt. 2",
+"s": 161,
+"dz": 2831163702,
+"g": "mix"
+},
+{
+"a": "Gehenna",
+"t": "The Shivering Voice of the Ghost",
+"s": 364,
+"dz": 2831163582,
+"g": "mix"
+},
+{
+"a": "Geometric Vision",
+"t": "Stranger",
+"s": 183,
+"dz": 2517352571,
+"g": "mix"
+},
+{
+"a": "Ghost Brigade",
+"t": "Elämä on Tulta",
+"s": 445,
+"dz": 89416225,
+"g": "mix"
+},
+{
+"a": "Giant Squid",
+"t": "Minoans",
+"s": 507,
+"dz": 88223193,
+"g": "mix"
+},
+{
+"a": "Goatwhore",
+"t": "Apocalyptic Havoc",
+"s": 196,
+"dz": 70879235,
+"p": "https://p.scdn.co/mp3-preview/f8b9e5bc528ebd32dac5e37cdf9851a91550f834",
+"g": "sp"
+},
+{
+"a": "God Dethroned",
+"t": "Hating Life",
+"s": 249,
+"dz": 70893507,
+"p": "https://p.scdn.co/mp3-preview/3c97fa6340cafdf4ecff4ec3933ca5b43146d19b",
+"g": "sp"
+},
+{
+"a": "God Is An Astronaut",
+"t": "Echoes",
+"s": 306,
+"dz": 22346901,
+"g": "mix"
+},
+{
+"a": "God Is An Astronaut",
+"t": "The End of the Beginning",
+"s": 257,
+"dz": 22347561,
+"g": "mix"
+},
+{
+"a": "God Seed",
+"t": "Alt liv",
+"s": 248,
+"dz": 2832135922,
+"p": "https://p.scdn.co/mp3-preview/39a0b020b3bca9ef99c61c6134915e4550b0848d",
+"g": "sp"
+},
+{
+"a": "God Seed",
+"t": "Sign of an Open Eye (Live)",
+"s": 256,
+"dz": 2828072832,
+"g": "mix"
+},
+{
+"a": "Godsmack",
+"t": "Hollow",
+"s": 272,
+"dz": 1573798,
+"g": "mix"
+},
+{
+"a": "Gorefest",
+"t": "Erase",
+"s": 351,
+"dz": 668824872,
+"p": "https://p.scdn.co/mp3-preview/0f5c42fd54f5f571b959e4b107bb23caf1f5fea1",
+"g": "sp"
+},
+{
+"a": "Gorgoroth",
+"t": "Radix Malorum",
+"s": 193,
+"dz": 581149342,
+"g": "mix"
+},
+{
+"a": "Gorgoroth",
+"t": "Rebirth",
+"s": 394,
+"dz": 581151322,
+"p": "https://p.scdn.co/mp3-preview/720174eb3abca9875a720becc7218497f7cbb1e7",
+"g": "sp"
+},
+{
+"a": "Gorguts",
+"t": "Le Toit Du Monde",
+"s": 393,
+"dz": 69472228,
+"g": "mix"
+},
+{
+"a": "Gorod",
+"t": "Disavow Your God",
+"s": 291,
+"dz": 13466615,
+"g": "mix"
+},
+{
+"a": "Gorod",
+"t": "Goddess of Dirt",
+"s": 239,
+"dz": 536943402,
+"g": "mix"
+},
+{
+"a": "Graves of Valor",
+"t": "Bridles of Incitatus",
+"s": 206,
+"dz": 10889212,
+"p": "https://p.scdn.co/mp3-preview/a02d7df62c0c77a418c7239c1e7457753da9a591",
+"g": "sp"
+},
+{
+"a": "Graveworm",
+"t": "Dreaming into Reality",
+"s": 427,
+"dz": 668831472,
+"g": "mix"
+},
+{
+"a": "Graveworm",
+"t": "Scars of Sorrow",
+"s": 236,
+"dz": 651411112,
+"g": "mix"
+},
+{
+"a": "Great White",
+"t": "Love Is A Lie",
+"s": 495,
+"dz": 2158230917,
+"g": "mix"
+},
+{
+"a": "Grey Daze",
+"t": "She Shines",
+"s": 216,
+"dz": 998774012,
+"g": "mix"
+},
+{
+"a": "Grima",
+"t": "Enisey",
+"s": 272,
+"dz": 704057102,
+"g": "mix"
+},
+{
+"a": "Groza",
+"t": "Elegance of Irony",
+"s": 435,
+"dz": 1365621872,
+"g": "mix"
+},
+{
+"a": "Gruzja",
+"t": "Coś Więcej",
+"s": 225,
+"dz": 1607754062,
+"g": "mix"
+},
+{
+"a": "Gruzja",
+"t": "Królowie zwierząt",
+"s": 235,
+"dz": 865586552,
+"g": "mix"
+},
+{
+"a": "Guns N' Roses",
+"t": "Don't Cry (Original)",
+"s": 282,
+"dz": 1169677,
+"g": "mix"
+},
+{
+"a": "Guns N' Roses",
+"t": "Welcome To The Jungle",
+"s": 271,
+"dz": 518457252,
+"g": "mix"
+},
+{
+"a": "Hangman's Chair",
+"t": "Naïve",
+"s": 233,
+"dz": 1028121432,
+"g": "mix"
+},
+{
+"a": "Hannes Grossmann",
+"t": "To Sow the Seeds of Earth",
+"s": 265,
+"dz": 131824522,
+"g": "mix"
+},
+{
+"a": "Hante.",
+"t": "Lies//Light",
+"s": 221,
+"dz": 3581328801,
+"g": "mix"
+},
+{
+"a": "Harakiri for the Sky",
+"t": "Fire, Walk with Me",
+"s": 548,
+"dz": 416646632,
+"g": "mix"
+},
+{
+"a": "Harakiri for the Sky",
+"t": "Street Spirit (Fade Out)",
+"s": 334,
+"dz": 3012621291,
+"g": "mix"
+},
+{
+"a": "Hardal",
+"t": "Leyla",
+"s": 366,
+"dz": 2195056507,
+"g": "mix"
+},
+{
+"a": "Hatebreed",
+"t": "Destroy Everything",
+"s": 209,
+"dz": 660685,
+"g": "mix"
+},
+{
+"a": "Hatebreed",
+"t": "I Will Be Heard",
+"s": 178,
+"dz": 2952094,
+"g": "mix"
+},
+{
+"a": "Hatesphere",
+"t": "500 Dead People",
+"s": 313,
+"dz": 3240428931,
+"g": "mix"
+},
+{
+"a": "Have A Nice Life",
+"t": "Bloodhail",
+"s": 338,
+"dz": 132679452,
+"g": "mix"
+},
+{
+"a": "Hayko Cepkin",
+"t": "Son Kez",
+"s": 288,
+"dz": 3482338,
+"g": "mix"
+},
+{
+"a": "Hayko Cepkin",
+"t": "Sıkı Tutun",
+"s": 222,
+"dz": 3482502,
+"g": "mix"
+},
+{
+"a": "Hayko Cepkin",
+"t": "Yarası Saklı",
+"s": 267,
+"dz": 3482336,
+"g": "mix"
+},
+{
+"a": "Hayko Cepkin",
+"t": "Yol Gözümü Dağlıyor",
+"s": 273,
+"dz": 5420395,
+"g": "mix"
+},
+{
+"a": "Hayko Cepkin",
+"t": "Ölüyorum",
+"s": 221,
+"dz": 3482505,
+"g": "mix"
+},
+{
+"a": "HECK",
+"t": "The Great Hardcore Swindle",
+"s": 234,
+"dz": 134770632,
+"g": "mix"
+},
+{
+"a": "Heilung",
+"t": "Krigsgaldr",
+"s": 538,
+"dz": 448592702,
+"g": "mix"
+},
+{
+"a": "HELLSODOMY",
+"t": "Total Disgust",
+"s": 329,
+"dz": 388640551,
+"g": "mix"
+},
+{
+"a": "Hidria Spacefolk",
+"t": "Amos Ame",
+"s": 570,
+"dz": 7401319,
+"g": "mix"
+},
+{
+"a": "Holy Terror",
+"t": "Distant Calling",
+"s": 267,
+"dz": 3205328831,
+"g": "mix"
+},
+{
+"a": "Hoobastank",
+"t": "Out Of Control",
+"s": 163,
+"dz": 1017079392,
+"g": "mix"
+},
+{
+"a": "I Declare War",
+"t": "Quiet",
+"s": 219,
+"dz": 1762539317,
+"p": "https://p.scdn.co/mp3-preview/d0893c1b8a285dadeec3f73e6cee1e422b439376",
+"g": "sp"
+},
+{
+"a": "IDLES",
+"t": "Never Fight A Man With A Perm",
+"s": 228,
+"dz": 508124112,
+"g": "mix"
+},
+{
+"a": "If These Trees Could Talk",
+"t": "Malabar Front",
+"s": 485,
+"dz": 9394930,
+"g": "mix"
+},
+{
+"a": "If These Trees Could Talk",
+"t": "Solstice",
+"s": 469,
+"dz": 123219746,
+"g": "mix"
+},
+{
+"a": "Igorrr",
+"t": "Daemoni",
+"s": 249,
+"dz": 3293342581,
+"g": "mix"
+},
+{
+"a": "Immolation",
+"t": "Fostering the Divide",
+"s": 207,
+"dz": 661875222,
+"g": "mix"
+},
+{
+"a": "Immolation",
+"t": "The Age Of No Light",
+"s": 219,
+"dz": 1552116592,
+"g": "mix"
+},
+{
+"a": "Immortal",
+"t": "Tyrants",
+"s": 377,
+"dz": 668829792,
+"p": "https://p.scdn.co/mp3-preview/00450ba57e38bf13fdc24fd0d1c9bd4dd08eb42e",
+"g": "sp"
+},
+{
+"a": "Impaled Nazarene",
+"t": "Armageddon Death Squad",
+"s": 175,
+"dz": 213579,
+"g": "mix"
+},
+{
+"a": "Impending Doom",
+"t": "Murderer",
+"s": 262,
+"dz": 66021445,
+"g": "mix"
+},
+{
+"a": "In Death It Ends",
+"t": "We All Die",
+"s": 377,
+"dz": 480934632,
+"g": "mix"
+},
+{
+"a": "In Mourning",
+"t": "The Smoke",
+"s": 493,
+"dz": 1619112802,
+"g": "mix"
+},
+{
+"a": "Incantation",
+"t": "Impending Diabolical Conquest",
+"s": 313,
+"dz": 11136439,
+"g": "mix"
+},
+{
+"a": "Infected Mushroom",
+"t": "Pink Froid",
+"s": 460,
+"dz": 990141442,
+"g": "mix"
+},
+{
+"a": "Insomnium",
+"t": "Through The Shadow",
+"s": 272,
+"dz": 108572730,
+"g": "mix"
+},
+{
+"a": "Interment",
+"t": "Sinister Incantation",
+"s": 236,
+"dz": 119561980,
+"g": "mix"
+},
+{
+"a": "Internal Bleeding",
+"t": "Rage - Internal Bleeding",
+"s": 205,
+"dz": 1356434542,
+"p": "https://p.scdn.co/mp3-preview/ed01de97a9c21c3fc32d2c6c9ef34b5a031b2d59",
+"g": "sp"
+},
+{
+"a": "Intronaut",
+"t": "Cubensis",
+"s": 413,
+"dz": 811338742,
+"g": "mix"
+},
+{
+"a": "ISIS",
+"t": "Low Tide",
+"s": 569,
+"dz": 79736214,
+"g": "mix"
+},
+{
+"a": "Jay-Jay Johanson",
+"t": "So Tell The Girls That I Am Back In Town",
+"s": 292,
+"dz": 599403,
+"g": "mix"
+},
+{
+"a": "Jeff Buckley",
+"t": "Dream Brother",
+"s": 325,
+"dz": 108733472,
+"g": "mix"
+},
+{
+"a": "Jeff Buckley",
+"t": "Everybody Here Wants You",
+"s": 285,
+"dz": 733720842,
+"g": "mix"
+},
+{
+"a": "Jefferson Airplane",
+"t": "White Rabbit",
+"s": 150,
+"dz": 614593,
+"g": "mix"
+},
+{
+"a": "Jinjer",
+"t": "lainnereP",
+"s": 328,
+"dz": 728476332,
+"g": "mix"
+},
+{
+"a": "John Maus",
+"t": "And Heaven Turned To Her Weeping",
+"s": 325,
+"dz": 137869665,
+"g": "mix"
+},
+{
+"a": "John Maus",
+"t": "Just Wait Til Next Year",
+"s": 146,
+"dz": 137869649,
+"g": "mix"
+},
+{
+"a": "Johnny Cash",
+"t": "Thirteen",
+"s": 150,
+"dz": 65690358,
+"g": "mix"
+},
+{
+"a": "Joy Division",
+"t": "New Dawn Fades - 2007 Remaster",
+"s": 288,
+"dz": 741235392,
+"g": "mix"
+},
+{
+"a": "Joy Division",
+"t": "She's Lost Control - 2007 Remaster",
+"s": 237,
+"dz": 729546,
+"g": "mix"
+},
+{
+"a": "Jungle Rot",
+"t": "Atrocity",
+"s": 163,
+"dz": 1286072342,
+"p": "https://p.scdn.co/mp3-preview/b451eb17721d743ea6ede644610eb7f5208e579f",
+"g": "sp"
+},
+{
+"a": "Jungle Rot",
+"t": "Nerve Gas Catastrophe",
+"s": 148,
+"dz": 1286072322,
+"p": "https://p.scdn.co/mp3-preview/200d38ca1fa2a6753ef2e3af28840f61e969252c",
+"g": "sp"
+},
+{
+"a": "Jungle Rot",
+"t": "Two Faced Disgrace",
+"s": 181,
+"dz": 1286072092,
+"p": "https://p.scdn.co/mp3-preview/585d4cb9e69f4deb7cf4bbe27e06735be21d8cff",
+"g": "sp"
+},
+{
+"a": "Jungle Rot",
+"t": "Worst Case Scenario",
+"s": 244,
+"dz": 1286072042,
+"p": "https://p.scdn.co/mp3-preview/f82f7a1b87a9b92ba2c6b0ae7043c489e060a575",
+"g": "sp"
+},
+{
+"a": "Kafabindünya",
+"t": "Kapanis Konusmasi",
+"s": 294,
+"dz": 2048782317,
+"g": "mix"
+},
+{
+"a": "Kalmah",
+"t": "Heroes To Us",
+"s": 294,
+"dz": 2137727307,
+"g": "mix"
+},
+{
+"a": "Kalmah",
+"t": "One from the Stands",
+"s": 272,
+"dz": 2137869237,
+"g": "mix"
+},
+{
+"a": "Kamchatka",
+"t": "Cross the Distance",
+"s": 240,
+"dz": 1060708572,
+"g": "mix"
+},
+{
+"a": "Kamelot",
+"t": "When the Lights Are Down",
+"s": 221,
+"dz": 118695040,
+"g": "mix"
+},
+{
+"a": "Kaptan Kadavra",
+"t": "Otofaji",
+"s": 241,
+"dz": 2068390497,
+"g": "mix"
+},
+{
+"a": "Kaptan Kadavra",
+"t": "Sinapslarım Darmadağın",
+"s": 242,
+"dz": 2068390567,
+"g": "mix"
+},
+{
+"a": "Kaptan Kadavra",
+"t": "Taht",
+"s": 214,
+"dz": 2872342302,
+"g": "mix"
+},
+{
+"a": "Karg",
+"t": "Petrichor",
+"s": 582,
+"dz": 547673062,
+"g": "mix"
+},
+{
+"a": "Kataklysm",
+"t": "Soul Destroyer",
+"s": 208,
+"dz": 660085882,
+"p": "https://p.scdn.co/mp3-preview/594496ec585ed222826a6ae4f7fba8867acf8ef5",
+"g": "sp"
+},
+{
+"a": "Katakomba",
+"t": "Worship Death",
+"s": 255,
+"dz": 1824309147,
+"g": "mix"
+},
+{
+"a": "Katalepsy",
+"t": "To the Lords of Nihil",
+"s": 228,
+"dz": 419900182,
+"p": "https://p.scdn.co/mp3-preview/aa1b062d10b766a1ea12b224b4db2b1a5b50a28c",
+"g": "sp"
+},
+{
+"a": "Katatonia",
+"t": "12",
+"s": 500,
+"dz": 1618368,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "A Darkness Coming",
+"s": 301,
+"dz": 2054529,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "A Premonition",
+"s": 213,
+"dz": 2072083,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Absconder",
+"s": 287,
+"dz": 1936882207,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Ambitions",
+"s": 306,
+"dz": 69227195,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "At Last",
+"s": 372,
+"dz": 1618384,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Atrium",
+"s": 248,
+"dz": 1936882187,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Austerity",
+"s": 221,
+"dz": 1936882107,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Author",
+"s": 257,
+"dz": 1936882157,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Behind the Blood",
+"s": 277,
+"dz": 851923792,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Birds",
+"s": 248,
+"dz": 1936882137,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Black Erotica",
+"s": 549,
+"dz": 69136355,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Black Session",
+"s": 421,
+"dz": 2054550,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Brave",
+"s": 618,
+"dz": 1618350,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Buildings",
+"s": 208,
+"dz": 69227193,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Burn The Remembrance",
+"s": 322,
+"dz": 2072097,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Chrome",
+"s": 314,
+"dz": 1543158,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "City Glaciers",
+"s": 330,
+"dz": 851923842,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Clean Today",
+"s": 263,
+"dz": 1543190,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Cold Ways",
+"s": 322,
+"dz": 1441659,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Colossal Shade",
+"s": 269,
+"dz": 1936882117,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Complicity",
+"s": 241,
+"dz": 2072125,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Consternation",
+"s": 230,
+"dz": 1601769,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Criminals",
+"s": 227,
+"dz": 2072078,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Crimson Tears (Epliogue)",
+"s": 116,
+"dz": 138790577,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Dancing December",
+"s": 140,
+"dz": 138790567,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Day",
+"s": 270,
+"dz": 1618358,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Day and Then the Shade",
+"s": 266,
+"dz": 138788515,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Dead Letters",
+"s": 289,
+"dz": 69227199,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Deadhouse",
+"s": 277,
+"dz": 1441632,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Decima",
+"s": 286,
+"dz": 120689238,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Deliberation",
+"s": 239,
+"dz": 1601762,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Departer",
+"s": 327,
+"dz": 138788517,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Departure Trails",
+"s": 301,
+"dz": 3267902541,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Displaced",
+"s": 316,
+"dz": 138790639,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Dispossession",
+"s": 336,
+"dz": 1543152,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Dissolving Bonds",
+"s": 222,
+"dz": 138790641,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Distrust",
+"s": 297,
+"dz": 1441750,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Don't Tell A Soul",
+"s": 342,
+"dz": 1543214,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Drab Moon",
+"s": 239,
+"dz": 1936882147,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Efter Solen",
+"s": 351,
+"dz": 3267902571,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Elohim Meth",
+"s": 102,
+"dz": 138790561,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Endtime",
+"s": 407,
+"dz": 1618375,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Epistel",
+"s": 75,
+"dz": 69136354,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Evidence",
+"s": 276,
+"dz": 2072132,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Fighters",
+"s": 217,
+"dz": 851923892,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "First Prayer",
+"s": 267,
+"dz": 69227198,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Flicker",
+"s": 284,
+"dz": 851923852,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Follower",
+"s": 285,
+"dz": 1601773,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "For Funerals to Come",
+"s": 169,
+"dz": 69136353,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "For My Demons",
+"s": 347,
+"dz": 2054445,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Forsaker",
+"s": 246,
+"dz": 138788497,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Fractured",
+"s": 352,
+"dz": 2054571,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Funeral Wedding",
+"s": 521,
+"dz": 69136351,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Gateways of Bereavement",
+"s": 495,
+"dz": 138790555,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Ghost Of The Sun",
+"s": 247,
+"dz": 2072065,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Gone",
+"s": 169,
+"dz": 1441671,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Had To (Leave)",
+"s": 363,
+"dz": 2054478,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Heart Set to Divide",
+"s": 329,
+"dz": 851923782,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Hypnone",
+"s": 246,
+"dz": 69227191,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "I Am Nothing",
+"s": 277,
+"dz": 2054455,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "I Break",
+"s": 264,
+"dz": 1441603,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "I Transpire",
+"s": 356,
+"dz": 1543176,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Idle Blood",
+"s": 262,
+"dz": 138788501,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Impermanence",
+"s": 312,
+"dz": 1936882167,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "In Death, A Song",
+"s": 291,
+"dz": 2054466,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "In Silence Enshrined",
+"s": 392,
+"dz": 138790557,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "In the Event of",
+"s": 293,
+"dz": 3267902581,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "In The White",
+"s": 293,
+"dz": 1601788,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Increase",
+"s": 260,
+"dz": 1601781,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Inheritance",
+"s": 268,
+"dz": 138788513,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Inside The City Of Glass",
+"s": 248,
+"dz": 2072144,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Inside The Fall",
+"s": 381,
+"dz": 1618388,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Instrumental",
+"s": 172,
+"dz": 1441733,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Journey Through Pressure",
+"s": 260,
+"dz": 1601795,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "July",
+"s": 285,
+"dz": 1601785,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Lachesis",
+"s": 114,
+"dz": 851923862,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Lacquer",
+"s": 282,
+"dz": 851923802,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Last Resort",
+"s": 277,
+"dz": 1441699,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Last Song Before the Fade",
+"s": 301,
+"dz": 120689246,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Leaders",
+"s": 260,
+"dz": 1601758,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Leech",
+"s": 263,
+"dz": 69227194,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Lethean",
+"s": 279,
+"dz": 69227197,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Liberation",
+"s": 256,
+"dz": 138788505,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Lilac",
+"s": 291,
+"dz": 3267902521,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Love of the Swan",
+"s": 411,
+"dz": 69136356,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Murder",
+"s": 296,
+"dz": 1618354,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "My Twin",
+"s": 221,
+"dz": 1601767,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Neon Epitaph",
+"s": 271,
+"dz": 851923872,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Nephilim",
+"s": 266,
+"dz": 138788509,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Nerve",
+"s": 272,
+"dz": 1441709,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "New Night",
+"s": 265,
+"dz": 138788511,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Nightmares By The Sea",
+"s": 255,
+"dz": 2054539,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "No Beacon to Illuminate Our Fall",
+"s": 368,
+"dz": 1936882197,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "No Devotion",
+"s": 288,
+"dz": 2054560,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "No Good Can Come Of This",
+"s": 264,
+"dz": 2054508,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Nowhere",
+"s": 368,
+"dz": 1618379,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Old Heart Falls",
+"s": 262,
+"dz": 120689236,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Omerta",
+"s": 178,
+"dz": 2072139,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "One Year From Now",
+"s": 242,
+"dz": 2072112,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Onward into Battle",
+"s": 229,
+"dz": 138788503,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Opaline",
+"s": 300,
+"dz": 1936882127,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Palace of Frost",
+"s": 222,
+"dz": 138790573,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Pale Flag",
+"s": 263,
+"dz": 120689252,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Passer",
+"s": 391,
+"dz": 120689254,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Passing Bird",
+"s": 218,
+"dz": 1543203,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Quiet World",
+"s": 279,
+"dz": 1441767,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Rainroom",
+"s": 393,
+"dz": 1618362,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Rein",
+"s": 260,
+"dz": 851923812,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Relention",
+"s": 219,
+"dz": 1441642,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Residual",
+"s": 414,
+"dz": 120689242,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Right Into The Bliss",
+"s": 304,
+"dz": 2054498,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Rusted",
+"s": 261,
+"dz": 1601777,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Sanction",
+"s": 306,
+"dz": 120689240,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Saw You Drown",
+"s": 304,
+"dz": 1441726,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Scarlet Heavens",
+"s": 626,
+"dz": 1441801,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Sclera",
+"s": 285,
+"dz": 1936882177,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Serac",
+"s": 445,
+"dz": 120689244,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Serein",
+"s": 286,
+"dz": 120689234,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Shades of Emerald Fields",
+"s": 323,
+"dz": 69136352,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Shifts",
+"s": 294,
+"dz": 120689248,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Sleeper",
+"s": 248,
+"dz": 2072072,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Soil's Song",
+"s": 252,
+"dz": 1601764,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Sold Heart",
+"s": 272,
+"dz": 5499472,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Stalemate",
+"s": 261,
+"dz": 1441616,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Strained",
+"s": 255,
+"dz": 2054518,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Sweet Nurse",
+"s": 237,
+"dz": 1543207,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Takeover",
+"s": 426,
+"dz": 120689232,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Teargas",
+"s": 203,
+"dz": 1543169,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Temporal",
+"s": 250,
+"dz": 3267902531,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "The Future Of Speech",
+"s": 340,
+"dz": 1543199,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "The Itch",
+"s": 260,
+"dz": 1601791,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "The Light Which I Bleed",
+"s": 236,
+"dz": 3267902561,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "The Liquid Eye",
+"s": 224,
+"dz": 3267902501,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "The Longest Year",
+"s": 277,
+"dz": 138788499,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "The Night Subscriber",
+"s": 370,
+"dz": 120689250,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "The Northern Silence",
+"s": 242,
+"dz": 138790575,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "The One You Are Looking for Is Not Here (with Silje Wergeland)",
+"s": 232,
+"dz": 69227190,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "The Parting",
+"s": 292,
+"dz": 69227189,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "The Promise of Deceit",
+"s": 255,
+"dz": 138788507,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "The Racing Heart",
+"s": 245,
+"dz": 69227192,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "The Winter of Our Passing",
+"s": 198,
+"dz": 851923822,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "This Punishment",
+"s": 166,
+"dz": 2054487,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Thrice",
+"s": 279,
+"dz": 3267902491,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Tomb of Insomnia",
+"s": 789,
+"dz": 138790565,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Tonight's Music",
+"s": 260,
+"dz": 1543184,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Undo You",
+"s": 295,
+"dz": 69227196,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Untrodden",
+"s": 269,
+"dz": 851923882,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Vanishers",
+"s": 296,
+"dz": 851923832,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Velvet Thorns (Of Drynwhyl)",
+"s": 837,
+"dz": 138790563,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Wait Outside",
+"s": 218,
+"dz": 82744818,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Walking By A Wire",
+"s": 212,
+"dz": 2072118,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Warden",
+"s": 258,
+"dz": 3267902551,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "We Must Bury You",
+"s": 170,
+"dz": 1543163,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Wealth",
+"s": 262,
+"dz": 2072105,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Will I Arrive",
+"s": 249,
+"dz": 2072089,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Wind of no Change",
+"s": 292,
+"dz": 3267902511,
+"g": "fav"
+},
+{
+"a": "Katatonia",
+"t": "Without God",
+"s": 408,
+"dz": 138790559,
+"g": "fav"
+},
+{
+"a": "Ketzer",
+"t": "The Fire to Conquer the World",
+"s": 327,
+"dz": 479613312,
+"g": "mix"
+},
+{
+"a": "Killing Joke",
+"t": "Euphoria",
+"s": 258,
+"dz": 2202121727,
+"g": "mix"
+},
+{
+"a": "Kingdom Come",
+"t": "Friends",
+"s": 277,
+"dz": 727884,
+"g": "mix"
+},
+{
+"a": "Kingston Wall",
+"t": "And It's All Happening",
+"s": 367,
+"dz": 1024345,
+"g": "mix"
+},
+{
+"a": "Kingston Wall",
+"t": "Shine On Me",
+"s": 425,
+"dz": 1024355,
+"g": "mix"
+},
+{
+"a": "Kix",
+"t": "Don't Close Your Eyes",
+"s": 253,
+"dz": 2593064,
+"g": "mix"
+},
+{
+"a": "Kramp",
+"t": "Gitme",
+"s": 247,
+"dz": 82065958,
+"g": "mix"
+},
+{
+"a": "Kramp",
+"t": "Tek Başına",
+"s": 277,
+"dz": 82065844,
+"g": "mix"
+},
+{
+"a": "Kriegsmaschine",
+"t": "Residual Blight",
+"s": 442,
+"dz": 654799982,
+"g": "mix"
+},
+{
+"a": "Krisiun",
+"t": "Scars of the Hatred",
+"s": 342,
+"dz": 111878672,
+"p": "https://p.scdn.co/mp3-preview/df9563ebb46ed746991ef3f3846363520972ea50",
+"g": "sp"
+},
+{
+"a": "Kurban",
+"t": "Yine",
+"s": 262,
+"dz": 68055490,
+"g": "mix"
+},
+{
+"a": "Kylesa",
+"t": "Unspoken",
+"s": 287,
+"dz": 66487234,
+"g": "mix"
+},
+{
+"a": "Lacuna Coil",
+"t": "Heaven's a Lie",
+"s": 286,
+"dz": 108573814,
+"g": "mix"
+},
+{
+"a": "Lebanon Hanover",
+"t": "Gallowdance",
+"s": 231,
+"dz": 143594698,
+"g": "mix"
+},
+{
+"a": "Lebanon Hanover",
+"t": "Saddest Smile",
+"s": 224,
+"dz": 143583392,
+"g": "mix"
+},
+{
+"a": "Legion Of The Damned",
+"t": "Black Baron",
+"s": 254,
+"dz": 137806303,
+"p": "https://p.scdn.co/mp3-preview/509ad3704c31ac283bf88cfe1cc12ee7b8131083",
+"g": "sp"
+},
+{
+"a": "Legion Of The Damned",
+"t": "Feel The Blade",
+"s": 259,
+"dz": 608723472,
+"p": "https://p.scdn.co/mp3-preview/3937a6002e346eabeb930ef79d4edfae9de06487",
+"g": "sp"
+},
+{
+"a": "Legion Of The Damned",
+"t": "Legion of the Damned",
+"s": 194,
+"dz": 137803169,
+"p": "https://p.scdn.co/mp3-preview/a2ec370fd0804263309fa354307083c13fb541f0",
+"g": "sp"
+},
+{
+"a": "Legion Of The Damned",
+"t": "Malevolent Rapture",
+"s": 246,
+"dz": 137803177,
+"p": "https://p.scdn.co/mp3-preview/94c4f8081c0d6e66ca057ab8b3c7648b3c092088",
+"g": "sp"
+},
+{
+"a": "Legion Of The Damned",
+"t": "Pray & Suffer",
+"s": 254,
+"dz": 137682423,
+"p": "https://p.scdn.co/mp3-preview/1f404962db9ee0c08f0854b302805944b156cea2",
+"g": "sp"
+},
+{
+"a": "Legion Of The Damned",
+"t": "Son of the Jackal",
+"s": 233,
+"dz": 137592115,
+"p": "https://p.scdn.co/mp3-preview/c7c7e4bf7af04cf5da0e0c5f302376172ba6b30d",
+"g": "sp"
+},
+{
+"a": "Les Discrets",
+"t": "L'échappée",
+"s": 243,
+"dz": 1977411817,
+"g": "mix"
+},
+{
+"a": "Les Discrets",
+"t": "Song for Mountains",
+"s": 358,
+"dz": 1977411837,
+"g": "mix"
+},
+{
+"a": "Lifelover",
+"t": "Mental Central Dialog",
+"s": 239,
+"dz": 1977411467,
+"g": "mix"
+},
+{
+"a": "Lifelover",
+"t": "Myspys",
+"s": 245,
+"dz": 4613865,
+"p": "https://p.scdn.co/mp3-preview/43a06e6764c601fa0b5e34960cae4b532d0e6b9a",
+"g": "sp"
+},
+{
+"a": "LIK",
+"t": "Funeral Anthem",
+"s": 208,
+"dz": 1014702772,
+"g": "mix"
+},
+{
+"a": "Lilium",
+"t": "Sleeping Inside",
+"s": 207,
+"dz": 1414555532,
+"g": "mix"
+},
+{
+"a": "Limbonic Art",
+"t": "A Venomous Kiss Of Profane Grace",
+"s": 425,
+"dz": 2247536887,
+"g": "mix"
+},
+{
+"a": "Limp Bizkit",
+"t": "Break Stuff",
+"s": 167,
+"dz": 94613616,
+"g": "mix"
+},
+{
+"a": "Limp Bizkit",
+"t": "Hot Dog",
+"s": 230,
+"dz": 104011160,
+"g": "mix"
+},
+{
+"a": "Limp Bizkit",
+"t": "Nookie",
+"s": 289,
+"dz": 94613610,
+"g": "mix"
+},
+{
+"a": "Limp Bizkit",
+"t": "Rollin' (Air Raid Vehicle)",
+"s": 214,
+"dz": 104011168,
+"g": "mix"
+},
+{
+"a": "Linea Aspera",
+"t": "Attica",
+"s": 218,
+"dz": 3792143902,
+"g": "mix"
+},
+{
+"a": "Linea Aspera",
+"t": "Eviction",
+"s": 243,
+"dz": 1082461272,
+"g": "mix"
+},
+{
+"a": "Linea Aspera",
+"t": "Synapse",
+"s": 256,
+"dz": 1082461262,
+"g": "mix"
+},
+{
+"a": "Liquid Tension Experiment",
+"t": "Acid Rain",
+"s": 396,
+"dz": 11520492,
+"g": "mix"
+},
+{
+"a": "Ljå",
+"t": "Tilgi Dem Aldri",
+"s": 364,
+"dz": 10737900,
+"p": "https://p.scdn.co/mp3-preview/b3d2d5a90c19fc6cb671d93a9b62fc21e1835023",
+"g": "sp"
+},
+{
+"a": "London After Midnight",
+"t": "Sacrifice",
+"s": 455,
+"dz": 11319100,
+"g": "mix"
+},
+{
+"a": "Long Distance Calling",
+"t": "The Nearing Grave",
+"s": 468,
+"dz": 108641408,
+"g": "mix"
+},
+{
+"a": "Lorna Shore",
+"t": "To the Hellfire",
+"s": 369,
+"dz": 1378703412,
+"g": "mix"
+},
+{
+"a": "Low",
+"t": "Lullaby",
+"s": 586,
+"dz": 3112886,
+"g": "mix"
+},
+{
+"a": "Lowlife",
+"t": "A Sullen Sky",
+"s": 249,
+"dz": 11511235,
+"g": "mix"
+},
+{
+"a": "Lowlife",
+"t": "Ramafied",
+"s": 253,
+"dz": 11511249,
+"g": "mix"
+},
+{
+"a": "Lunatic Soul",
+"t": "Anymore",
+"s": 276,
+"dz": 385365561,
+"g": "mix"
+},
+{
+"a": "Lynyrd Skynyrd",
+"t": "Simple Man",
+"s": 395,
+"dz": 546250252,
+"g": "mix"
+},
+{
+"a": "Machine Head",
+"t": "Davidian",
+"s": 297,
+"dz": 720295,
+"p": "https://p.scdn.co/mp3-preview/867a0c8705bfd916bad5776977c5567dccee0e64",
+"g": "sp"
+},
+{
+"a": "Madrugada",
+"t": "Majesty",
+"s": 263,
+"dz": 3098385,
+"g": "mix"
+},
+{
+"a": "Magnolia Electric Co.",
+"t": "Rider. Shadow. Wolf.",
+"s": 198,
+"dz": 2246606987,
+"g": "mix"
+},
+{
+"a": "Make Them Suffer",
+"t": "Widower",
+"s": 278,
+"dz": 2319953035,
+"p": "https://p.scdn.co/mp3-preview/27e2f14a718415796943f3dc49bbe50326931f78",
+"g": "sp"
+},
+{
+"a": "Malevolent Creation",
+"t": "Soul Razer",
+"s": 241,
+"dz": 107393440,
+"p": "https://p.scdn.co/mp3-preview/d34043bbce3bbe38ee7ae838c019c971721f6538",
+"g": "sp"
+},
+{
+"a": "Malt",
+"t": "Deprem",
+"s": 213,
+"dz": 68055179,
+"g": "mix"
+},
+{
+"a": "Malt",
+"t": "Neanderthal",
+"s": 192,
+"dz": 68077896,
+"g": "mix"
+},
+{
+"a": "Marduk",
+"t": "Frontschwein",
+"s": 192,
+"dz": 111882610,
+"p": "https://p.scdn.co/mp3-preview/dc72e7b25861bdfba78c032bfd4c811c8d202cea",
+"g": "sp"
+},
+{
+"a": "Marduk",
+"t": "Wolves",
+"s": 350,
+"dz": 67374336,
+"g": "mix"
+},
+{
+"a": "Marty Friedman",
+"t": "Forbidden City",
+"s": 498,
+"dz": 112579782,
+"g": "mix"
+},
+{
+"a": "Massive Attack",
+"t": "Live With Me - Remastered 2006",
+"s": 291,
+"dz": 3116404,
+"g": "mix"
+},
+{
+"a": "Massive Attack",
+"t": "Teardrop",
+"s": 327,
+"dz": 3129748,
+"g": "mix"
+},
+{
+"a": "Matt Elliott",
+"t": "C. F. Bundy.",
+"s": 561,
+"dz": 804112552,
+"g": "mix"
+},
+{
+"a": "mavisakal",
+"t": "İki Yol - 2025 Remastered Edition",
+"s": 425,
+"dz": 3419440691,
+"g": "mix"
+},
+{
+"a": "Mañana",
+"t": "Fast Days",
+"s": 459,
+"dz": 2225891,
+"g": "mix"
+},
+{
+"a": "Mañana",
+"t": "Miss Evening",
+"s": 262,
+"dz": 2225892,
+"g": "mix"
+},
+{
+"a": "McAuley Schenker Group",
+"t": "Anytime",
+"s": 343,
+"dz": 2190499587,
+"g": "mix"
+},
+{
+"a": "McAuley Schenker Group",
+"t": "Nightmare",
+"s": 384,
+"dz": 3122880,
+"g": "mix"
+},
+{
+"a": "MCC [Magna Carta Cartel]",
+"t": "Metropolis Flow",
+"s": 253,
+"dz": 1821130647,
+"g": "mix"
+},
+{
+"a": "Me And That Man",
+"t": "My Church Is Black",
+"s": 178,
+"dz": 3250617181,
+"g": "mix"
+},
+{
+"a": "Melechesh",
+"t": "Multiple Truths",
+"s": 307,
+"dz": 659720622,
+"g": "mix"
+},
+{
+"a": "Mercenary",
+"t": "My World Is Ending",
+"s": 326,
+"dz": 108655166,
+"g": "mix"
+},
+{
+"a": "Merciless",
+"t": "Pure Hate",
+"s": 208,
+"dz": 2762577,
+"g": "mix"
+},
+{
+"a": "Miss May I",
+"t": "Gone",
+"s": 218,
+"dz": 3783405972,
+"g": "mix"
+},
+{
+"a": "Misþyrming",
+"t": "Með Svipur á Lofti",
+"s": 425,
+"dz": 677633132,
+"g": "mix"
+},
+{
+"a": "Misþyrming",
+"t": "Orgia",
+"s": 328,
+"dz": 677633122,
+"g": "mix"
+},
+{
+"a": "Molchat Doma",
+"t": "Sudno (Boris Ryzhy) - Live at Panorama",
+"s": 153,
+"dz": 3153123971,
+"g": "mix"
+},
+{
+"a": "mor ve ötesi",
+"t": "Deli",
+"s": 185,
+"dz": 77580071,
+"g": "mix"
+},
+{
+"a": "mor ve ötesi",
+"t": "Uyan",
+"s": 328,
+"dz": 77596003,
+"g": "mix"
+},
+{
+"a": "Morbid Angel",
+"t": "Maze Of Torment",
+"s": 265,
+"dz": 40581931,
+"p": "https://p.scdn.co/mp3-preview/c27a0180da22652a12aeff8762f0bafd69b34865",
+"g": "sp"
+},
+{
+"a": "Morbid Saint",
+"t": "Lock up Your Children",
+"s": 211,
+"dz": 2177910017,
+"g": "mix"
+},
+{
+"a": "Mudvayne",
+"t": "Dig",
+"s": 163,
+"dz": 830067,
+"g": "mix"
+},
+{
+"a": "Murder King",
+"t": "Boykot",
+"s": 230,
+"dz": 76100854,
+"g": "mix"
+},
+{
+"a": "My Sleeping Karma",
+"t": "Ephedra",
+"s": 430,
+"dz": 137594603,
+"g": "mix"
+},
+{
+"a": "MyGrain",
+"t": "Pitch-Black",
+"s": 245,
+"dz": 2075289607,
+"g": "mix"
+},
+{
+"a": "Mystifier",
+"t": "An Elizabethan Devil Worshipper's Prayer Book",
+"s": 368,
+"dz": 2771802701,
+"g": "mix"
+},
+{
+"a": "Mägo de Oz",
+"t": "La ciudad de los árboles",
+"s": 364,
+"dz": 3887417,
+"g": "mix"
+},
+{
+"a": "Månegarm",
+"t": "Sigrblot",
+"s": 293,
+"dz": 104941194,
+"g": "mix"
+},
+{
+"a": "Mötley Crüe",
+"t": "Saints of Los Angeles",
+"s": 202,
+"dz": 3786367172,
+"g": "mix"
+},
+{
+"a": "Mötley Crüe",
+"t": "Too Young to Fall in Love",
+"s": 213,
+"dz": 3802971422,
+"g": "mix"
+},
+{
+"a": "MØL",
+"t": "Bruma",
+"s": 323,
+"dz": 1176955162,
+"g": "mix"
+},
+{
+"a": "Nachtmystium, Scott Judd",
+"t": "Epitaph for a Dying Star",
+"s": 449,
+"dz": 111895082,
+"p": "https://p.scdn.co/mp3-preview/f249f285929f750532d031759722b9540887b87b",
+"g": "sp"
+},
+{
+"a": "Nailed to Obscurity",
+"t": "Deadening",
+"s": 239,
+"dz": 579258762,
+"g": "mix"
+},
+{
+"a": "Nargaroth",
+"t": "Seven Tears Are Flowing to the River",
+"s": 892,
+"dz": 1863413127,
+"g": "mix"
+},
+{
+"a": "Narjahanam",
+"t": "Ahlu Alquboor",
+"s": 268,
+"dz": 77459827,
+"g": "mix"
+},
+{
+"a": "Naxatras",
+"t": "Journey to Narahmon",
+"s": 366,
+"dz": 1557065462,
+"g": "mix"
+},
+{
+"a": "Necromicon",
+"t": "Gone Below",
+"s": 521,
+"dz": 1597748892,
+"g": "mix"
+},
+{
+"a": "Necrot",
+"t": "Stench of Decay",
+"s": 220,
+"dz": 959248992,
+"g": "mix"
+},
+{
+"a": "Neil Young",
+"t": "Guitar Solo, No. 5",
+"s": 880,
+"dz": 6614830,
+"g": "mix"
+},
+{
+"a": "Nekromantheon",
+"t": "Raised by Dogs",
+"s": 266,
+"dz": 2834152602,
+"g": "mix"
+},
+{
+"a": "Neun Welten",
+"t": "Valg",
+"s": 369,
+"dz": 1978623137,
+"g": "mix"
+},
+{
+"a": "Neurosis",
+"t": "Stones From the Sky",
+"s": 585,
+"dz": 11472997,
+"g": "mix"
+},
+{
+"a": "Nick Cave & The Bad Seeds",
+"t": "Higgs Boson Blues",
+"s": 470,
+"dz": 1874739767,
+"g": "mix"
+},
+{
+"a": "Nifelheim",
+"t": "Evil Blasphemies",
+"s": 196,
+"dz": 111697516,
+"g": "mix"
+},
+{
+"a": "Nightrage",
+"t": "Affliction",
+"s": 267,
+"dz": 1053783902,
+"g": "mix"
+},
+{
+"a": "Nile",
+"t": "Lashed To the Slave Stick",
+"s": 258,
+"dz": 10970043,
+"p": "https://p.scdn.co/mp3-preview/0329a8aa375724a0eeea849d9f54387cf90ed2a3",
+"g": "sp"
+},
+{
+"a": "Nocturnal Depression",
+"t": "Nostalgia",
+"s": 281,
+"dz": 1102276512,
+"g": "mix"
+},
+{
+"a": "Nordjevel",
+"t": "Djevelen I Nord",
+"s": 255,
+"dz": 116466024,
+"g": "mix"
+},
+{
+"a": "Norther",
+"t": "Frozen Angel",
+"s": 246,
+"dz": 108605012,
+"g": "mix"
+},
+{
+"a": "Novembre",
+"t": "Jules",
+"s": 419,
+"dz": 1738709,
+"g": "mix"
+},
+{
+"a": "Numenorean",
+"t": "Portrait of Pieces",
+"s": 516,
+"dz": 619711322,
+"g": "mix"
+},
+{
+"a": "NYOS",
+"t": "Haikara",
+"s": 327,
+"dz": 626645492,
+"g": "mix"
+},
+{
+"a": "Obituary",
+"t": "Chopped in Half",
+"s": 225,
+"p": "https://p.scdn.co/mp3-preview/e2fe613a655966e8417ce36ee881dadb56cf5d56",
+"g": "sp"
+},
+{
+"a": "Obliveon",
+"t": "Droïdomized",
+"s": 403,
+"dz": 2784829562,
+"g": "mix"
+},
+{
+"a": "Obscura",
+"t": "Akróasis",
+"s": 263,
+"dz": 110838604,
+"g": "mix"
+},
+{
+"a": "Obscura",
+"t": "Sermon of the Seven Suns",
+"s": 432,
+"dz": 110838600,
+"g": "mix"
+},
+{
+"a": "Oceano",
+"t": "District of Misery",
+"s": 195,
+"dz": 40582851,
+"p": "https://p.scdn.co/mp3-preview/4f4528c5c9a613f46a5f6c64eddbc6ece61ffc1b",
+"g": "sp"
+},
+{
+"a": "Odraza",
+"t": "...twoją rzecz też",
+"s": 343,
+"dz": 956023632,
+"g": "mix"
+},
+{
+"a": "Odraza",
+"t": "Najkrótsza z wieczności",
+"s": 306,
+"dz": 956023672,
+"g": "mix"
+},
+{
+"a": "Odraza",
+"t": "Rzeczom",
+"s": 321,
+"dz": 956023612,
+"g": "mix"
+},
+{
+"a": "Officium Triste",
+"t": "My Charcoal Heart",
+"s": 327,
+"dz": 810243882,
+"g": "mix"
+},
+{
+"a": "Officium Triste",
+"t": "World in Flames",
+"s": 369,
+"dz": 767033372,
+"g": "mix"
+},
+{
+"a": "Officium Triste",
+"t": "Your Eyes",
+"s": 588,
+"dz": 810243872,
+"g": "mix"
+},
+{
+"a": "Ogün Sanlısoy",
+"t": "Bilmece",
+"s": 292,
+"dz": 67912834,
+"g": "mix"
+},
+{
+"a": "Oh",
+"t": "In The Wake Of Pigs",
+"s": 189,
+"dz": 13461611,
+"g": "mix"
+},
+{
+"a": "Omnivortex",
+"t": "Dwells",
+"s": 308,
+"dz": 2442036385,
+"g": "mix"
+},
+{
+"a": "On Thorns I Lay",
+"t": "Deep Thoughts",
+"s": 240,
+"dz": 2393842595,
+"g": "mix"
+},
+{
+"a": "Opeth",
+"t": "A Fleeting Glance",
+"s": 306,
+"dz": 3065249151,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "A Story Never Told",
+"s": 431,
+"dz": 3027362601,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Advent",
+"s": 827,
+"dz": 2208234447,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "All Things Will Pass",
+"s": 515,
+"dz": 3065256991,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Allting Tar Slut",
+"s": 511,
+"dz": 3065296771,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "April Ethereal",
+"s": 522,
+"dz": 2204291257,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Atonement",
+"s": 388,
+"dz": 847133,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Banemannen",
+"s": 403,
+"dz": 3065296751,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Beneath the Mire",
+"s": 477,
+"dz": 847132,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Benighted",
+"s": 300,
+"dz": 1950833,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Black Rose Immortal",
+"s": 1218,
+"dz": 2208234477,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Blackwater Park",
+"s": 727,
+"dz": 549236,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Bleak",
+"s": 555,
+"dz": 549230,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Burden",
+"s": 461,
+"dz": 824983,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Charlatan",
+"s": 329,
+"dz": 3065296731,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Chrysalis",
+"s": 436,
+"dz": 3065249111,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Circle Of The Tyrant",
+"s": 312,
+"dz": 2075208987,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Closure",
+"s": 316,
+"dz": 549197,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Coil",
+"s": 190,
+"dz": 824980,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Continuum",
+"s": 442,
+"dz": 3065256981,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Credence",
+"s": 331,
+"dz": 2204291307,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Cusp of Eternity",
+"s": 334,
+"dz": 82742916,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "De Närmast Sörjande",
+"s": 430,
+"dz": 3065296711,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Death Whispered a Lullaby",
+"s": 349,
+"dz": 549196,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Demon Of The Fall",
+"s": 370,
+"dz": 2204291297,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Dignity",
+"s": 396,
+"dz": 3065256911,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Dirge for November",
+"s": 473,
+"dz": 549233,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Elysian Woes",
+"s": 287,
+"dz": 82742920,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Ending Credits",
+"s": 220,
+"dz": 549200,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Epilogue",
+"s": 239,
+"dz": 2204291327,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Era",
+"s": 341,
+"dz": 3065249161,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Eternal Rains Will Come",
+"s": 403,
+"dz": 82742914,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Eternal Soul Torture",
+"s": 515,
+"dz": 2075207537,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Face Of Melinda",
+"s": 478,
+"dz": 1950857,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Faith in Others",
+"s": 461,
+"dz": 82742928,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Famine",
+"s": 511,
+"dz": 13749496,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Folklore",
+"s": 497,
+"dz": 13749498,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Forest Of October",
+"s": 787,
+"dz": 2233714997,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Garden of Earthly Delights",
+"s": 209,
+"dz": 3065256901,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Ghost of Perdition",
+"s": 629,
+"dz": 847130,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Goblin",
+"s": 272,
+"dz": 82742922,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Godhead's Lament",
+"s": 587,
+"dz": 1950824,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Harvest",
+"s": 358,
+"dz": 549231,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Heart in Hand",
+"s": 510,
+"dz": 3065256921,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Heir Apparent",
+"s": 530,
+"dz": 824981,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Heritage",
+"s": 124,
+"dz": 13749490,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Hessian Peel",
+"s": 685,
+"dz": 824985,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Hex Omega",
+"s": 420,
+"dz": 824986,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Hjärtat Vet Vad Handen Gör",
+"s": 509,
+"dz": 3065296701,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Hope Leaves",
+"s": 270,
+"dz": 549198,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Hours of Wealth",
+"s": 320,
+"dz": 847135,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Häxprocess",
+"s": 417,
+"dz": 13749495,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "I Feel the Dark",
+"s": 397,
+"dz": 13749492,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "In Mist She Was Standing",
+"s": 849,
+"dz": 2233714967,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "In My Time of Need",
+"s": 350,
+"dz": 549195,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Ingen Sanning Är Allas",
+"s": 441,
+"dz": 3065296741,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Into The Frost Of Winter",
+"s": 380,
+"dz": 2075289977,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Isolation Years",
+"s": 231,
+"dz": 847137,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Karma",
+"s": 468,
+"dz": 2204291317,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Kontinuerlig Drift",
+"s": 443,
+"dz": 3065296761,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Livets Trädgård",
+"s": 209,
+"dz": 3065296681,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Lovelorn Crime",
+"s": 394,
+"dz": 3065256941,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Madrigal",
+"s": 87,
+"dz": 2204291277,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Marrow of the Earth",
+"s": 258,
+"dz": 13749499,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Minnets Yta",
+"s": 394,
+"dz": 3065296721,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Moon Above, Sun Below",
+"s": 652,
+"dz": 82742918,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Moonlapse Vertigo",
+"s": 540,
+"dz": 1950844,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Nectar",
+"s": 611,
+"dz": 2208234467,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Nepenthe",
+"s": 337,
+"dz": 13749494,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Next of Kin",
+"s": 430,
+"dz": 3065256931,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Patterns in the Ivy",
+"s": 112,
+"dz": 549235,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Persephone",
+"s": 111,
+"dz": 3065249071,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Porcelain Heart",
+"s": 480,
+"dz": 824984,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Remember Tomorrow",
+"s": 299,
+"dz": 2075208997,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Requiem",
+"s": 155,
+"dz": 2233715017,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Reverie / Harlequin Forest",
+"s": 699,
+"dz": 847134,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "River",
+"s": 450,
+"dz": 82742924,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Serenity Painted Death",
+"s": 553,
+"dz": 1950869,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Silhouette",
+"s": 187,
+"dz": 2233714987,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Slither",
+"s": 239,
+"dz": 13749493,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Sorceress",
+"s": 349,
+"dz": 3065249081,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Sorceress 2",
+"s": 229,
+"dz": 3065249121,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Spring MCMLXXIV",
+"s": 371,
+"dz": 3065249191,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Strange Brew",
+"s": 524,
+"dz": 3065249141,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Svekets Prins",
+"s": 396,
+"dz": 3065296691,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "The Amen Corner",
+"s": 525,
+"dz": 2204291287,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "The Apostle In Triumph",
+"s": 693,
+"dz": 2233715027,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "The Baying of the Hounds",
+"s": 641,
+"dz": 847131,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "The Devil's Orchard",
+"s": 399,
+"dz": 13749491,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "The Drapery Falls",
+"s": 654,
+"dz": 549232,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "The Funeral Portrait",
+"s": 524,
+"dz": 549234,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "The Garroter",
+"s": 405,
+"dz": 3065256971,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "The Grand Conjuration",
+"s": 621,
+"dz": 847136,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "The Leper Affinity",
+"s": 623,
+"dz": 549229,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "The Lines in My Hand",
+"s": 228,
+"dz": 13749497,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "The Lotus Eater",
+"s": 530,
+"dz": 824982,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "The Moor",
+"s": 686,
+"dz": 1950809,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "The Night And The Silent Water",
+"s": 662,
+"dz": 2208234457,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "The Seventh Sojourn",
+"s": 329,
+"dz": 3065249131,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "The Twilight Is My Robe",
+"s": 661,
+"dz": 2233715007,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "The Ward",
+"s": 193,
+"dz": 3065249181,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "The Wilde Flowers",
+"s": 409,
+"dz": 3065249091,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "To Bid You Farewell",
+"s": 658,
+"dz": 2208234487,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "To Rid the Disease",
+"s": 381,
+"dz": 549199,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Under The Weeping Moon",
+"s": 593,
+"dz": 2233714977,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Universal Truth",
+"s": 450,
+"dz": 3065256961,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Voice of Treason",
+"s": 480,
+"dz": 82742926,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Weakness",
+"s": 249,
+"dz": 549201,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "When",
+"s": 553,
+"dz": 2204291267,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "White Cluster",
+"s": 605,
+"dz": 1950880,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Will O the Wisp",
+"s": 307,
+"dz": 3065249101,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "Windowpane",
+"s": 464,
+"dz": 549194,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "§1",
+"s": 356,
+"dz": 3027362531,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "§2",
+"s": 333,
+"dz": 3027362541,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "§3",
+"s": 310,
+"dz": 3027362551,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "§4",
+"s": 420,
+"dz": 3027362561,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "§5",
+"s": 449,
+"dz": 3027362571,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "§6",
+"s": 363,
+"dz": 3027362581,
+"g": "fav"
+},
+{
+"a": "Opeth",
+"t": "§7",
+"s": 390,
+"dz": 3027362591,
+"g": "fav"
+},
+{
+"a": "Origin",
+"t": "Finite",
+"s": 188,
+"dz": 16373783,
+"g": "mix"
+},
+{
+"a": "OSI",
+"t": "Go",
+"s": 256,
+"dz": 1170763142,
+"g": "mix"
+},
+{
+"a": "OSI",
+"t": "Radiologue",
+"s": 367,
+"dz": 1754945967,
+"g": "mix"
+},
+{
+"a": "Ouroboros",
+"t": "Dissolve",
+"s": 279,
+"dz": 12290807,
+"g": "mix"
+},
+{
+"a": "PAIN",
+"t": "Nailed to the Ground",
+"s": 251,
+"dz": 2335993275,
+"g": "mix"
+},
+{
+"a": "PAIN",
+"t": "Play Dead",
+"s": 243,
+"dz": 2335993315,
+"g": "mix"
+},
+{
+"a": "PAIN",
+"t": "Psalms of Extinction",
+"s": 249,
+"dz": 2335993295,
+"g": "mix"
+},
+{
+"a": "Pain of Salvation",
+"t": "Undertow",
+"s": 287,
+"dz": 108594452,
+"g": "mix"
+},
+{
+"a": "Pallbearer",
+"t": "I Saw the End",
+"s": 381,
+"dz": 142302663,
+"g": "mix"
+},
+{
+"a": "Papa Roach",
+"t": "Between Angels And Insects",
+"s": 234,
+"dz": 620289152,
+"g": "mix"
+},
+{
+"a": "Papa Roach",
+"t": "Broken Home",
+"s": 221,
+"dz": 620289132,
+"g": "mix"
+},
+{
+"a": "Papa Roach",
+"t": "Last Resort",
+"s": 199,
+"dz": 620289122,
+"g": "mix"
+},
+{
+"a": "Paths Of Possession",
+"t": "Darklands",
+"s": 257,
+"dz": 70893235,
+"g": "mix"
+},
+{
+"a": "PATRIARKH",
+"t": "Yekteniya IV - Live 2021",
+"s": 373,
+"dz": 2635289992,
+"g": "mix"
+},
+{
+"a": "Paysage D'Hiver",
+"t": "Im Winterwald",
+"s": 584,
+"dz": 1977295347,
+"g": "mix"
+},
+{
+"a": "Paysage D'Hiver",
+"t": "Urgrund",
+"s": 1098,
+"dz": 2874453942,
+"g": "mix"
+},
+{
+"a": "Pentagram",
+"t": "Be Forewarned",
+"s": 224,
+"dz": 835523712,
+"g": "mix"
+},
+{
+"a": "pg.lost",
+"t": "Terrain",
+"s": 329,
+"dz": 512546712,
+"g": "mix"
+},
+{
+"a": "Pickpocket",
+"t": "Vazgeç",
+"s": 296,
+"dz": 668509192,
+"g": "mix"
+},
+{
+"a": "Pink Turns Blue",
+"t": "Missing you",
+"s": 198,
+"dz": 2479779,
+"g": "mix"
+},
+{
+"a": "Pitch Black Process",
+"t": "Toy Soldier / Oyuncak Asker",
+"s": 212,
+"dz": 1559725062,
+"g": "mix"
+},
+{
+"a": "PJ Harvey",
+"t": "Good Fortune",
+"s": 200,
+"dz": 1172878,
+"g": "mix"
+},
+{
+"a": "Plini",
+"t": "Selenium Forest",
+"s": 365,
+"dz": 1333998632,
+"g": "mix"
+},
+{
+"a": "Poisonblack",
+"t": "Only You Can Tear Me Apart",
+"s": 466,
+"dz": 108669834,
+"g": "mix"
+},
+{
+"a": "Poisonblack",
+"t": "The Kiss of Death",
+"s": 273,
+"dz": 108600590,
+"g": "mix"
+},
+{
+"a": "Polyphia",
+"t": "G.O.A.T.",
+"s": 215,
+"dz": 531781981,
+"g": "mix"
+},
+{
+"a": "Portishead",
+"t": "Roads",
+"s": 303,
+"dz": 982668,
+"g": "mix"
+},
+{
+"a": "Portishead",
+"t": "Sour Times",
+"s": 251,
+"dz": 982648,
+"g": "mix"
+},
+{
+"a": "Power Trip",
+"t": "Firing Squad",
+"s": 197,
+"dz": 135433100,
+"g": "mix"
+},
+{
+"a": "Power Trip",
+"t": "Hornet's Nest",
+"s": 279,
+"dz": 834205732,
+"g": "mix"
+},
+{
+"a": "Priest",
+"t": "The Cross",
+"s": 195,
+"dz": 2139027377,
+"g": "mix"
+},
+{
+"a": "Pripjat",
+"t": "Born to Hate",
+"s": 290,
+"dz": 1780384807,
+"g": "mix"
+},
+{
+"a": "Psychonaut 4",
+"t": "Pain Dealer",
+"s": 423,
+"dz": 533935892,
+"g": "mix"
+},
+{
+"a": "Psychonaut 4",
+"t": "Personal Forest",
+"s": 254,
+"dz": 533935872,
+"g": "mix"
+},
+{
+"a": "Puddle Of Mudd",
+"t": "Spin You Around",
+"s": 269,
+"dz": 620276452,
+"g": "mix"
+},
+{
+"a": "Puhdys",
+"t": "Wilder Frieden",
+"s": 272,
+"dz": 985677,
+"g": "mix"
+},
+{
+"a": "Queens of the Stone Age",
+"t": "Go With The Flow",
+"s": 187,
+"dz": 1763036287,
+"g": "mix"
+},
+{
+"a": "Quo Vadis",
+"t": "Silence Calls The Storm",
+"s": 302,
+"dz": 77008129,
+"g": "mix"
+},
+{
+"a": "R.E.M.",
+"t": "Everybody Hurts",
+"s": 320,
+"dz": 121921372,
+"g": "mix"
+},
+{
+"a": "R.E.M.",
+"t": "Leave",
+"s": 437,
+"dz": 121921556,
+"g": "mix"
+},
+{
+"a": "R.E.M.",
+"t": "Losing My Religion",
+"s": 266,
+"dz": 136334560,
+"g": "mix"
+},
+{
+"a": "Raketkanon",
+"t": "Florent",
+"s": 193,
+"dz": 96390550,
+"g": "mix"
+},
+{
+"a": "Razor",
+"t": "Speed Merchants",
+"s": 224,
+"dz": 363280911,
+"g": "mix"
+},
+{
+"a": "Red Snapper",
+"t": "Architectronic",
+"s": 271,
+"dz": 1000388992,
+"g": "mix"
+},
+{
+"a": "Revocation",
+"t": "Arbiters of the Apocalypse",
+"s": 261,
+"dz": 126223497,
+"p": "https://p.scdn.co/mp3-preview/ace56998959275a975ee3f095eae3603e27510d2",
+"g": "sp"
+},
+{
+"a": "Revocation",
+"t": "Blood Atonement",
+"s": 284,
+"dz": 513651692,
+"g": "mix"
+},
+{
+"a": "Revocation",
+"t": "Of Unworldly Origin",
+"s": 269,
+"dz": 513651292,
+"g": "mix"
+},
+{
+"a": "Revocation",
+"t": "Spurn The Outstretched Hand",
+"s": 249,
+"dz": 62589282,
+"g": "mix"
+},
+{
+"a": "Rhapsody Of Fire",
+"t": "Emerald Sword - Re-Recorded",
+"s": 261,
+"dz": 486339292,
+"g": "mix"
+},
+{
+"a": "Riddarna",
+"t": "Simma hem",
+"s": 240,
+"dz": 1943318997,
+"g": "mix"
+},
+{
+"a": "Ride",
+"t": "Grasshopper - 2001 Remaster",
+"s": 656,
+"dz": 63651914,
+"g": "mix"
+},
+{
+"a": "Rigor Mortis",
+"t": "Slow Death",
+"s": 332,
+"dz": 12484118,
+"g": "mix"
+},
+{
+"a": "Rishloo",
+"t": "Feathergun in the Garden of the Sun",
+"s": 317,
+"dz": 4247901931,
+"g": "mix"
+},
+{
+"a": "Ritual Howls",
+"t": "Scatter the Scars",
+"s": 262,
+"dz": 127230641,
+"g": "mix"
+},
+{
+"a": "Ritual Howls",
+"t": "Turkish Leather",
+"s": 341,
+"dz": 106044340,
+"g": "mix"
+},
+{
+"a": "Rivers of Nihil",
+"t": "Where Owls Know My Name",
+"s": 402,
+"dz": 439321202,
+"g": "mix"
+},
+{
+"a": "Riverside",
+"t": "In Two Minds",
+"s": 278,
+"dz": 1110165872,
+"g": "mix"
+},
+{
+"a": "Riverside",
+"t": "The Depth of Self-Delusion",
+"s": 459,
+"dz": 131344452,
+"g": "mix"
+},
+{
+"a": "Roadrunner United",
+"t": "Enemy of the State",
+"s": 308,
+"dz": 3587492,
+"g": "mix"
+},
+{
+"a": "Rob Zombie",
+"t": "Dragula",
+"s": 222,
+"dz": 2307303,
+"g": "mix"
+},
+{
+"a": "Rolo Tomassi",
+"t": "Rituals",
+"s": 204,
+"dz": 1095888212,
+"g": "mix"
+},
+{
+"a": "ROME",
+"t": "Transference - Live",
+"s": 275,
+"dz": 359156681,
+"g": "mix"
+},
+{
+"a": "Russian Circles",
+"t": "Death Rides a Horse",
+"s": 346,
+"dz": 65149066,
+"g": "mix"
+},
+{
+"a": "Russian Circles",
+"t": "Youngblood",
+"s": 455,
+"dz": 62718957,
+"g": "mix"
+},
+{
+"a": "Röyksopp",
+"t": "What Else Is There?",
+"s": 317,
+"dz": 15710209,
+"g": "mix"
+},
+{
+"a": "S.O.D. Stormtroopers of Death",
+"t": "Freddy Kreuger",
+"s": 152,
+"dz": 123034322,
+"g": "mix"
+},
+{
+"a": "Sadus",
+"t": "Certain Death",
+"s": 254,
+"dz": 74238891,
+"g": "mix"
+},
+{
+"a": "Sarcófago",
+"t": "Nightmare",
+"s": 366,
+"dz": 137074390,
+"g": "mix"
+},
+{
+"a": "Sargeist",
+"t": "Let the Devil In",
+"s": 248,
+"dz": 129916562,
+"g": "mix"
+},
+{
+"a": "Saturnus",
+"t": "Empty Handed",
+"s": 255,
+"dz": 6766166,
+"g": "mix"
+},
+{
+"a": "Scars of Life",
+"t": "Descending",
+"s": 205,
+"dz": 855434312,
+"g": "mix"
+},
+{
+"a": "Scars of Life",
+"t": "Lemon",
+"s": 225,
+"dz": 855434232,
+"g": "mix"
+},
+{
+"a": "Schammasch",
+"t": "Metanoia",
+"s": 481,
+"dz": 119796876,
+"g": "mix"
+},
+{
+"a": "Seether",
+"t": "Driven Under",
+"s": 273,
+"dz": 80276096,
+"g": "mix"
+},
+{
+"a": "Seether",
+"t": "Fine Again",
+"s": 244,
+"dz": 80276092,
+"g": "mix"
+},
+{
+"a": "Sentient Horror",
+"t": "Abyssal Ways",
+"s": 235,
+"dz": 2712046451,
+"g": "mix"
+},
+{
+"a": "Septicflesh",
+"t": "Anubis",
+"s": 257,
+"dz": 61632567,
+"g": "mix"
+},
+{
+"a": "Septicflesh",
+"t": "Pyramid God",
+"s": 313,
+"dz": 63063664,
+"g": "mix"
+},
+{
+"a": "Sepultura",
+"t": "Territory",
+"s": 287,
+"dz": 81934786,
+"p": "https://p.scdn.co/mp3-preview/47000b5fe60b09c5e237503234d74b94a98b5867",
+"g": "sp"
+},
+{
+"a": "Shadow of Intent",
+"t": "The Dreaded Mystic Abyss",
+"s": 626,
+"dz": 690690782,
+"g": "mix"
+},
+{
+"a": "Shamrain",
+"t": "To Leave",
+"s": 267,
+"dz": 2076454517,
+"g": "mix"
+},
+{
+"a": "Shining",
+"t": "Låt Oss Ta Allt Från Varandra",
+"s": 365,
+"dz": 205708,
+"g": "mix"
+},
+{
+"a": "Sigh",
+"t": "Hands Of The String Puller",
+"s": 288,
+"dz": 2075022417,
+"g": "mix"
+},
+{
+"a": "Sigh",
+"t": "Homo Homini Lupus",
+"s": 333,
+"dz": 2075022357,
+"g": "mix"
+},
+{
+"a": "Silver Lake by Esa Holopainen",
+"t": "Apprentice",
+"s": 270,
+"dz": 3065230821,
+"g": "mix"
+},
+{
+"a": "Siouxsie and the Banshees",
+"t": "Night Shift",
+"s": 363,
+"dz": 1148496,
+"g": "mix"
+},
+{
+"a": "Sisters of Mercy",
+"t": "Lucretia My Reflection - Vinyl Version",
+"s": 295,
+"dz": 112715636,
+"g": "mix"
+},
+{
+"a": "Six Feet Under",
+"t": "Feasting on the Blood of the Insane",
+"s": 272,
+"dz": 70894328,
+"p": "https://p.scdn.co/mp3-preview/41a602592502413bd6e27c75bc84733c7899c2a6",
+"g": "sp"
+},
+{
+"a": "Six Feet Under",
+"t": "Seed Of Filth",
+"s": 297,
+"dz": 70879058,
+"g": "mix"
+},
+{
+"a": "Skeletonwitch",
+"t": "Red Death, White Light",
+"s": 432,
+"dz": 125279452,
+"p": "https://p.scdn.co/mp3-preview/6bb6ed657d768d085a5bc5dd963bf178c10a76c6",
+"g": "sp"
+},
+{
+"a": "Skinless",
+"t": "Confines of Human Flesh",
+"s": 253,
+"dz": 74171164,
+"p": "https://p.scdn.co/mp3-preview/6ea0f2bba0379a21228a286612484be8312c82c2",
+"g": "sp"
+},
+{
+"a": "Skinless",
+"t": "Savagery",
+"s": 266,
+"dz": 464486412,
+"g": "mix"
+},
+{
+"a": "Slaughter to Prevail",
+"t": "Hell",
+"s": 265,
+"dz": 3391374671,
+"g": "mix"
+},
+{
+"a": "Sleep",
+"t": "Dragonaut",
+"s": 343,
+"dz": 70980273,
+"g": "mix"
+},
+{
+"a": "Sleeping Pulse",
+"t": "Parasite",
+"s": 345,
+"dz": 1977618137,
+"g": "mix"
+},
+{
+"a": "Sleeping Pulse",
+"t": "War",
+"s": 359,
+"dz": 1977618217,
+"g": "mix"
+},
+{
+"a": "SLOE JACK",
+"t": "MINE",
+"s": 122,
+"dz": 2910103871,
+"g": "mix"
+},
+{
+"a": "SLOE JACK",
+"t": "RENEGADE",
+"s": 121,
+"dz": 2910103851,
+"g": "mix"
+},
+{
+"a": "SLOE JACK",
+"t": "SLOW DOWN",
+"s": 120,
+"dz": 2910103841,
+"g": "mix"
+},
+{
+"a": "Slowdive",
+"t": "When the Sun Hits",
+"s": 285,
+"dz": 2246294,
+"g": "mix"
+},
+{
+"a": "Solefald",
+"t": "World Music with Black Edges",
+"s": 475,
+"dz": 2833836022,
+"g": "mix"
+},
+{
+"a": "Solstice",
+"t": "Cleansed Of Impurity",
+"s": 242,
+"dz": 35275121,
+"g": "mix"
+},
+{
+"a": "Sonata Arctica",
+"t": "Wolf & Raven",
+"s": 255,
+"dz": 2076462857,
+"g": "mix"
+},
+{
+"a": "Soul Sacrifice",
+"t": "Comatose",
+"s": 307,
+"dz": 145556634,
+"g": "mix"
+},
+{
+"a": "Soulfly",
+"t": "Jumpdafuckup",
+"s": 311,
+"dz": 661077,
+"g": "mix"
+},
+{
+"a": "Spiritual Front",
+"t": "Slave",
+"s": 251,
+"dz": 1976010847,
+"g": "mix"
+},
+{
+"a": "STEELHEART",
+"t": "She's Gone",
+"s": 392,
+"dz": 2076571497,
+"g": "mix"
+},
+{
+"a": "Steven Wilson",
+"t": "Drive Home",
+"s": 457,
+"dz": 138799807,
+"g": "mix"
+},
+{
+"a": "Steven Wilson",
+"t": "Index",
+"s": 288,
+"dz": 69139186,
+"g": "mix"
+},
+{
+"a": "Stoned Jesus",
+"t": "I'm The Mountain",
+"s": 961,
+"dz": 2742611651,
+"g": "mix"
+},
+{
+"a": "Strapping Young Lad",
+"t": "Almost Again",
+"s": 223,
+"dz": 108674674,
+"g": "mix"
+},
+{
+"a": "Suffocation",
+"t": "Pierced from Within",
+"s": 266,
+"dz": 719661,
+"p": "https://p.scdn.co/mp3-preview/18de2f05cf87773abaa7f29937112dde3db7c921",
+"g": "sp"
+},
+{
+"a": "Suicide",
+"t": "Spiritual Mess",
+"s": 144,
+"dz": 1119540772,
+"g": "mix"
+},
+{
+"a": "Suicide Silence",
+"t": "Fuck Everything",
+"s": 273,
+"dz": 108673656,
+"g": "mix"
+},
+{
+"a": "Suicide Silence",
+"t": "Wake Up",
+"s": 228,
+"dz": 108574852,
+"g": "mix"
+},
+{
+"a": "Suicide Silence",
+"t": "You Only Live Once",
+"s": 192,
+"dz": 108673654,
+"g": "mix"
+},
+{
+"a": "Suizid",
+"t": "I Left This Life To Rot",
+"s": 322,
+"dz": 1186416842,
+"g": "mix"
+},
+{
+"a": "Sulphur Aeon",
+"t": "Lungs into Gills",
+"s": 354,
+"dz": 591990402,
+"g": "mix"
+},
+{
+"a": "Summoning",
+"t": "Old Mornings Dawn",
+"s": 570,
+"dz": 137704549,
+"g": "mix"
+},
+{
+"a": "Suspiria",
+"t": "Allegedly, Dancefloor Tragedy",
+"s": 278,
+"dz": 7680189,
+"g": "mix"
+},
+{
+"a": "Svarttjern",
+"t": "Code Human",
+"s": 253,
+"dz": 913353182,
+"p": "https://p.scdn.co/mp3-preview/c12a17e38392cb05e561970667a91d057cce6883",
+"g": "sp"
+},
+{
+"a": "Swallow The Sun",
+"t": "66,50'N,28,40'E",
+"s": 402,
+"dz": 112661548,
+"g": "mix"
+},
+{
+"a": "Swallow The Sun",
+"t": "Falling World",
+"s": 308,
+"dz": 2075955047,
+"g": "mix"
+},
+{
+"a": "Swallow The Sun",
+"t": "Upon the Water",
+"s": 376,
+"dz": 604922242,
+"g": "mix"
+},
+{
+"a": "Sylosis",
+"t": "Leech",
+"s": 301,
+"dz": 3243659451,
+"g": "mix"
+},
+{
+"a": "Sylvaine",
+"t": "L'appel Du Vide",
+"s": 464,
+"dz": 537829902,
+"g": "mix"
+},
+{
+"a": "Symphony X",
+"t": "Pharaoh",
+"s": 328,
+"dz": 140602361,
+"g": "mix"
+},
+{
+"a": "Taake",
+"t": "II",
+"s": 334,
+"p": "https://p.scdn.co/mp3-preview/cd7a0144a4b3ef8110834bf4c145b97a1a8bba31",
+"g": "sp"
+},
+{
+"a": "Tenhi",
+"t": "Näkin Laulu",
+"s": 456,
+"dz": 1978656317,
+"g": "mix"
+},
+{
+"a": "Terrifier",
+"t": "Reanimator",
+"s": 324,
+"dz": 145086884,
+"g": "mix"
+},
+{
+"a": "Tesla",
+"t": "What a Shame",
+"s": 269,
+"dz": 3833708171,
+"g": "mix"
+},
+{
+"a": "The 69 Eyes",
+"t": "Wasting The Dawn",
+"s": 321,
+"dz": 65398478,
+"g": "mix"
+},
+{
+"a": "The Animals",
+"t": "House of the Rising Sun",
+"s": 269,
+"dz": 855101742,
+"g": "mix"
+},
+{
+"a": "The Black Dahlia Murder",
+"t": "What a Horrible Night to Have a Curse",
+"s": 230,
+"dz": 88909503,
+"g": "mix"
+},
+{
+"a": "The Blinders",
+"t": "Black Glass - The Lounge Lizard Session",
+"s": 376,
+"dz": 2389510035,
+"g": "mix"
+},
+{
+"a": "The Chameleons",
+"t": "Caution",
+"s": 441,
+"dz": 11131848,
+"g": "mix"
+},
+{
+"a": "The Chameleons",
+"t": "Soul in Isolation",
+"s": 501,
+"dz": 11131845,
+"g": "mix"
+},
+{
+"a": "The Cold Existence",
+"t": "Shadows of the Past",
+"s": 240,
+"dz": 63168956,
+"g": "mix"
+},
+{
+"a": "The Cranberries",
+"t": "Zombie",
+"s": 307,
+"dz": 980117,
+"g": "mix"
+},
+{
+"a": "The Devil Wears Prada",
+"t": "Termination",
+"s": 201,
+"dz": 1279835732,
+"g": "mix"
+},
+{
+"a": "The Dillinger Escape Plan",
+"t": "Milk Lizard",
+"s": 235,
+"dz": 10973564,
+"g": "mix"
+},
+{
+"a": "The Essence",
+"t": "Everything",
+"s": 253,
+"dz": 2959254661,
+"g": "mix"
+},
+{
+"a": "The Faceless",
+"t": "Autotheist Movement II: Emancipate",
+"s": 440,
+"dz": 3416396971,
+"p": "https://p.scdn.co/mp3-preview/5d2d3f074df1db0248010b3b56dba358fe65754f",
+"g": "sp"
+},
+{
+"a": "The Faceless",
+"t": "The Spiraling Void",
+"s": 325,
+"dz": 3388260511,
+"p": "https://p.scdn.co/mp3-preview/b7a217fecf76cbdde3ba2fad72b36f95720e5f4d",
+"g": "sp"
+},
+{
+"a": "The Foreshadowing",
+"t": "Ground Zero",
+"s": 270,
+"dz": 2351470005,
+"g": "mix"
+},
+{
+"a": "The Gathering",
+"t": "Broken Glass",
+"s": 299,
+"dz": 486506912,
+"g": "mix"
+},
+{
+"a": "The Halo Effect",
+"t": "Gateways",
+"s": 289,
+"dz": 1664827472,
+"g": "mix"
+},
+{
+"a": "The Haunted",
+"t": "Cutting Teeth",
+"s": 204,
+"dz": 111869596,
+"p": "https://p.scdn.co/mp3-preview/d8916e799dab54f9014f621c4d8652949fbf2f02",
+"g": "sp"
+},
+{
+"a": "The HU",
+"t": "Yuve Yuve Yu",
+"s": 253,
+"dz": 2350098025,
+"g": "mix"
+},
+{
+"a": "The Kovenant",
+"t": "Mirror's Paradise",
+"s": 301,
+"dz": 668832272,
+"g": "mix"
+},
+{
+"a": "The Mayan Factor",
+"t": "Warflower",
+"s": 391,
+"dz": 8980459,
+"g": "mix"
+},
+{
+"a": "The Order of Apollyon",
+"t": "The Cradle",
+"s": 360,
+"dz": 3102923641,
+"g": "mix"
+},
+{
+"a": "The Pineapple Thief",
+"t": "Tear You Up",
+"s": 291,
+"dz": 125093702,
+"g": "mix"
+},
+{
+"a": "The Police",
+"t": "Roxanne",
+"s": 191,
+"dz": 665714352,
+"g": "mix"
+},
+{
+"a": "The Ruins Of Beverast",
+"t": "Maere (On a Stillbirth's Tomb)",
+"s": 682,
+"dz": 359033631,
+"g": "mix"
+},
+{
+"a": "The Sarcophagus",
+"t": "Reign of Chaos",
+"s": 321,
+"dz": 501278052,
+"g": "mix"
+},
+{
+"a": "The Smiths",
+"t": "Barbarism Begins at Home - 2011 Remaster",
+"s": 413,
+"dz": 13786006,
+"g": "mix"
+},
+{
+"a": "The Smiths",
+"t": "How Soon Is Now? - 2011 Remaster",
+"s": 407,
+"dz": 5093609,
+"g": "mix"
+},
+{
+"a": "The Snake Corps",
+"t": "\"This Is Seagull….\"",
+"s": 238,
+"dz": 59143661,
+"g": "mix"
+},
+{
+"a": "The Snake Corps",
+"t": "Something Wrong",
+"s": 227,
+"dz": 59289801,
+"g": "mix"
+},
+{
+"a": "The Sound",
+"t": "Winning",
+"s": 258,
+"dz": 50343351,
+"g": "mix"
+},
+{
+"a": "The Tea Party",
+"t": "Psychopomp",
+"s": 297,
+"dz": 421875002,
+"g": "mix"
+},
+{
+"a": "The Tony Danza Tapdance Extravaganza",
+"t": "Behind Those Eyes",
+"s": 280,
+"dz": 60899718,
+"g": "mix"
+},
+{
+"a": "The Veils",
+"t": "Swimming with the Crocodiles",
+"s": 272,
+"dz": 1634260942,
+"g": "mix"
+},
+{
+"a": "The Veils",
+"t": "Total Depravity",
+"s": 304,
+"dz": 1634261012,
+"g": "mix"
+},
+{
+"a": "Theatre Of Tragedy",
+"t": "Cassandra",
+"s": 408,
+"dz": 145564724,
+"g": "mix"
+},
+{
+"a": "Theatre Of Tragedy",
+"t": "Sweet Art Thou",
+"s": 238,
+"dz": 352060561,
+"g": "mix"
+},
+{
+"a": "Theatres Des Vampires",
+"t": "La Danse Macabre du Vampire",
+"s": 219,
+"dz": 112867106,
+"g": "mix"
+},
+{
+"a": "Then Comes Silence",
+"t": "Strange Kicks",
+"s": 217,
+"dz": 660105142,
+"g": "mix"
+},
+{
+"a": "This Cold Night",
+"t": "Enigmatic Individual",
+"s": 306,
+"dz": 105637620,
+"g": "mix"
+},
+{
+"a": "Thurisaz",
+"t": "Endless...",
+"s": 332,
+"dz": 102153334,
+"g": "mix"
+},
+{
+"a": "Thurisaz",
+"t": "Past Perfect",
+"s": 223,
+"dz": 63493842,
+"g": "mix"
+},
+{
+"a": "Thy Art Is Murder",
+"t": "Reign of Darkness",
+"s": 215,
+"dz": 2406930575,
+"g": "mix"
+},
+{
+"a": "Thy Final Pain",
+"t": "When angels die",
+"s": 259,
+"dz": 493709942,
+"p": "https://p.scdn.co/mp3-preview/10276b6d7288216798d45ebbcb621a3fded6c61b",
+"g": "sp"
+},
+{
+"a": "Tim Buckley",
+"t": "Song to the Siren - Take 7",
+"s": 208,
+"dz": 747686,
+"g": "mix"
+},
+{
+"a": "To/Die/For",
+"t": "Jaded",
+"s": 271,
+"dz": 2136728357,
+"g": "mix"
+},
+{
+"a": "Totalselfhatred",
+"t": "Enlightment",
+"s": 341,
+"dz": 1097024,
+"g": "mix"
+},
+{
+"a": "Totalselfhatred",
+"t": "Total Self-Hatred",
+"s": 441,
+"dz": 1097030,
+"p": "https://p.scdn.co/mp3-preview/aac19061587fbc946329b52cb5bc4c1aa6dab808",
+"g": "sp"
+},
+{
+"a": "Toxic Holocaust",
+"t": "Mkultra",
+"s": 127,
+"dz": 70596078,
+"g": "mix"
+},
+{
+"a": "Toxic Holocaust",
+"t": "War is Hell",
+"s": 180,
+"dz": 11007204,
+"g": "mix"
+},
+{
+"a": "TRAITRS",
+"t": "The Suffering of Spiders",
+"s": 212,
+"dz": 475464492,
+"g": "mix"
+},
+{
+"a": "Triptykon",
+"t": "Aurorae",
+"s": 377,
+"dz": 108590748,
+"g": "mix"
+},
+{
+"a": "Twisted Sister",
+"t": "The Price",
+"s": 228,
+"dz": 3803466342,
+"g": "mix"
+},
+{
+"a": "Uada",
+"t": "Djinn",
+"s": 471,
+"dz": 2135637977,
+"g": "mix"
+},
+{
+"a": "Uada",
+"t": "The Purging Fire",
+"s": 358,
+"dz": 2135646087,
+"g": "mix"
+},
+{
+"a": "UFO",
+"t": "Doctor Doctor - 2007 Remaster",
+"s": 252,
+"dz": 1787639967,
+"g": "mix"
+},
+{
+"a": "Ulcerate",
+"t": "Dissolved Orders",
+"s": 495,
+"dz": 912417702,
+"g": "mix"
+},
+{
+"a": "Ulcerate",
+"t": "Stare Into Death And Be Still",
+"s": 504,
+"dz": 894987562,
+"g": "mix"
+},
+{
+"a": "Unearth",
+"t": "Giles",
+"s": 238,
+"dz": 70879093,
+"g": "mix"
+},
+{
+"a": "Unearth",
+"t": "My Will Be Done",
+"s": 217,
+"dz": 70891794,
+"g": "mix"
+},
+{
+"a": "UNKLE",
+"t": "Lonely Soul",
+"s": 533,
+"dz": 2122337597,
+"g": "mix"
+},
+{
+"a": "UNKLE",
+"t": "Rabbit in Your Headlights",
+"s": 376,
+"dz": 2122337657,
+"g": "mix"
+},
+{
+"a": "Unleashed",
+"t": "Before the Creation of Time",
+"s": 229,
+"dz": 572996632,
+"p": "https://p.scdn.co/mp3-preview/e0f3e557fcdc7cb2a7c9273c2349045161f62bc3",
+"g": "sp"
+},
+{
+"a": "Unleashed",
+"t": "Midvinterblot",
+"s": 179,
+"dz": 586499602,
+"p": "https://p.scdn.co/mp3-preview/190548349c08d671fdb33cbf6ed39c1021a1b1df",
+"g": "sp"
+},
+{
+"a": "Unleashed",
+"t": "Winterland",
+"s": 184,
+"dz": 109178442,
+"p": "https://p.scdn.co/mp3-preview/f0a2fcb6707b159b258dfabb4d09f163831d241e",
+"g": "sp"
+},
+{
+"a": "Unto Others",
+"t": "Can You Hear the Rain",
+"s": 335,
+"dz": 2466556265,
+"g": "mix"
+},
+{
+"a": "Unto Others",
+"t": "Heroin",
+"s": 221,
+"dz": 1482610472,
+"g": "mix"
+},
+{
+"a": "Unto Others",
+"t": "Nightfall",
+"s": 214,
+"dz": 677358842,
+"g": "mix"
+},
+{
+"a": "Urfaust",
+"t": "Meditatum II",
+"s": 597,
+"dz": 133458370,
+"g": "mix"
+},
+{
+"a": "Urfaust",
+"t": "Voodoo Dust",
+"s": 512,
+"dz": 128797859,
+"g": "mix"
+},
+{
+"a": "Urgehal",
+"t": "Antireligios",
+"s": 375,
+"dz": 3386654531,
+"g": "mix"
+},
+{
+"a": "Urgehal",
+"t": "Antireligious",
+"s": 375,
+"p": "https://p.scdn.co/mp3-preview/afca4d983c9ec613b65e97c6b4f4158e21c736f7",
+"g": "sp"
+},
+{
+"a": "Urgehal",
+"t": "Goatcraft Torment",
+"s": 240,
+"dz": 3386654511,
+"p": "https://p.scdn.co/mp3-preview/d4021087d3314139bd880b3ecd49f89d35749cbe",
+"g": "sp"
+},
+{
+"a": "Urgehal",
+"t": "Satanic Black Metal in Hell",
+"s": 274,
+"dz": 3386654551,
+"p": "https://p.scdn.co/mp3-preview/21a66f1d241d58b65fcbb9df2bb770629374b326",
+"g": "sp"
+},
+{
+"a": "Vader",
+"t": "This Is The War",
+"s": 170,
+"g": "sp"
+},
+{
+"a": "Vampirska",
+"t": "Astral Transfixion: My Heart Devoid of Any Entity",
+"s": 382,
+"dz": 1558304042,
+"g": "mix"
+},
+{
+"a": "Vektor",
+"t": "Tetrastructural Minds",
+"s": 321,
+"dz": 62455853,
+"g": "mix"
+},
+{
+"a": "Violator",
+"t": "Thrash Maniacs",
+"s": 239,
+"dz": 3495891291,
+"g": "mix"
+},
+{
+"a": "Vital Remains",
+"t": "Dechristianize",
+"s": 536,
+"dz": 109182778,
+"p": "https://p.scdn.co/mp3-preview/7bb9b04e30c2d4aaa7e7480598737cf1a5b04aec",
+"g": "sp"
+},
+{
+"a": "Volbeat",
+"t": "Still Counting",
+"s": 261,
+"dz": 3431342921,
+"g": "mix"
+},
+{
+"a": "Volturyon",
+"t": "Fungus Coat",
+"s": 233,
+"dz": 129478316,
+"p": "https://p.scdn.co/mp3-preview/8e0b15f761a3b2d3c144f4d5239399baae7502d2",
+"g": "sp"
+},
+{
+"a": "Vàli",
+"t": "Nordavindens Klagesang",
+"s": 177,
+"dz": 1975857057,
+"g": "mix"
+},
+{
+"a": "Warmen",
+"t": "Accept The Fact",
+"s": 238,
+"dz": 2073846097,
+"g": "mix"
+},
+{
+"a": "White Ward",
+"t": "Black Silent Piers",
+"s": 394,
+"dz": 143957222,
+"g": "mix"
+},
+{
+"a": "Whitechapel",
+"t": "The Somatic Defilement",
+"s": 318,
+"p": "https://p.scdn.co/mp3-preview/ec847f2bb22103aa38c519b471ed2b756a508a54",
+"g": "sp"
+},
+{
+"a": "Whitesnake",
+"t": "Is This Love",
+"s": 304,
+"dz": 3746032832,
+"g": "mix"
+},
+{
+"a": "Windhand",
+"t": "Orchard",
+"s": 397,
+"dz": 69286993,
+"g": "mix"
+},
+{
+"a": "Windir",
+"t": "Journey to the End",
+"s": 574,
+"dz": 627314642,
+"g": "mix"
+},
+{
+"a": "Windir",
+"t": "Todeswalzer",
+"s": 295,
+"dz": 627314522,
+"g": "mix"
+},
+{
+"a": "Winterfylleth",
+"t": "Green Cathedral",
+"s": 788,
+"dz": 2075442737,
+"g": "mix"
+},
+{
+"a": "Witch",
+"t": "Seer",
+"s": 478,
+"dz": 2032251547,
+"g": "mix"
+},
+{
+"a": "Witchcraft",
+"t": "Witchcraft",
+"s": 360,
+"dz": 688973412,
+"g": "mix"
+},
+{
+"a": "Witchtrap",
+"t": "Asura",
+"s": 258,
+"dz": 428877872,
+"g": "mix"
+},
+{
+"a": "Within Temptation",
+"t": "Mother Earth",
+"s": 331,
+"dz": 1221051462,
+"g": "mix"
+},
+{
+"a": "Wolf",
+"t": "I Will Kill Again",
+"s": 298,
+"dz": 115239136,
+"g": "mix"
+},
+{
+"a": "Wolves In The Throne Room",
+"t": "Angrboda",
+"s": 602,
+"dz": 386096941,
+"g": "mix"
+},
+{
+"a": "Wolves In The Throne Room",
+"t": "Born from the Serpent's Eye",
+"s": 576,
+"dz": 386096921,
+"g": "mix"
+},
+{
+"a": "Woods Of Ypres",
+"t": "Lightning & Snow",
+"s": 280,
+"dz": 70991293,
+"g": "mix"
+},
+{
+"a": "Woods Of Ypres",
+"t": "Shards Of Love",
+"s": 318,
+"dz": 40584321,
+"g": "mix"
+},
+{
+"a": "Wormed",
+"t": "Pseudo-Horizon",
+"s": 201,
+"dz": 119803422,
+"p": "https://p.scdn.co/mp3-preview/5f88d2514b3b7f49f2e3db3ffa91630e5bc128b0",
+"g": "sp"
+},
+{
+"a": "Wovenhand",
+"t": "Cripplegate (Standing On Glass)",
+"s": 223,
+"dz": 3741381702,
+"g": "mix"
+},
+{
+"a": "Wovenhand",
+"t": "Dirty Blue",
+"s": 283,
+"dz": 3741346202,
+"g": "mix"
+},
+{
+"a": "Xandria",
+"t": "Nightfall",
+"s": 234,
+"dz": 137687273,
+"g": "mix"
+},
+{
+"a": "Xasthur",
+"t": "Screaming at Forgotten Tears",
+"s": 495,
+"dz": 414539912,
+"g": "mix"
+},
+{
+"a": "Xeno & Oaklander",
+"t": "Rendez-Vous d'Or",
+"s": 267,
+"dz": 11932301,
+"g": "mix"
+},
+{
+"a": "Xeno & Oaklander",
+"t": "Saracen",
+"s": 259,
+"dz": 11932293,
+"g": "mix"
+},
+{
+"a": "Year Of The Goat",
+"t": "Avaritia",
+"s": 222,
+"dz": 697420812,
+"g": "mix"
+},
+{
+"a": "YOB",
+"t": "Adrift in the Ocean - 2011 Mix",
+"s": 813,
+"dz": 1520310982,
+"g": "mix"
+},
+{
+"a": "Younger Brother",
+"t": "Shine",
+"s": 285,
+"dz": 97200654,
+"g": "mix"
+},
+{
+"a": "Zeal & Ardor",
+"t": "Children's Summon",
+"s": 188,
+"dz": 141874271,
+"g": "mix"
+},
+{
+"a": "Zeal & Ardor",
+"t": "Don't You Dare",
+"s": 208,
+"dz": 504448682,
+"g": "mix"
+},
+{
+"a": "Çilekeş",
+"t": "Kendimden Geriye",
+"s": 235,
+"dz": 66296761,
+"g": "mix"
+},
+{
+"a": "Çilekeş",
+"t": "Y.o.k.",
+"s": 281,
+"dz": 66296762,
+"g": "mix"
+},
+{
+"a": "Şebnem Ferah",
+"t": "Can Kırıkları",
+"s": 349,
+"dz": 68053886,
+"g": "mix"
+},
+{
+"a": "Şebnem Ferah",
+"t": "Vazgeçtim Dünyadan",
+"s": 337,
+"dz": 68055347,
+"g": "mix"
+}
+]
+}

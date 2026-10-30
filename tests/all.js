@@ -48,3 +48,4 @@ import './domino.test.js';
 import './go.test.js';
 import './altmisalti.test.js';
 import './dogruluk-cesaret.test.js';
+import './sarki-suresi.test.js';
