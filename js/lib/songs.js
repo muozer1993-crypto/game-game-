@@ -4,7 +4,9 @@
 //   a artist, t title, s length in seconds, p Spotify preview url (does not expire), dz Deezer track id
 //   (its preview url is fetched when a clip is played), np: no preview anywhere, g: where the song
 //   comes from — 'sp' the Spotify list, 'mix' the exported mix list, 'fav' a favourite band's albums,
-//   'top' the broad catalog (an index band's most popular songs; only used when players pick bands).
+//   'fr' the friend's playlists, 'top' the broad catalog (an index band's most popular songs; only
+//   used when players pick bands). w: whose list the song is on — bit 1 the first person (people[0]),
+//   bit 2 the second (people[1]); catalog songs carry no w.
 import { createRng, shuffle } from './rng.js';
 
 export const normKey = (s) => String(s || '').toLocaleLowerCase('en-US').replace(/\s+/g, ' ').trim();
@@ -16,7 +18,9 @@ export const hasAudio = (t) => !!(t && (t.p || (t.dz && !t.np)));
 export const fmt = (secs) => `${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')}`;
 
 export const POOL_OPTIONS = [
-  { value: 'liste', label: 'Hazır liste (favori gruplar sık)' },
+  { value: 'liste', label: "Mustafa'nın listesi (favori gruplar sık)" },
+  { value: 'arkadas', label: "beyz'in listeleri" },
+  { value: 'ikisi', label: 'İki listenin ortak grupları' },
   { value: 'secim', label: 'Dinlediğimiz gruplar (oyunda seçilir)' },
   { value: 'ortak', label: 'Yalnız ortak gruplar (ikimizin de seçtiği)' },
 ];
@@ -24,8 +28,18 @@ export const POOL_VALUES = POOL_OPTIONS.map((o) => o.value);
 
 const allTracks = (data) => (data && Array.isArray(data.tracks) ? data.tracks : []).filter((t) => t && t.a && t.t && Number(t.s) >= 30);
 
-/** The personal list: everything but the broad catalog. */
-export const listTracks = (data) => allTracks(data).filter((t) => t.g !== 'top');
+/** Whose list a song is on: bit 1 the first person, bit 2 the second. A song without w is the first person's unless it is a catalog song. */
+export const whoHas = (t) => (t.w != null ? Number(t.w) : (t.g === 'top' ? 0 : 1));
+
+/** Songs on person `who`'s list (bit 1 the first person, bit 2 the second); without `who`: anyone's list. */
+export const listTracks = (data, who = 3) => allTracks(data).filter((t) => whoHas(t) & who);
+
+/** Bands on both people's lists (normalised names). */
+export function commonArtists(data) {
+  const on = (bit) => new Set(listTracks(data, bit).map((t) => normKey(t.a)));
+  const a = on(1);
+  return new Set([...on(2)].filter((x) => a.has(x)));
+}
 
 /** Bands the players can pick from, alphabetically (the catalog list, else any band with 5+ songs). */
 export function catalogArtists(data) {
@@ -45,12 +59,22 @@ export function catalogArtists(data) {
  * @returns {{ tracks: object[], weights: object }}
  */
 export function poolFor(data, { pool = 'liste', picks = [[], []] } = {}) {
-  if (pool !== 'secim' && pool !== 'ortak') return { tracks: listTracks(data), weights: (data && data.weights) || {} };
+  if (pool === 'arkadas') return { tracks: listTracks(data, 2), weights: {} };
+  if (pool === 'ikisi') {
+    // every song (both lists and the catalog) by a band on both lists; a song on both lists weighs 3×
+    const common = commonArtists(data);
+    const tracks = allTracks(data).filter((t) => common.has(normKey(t.a)));
+    if (tracks.length < 10) return { tracks: listTracks(data, 3), weights: {} }; // too little in common: both lists together
+    const weights = {};
+    for (const t of tracks) if (whoHas(t) === 3) weights[`${t.a}|${t.t}`] = 3;
+    return { tracks, weights, perSong: true };
+  }
+  if (pool !== 'secim' && pool !== 'ortak') return { tracks: listTracks(data, 1), weights: (data && data.weights) || {} };
   const sets = [0, 1].map((i) => new Set((Array.isArray(picks[i]) ? picks[i] : []).map(normKey)));
   const union = new Set([...sets[0], ...sets[1]]);
   const both = new Set([...sets[0]].filter((a) => sets[1].has(a)));
   const chosen = pool === 'ortak' && both.size ? both : union;
-  if (!chosen.size) return { tracks: listTracks(data), weights: (data && data.weights) || {} };
+  if (!chosen.size) return { tracks: listTracks(data, 1), weights: (data && data.weights) || {} };
   const tracks = allTracks(data).filter((t) => chosen.has(normKey(t.a)));
   const weights = {};
   if (pool === 'secim') for (const t of tracks) if (both.has(normKey(t.a))) weights[t.a] = 3;
@@ -68,8 +92,9 @@ export function pickSongs(data, { count, favor = 'high', seed = 1, needAudio = f
   if (!tracks.length) throw new Error('Şarkı listesi boş');
   const table = new Map();
   for (const [k, v] of Object.entries((data && data.weights) || {})) if (Number(v) > 0) table.set(normKey(k), Number(v));
+  const keyOf = data && data.perSong ? (t) => normKey(`${t.a}|${t.t}`) : (t) => normKey(t.a); // weights per song or per band
   const weightOf = (t) => {
-    const w = table.get(normKey(t.a)) || 1;
+    const w = table.get(keyOf(t)) || 1;
     return favor === 'none' ? 1 : favor === 'mid' ? Math.sqrt(w) : w;
   };
   const rng = createRng(seed);

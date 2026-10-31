@@ -23,7 +23,7 @@ export const meta = {
     'Puanlar dinlediğin süreye göre katlanır: hiç dinlemeden bilsen 2 katı, klibin tamamını dinlersen 1 katı (arası orantılı). Tekrar dinlemek de dinlenen süreye sayılır.',
     'Cevabı söyleyince "Cevabı göster" de; gerçek cevap çıkar, rakibin "Grubu bildi", "Grubu ve şarkıyı bildi" ya da "Bilemedi" diye onaylar.',
     'Emin değilsen "Şıkları göster": dört grup, sonra dört şarkı adı arasından seçersin; bu yolda puanlar yarıya iner. Grup yanlışsa şarkı sorulmaz.',
-    'Şarkı havuzu: hazır liste (favori gruplar sık) ya da oyun başında ikinizin işaretlediği gruplar. Oyun sonunda toplam puanı çok olan kazanır.',
+    'Şarkı havuzu: Mustafa\'nın listesi (favori gruplar sık), beyz\'in listeleri, iki listenin ortak grupları ya da oyun başında ikinizin işaretlediği gruplar. Oyun sonunda toplam puanı çok olan kazanır.',
   ].join('\n'),
   data: ['songs'],
   handoffNote: 'Şarkı yalnızca sırası gelene çalar; cevabı rakibin onaylayacak.',
@@ -32,7 +32,7 @@ export const meta = {
     { key: 'clip', label: 'Klip süresi', type: 'select', default: 20, options: CLIP_OPTIONS.map((n) => ({ value: n, label: `${n} saniye` })) },
     { key: 'pool', label: 'Şarkı havuzu', type: 'select', default: 'liste', options: POOL_OPTIONS },
     {
-      key: 'favor', label: 'Favori gruplar (hazır listede)', type: 'select', default: 'high',
+      key: 'favor', label: "Favori gruplar (Mustafa'nın listesinde)", type: 'select', default: 'high',
       options: [
         { value: 'high', label: 'Çok çıksın' },
         { value: 'mid', label: 'Biraz daha sık çıksın' },
@@ -79,7 +79,7 @@ export function setup(options = {}, ctx = {}) {
     results: [],        // results[turn] = { mode, heard, artistOk, songOk, points: { artist, song, total } }
     turn: 0,
     current: null,      // the open turn's progress: { mode, heard?, artistOk? }
-    phase: pool === 'liste' ? 'listen' : 'pick', // pick | listen | judge | options | options2 | result | over
+    phase: pool === 'secim' || pool === 'ortak' ? 'pick' : 'listen', // pick | listen | judge | options | options2 | result | over
   };
   if (state.phase === 'listen') state.songs = drawSongs(state, ctx.songs);
   return state;

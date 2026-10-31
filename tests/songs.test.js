@@ -1,5 +1,5 @@
 import { test, assert } from './runner.js';
-import { poolFor, pickSongs, catalogArtists, artistOptions, songOptions, listTracks, hasAudio } from '../js/lib/songs.js';
+import { poolFor, pickSongs, catalogArtists, artistOptions, songOptions, listTracks, hasAudio, commonArtists } from '../js/lib/songs.js';
 
 const data = {
   weights: { Katatonia: 3 },
@@ -60,4 +60,36 @@ test('şarkı havuzu: seçim tohumla aynı, ses gerekince sessizler elenir, şı
   assert.ok(few.includes('No audio'));
   const small = artistOptions({ tracks: [{ a: 'Only' }] }, { a: 'Only', t: 'x' }, 1);
   assert.deepEqual(small, ['Only'], 'a pool with one band and no data to fill from gives one option');
+});
+
+test('şarkı havuzu: iki kişinin listeleri, ortak gruplar ve ortak şarkıların ağırlığı', () => {
+  const two = {
+    weights: {}, catalog: ['Katatonia', 'Metallica', 'Hayko Cepkin'],
+    tracks: [
+      ...Array.from({ length: 6 }, (_, i) => ({ a: 'Katatonia', t: `Kata ${i}`, s: 200 + i, dz: 1 + i, g: 'fav', w: i === 0 ? 3 : 1 })),
+      ...Array.from({ length: 4 }, (_, i) => ({ a: 'Hayko Cepkin', t: `Hayko ${i}`, s: 210 + i, p: 'https://p/x', g: 'mix', w: i < 2 ? 3 : 1 })),
+      ...Array.from({ length: 5 }, (_, i) => ({ a: 'Zara', t: `Zara ${i}`, s: 220 + i, p: 'https://p/y', g: 'fr', w: 2 })),
+      { a: 'Hayko Cepkin', t: 'Sadece beyz', s: 230, p: 'https://p/z', g: 'fr', w: 2 },
+      ...Array.from({ length: 6 }, (_, i) => ({ a: 'Metallica', t: `Met ${i}`, s: 300 + i, dz: 200 + i, g: 'top' })),
+      ...Array.from({ length: 6 }, (_, i) => ({ a: 'Katatonia', t: `Kata top ${i}`, s: 240 + i, dz: 400 + i, g: 'top' })),
+      { a: 'Old', t: 'no w field', s: 100, dz: 999, g: 'mix' },
+    ],
+  };
+  assert.equal(listTracks(two, 1).length, 6 + 4 + 1, 'first person: w bit 1, plus a legacy song without w');
+  assert.equal(listTracks(two, 2).length, 1 + 2 + 5 + 1, 'second person: w bit 2');
+  assert.deepEqual([...commonArtists(two)].sort(), ['hayko cepkin', 'katatonia']);
+  const mine = poolFor(two, { pool: 'liste' });
+  assert.ok(mine.tracks.every((t) => (t.w || 1) & 1) && mine.tracks.every((t) => t.g !== 'top'));
+  const theirs = poolFor(two, { pool: 'arkadas' });
+  assert.equal(theirs.tracks.length, 9);
+  assert.ok(theirs.tracks.every((t) => t.w & 2));
+  const both = poolFor(two, { pool: 'ikisi' });
+  assert.ok(both.tracks.every((t) => t.a === 'Katatonia' || t.a === 'Hayko Cepkin'), 'only bands on both lists');
+  assert.equal(both.tracks.length, 6 + 4 + 1 + 6, 'both lists and the catalog songs of those bands');
+  assert.deepEqual(Object.keys(both.weights).sort(), ['Hayko Cepkin|Hayko 0', 'Hayko Cepkin|Hayko 1', 'Katatonia|Kata 0'], 'songs on both lists weigh more');
+  let shared = 0;
+  for (let seed = 1; seed <= 40; seed++) shared += pickSongs(both, { count: 5, seed }).filter((s) => /^(Kata 0|Hayko [01])$/.test(s.t)).length;
+  assert.ok(shared > 40 * 5 * (3 / 17) * 1.5, `the three shared songs come up more than their share (${shared})`);
+  const little = poolFor({ tracks: [{ a: 'A', t: 'x', s: 100, w: 3 }, { a: 'B', t: 'y', s: 100, w: 1 }, { a: 'C', t: 'z', s: 100, w: 2 }] }, { pool: 'ikisi' });
+  assert.equal(little.tracks.length, 3, 'under ten songs in common: both lists together');
 });

@@ -24,7 +24,7 @@ export const meta = {
     'Normal: şarkının adı ve grubu yazar. Zor: ad gizlidir, ▶ düğmesi şarkıdan seçtiğiniz kadar saniye çalar (internet gerekir); ad ancak ikiniz de tahmin edince açıklanır.',
     'Tek telefonda önce biri tahminini gizlice girer ve telefonu verir, sonra öbürü girer; ardından ikiniz de sonucu görürsünüz. İlk tahmin eden her şarkıda değişir.',
     'Süreyi dakika ve saniye olarak art arda yazarsın: 4 3 2 → 4:32. Oyun sonunda çok tur alan kazanır; eşitlikte tahminlerinin gerçekten toplam sapması az olan.',
-    'Şarkı havuzu: "Hazır liste" Spotify listesinden gelir ve favori ayarına göre Katatonia, Opeth, Anathema, Antimatter daha sık çıkar. "Dinlediğimiz gruplar"da oyun başında ikiniz de dinlediğiniz grupları işaretlersiniz; şarkılar onlardan gelir, ikinizin de seçtiği gruplar daha sık. "Yalnız ortak gruplar" ikinizin de seçtikleriyle sınırlı kalır.',
+    'Şarkı havuzu: Mustafa\'nın listesi (favori ayarına göre Katatonia, Opeth, Anathema, Antimatter sık), beyz\'in listeleri, iki listenin ortak grupları (iki listede de olan gruplar; iki listede de olan şarkılar daha sık), ya da oyun başında ikinizin işaretlediği gruplar (ikinizin de seçtikleri daha sık; "yalnız ortak" ikinizin de seçtikleriyle sınırlı).',
   ].join('\n'),
   data: ['songs'],
   handoffNote: 'Tahminler gizli: ekranı yalnızca sırası gelen görmeli.',
@@ -40,7 +40,7 @@ export const meta = {
     { key: 'clip', label: 'Zor modda çalma süresi', type: 'select', default: 20, options: CLIP_OPTIONS.map((n) => ({ value: n, label: `${n} saniye` })) },
     { key: 'pool', label: 'Şarkı havuzu', type: 'select', default: 'liste', options: POOL_OPTIONS },
     {
-      key: 'favor', label: 'Favori gruplar (hazır listede)', type: 'select', default: 'high',
+      key: 'favor', label: "Favori gruplar (Mustafa'nın listesinde)", type: 'select', default: 'high',
       options: [
         { value: 'high', label: 'Çok çıksın' },
         { value: 'mid', label: 'Biraz daha sık çıksın' },
@@ -100,7 +100,7 @@ export function setup(options = {}, ctx = {}) {
     songs: [],                               // one per round: { a, t, s, p?, dz? }
     guesses: [],                             // guesses[round][player] in seconds
     index: 0,                                // current round
-    phase: pool === 'liste' ? 'guess' : 'pick', // pick | guess | reveal | over
+    phase: pool === 'secim' || pool === 'ortak' ? 'pick' : 'guess', // pick | guess | reveal | over
   };
   if (state.phase === 'guess') {
     state.songs = drawSongs(state, ctx.songs);

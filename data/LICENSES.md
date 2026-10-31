@@ -46,10 +46,11 @@ Bu proje için yazılmış özgün genel kültür soruları ve Tabu kartları. L
 
 ## sarkilar.json (Şarkı Süresi)
 
-Şarkı adı, grup ve süre bilgileri: oyuncunun kendi Spotify listesinin dışa aktarımı
-(`PAPAZ_MİXLER_TOPLU.csv`), Spotify'ın herkese açık embed sayfasındaki liste verisi ve Deezer'ın
-açık API'si (https://developers.deezer.com) — favori grupların (Katatonia, Opeth, Anathema,
-Antimatter) stüdyo albümleri de buradan alındı. Dosyada yalnızca üst veri (ad, grup, süre, kimlik,
+Şarkı adı, grup ve süre bilgileri: oyuncuların kendi Spotify listelerinin dışa aktarımı
+(`PAPAZ_MİXLER_TOPLU.csv`) ve herkese açık embed sayfalarındaki liste verileri (Mustafa'nın "mix" listesi,
+beyz'in sekiz listesi) ile Deezer'ın açık API'si (https://developers.deezer.com) — favori grupların
+(Katatonia, Opeth, Anathema, Antimatter) stüdyo albümleri ve papaz2026 dizinindeki 191 grubun en
+bilinen şarkıları da buradan alındı. Dosyada yalnızca üst veri (ad, grup, süre, kimlik,
 Spotify örnek bağlantısı) vardır; ses dosyası depoda tutulmaz. Zor modda çalan 10 saniyelik örnek,
 Spotify'ın (`p.scdn.co`) ya da Deezer'ın kendi sunucusundan oynatma anında yüklenir.
 
