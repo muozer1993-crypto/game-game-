@@ -1,6 +1,6 @@
 # Oyun Gecesi
 
-İki kişilik, Türkçe arayüzlü, telefonda rahat oynanan oyun koleksiyonu: 47 oyun; kartlardaki ★ ile favoriler üstte toplanır (kelime, soru-cevap, zekâ ve refleks, tahta, kart/zar/taş).
+İki kişilik, Türkçe arayüzlü, telefonda rahat oynanan oyun koleksiyonu: 48 oyun; kartlardaki ★ ile favoriler üstte toplanır (kelime, soru-cevap, zekâ ve refleks, tahta, kart/zar/taş).
 Düz HTML + CSS + JavaScript (ES modules); framework yok, build adımı yok, npm yok.
 Tek telefonda elden ele ya da iki telefonda oda koduyla oynanır. Ana ekrana eklenebilir
 (manifest + service worker) ve bir kez yüklendikten sonra tek telefon modu çevrimdışı çalışır.
@@ -21,7 +21,8 @@ Tek telefonda elden ele ya da iki telefonda oda koduyla oynanır. Ana ekrana ekl
 | **Beni Ne Kadar Tanıyorsun?** | Aynı sorular ikinize; önce kendi cevabın, sonra rakibin tahmini; karşılaştırma otomatik. Hazır havuz + kendi sorularınız. |
 | **Genel Kültür Düellosu** | Aynı sorular ikinize; doğru sayısı, eşitlikte hız. 240+ soruluk havuz. |
 | **Doğruluk mu Cesaret mi?** | Parti klasiği: sırayla doğruluk (1) ya da cesaret (2) seç, rakibin hakem; 60+50 dostça kart (`data/dogruluk.json`), bir kez kart değiştirme. |
-| **Şarkı Süresi** | Senin Spotify listenden bir şarkı gelir; ikiniz de kaç dakika sürdüğünü tahmin edersiniz (4 3 2 → 4:32), gerçeğe yakın olan turu alır. Normal: ad yazar; Zor: ad gizli, şarkıdan 10 saniye çalar. Katatonia, Opeth, Anathema ve Antimatter daha sık çıkar (`data/sarkilar.json`). |
+| **Şarkı Süresi** | Bir şarkı gelir; ikiniz de kaç dakika sürdüğünü tahmin edersiniz (4 3 2 → 4:32), gerçeğe yakın olan turu alır. Normal: ad yazar; Zor: ad gizli, şarkıdan 10–30 saniye çalar. Havuz: hazır Spotify listesi (Katatonia, Opeth, Anathema, Antimatter sık) ya da oyun başında ikinizin işaretlediği gruplar (`data/sarkilar.json`). |
+| **Şarkıyı Bil** | Şarkı çalar, bildiğin an durdur: grup 5, şarkı 10 puan, az dinleyene 2 kata kadar çarpan. Cevabı söyle rakibin onaylasın ya da yarı puana dört şık iste. Aynı şarkı havuzu seçenekleri. |
 | **Hesap Yarışı** | Aynı aritmetik işlemler ikinize (kolay/orta/zor); doğru sayısı, eşitlikte hız. |
 | **Hedef Sayı** | Altı sayı, dört işlem, üç basamaklı hedef; aynı bulmacada süreye karşı en yakına ulaş (tam 10, ≤5 uzak 7, ≤10 uzak 5). Tur sonunda çözüm gösterilir. |
 | **Renk Tuzağı** | Kelimeye değil yazının rengine dokun (Stroop); süre dolana kadar doğru −yanlış puanı. |

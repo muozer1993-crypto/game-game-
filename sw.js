@@ -1,6 +1,6 @@
 // Minimal service worker: precache the app shell, serve cache-first, fall back to network.
 // Bump VERSION whenever files change so that old caches are dropped.
-const VERSION = 'v93';
+const VERSION = 'v94';
 const CACHE = `oyun-gecesi-${VERSION}`;
 const SHELL = [
   './',
@@ -16,11 +16,14 @@ const SHELL = [
   './js/lib/storage.js',
   './js/lib/sfx.js',
   './js/lib/words.js',
+  './js/lib/songs.js',
   './js/ui/dom.js',
   './js/ui/paint.js',
   './js/ui/keyboard.js',
   './js/ui/timer.js',
   './js/ui/handoff.js',
+  './js/ui/clip.js',
+  './js/ui/artist-pick.js',
   './js/ui/scoreboard.js',
   './js/net/transport.js',
   './js/net/peer.js',
@@ -73,6 +76,7 @@ const SHELL = [
   './games/pisti.js',
   './games/durak.js',
   './games/sarki-suresi.js',
+  './games/sarkiyi-bil.js',
   './data/questions.json',
   './data/trivia.json',
   './data/tabu.json',
@@ -140,6 +144,8 @@ const SHELL = [
   './tests/altmisalti.test.js',
   './tests/dogruluk-cesaret.test.js',
   './tests/sarki-suresi.test.js',
+  './tests/songs.test.js',
+  './tests/sarkiyi-bil.test.js',
   './tests/kelime-tahtasi.test.js',
   './tests/mangala.test.js',
   './tests/mayin-tarlasi.test.js',

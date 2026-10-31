@@ -1,30 +1,30 @@
-// Şarkı Süresi — a song from the player's own Spotify list comes up and both players guess how
-// long it is (m:ss); the guess closer to the real length takes the round. Normal mode shows the
-// title; hard mode hides it and plays a ten-second clip instead.
-//
-// Song data: data/sarkilar.json — { weights: { artist: w }, tracks: [{ a, t, s, dz?, p?, np? }] }
-//   a artist, t title, s length in seconds, p a Spotify preview url (does not expire),
-//   dz a Deezer track id (its preview url is fetched when the clip is played, stored ones expire),
-//   np: the song has no preview anywhere (hard mode skips it).
+// Şarkı Süresi — a song comes up and both players guess how long it is (m:ss); the guess closer to
+// the real length takes the round. Normal mode shows the title; hard mode hides it and plays a clip
+// instead. The songs come from the personal list (favourite bands weighted) or from the bands the
+// two players pick at the start (see js/lib/songs.js).
 import { el, render as draw, toast } from '../js/ui/dom.js';
 import { createKeyboard } from '../js/ui/keyboard.js';
-import { createRng } from '../js/lib/rng.js';
+import { createClipPlayer } from '../js/ui/clip.js';
+import { renderArtistPick, rememberedPicks } from '../js/ui/artist-pick.js';
+import { pickSongs, poolFor, catalogArtists, hasAudio, fmt, POOL_OPTIONS, POOL_VALUES } from '../js/lib/songs.js';
 
-export const CLIP_SECONDS = 10;
+export { fmt, hasAudio, pickSongs };
+
 const ROUND_OPTIONS = [5, 10, 15];
+const CLIP_OPTIONS = [10, 15, 20, 30];
 const FAVOR_OPTIONS = ['high', 'mid', 'none'];
 
 export const meta = {
   group: 'tanisma',
   name: 'Şarkı Süresi',
   icon: '🎵',
-  description: 'Listenden bir şarkı gelir: kaç dakika sürüyor? Gerçek süreye yakın tahmin eden turu alır.',
+  description: 'Bir şarkı gelir: kaç dakika sürüyor? Gerçek süreye yakın tahmin eden turu alır.',
   rules: [
-    'Senin Spotify listenden bir şarkı gelir. İkiniz de şarkının kaç dakika sürdüğünü tahmin edersiniz (ör. 4:32). Gerçek süreye daha yakın olan turu alır; eşitlikte kimse puan almaz.',
-    'Normal: şarkının adı ve grubu yazar. Zor: ad gizlidir, ▶ düğmesi şarkıdan 10 saniye çalar (internet gerekir); ad ancak ikiniz de tahmin edince açıklanır.',
+    'Bir şarkı gelir. İkiniz de şarkının kaç dakika sürdüğünü tahmin edersiniz (ör. 4:32). Gerçek süreye daha yakın olan turu alır; eşitlikte kimse puan almaz.',
+    'Normal: şarkının adı ve grubu yazar. Zor: ad gizlidir, ▶ düğmesi şarkıdan seçtiğiniz kadar saniye çalar (internet gerekir); ad ancak ikiniz de tahmin edince açıklanır.',
     'Tek telefonda önce biri tahminini gizlice girer ve telefonu verir, sonra öbürü girer; ardından ikiniz de sonucu görürsünüz. İlk tahmin eden her şarkıda değişir.',
     'Süreyi dakika ve saniye olarak art arda yazarsın: 4 3 2 → 4:32. Oyun sonunda çok tur alan kazanır; eşitlikte tahminlerinin gerçekten toplam sapması az olan.',
-    'Favoriler ayarı açıkken Katatonia, Opeth, Anathema ve Antimatter (ve benzer gruplar) daha sık çıkar. Liste ve ağırlıklar data/sarkilar.json dosyasında.',
+    'Şarkı havuzu: "Hazır liste" Spotify listesinden gelir ve favori ayarına göre Katatonia, Opeth, Anathema, Antimatter daha sık çıkar. "Dinlediğimiz gruplar"da oyun başında ikiniz de dinlediğiniz grupları işaretlersiniz; şarkılar onlardan gelir, ikinizin de seçtiği gruplar daha sık. "Yalnız ortak gruplar" ikinizin de seçtikleriyle sınırlı kalır.',
   ].join('\n'),
   data: ['songs'],
   handoffNote: 'Tahminler gizli: ekranı yalnızca sırası gelen görmeli.',
@@ -33,12 +33,14 @@ export const meta = {
       key: 'mode', label: 'Oyun türü', type: 'select', default: 'normal',
       options: [
         { value: 'normal', label: 'Normal: şarkının adı yazar' },
-        { value: 'hard', label: 'Zor: ad gizli, 10 saniye çalar' },
+        { value: 'hard', label: 'Zor: ad gizli, şarkı çalar' },
       ],
     },
     { key: 'rounds', label: 'Şarkı sayısı', type: 'select', default: 10, options: ROUND_OPTIONS.map((n) => ({ value: n, label: String(n) })) },
+    { key: 'clip', label: 'Zor modda çalma süresi', type: 'select', default: 20, options: CLIP_OPTIONS.map((n) => ({ value: n, label: `${n} saniye` })) },
+    { key: 'pool', label: 'Şarkı havuzu', type: 'select', default: 'liste', options: POOL_OPTIONS },
     {
-      key: 'favor', label: 'Favori gruplar', type: 'select', default: 'high',
+      key: 'favor', label: 'Favori gruplar (hazır listede)', type: 'select', default: 'high',
       options: [
         { value: 'high', label: 'Çok çıksın' },
         { value: 'mid', label: 'Biraz daha sık çıksın' },
@@ -52,9 +54,6 @@ export const meta = {
 function fail(msg) {
   throw new Error(msg);
 }
-
-/** 257 → "4:17" */
-export const fmt = (secs) => `${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')}`;
 
 /** Signed difference guess − real: "+1:05", "−0:22" or "tam isabet". */
 export function fmtDiff(guess, real) {
@@ -82,72 +81,32 @@ export function parseDigits(digits) {
   return { seconds: total };
 }
 
-const normKey = (s) => String(s || '').toLocaleLowerCase('en-US').replace(/\s+/g, ' ').trim();
-
-/** Can a clip be played for this song? */
-export const hasAudio = (t) => !!(t && (t.p || (t.dz && !t.np)));
-
-/**
- * Pick `count` songs, deterministic from the seed. Favourite artists (the weights table) come up
- * more often: favor 'high' uses the weights as they are, 'mid' their square root, 'none' ignores
- * them. No song twice, at most a few songs per artist, and no artist in two rounds in a row while
- * the pool allows it. With `needAudio` only songs that can play a clip are used.
- */
-export function pickSongs(data, { count, favor = 'high', seed = 1, needAudio = false }) {
-  const tracks = (data && Array.isArray(data.tracks) ? data.tracks : [])
-    .filter((t) => t && t.a && t.t && Number(t.s) >= 30 && (!needAudio || hasAudio(t)));
-  if (!tracks.length) fail('Şarkı listesi boş');
-  const table = new Map();
-  for (const [k, v] of Object.entries((data && data.weights) || {})) if (Number(v) > 0) table.set(normKey(k), Number(v));
-  const weightOf = (t) => {
-    const w = table.get(normKey(t.a)) || 1;
-    return favor === 'none' ? 1 : favor === 'mid' ? Math.sqrt(w) : w;
-  };
-  const rng = createRng(seed);
-  const cap = Math.max(2, Math.ceil(count / 4));
-  const perArtist = new Map();
-  const used = new Set();
-  const picked = [];
-  const n = Math.min(count, tracks.length);
-  while (picked.length < n) {
-    const last = picked.length ? normKey(picked[picked.length - 1].a) : null;
-    const free = tracks.filter((t) => !used.has(t));
-    let pool = free.filter((t) => (perArtist.get(normKey(t.a)) || 0) < cap && normKey(t.a) !== last);
-    if (!pool.length) pool = free.filter((t) => (perArtist.get(normKey(t.a)) || 0) < cap);
-    if (!pool.length) pool = free;
-    let total = 0;
-    for (const t of pool) total += weightOf(t);
-    let r = rng() * total;
-    let chosen = pool[pool.length - 1];
-    for (const t of pool) {
-      r -= weightOf(t);
-      if (r <= 0) { chosen = t; break; }
-    }
-    used.add(chosen);
-    perArtist.set(normKey(chosen.a), (perArtist.get(normKey(chosen.a)) || 0) + 1);
-    picked.push(chosen);
-  }
-  return picked.map((t) => {
-    const song = { a: String(t.a), t: String(t.t), s: Math.round(Number(t.s)) };
-    if (t.p) song.p = String(t.p);
-    if (t.dz) song.dz = Number(t.dz);
-    return song;
-  });
+/** Draw the game's songs from the pool the settings and picks describe. */
+function drawSongs(state, data) {
+  const pool = poolFor(data, { pool: state.pool, picks: state.picks });
+  return pickSongs(pool, { count: state.count, favor: state.favor, seed: state.seed, needAudio: state.mode === 'hard' });
 }
 
 export function setup(options = {}, ctx = {}) {
   const mode = options.mode === 'hard' ? 'hard' : 'normal';
   const count = ROUND_OPTIONS.includes(Number(options.rounds)) ? Number(options.rounds) : 10;
+  const clipSec = CLIP_OPTIONS.includes(Number(options.clip)) ? Number(options.clip) : 20;
+  const pool = POOL_VALUES.includes(options.pool) ? options.pool : 'liste';
   const favor = FAVOR_OPTIONS.includes(options.favor) ? options.favor : 'high';
-  const songs = pickSongs(ctx.songs, { count, favor, seed: Number(options.seed) || 1, needAudio: mode === 'hard' });
-  return {
-    mode,
-    clipSec: CLIP_SECONDS,
-    songs,                                   // one per round: { a, t, s, p?, dz? }
-    guesses: songs.map(() => [null, null]),  // guesses[round][player] in seconds
+  const state = {
+    mode, count, clipSec, pool, favor,
+    seed: Number(options.seed) || 1,
+    picks: [null, null],                     // bands each player picked ('secim' / 'ortak' pools)
+    songs: [],                               // one per round: { a, t, s, p?, dz? }
+    guesses: [],                             // guesses[round][player] in seconds
     index: 0,                                // current round
-    phase: 'guess',                          // guess | reveal | over
+    phase: pool === 'liste' ? 'guess' : 'pick', // pick | guess | reveal | over
   };
+  if (state.phase === 'guess') {
+    state.songs = drawSongs(state, ctx.songs);
+    state.guesses = state.songs.map(() => [null, null]);
+  }
+  return state;
 }
 
 /** The player who guesses first in round i (alternates). */
@@ -176,8 +135,22 @@ export function scoreOf(state, p) {
   return { points, error };
 }
 
-export function applyMove(state, player, move) {
+export function applyMove(state, player, move, ctx = {}) {
   if (!move || typeof move !== 'object') fail('Geçersiz hamle');
+  if (move.type === 'pick') {
+    if (state.phase !== 'pick') fail('Grup seçimi bitti');
+    if (state.picks[player] != null) fail('Seçimini yaptın');
+    const list = Array.isArray(move.artists) ? move.artists.filter((a) => typeof a === 'string').slice(0, 300) : [];
+    const picks = state.picks.slice();
+    picks[player] = list;
+    const next = { ...state, picks };
+    if (picks[0] != null && picks[1] != null) {
+      next.songs = drawSongs(next, ctx.songs);
+      next.guesses = next.songs.map(() => [null, null]);
+      next.phase = 'guess';
+    }
+    return next;
+  }
   if (move.type === 'guess') {
     if (state.phase !== 'guess') fail('Şu an tahmin sırası değil');
     if (Number(move.round) !== state.index) fail('Bu şarkının sırası geçti');
@@ -200,6 +173,7 @@ export function applyMove(state, player, move) {
 }
 
 export function getTurn(state) {
+  if (state.phase === 'pick') return { player: state.picks[0] == null ? 0 : 1, private: false, note: 'Önce dinlediğin grupları seçeceksin.' };
   if (state.phase === 'guess') {
     const f = firstGuesser(state.index);
     const g = state.guesses[state.index];
@@ -218,99 +192,26 @@ export function getResult(state) {
   return { draw: true };
 }
 
-// ----------------------------------------------------------------- audio (hard mode)
-const previewCache = new Map(); // deezer track id -> Promise<string|null>
-
-/** Deezer's public API answers JSONP; the preview url it returns is valid for about a day. */
-function jsonp(url) {
-  return new Promise((resolve, reject) => {
-    const cb = `__dz${Date.now().toString(36)}${Math.floor(Math.random() * 1e6).toString(36)}`;
-    const script = document.createElement('script');
-    let timer = null;
-    const cleanup = () => { delete window[cb]; script.remove(); clearTimeout(timer); };
-    window[cb] = (data) => { cleanup(); resolve(data); };
-    script.onerror = () => { cleanup(); reject(new Error('Ses sunucusuna ulaşılamadı')); };
-    timer = setTimeout(() => { cleanup(); reject(new Error('Ses sunucusu yanıt vermedi')); }, 8000);
-    script.src = `${url}${url.includes('?') ? '&' : '?'}callback=${cb}`;
-    document.head.append(script);
-  });
-}
-
-/** The 30-second preview url for a song, or null when there is none. */
-export function previewUrl(song) {
-  if (song.p) return Promise.resolve(song.p);
-  if (!song.dz) return Promise.resolve(null);
-  if (!previewCache.has(song.dz)) {
-    previewCache.set(song.dz, jsonp(`https://api.deezer.com/track/${encodeURIComponent(song.dz)}?output=jsonp`)
-      .then((d) => (d && typeof d.preview === 'string' && d.preview) || null)
-      .catch(() => null));
-  }
-  return previewCache.get(song.dz);
-}
-
-/** Play button + progress bar that plays the first `clipSec` seconds of the preview. */
-function clipPlayer(song, clipSec, onFail) {
-  const label = `▶ ${clipSec} saniye çal`;
-  const btn = el('button', { type: 'button', class: 'btn btn-primary btn-big ss-play' }, label);
-  const fill = el('div', { class: 'ss-fill' });
-  const bar = el('div', { class: 'ss-bar', 'aria-hidden': 'true' }, fill);
-  const note = el('p', { class: 'hint ss-note' }, 'Dinle, süresini tahmin et. İstersen tekrar çalabilirsin.');
-  const root = el('div', { class: 'ss-clip' }, btn, bar, note);
-  let audio = null;
-  let failed = false;
-  let stopTimer = null;
-  let raf = null;
-  const setFailed = (why) => {
-    if (failed) return;
-    failed = true;
-    btn.disabled = true;
-    btn.textContent = 'Ses çalınamadı';
-    note.textContent = why;
-    if (onFail) onFail();
-  };
-  const ready = previewUrl(song).then((url) => {
-    if (!url) { setFailed('Bu şarkının ses örneği yok; adı aşağıda.'); return; }
-    audio = new Audio();
-    audio.preload = 'auto';
-    audio.addEventListener('error', () => setFailed('Ses yüklenemedi (bağlantı yok mu?); adı aşağıda.'));
-    audio.src = url;
-  });
-  const stop = () => {
-    if (audio) audio.pause();
-    if (stopTimer) { clearTimeout(stopTimer); stopTimer = null; }
-    if (raf) { cancelAnimationFrame(raf); raf = null; }
-  };
-  const done = () => { stop(); fill.style.width = '100%'; btn.disabled = false; btn.textContent = '↻ Tekrar çal'; };
-  const tick = () => {
-    if (!audio) return;
-    fill.style.width = `${Math.min(1, audio.currentTime / clipSec) * 100}%`;
-    if (audio.currentTime >= clipSec) { done(); return; }
-    raf = requestAnimationFrame(tick);
-  };
-  btn.addEventListener('click', async () => {
-    if (failed) return;
-    if (!audio) { btn.textContent = 'Yükleniyor…'; await ready; if (!audio) return; }
-    try {
-      stop();
-      try { audio.currentTime = 0; } catch { /* not seekable before the metadata arrives */ }
-      fill.style.width = '0%';
-      await audio.play();
-      btn.disabled = true;
-      btn.textContent = 'Çalıyor…';
-      raf = requestAnimationFrame(tick);
-      stopTimer = setTimeout(done, (clipSec + 2) * 1000); // buffering may delay the start a little
-    } catch {
-      btn.disabled = false;
-      btn.textContent = label;
-      toast('Çalınamadı; bir daha dokun', { kind: 'error' });
-    }
-  });
-  return { root, destroy: () => { stop(); if (audio) { audio.removeAttribute('src'); audio.load(); audio = null; } } };
-}
-
 // ----------------------------------------------------------------- render
 export function render(state, viewer, container, sendMove, ctx = {}) {
   const players = ctx.players || ['Oyuncu 1', 'Oyuncu 2'];
+
+  if (state.phase === 'pick') {
+    const turn = getTurn(state);
+    if (turn.player !== viewer) {
+      draw(container, el('p', { class: 'hint' }, `${players[turn.player]} dinlediği grupları seçiyor…`), el('div', { class: 'spinner', 'aria-hidden': 'true' }));
+      return null;
+    }
+    const other = state.picks[1 - viewer];
+    renderArtistPick(container, {
+      artists: catalogArtists(ctx.songs),
+      playerName: players[viewer],
+      otherPicks: other,
+      onDone: (artists) => sendMove({ type: 'pick', artists }),
+    });
+    return null;
+  }
+
   const n = state.songs.length;
   const i = state.index;
   const song = state.songs[i];
@@ -336,7 +237,11 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     if (state.mode === 'hard') {
       const fallback = el('div', { class: 'ss-fallback', hidden: true },
         el('div', { class: 'ss-artist' }, song.a), el('div', { class: 'ss-title' }, song.t));
-      clip = clipPlayer(song, state.clipSec, () => { fallback.hidden = false; });
+      clip = createClipPlayer(song, {
+        seconds: state.clipSec,
+        note: 'Dinle, süresini tahmin et. İstersen tekrar çalabilirsin.',
+        onFail: () => { fallback.hidden = false; },
+      });
       card = el('div', { class: 'card ss-card' }, el('div', { class: 'ss-secret' }, '🎧 Gizli şarkı'), clip.root, fallback);
     } else {
       card = el('div', { class: 'card ss-card' }, el('div', { class: 'ss-artist' }, song.a), el('div', { class: 'ss-title' }, song.t));
@@ -416,3 +321,5 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
 }
 
 export default { id: 'sarki-suresi', meta, setup, applyMove, render, getTurn, getResult };
+// the remembered picks helper is re-exported for the standalone page and tests
+export { rememberedPicks };

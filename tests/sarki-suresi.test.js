@@ -133,8 +133,35 @@ test('şarkı süresi: puan farkı kazandırır, her şey eşitse berabere; zor 
   assert.deepEqual(game.getResult(d), { draw: true }, 'same rounds, same total error');
   const h = game.setup({ rounds: 15, mode: 'hard', favor: 'none', seed: 2 }, ctx);
   assert.equal(h.mode, 'hard');
-  assert.equal(h.clipSec, 10);
+  assert.equal(h.clipSec, 20);
   assert.ok(h.songs.every((x) => x.p || x.dz), 'every hard-mode song can play a clip');
   assert.ok(h.songs.every((x) => !x.a.startsWith('Sessiz')));
   assert.throws(() => game.setup({ rounds: 5 }, { songs: { tracks: [] } }), 'boş');
+});
+
+test('şarkı süresi: grup seçimi havuzu, seçim bitince şarkılar çekilir', () => {
+  const data = {
+    weights: {}, catalog: ['Katatonia', 'Tool', 'Zed'],
+    tracks: [
+      ...Array.from({ length: 8 }, (_, i) => ({ a: 'Katatonia', t: `K${i}`, s: 200 + i, dz: 1 + i, g: 'fav' })),
+      ...Array.from({ length: 8 }, (_, i) => ({ a: 'Tool', t: `T${i}`, s: 300 + i, dz: 50 + i, g: 'top' })),
+      ...Array.from({ length: 8 }, (_, i) => ({ a: 'Zed', t: `Z${i}`, s: 100 + i, dz: 90 + i, g: 'top' })),
+    ],
+  };
+  const c = { songs: data };
+  let s = game.setup({ rounds: 5, pool: 'secim', seed: 3 }, c);
+  assert.equal(s.phase, 'pick');
+  assert.deepEqual(game.getTurn(s).player, 0);
+  assert.throws(() => game.applyMove(s, 0, { type: 'guess', round: 0, seconds: 100 }, c), 'tahmin sırası değil');
+  s = game.applyMove(s, 0, { type: 'pick', artists: ['Tool'] }, c);
+  assert.deepEqual(game.getTurn(s).player, 1);
+  s = game.applyMove(s, 1, { type: 'pick', artists: ['Zed'] }, c);
+  assert.equal(s.phase, 'guess');
+  assert.equal(s.songs.length, 5);
+  assert.ok(s.songs.every((x) => x.a === 'Tool' || x.a === 'Zed'));
+  assert.deepEqual(game.getTurn(s), { player: 0, private: true });
+  const plain = game.setup({ rounds: 5, pool: 'liste', seed: 3 }, c);
+  assert.ok(plain.songs.every((x) => x.a === 'Katatonia'), 'the personal list leaves the broad catalog out');
+  assert.equal(game.setup({ rounds: 5, clip: 30, seed: 1 }, c).clipSec, 30);
+  assert.equal(game.setup({ rounds: 5, seed: 1 }, c).clipSec, 20, 'default clip length');
 });

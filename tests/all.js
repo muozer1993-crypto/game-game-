@@ -49,3 +49,5 @@ import './go.test.js';
 import './altmisalti.test.js';
 import './dogruluk-cesaret.test.js';
 import './sarki-suresi.test.js';
+import './songs.test.js';
+import './sarkiyi-bil.test.js';
