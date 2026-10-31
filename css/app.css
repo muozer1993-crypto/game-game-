@@ -1064,6 +1064,7 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .sb-preview { margin-top: 10px; font-weight: 600; font-variant-numeric: tabular-nums; }
 .sb-actions { margin-top: 12px; }
 .sb-actions .btn { flex: 1 1 45%; white-space: normal; }
+.sb-answer .field { text-align: left; margin: 10px 0 0; }
 .ap-title { font-size: 1.25rem; margin: 6px 0 4px; text-align: center; }
 .ap-tools { display: flex; gap: 8px; align-items: center; margin: 10px 0 6px; }
 .ap-tools .input { flex: 1; min-width: 0; }

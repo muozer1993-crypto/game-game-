@@ -160,3 +160,50 @@ export function songOptions(data, song, seed, n = 4) {
   }
   return shuffle(rng, [song.t, ...picked]);
 }
+
+// ----------------------------------------------------------------- typed answers (Şarkıyı Bil)
+const LETTER_MAP = { 'ı': 'i', 'ø': 'o', 'æ': 'ae', 'ß': 'ss', 'ł': 'l', 'đ': 'd', 'þ': 'th', 'ð': 'd', 'œ': 'oe' };
+
+/** Lower-case ASCII skeleton of a band or song name: accents, punctuation, "(…)" and " - …" tails dropped, a leading "the" too. */
+export function normalizeAnswer(s) {
+  let x = String(s || '').replace(/İ/g, 'i').replace(/I/g, 'i').toLowerCase();
+  x = x.replace(/[ıøæßłđþðœ]/g, (c) => LETTER_MAP[c] || c);
+  x = x.normalize('NFKD').replace(/[̀-ͯ]/g, '');
+  x = x.replace(/\s+-\s+.*$/, '').replace(/[([].*?[)\]]/g, ' ');
+  x = x.replace(/&/g, ' and ').replace(/['’`´]/g, '');
+  x = x.replace(/[^a-z0-9]+/g, ' ').trim().replace(/\s+/g, ' ');
+  return x.replace(/^the /, '');
+}
+
+/** Levenshtein distance. */
+export function editDistance(a, b) {
+  if (a === b) return 0;
+  if (!a.length) return b.length;
+  if (!b.length) return a.length;
+  let prev = Array.from({ length: b.length + 1 }, (_, j) => j);
+  for (let i = 1; i <= a.length; i++) {
+    const cur = [i];
+    for (let j = 1; j <= b.length; j++) {
+      cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    }
+    prev = cur;
+  }
+  return prev[b.length];
+}
+
+/**
+ * Does a typed answer name the band or song? Spelling slips are forgiven in proportion to the
+ * length (none under 5 letters, up to 3 for long names); extra words around the answer are fine,
+ * and the start of a long title counts when it covers most of it.
+ */
+export function answerMatches(typed, answer) {
+  const a = normalizeAnswer(typed);
+  const b = normalizeAnswer(answer);
+  if (!a || !b) return false;
+  if (a === b) return true;
+  const tol = b.length < 5 ? 0 : b.length < 9 ? 1 : b.length < 13 ? 2 : 3;
+  if (editDistance(a, b) <= tol) return true;
+  if (b.length >= 4 && a.includes(b)) return true;
+  if (a.length >= 4 && b.startsWith(a) && a.length >= Math.ceil(b.length * 0.6)) return true;
+  return false;
+}

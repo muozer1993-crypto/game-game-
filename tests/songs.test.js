@@ -1,5 +1,5 @@
 import { test, assert } from './runner.js';
-import { poolFor, pickSongs, catalogArtists, artistOptions, songOptions, listTracks, hasAudio, commonArtists } from '../js/lib/songs.js';
+import { poolFor, pickSongs, catalogArtists, artistOptions, songOptions, listTracks, hasAudio, commonArtists, normalizeAnswer, editDistance, answerMatches } from '../js/lib/songs.js';
 
 const data = {
   weights: { Katatonia: 3 },
@@ -92,4 +92,30 @@ test('şarkı havuzu: iki kişinin listeleri, ortak gruplar ve ortak şarkılar�
   assert.ok(shared > 40 * 5 * (3 / 17) * 1.5, `the three shared songs come up more than their share (${shared})`);
   const little = poolFor({ tracks: [{ a: 'A', t: 'x', s: 100, w: 3 }, { a: 'B', t: 'y', s: 100, w: 1 }, { a: 'C', t: 'z', s: 100, w: 2 }] }, { pool: 'ikisi' });
   assert.equal(little.tracks.length, 3, 'under ten songs in common: both lists together');
+});
+
+test('yazılı cevap: Türkçe harfler, yazım hatası, fazladan kelime ve kısa adlar', () => {
+  assert.equal(normalizeAnswer('Yol Gözümü Dağlıyor'), 'yol gozumu dagliyor');
+  assert.equal(normalizeAnswer('İSTANBUL ışık'), 'istanbul isik');
+  assert.equal(normalizeAnswer('The One You Are Looking for Is Not Here (with Silje Wergeland)'), 'one you are looking for is not here');
+  assert.equal(normalizeAnswer('New Dawn Fades - 2007 Remaster'), 'new dawn fades');
+  assert.equal(normalizeAnswer("Don't Cry"), 'dont cry');
+  assert.equal(normalizeAnswer('Mgła'), 'mgla');
+  assert.equal(normalizeAnswer('MØL'), 'mol');
+  assert.equal(editDistance('katatonia', 'katatonya'), 1);
+  assert.equal(editDistance('', 'abc'), 3);
+  assert.ok(answerMatches('katatonya', 'Katatonia'), 'one slip in a 9-letter name');
+  assert.ok(answerMatches('Metalica', 'Metallica'));
+  assert.ok(answerMatches('hayko cepkin', 'Hayko Cepkin'));
+  assert.ok(answerMatches('yol gozumu dagliyor', 'Yol Gözümü Dağlıyor'), 'no Turkish letters needed');
+  assert.ok(answerMatches('Fear Inoculum (Tool)', 'Fear Inoculum'), 'extra words around the answer are fine');
+  assert.ok(answerMatches('the one you are looking for', 'The One You Are Looking for Is Not Here (with Silje Wergeland)'), 'the start of a long title counts');
+  assert.ok(answerMatches('Tool', 'Tool') && answerMatches('TOOL ', 'Tool'));
+  assert.ok(!answerMatches('Pool', 'Tool'), 'no slips allowed in very short names');
+  assert.ok(!answerMatches('Opeth', 'Katatonia'));
+  assert.ok(!answerMatches('Lion', 'Lions in a Cage'), 'a short fragment is not enough');
+  assert.ok(!answerMatches('', 'Tool') && !answerMatches('   ', 'Tool'));
+  assert.ok(answerMatches('Son Kez', 'Son Kez') && !answerMatches('Son', 'Son Kez'));
+  assert.ok(answerMatches('mor ve otesi', 'mor ve ötesi'));
+  assert.ok(answerMatches('Go', 'Go') && !answerMatches('Got', 'Go'));
 });

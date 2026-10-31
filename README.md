@@ -22,7 +22,7 @@ Tek telefonda elden ele ya da iki telefonda oda koduyla oynanır. Ana ekrana ekl
 | **Genel Kültür Düellosu** | Aynı sorular ikinize; doğru sayısı, eşitlikte hız. 240+ soruluk havuz. |
 | **Doğruluk mu Cesaret mi?** | Parti klasiği: sırayla doğruluk (1) ya da cesaret (2) seç, rakibin hakem; 60+50 dostça kart (`data/dogruluk.json`), bir kez kart değiştirme. |
 | **Şarkı Süresi** | Bir şarkı gelir; ikiniz de kaç dakika sürdüğünü tahmin edersiniz (4 3 2 → 4:32), gerçeğe yakın olan turu alır. Normal: ad yazar; Zor: ad gizli, şarkıdan 10–30 saniye çalar. Havuz: Mustafa'nın Spotify listesi (Katatonia, Opeth, Anathema, Antimatter sık), beyz'in listeleri, iki listenin ortak grupları ya da oyun başında ikinizin işaretlediği gruplar (`data/sarkilar.json`). |
-| **Şarkıyı Bil** | Şarkı çalar, bildiğin an durdur: grup 5, şarkı 10 puan, az dinleyene 2 kata kadar çarpan. Cevabı söyle rakibin onaylasın ya da yarı puana dört şık iste. Aynı şarkı havuzu seçenekleri. |
+| **Şarkıyı Bil** | Şarkı çalar, bildiğin an durdur: grup 5, şarkı 10 puan, az dinleyene 2 kata kadar çarpan. Grup ve şarkı adını yaz (yazım hatasına tolerans var) ya da yarı puana dört şık iste. Aynı şarkı havuzu seçenekleri. |
 | **Hesap Yarışı** | Aynı aritmetik işlemler ikinize (kolay/orta/zor); doğru sayısı, eşitlikte hız. |
 | **Hedef Sayı** | Altı sayı, dört işlem, üç basamaklı hedef; aynı bulmacada süreye karşı en yakına ulaş (tam 10, ≤5 uzak 7, ≤10 uzak 5). Tur sonunda çözüm gösterilir. |
 | **Renk Tuzağı** | Kelimeye değil yazının rengine dokun (Stroop); süre dolana kadar doğru −yanlış puanı. |
