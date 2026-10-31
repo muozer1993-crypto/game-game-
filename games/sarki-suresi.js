@@ -6,7 +6,7 @@ import { el, render as draw, toast } from '../js/ui/dom.js';
 import { createKeyboard } from '../js/ui/keyboard.js';
 import { createClipPlayer } from '../js/ui/clip.js';
 import { renderArtistPick, rememberedPicks } from '../js/ui/artist-pick.js';
-import { pickSongs, poolFor, catalogArtists, hasAudio, fmt, POOL_OPTIONS, POOL_VALUES } from '../js/lib/songs.js';
+import { pickSongs, poolFor, pickGroups, hasAudio, fmt, POOL_OPTIONS, POOL_VALUES } from '../js/lib/songs.js';
 
 export { fmt, hasAudio, pickSongs };
 
@@ -24,7 +24,7 @@ export const meta = {
     'Normal: şarkının adı ve grubu yazar. Zor: ad gizlidir, ▶ düğmesi şarkıdan seçtiğiniz kadar saniye çalar (internet gerekir); ad ancak ikiniz de tahmin edince açıklanır.',
     'Tek telefonda önce biri tahminini gizlice girer ve telefonu verir, sonra öbürü girer; ardından ikiniz de sonucu görürsünüz. İlk tahmin eden her şarkıda değişir.',
     'Süreyi dakika ve saniye olarak art arda yazarsın: 4 3 2 → 4:32. Oyun sonunda çok tur alan kazanır; eşitlikte tahminlerinin gerçekten toplam sapması az olan.',
-    'Şarkı havuzu: Mustafa\'nın listesi (favori ayarına göre Katatonia, Opeth, Anathema, Antimatter sık), beyz\'in listeleri, iki listenin ortak grupları (iki listede de olan gruplar; iki listede de olan şarkılar daha sık), ya da oyun başında ikinizin işaretlediği gruplar (ikinizin de seçtikleri daha sık; "yalnız ortak" ikinizin de seçtikleriyle sınırlı).',
+    'Şarkı havuzu: Mustafa\'nın listesi (favori ayarına göre Katatonia, Opeth, Anathema, Antimatter sık), Beyza\'nın listeleri, iki listenin ortak grupları (gruplar eşit pay alır, iki listede de olan şarkılar daha sık), bilinen Türkçe şarkılar, ya da oyun başında ikinizin işaretlediği gruplar: şarkıların yarısı birinin, yarısı öbürünün seçtiklerinden gelir, bir oyuncunun grupları kendi aralarında eşit, ikinizin de seçtiği gruplar iki pay alır ("yalnız ortak" ikinizin de seçtikleriyle sınırlı).',
   ].join('\n'),
   data: ['songs'],
   handoffNote: 'Tahminler gizli: ekranı yalnızca sırası gelen görmeli.',
@@ -84,7 +84,8 @@ export function parseDigits(digits) {
 /** Draw the game's songs from the pool the settings and picks describe. */
 function drawSongs(state, data) {
   const pool = poolFor(data, { pool: state.pool, picks: state.picks });
-  return pickSongs(pool, { count: state.count, favor: state.favor, seed: state.seed, needAudio: state.mode === 'hard' });
+  // the favourite weighting belongs to the first person's list; the other pools carry their own balance
+  return pickSongs(pool, { count: state.count, favor: state.pool === 'liste' ? state.favor : 'high', seed: state.seed, needAudio: state.mode === 'hard' });
 }
 
 export function setup(options = {}, ctx = {}) {
@@ -204,7 +205,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     }
     const other = state.picks[1 - viewer];
     renderArtistPick(container, {
-      artists: catalogArtists(ctx.songs),
+      groups: pickGroups(ctx.songs),
       playerName: players[viewer],
       otherPicks: other,
       onDone: (artists) => sendMove({ type: 'pick', artists }),

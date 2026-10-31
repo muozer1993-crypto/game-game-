@@ -1069,7 +1069,9 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .ap-tools { display: flex; gap: 8px; align-items: center; margin: 10px 0 6px; }
 .ap-tools .input { flex: 1; min-width: 0; }
 .ap-count { display: block; color: var(--muted); font-size: 0.9rem; margin-bottom: 8px; }
-.ap-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+.ap-grid { display: grid; gap: 14px; }
+.ap-group-title { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 0 0 6px; }
+.ap-chips { display: flex; flex-wrap: wrap; gap: 8px; }
 .ap-chip { padding: 8px 12px; border-radius: 999px; border: 2px solid var(--border); background: var(--card); color: var(--fg); font: inherit; font-size: 0.95rem; min-height: 40px; cursor: pointer; }
 .ap-chip.other { border-style: dashed; }
 .ap-chip.selected { background: var(--primary); color: var(--primary-fg); border-color: var(--primary); }

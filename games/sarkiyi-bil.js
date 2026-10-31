@@ -5,7 +5,7 @@
 import { el, render as draw } from '../js/ui/dom.js';
 import { createClipPlayer } from '../js/ui/clip.js';
 import { renderArtistPick } from '../js/ui/artist-pick.js';
-import { pickSongs, poolFor, catalogArtists, artistOptions, songOptions, normKey, answerMatches, POOL_OPTIONS, POOL_VALUES } from '../js/lib/songs.js';
+import { pickSongs, poolFor, pickGroups, artistOptions, songOptions, normKey, answerMatches, POOL_OPTIONS, POOL_VALUES } from '../js/lib/songs.js';
 
 export const ARTIST_POINTS = 5;
 export const SONG_POINTS = 10;
@@ -23,7 +23,7 @@ export const meta = {
     'Puanlar dinlediğin süreye göre katlanır: hiç dinlemeden bilsen 2 katı, klibin tamamını dinlersen 1 katı (arası orantılı). Tekrar dinlemek de dinlenen süreye sayılır; "Biliyorum" deyince süre durur.',
     '"Biliyorum" deyince grup ve şarkı adı için iki kutu çıkar; bildiğini yaz, bilmediğini boş bırak. Küçük yazım hataları, fazladan kelimeler ve Türkçe harf farkları (ş/s, ı/i) sorun olmaz.',
     'Emin değilsen "Şıkları göster": dört grup, sonra dört şarkı adı arasından seçersin; bu yolda puanlar yarıya iner ve grup yanlışsa şarkı sorulmaz.',
-    'Şarkı havuzu: Mustafa\'nın listesi (favori gruplar sık), beyz\'in listeleri, iki listenin ortak grupları ya da oyun başında ikinizin işaretlediği gruplar. Oyun sonunda toplam puanı çok olan kazanır.',
+    'Şarkı havuzu: Mustafa\'nın listesi (favori gruplar sık), Beyza\'nın listeleri, iki listenin ortak grupları, bilinen Türkçe şarkılar ya da oyun başında ikinizin işaretlediği gruplar (yarısı birinin, yarısı öbürünün seçtiklerinden; gruplar eşit pay alır). Oyun sonunda toplam puanı çok olan kazanır.',
   ].join('\n'),
   data: ['songs'],
   handoffNote: 'Şarkı yalnızca sırası gelene çalar.',
@@ -63,7 +63,7 @@ export function pointsFor({ heard, clipSec, mode, artistOk, songOk }) {
 
 function drawSongs(state, data) {
   const pool = poolFor(data, { pool: state.pool, picks: state.picks });
-  return pickSongs(pool, { count: state.perPlayer * 2, favor: state.favor, seed: state.seed, needAudio: true });
+  return pickSongs(pool, { count: state.perPlayer * 2, favor: state.pool === 'liste' ? state.favor : 'high', seed: state.seed, needAudio: true });
 }
 
 export function setup(options = {}, ctx = {}) {
@@ -181,7 +181,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       return null;
     }
     renderArtistPick(container, {
-      artists: catalogArtists(ctx.songs),
+      groups: pickGroups(ctx.songs),
       playerName: players[viewer],
       otherPicks: state.picks[1 - viewer],
       onDone: (artists) => sendMove({ type: 'pick', artists }),

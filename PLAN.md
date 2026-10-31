@@ -37,7 +37,7 @@ data/common-tr.json     4/5/6 harfli yaygın kelimeler (gizli kelime seçimi)
 data/questions.json     Beni Ne Kadar Tanıyorsun soru havuzu
 data/trivia.json        Genel kültür soruları
 data/tabu.json          Tabu kartları
-data/sarkilar.json      Şarkı oyunları: iki kişinin listeleri (w biti: 1 Mustafa, 2 beyz) ve 191 grubun en bilinen şarkıları (katalog); süreler Deezer/Spotify
+data/sarkilar.json      Şarkı oyunları: iki kişinin listeleri (w biti: 1 Mustafa, 2 Beyza; j ortak liste; y Beyza'ya yakın), 191 grubun ve 70 Türkçe sanatçının en bilinen şarkıları; süreler Spotify/Deezer
 data/LICENSES.md        Veri lisansları ve kaynakları
 tests/index.html        Tarayıcıda açılan test sayfası (kütüphane yok)
 tests/*.test.js         Saf mantık testleri (node ile de çalışır)

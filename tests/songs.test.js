@@ -1,5 +1,5 @@
 import { test, assert } from './runner.js';
-import { poolFor, pickSongs, catalogArtists, artistOptions, songOptions, listTracks, hasAudio, commonArtists, normalizeAnswer, editDistance, answerMatches } from '../js/lib/songs.js';
+import { poolFor, pickSongs, catalogArtists, pickGroups, artistOptions, songOptions, listTracks, hasAudio, commonArtists, normalizeAnswer, editDistance, answerMatches } from '../js/lib/songs.js';
 
 const data = {
   weights: { Katatonia: 3 },
@@ -21,16 +21,20 @@ test('şarkı havuzu: hazır liste katalog şarkılarını almaz, seçim birleş
   assert.deepEqual(liste.weights, { Katatonia: 3 });
   const secim = poolFor(data, { pool: 'secim', picks: [['Metallica', 'tool'], ['Tool', 'Katatonia']] });
   assert.deepEqual([...new Set(secim.tracks.map((t) => t.a))].sort(), ['Katatonia', 'Metallica', 'Tool']);
-  assert.deepEqual(secim.weights, { Tool: 3 }, 'a band both picked weighs more (case-insensitive)');
+  // each player's picks get half of the draws, split equally between their bands: A = Metallica + Tool, B = Tool + Katatonia
+  const bandTotal = (pool, a) => pool.weights[a] * pool.tracks.filter((t) => t.a === a).length;
+  assert.equal(Math.round(bandTotal(secim, 'Metallica')), 500);
+  assert.equal(Math.round(bandTotal(secim, 'Katatonia')), 500);
+  assert.equal(Math.round(bandTotal(secim, 'Tool')), 1000, 'a band both picked collects a share from both sides (case-insensitive)');
   const ortak = poolFor(data, { pool: 'ortak', picks: [['Metallica', 'Tool'], ['Tool', 'Katatonia']] });
   assert.deepEqual([...new Set(ortak.tracks.map((t) => t.a))], ['Tool']);
-  assert.deepEqual(ortak.weights, {});
+  assert.deepEqual(Object.keys(ortak.weights), ['Tool'], 'equal shares per band, here a single band');
   const noCommon = poolFor(data, { pool: 'ortak', picks: [['Metallica'], ['Tool']] });
   assert.deepEqual([...new Set(noCommon.tracks.map((t) => t.a))].sort(), ['Metallica', 'Tool'], 'no common band: the union is used');
   const nothing = poolFor(data, { pool: 'secim', picks: [[], null] });
   assert.equal(nothing.tracks.length, 18, 'nobody picked: back to the personal list');
-  assert.deepEqual(catalogArtists(data), ['Katatonia', 'Metallica', 'Opeth', 'Tool']);
-  assert.deepEqual(catalogArtists({ tracks: data.tracks }), ['Katatonia', 'Metallica', 'Mix Band', 'Opeth', 'Tool'], 'without a list: bands with 5+ songs');
+  assert.deepEqual(catalogArtists(data), ['Katatonia', 'Metallica', 'Mix Band', 'Opeth', 'Tool']);
+  assert.deepEqual(catalogArtists({ tracks: data.tracks }), ['Katatonia', 'Mix Band', 'Opeth'], 'without a catalog list: the list bands with 5+ songs; catalog songs are not pickable');
   assert.equal(listTracks(data).length, 18);
   assert.ok(!hasAudio({ a: 'x', t: 'y', s: 1, dz: 5, np: 1 }) && hasAudio({ dz: 5 }) && hasAudio({ p: 'u' }));
 });
@@ -86,7 +90,9 @@ test('şarkı havuzu: iki kişinin listeleri, ortak gruplar ve ortak şarkılar�
   const both = poolFor(two, { pool: 'ikisi' });
   assert.ok(both.tracks.every((t) => t.a === 'Katatonia' || t.a === 'Hayko Cepkin'), 'only bands on both lists');
   assert.equal(both.tracks.length, 6 + 4 + 1 + 6, 'both lists and the catalog songs of those bands');
-  assert.deepEqual(Object.keys(both.weights).sort(), ['Hayko Cepkin|Hayko 0', 'Hayko Cepkin|Hayko 1', 'Katatonia|Kata 0'], 'songs on both lists weigh more');
+  assert.equal(both.weights['Hayko Cepkin|Hayko 0'], 3 * both.weights['Hayko Cepkin|Hayko 2'], 'a song on both lists weighs 3× within its band');
+  assert.equal(both.weights['Katatonia|Kata 0'], 3 * both.weights['Katatonia|Kata top 1']);
+  assert.ok(Math.abs(both.weights['Hayko Cepkin|Hayko 2'] * 5 - both.weights['Katatonia|Kata 1'] * 12) < 1e-6, 'bands share the draws equally whatever their song counts');
   let shared = 0;
   for (let seed = 1; seed <= 40; seed++) shared += pickSongs(both, { count: 5, seed }).filter((s) => /^(Kata 0|Hayko [01])$/.test(s.t)).length;
   assert.ok(shared > 40 * 5 * (3 / 17) * 1.5, `the three shared songs come up more than their share (${shared})`);
@@ -118,4 +124,30 @@ test('yazılı cevap: Türkçe harfler, yazım hatası, fazladan kelime ve kısa
   assert.ok(answerMatches('Son Kez', 'Son Kez') && !answerMatches('Son', 'Son Kez'));
   assert.ok(answerMatches('mor ve otesi', 'mor ve ötesi'));
   assert.ok(answerMatches('Go', 'Go') && !answerMatches('Got', 'Go'));
+});
+
+test('şarkı havuzu: Beyza\'ya yakınlar bayrağı, bölümlü seçim listesi ve yalnız aramayla gelen kuyruk', () => {
+  const d = {
+    people: ['Mustafa', 'Beyza'], weights: { Katatonia: 3 }, catalog: ['Metallica'], catalogTR: ['Tarkan'],
+    tracks: [
+      ...Array.from({ length: 6 }, (_, i) => ({ a: 'Katatonia', t: `K${i}`, s: 200, dz: 1 + i, g: 'sp', w: 1, y: i < 2 ? 1 : 0 })),
+      ...Array.from({ length: 3 }, (_, i) => ({ a: 'Mode XL', t: `M${i}`, s: 200, dz: 10 + i, g: 'sp', w: 1, y: 1 })),
+      { a: 'Tek Şarkı', t: 'bir', s: 200, dz: 20, g: 'sp', w: 1 },
+      { a: 'İki Şarkı', t: 'bir', s: 200, dz: 21, g: 'sp', w: 1 }, { a: 'İki Şarkı', t: 'iki', s: 200, dz: 22, g: 'sp', w: 1 },
+      { a: 'Zara', t: 'Z', s: 200, p: 'u', g: 'fr', w: 2 },
+      ...Array.from({ length: 4 }, (_, i) => ({ a: 'Metallica', t: `Met ${i}`, s: 300, dz: 200 + i, g: 'top' })),
+      ...Array.from({ length: 4 }, (_, i) => ({ a: 'Tarkan', t: `T ${i}`, s: 300, dz: 300 + i, g: 'tr' })),
+    ],
+  };
+  const yakin = poolFor(d, { pool: 'yakin' });
+  assert.deepEqual(yakin.tracks.map((t) => t.t).sort(), ['K0', 'K1', 'M0', 'M1', 'M2'], 'only the flagged songs of the first list');
+  const turkce = poolFor(d, { pool: 'turkce' });
+  assert.ok(turkce.tracks.every((t) => t.a === 'Tarkan') && turkce.tracks.length === 4);
+  const groups = pickGroups(d);
+  assert.deepEqual(groups.map((g) => g.title), ["Beyza'nın listesi", "Mustafa'nın listesi", 'Türkçe (bilinenler)', 'Katalog', 'Diğer (ara)']);
+  assert.deepEqual(groups[0].artists, ['Zara']);
+  assert.deepEqual(groups[1].artists, ['Katatonia'], 'five or more songs, or a favourite weight');
+  assert.deepEqual(groups[4].artists, ['İki Şarkı', 'Mode XL'], 'the 2–4-song tail is search-only; one-song bands are left out');
+  assert.ok(groups[4].searchOnly);
+  assert.deepEqual(catalogArtists(d), ['İki Şarkı', 'Katatonia', 'Metallica', 'Mode XL', 'Tarkan', 'Zara'], 'the search-only tail is still pickable');
 });
