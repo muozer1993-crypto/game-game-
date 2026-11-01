@@ -1,13 +1,14 @@
 // Şarkıyı Bil — the same clip plays for both players; whoever knows it hits their own button
-// first, takes the phone and types the band and the song (spelling slips forgiven). The less of
-// the clip was heard at the buzz, the more points: band 5, song 10, up to 2× for an instant
-// answer, half when the four options are asked for. Both players answer every song; a round has a
-// time limit. Songs whose sound cannot be loaded are swapped for a reserve song before they show.
+// first, takes the phone and types the band, then the song (spelling slips forgiven; four options
+// can be asked for the song at half its points). The less of the clip was heard at the buzz, the
+// more points: band 5, song 10, up to 2× for an instant answer. Both players answer every song; a
+// round has a time limit that only runs while the clip screen is up. Songs whose sound cannot be
+// loaded are swapped for a reserve song before they show.
 import { el, render as draw } from '../js/ui/dom.js';
 import { createTimer } from '../js/ui/timer.js';
 import { createClipPlayer, clipReady } from '../js/ui/clip.js';
 import { renderArtistPick } from '../js/ui/artist-pick.js';
-import { pickSongs, mixPool, pickGroups, artistOptions, songOptions, normKey, answerMatches, sourceSettings, sourcesFrom, needsPick } from '../js/lib/songs.js';
+import { pickSongs, mixPool, pickGroups, songOptions, normKey, answerMatches, sourceSettings, sourcesFrom, needsPick } from '../js/lib/songs.js';
 
 export const ARTIST_POINTS = 5;
 export const SONG_POINTS = 10;
@@ -22,10 +23,10 @@ export const meta = {
   icon: '🎧',
   description: 'Aynı şarkı ikinize çalar: bilen düğmesine basar, grubu ve şarkıyı yazar. Az dinleyen çok kazanır.',
   rules: [
-    `Her şarkı ikinize birden çalar. Bilen kendi düğmesine basar ("Ali biliyor!"): müzik durur, telefonu alır, grup ve şarkı adını yazar; sonra öbürü de dinleyip kendi cevabını verir. Grup ${ARTIST_POINTS}, şarkı ${SONG_POINTS} puan; ikisi ayrı ayrı sayılır.`,
+    `Her şarkı ikinize birden çalar. Bilen kendi "Tahmin et" düğmesine basar: müzik durur, telefonu alır, önce grubu, sonra şarkının adını yazar; ardından öbürü de dinleyip kendi cevabını verir. Grup ${ARTIST_POINTS}, şarkı ${SONG_POINTS} puan; ikisi ayrı ayrı sayılır.`,
     'Puanlar düğmeye basıldığı andaki dinlenen süreye göre katlanır: hiç dinlemeden 2 katı, klibin tamamı 1 katı (arası orantılı). Tekrar dinlemek de süreye sayılır.',
-    'Cevap yazarken "Şıkları göster" dersen dört grup, sonra dört şarkı adı arasından seçersin; puanlar yarıya iner, grup yanlışsa şarkı sorulmaz. Küçük yazım hataları, fazla kelimeler ve ş/s, ı/i farkları sorun olmaz.',
-    'Her şarkının süre sınırı vardır (ayarlardan); süre dolunca cevap vermeyen o şarkıdan puan alamaz. Oyun sonunda toplam puanı çok olan kazanır.',
+    'Şarkı adında "Şıkları göster" dersen dört ad arasından seçersin; şarkı puanı yarıya iner (grup puanı değişmez). Küçük yazım hataları, fazla kelimeler ve ş/s, ı/i farkları sorun olmaz.',
+    'Her şarkının süre sınırı vardır (ayarlardan) ve yalnız dinleme ekranındayken işler; biri tahmin ederken durur. Süre dolunca cevap vermeyen o şarkıdan puan alamaz. Oyun sonunda toplam puanı çok olan kazanır.',
     'Şarkı havuzu: işaretlediğin kaynaklar eşit pay alır (Mustafa\'nın listesi, Beyza\'nın listeleri, ortak liste, Türkçe bilinenler, oyun başında seçilen gruplar…). Sesi olmayan şarkı çıkmaz.',
   ].join('\n'),
   data: ['songs'],
@@ -47,12 +48,11 @@ export function speedFactor(heard, clipSec) {
   return 1 + Math.max(0, clipSec - h) / clipSec;
 }
 
-/** Points for an answer. mode 'typed' (band and song written) or 'options' (multiple choice, half points). */
+/** Points for an answer. The band is always typed; mode 'options' means the song was picked from four names (half its points). */
 export function pointsFor({ heard, clipSec, mode, artistOk, songOk }) {
   const f = speedFactor(heard, clipSec);
-  const half = mode === 'options' ? 0.5 : 1;
-  const artist = artistOk ? Math.round(ARTIST_POINTS * f * half) : 0;
-  const song = songOk ? Math.round(SONG_POINTS * f * half) : 0;
+  const artist = artistOk ? Math.round(ARTIST_POINTS * f) : 0;
+  const song = songOk ? Math.round(SONG_POINTS * f * (mode === 'options' ? 0.5 : 1)) : 0;
   return { artist, song, total: artist + song };
 }
 
@@ -77,8 +77,8 @@ export function setup(options = {}, ctx = {}) {
     reserve: [],        // swapped in when a song's sound will not load
     answers: [],        // answers[round][player] = null | { mode, heard, typed?, artistOk, songOk, points }
     index: 0,
-    current: null,      // the player answering now: { who, mode, heard, artistOk? }
-    phase: needsPick(sources) ? 'pick' : 'listen', // pick | listen | answer | options | options2 | reveal | over
+    current: null,      // the player answering now: { who, heard, typedArtist?, artistOk? }
+    phase: needsPick(sources) ? 'pick' : 'listen', // pick | listen | answer (band) | answer2 (song) | options2 | reveal | over
   };
   if (state.phase === 'listen') Object.assign(state, drawSongs(state, ctx.songs), { answers: [] });
   if (state.songs.length) state.answers = state.songs.map(() => [null, null]);
@@ -114,43 +114,45 @@ export function applyMove(state, player, move, ctx = {}) {
   const i = state.index;
   const song = state.songs[i];
   const round = state.answers[i].slice();
-  const finish = (who, mode, heard, artistOk, songOk, typed = null) => {
+  const finish = (mode, songOk, typedTitle = null) => {
+    const { who, heard, typedArtist, artistOk } = state.current;
     const points = pointsFor({ heard, clipSec: state.clipSec, mode, artistOk, songOk });
-    round[who] = { mode, heard, artistOk: !!artistOk, songOk: !!songOk, points, ...(typed ? { typed } : {}) };
+    round[who] = { mode, heard, artistOk: !!artistOk, songOk: !!songOk, points, typed: { a: typedArtist, t: typedTitle == null ? '' : typedTitle } };
     const answers = state.answers.slice();
     answers[i] = round;
     return { ...state, answers, current: null, phase: bothIn(round) ? 'reveal' : 'listen' };
   };
+  const mine = () => { if (ctx.mode === 'online' && player !== state.current.who) fail('Sıra sende değil'); };
   switch (move.type) {
-    case 'buzz': { // "I know it": on one phone the button says who, online each device buzzes for itself
+    case 'buzz': { // "Tahmin et": on one phone the button says who, online each device buzzes for itself
       if (state.phase !== 'listen') fail('Şu an basılamaz');
       const who = ctx.mode === 'online' ? player : (move.who === 1 ? 1 : 0);
       if (ctx.mode === 'online' && move.who != null && move.who !== player) fail('Başkası adına basılamaz');
       if (round[who] != null) fail('Bu şarkıya cevap verdin');
-      return { ...state, current: { who, mode: 'typed', heard: heardOf(move) }, phase: 'answer' };
+      return { ...state, current: { who, heard: heardOf(move) }, phase: 'answer' };
     }
-    case 'check': { // the typed band and song against the real ones
+    case 'check1': { // the band, typed
       if (state.phase !== 'answer') fail('Önce düğmene bas');
-      if (ctx.mode === 'online' && player !== state.current.who) fail('Sıra sende değil');
-      const typed = { a: String(move.artist || '').trim().slice(0, 80), t: String(move.title || '').trim().slice(0, 120) };
-      return finish(state.current.who, 'typed', state.current.heard, answerMatches(typed.a, song.a), answerMatches(typed.t, song.t), typed);
+      mine();
+      const typedArtist = String(move.artist || '').trim().slice(0, 80);
+      return { ...state, current: { ...state.current, typedArtist, artistOk: answerMatches(typedArtist, song.a) }, phase: 'answer2' };
     }
-    case 'options': // multiple choice instead of typing: half the points
-      if (state.phase !== 'answer') fail('Önce düğmene bas');
-      if (ctx.mode === 'online' && player !== state.current.who) fail('Sıra sende değil');
-      return { ...state, current: { ...state.current, mode: 'options' }, phase: 'options' };
-    case 'choose': {
-      if (state.phase !== 'options') fail('Şıklar açık değil');
-      if (ctx.mode === 'online' && player !== state.current.who) fail('Sıra sende değil');
-      if (normKey(move.artist) !== normKey(song.a)) return finish(state.current.who, 'options', state.current.heard, false, false);
-      return { ...state, current: { ...state.current, artistOk: true }, phase: 'options2' };
+    case 'check2': { // the song, typed
+      if (state.phase !== 'answer2') fail('Önce grubu yaz');
+      mine();
+      const typedTitle = String(move.title || '').trim().slice(0, 120);
+      return finish('typed', answerMatches(typedTitle, song.t), typedTitle);
     }
+    case 'options': // four names for the song instead of typing it: half the song points
+      if (state.phase !== 'answer2') fail('Önce grubu yaz');
+      mine();
+      return { ...state, phase: 'options2' };
     case 'choose2':
       if (state.phase !== 'options2') fail('Şarkı şıkları açık değil');
-      if (ctx.mode === 'online' && player !== state.current.who) fail('Sıra sende değil');
-      return finish(state.current.who, 'options', state.current.heard, true, normKey(move.title) === normKey(song.t));
+      mine();
+      return finish('options', normKey(move.title) === normKey(song.t), String(move.title || ''));
     case 'timeout': { // the round's time is up: whoever has not answered gets nothing
-      if (!['listen', 'answer', 'options', 'options2'].includes(state.phase)) fail('Süre işlemiyor');
+      if (!['listen', 'answer', 'answer2', 'options2'].includes(state.phase)) fail('Süre işlemiyor');
       for (const p of [0, 1]) if (round[p] == null) round[p] = { mode: 'timeout', heard: 0, artistOk: false, songOk: false, points: { artist: 0, song: 0, total: 0 } };
       const answers = state.answers.slice();
       answers[i] = round;
@@ -194,7 +196,8 @@ export function getResult(state) {
 }
 
 // ----------------------------------------------------------------- render
-const roundMem = new WeakMap(); // container -> { key, heard, deadline, covered }
+// per round, on this device: listened seconds, the time left (it only runs on the clip screen), the privacy cover
+const roundMem = new WeakMap(); // container -> { key, heard, leftMs, runningSince, covered, swapping }
 const songKey = (state) => `${state.index}:${state.songs[state.index].a}|${state.songs[state.index].t}`;
 
 export function render(state, viewer, container, sendMove, ctx = {}) {
@@ -241,11 +244,16 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   // ---- the round's clock, heard time and cover state live on this device
   let mem = roundMem.get(container);
   const key = songKey(state);
-  if (!mem || mem.key !== key) { mem = { key, heard: 0, deadline: Date.now() + state.limitSec * 1000, covered: true, swapping: false }; roundMem.set(container, mem); }
+  if (!mem || mem.key !== key) { mem = { key, heard: 0, leftMs: state.limitSec * 1000, runningSince: null, covered: true, swapping: false }; roundMem.set(container, mem); }
   const timerBox = el('div');
   let timer = null;
-  if (state.phase !== 'reveal') {
-    timer = createTimer(timerBox, { deadline: mem.deadline, total: state.limitSec * 1000, onExpire: () => sendMove({ type: 'timeout' }) });
+  const total = state.limitSec * 1000;
+  if (state.phase === 'listen') { // the clock runs only here; it pauses while someone answers
+    if (!mem.runningSince) mem.runningSince = Date.now();
+    timer = createTimer(timerBox, { deadline: mem.runningSince + mem.leftMs, total, onExpire: () => sendMove({ type: 'timeout' }) });
+  } else if (state.phase !== 'reveal') {
+    if (mem.runningSince) { mem.leftMs = Math.max(0, mem.leftMs - (Date.now() - mem.runningSince)); mem.runningSince = null; }
+    timer = createTimer(timerBox, { deadline: 0, total, paused: true, remaining: mem.leftMs });
   }
 
   if (state.phase === 'reveal') {
@@ -256,10 +264,9 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       const r = round[p];
       const head = el('div', { class: 'sb-row-head' }, el('strong', {}, players[p]), el('span', { class: 'badge match' }, `+${r.points.total}`));
       if (r.mode === 'timeout') return el('div', { class: 'ss-guess sb-row' }, head, el('span', { class: 'muted' }, 'süre doldu'));
-      if (r.mode === 'options') return el('div', { class: 'ss-guess sb-row' }, head, el('span', { class: 'muted' }, `şıklarla · grup ${r.artistOk ? '✓' : '✗'}${r.artistOk ? ` · şarkı ${r.songOk ? '✓' : '✗'}` : ''} · ${Math.round(r.heard)} sn`));
       return el('div', { class: 'ss-guess sb-row' }, head,
         el('span', { class: 'sb-typed' }, `Grup: ${r.typed && r.typed.a ? r.typed.a : '—'} `, mark(r.artistOk)),
-        el('span', { class: 'sb-typed' }, `Şarkı: ${r.typed && r.typed.t ? r.typed.t : '—'} `, mark(r.songOk)),
+        el('span', { class: 'sb-typed' }, `Şarkı: ${r.typed && r.typed.t ? r.typed.t : '—'}${r.mode === 'options' ? ' (şıklarla)' : ''} `, mark(r.songOk)),
         el('span', { class: 'muted' }, `${Math.round(r.heard)} sn dinleyip bastı`));
     };
     draw(container,
@@ -292,7 +299,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     };
     const clip = createClipPlayer(song, {
       seconds: state.clipSec, pausable: true, heard: mem.heard,
-      note: 'Bilen kendi düğmesine bassın: az dinleyen çok kazanır.',
+      note: 'Bilen kendi "Tahmin et" düğmesine bassın: az dinleyen çok kazanır. Sayaç tahmin sırasında durur.',
       onTick: (heard) => { mem.heard = heard; showPreview(heard); },
     });
     showPreview(mem.heard);
@@ -301,7 +308,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       return el('button', {
         type: 'button', class: `btn btn-big sb-buzz ${done ? 'btn-secondary' : 'btn-primary'}`, disabled: done,
         onClick: () => sendMove({ type: 'buzz', who: p, heard: clip.heard() }),
-      }, done ? `${players[p]} cevapladı` : `${players[p]} biliyor!`);
+      }, done ? `${players[p]} cevapladı` : `${players[p]} · Tahmin et`);
     });
     const waiting = online && round[1 - viewer] == null && round[viewer] != null ? el('p', { class: 'hint' }, `${players[1 - viewer]} bekleniyor…`) : null;
     draw(container,
@@ -314,7 +321,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     return () => { clip.destroy(); if (timer) timer.stop(); };
   }
 
-  // ---- answer / options / options2: only the answering player should see this screen
+  // ---- answer (band) / answer2 (song) / options2: only the answering player should see this screen
   const who = state.current.who;
   if (online && who !== viewer) {
     draw(container, status(`Şarkı ${i + 1}/${n}`), timerBox, el('p', { class: 'hint' }, `${players[who]} cevaplıyor…`), el('div', { class: 'spinner', 'aria-hidden': 'true' }));
@@ -334,49 +341,55 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     return () => { if (timer) timer.stop(); };
   }
   const heard = state.current.heard;
-  if (state.phase === 'answer') {
-    const pts = pointsFor({ heard, clipSec: state.clipSec, mode: 'typed', artistOk: true, songOk: true });
+  const pts = pointsFor({ heard, clipSec: state.clipSec, mode: 'typed', artistOk: true, songOk: true });
+  const typedBox = (id, placeholder) => el('input', { type: 'text', class: 'input', id, autocomplete: 'off', autocapitalize: 'words', spellcheck: 'false', placeholder, 'aria-label': placeholder });
+  if (state.phase === 'answer') { // step 1: the band
     let sent = false;
-    const artistIn = el('input', { type: 'text', class: 'input', id: 'sb-artist', autocomplete: 'off', autocapitalize: 'words', spellcheck: 'false', placeholder: 'Grup', 'aria-label': 'Grup' });
-    const titleIn = el('input', { type: 'text', class: 'input', id: 'sb-title', autocomplete: 'off', autocapitalize: 'words', spellcheck: 'false', placeholder: 'Şarkının adı', 'aria-label': 'Şarkının adı' });
-    const submit = () => { if (sent) return; sent = true; mem.covered = true; sendMove({ type: 'check', artist: artistIn.value, title: titleIn.value }); };
-    artistIn.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); titleIn.focus(); } });
-    titleIn.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); submit(); } });
+    const artistIn = typedBox('sb-artist', 'Grup');
+    const submit = () => { if (sent) return; sent = true; sendMove({ type: 'check1', artist: artistIn.value }); };
+    artistIn.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); submit(); } });
     draw(container,
-      status(`${players[who]} · ${i + 1}. şarkı · ${Math.round(heard)} sn dinleyip bastı`),
+      status(`${players[who]} · ${i + 1}. şarkı · ${Math.round(heard)} sn dinleyip bastın`),
       timerBox,
       el('div', { class: 'card ss-card sb-answer' },
-        el('p', { class: 'sb-preview' }, `Grup doğruysa +${pts.artist}, şarkı doğruysa +${pts.song}`),
-        el('div', { class: 'field' }, el('label', { for: 'sb-artist' }, 'Grup'), artistIn),
-        el('div', { class: 'field' }, el('label', { for: 'sb-title' }, 'Şarkının adı'), titleIn),
-        el('p', { class: 'hint' }, 'Bilmediğini boş bırak. Küçük yazım hataları ve ş/s, ı/i farkları sorun olmaz.'),
+        el('p', { class: 'sb-preview' }, `1/2 · Grup doğruysa +${pts.artist}`),
+        el('div', { class: 'field' }, el('label', { for: 'sb-artist' }, 'Hangi grup?'), artistIn),
+        el('p', { class: 'hint' }, 'Bilmiyorsan boş bırak. Küçük yazım hataları ve ş/s, ı/i farkları sorun olmaz.'),
+      ),
+      el('div', { class: 'row sb-actions' },
+        el('button', { type: 'button', class: 'btn btn-primary btn-big', onClick: submit }, 'Devam: şarkının adı'),
+      ),
+    );
+    setTimeout(() => { try { artistIn.focus(); } catch { /* ignore */ } }, 50);
+    return () => { if (timer) timer.stop(); };
+  }
+  if (state.phase === 'answer2') { // step 2: the song, typed or from four names
+    let sent = false;
+    const titleIn = typedBox('sb-title', 'Şarkının adı');
+    const submit = () => { if (sent) return; sent = true; mem.covered = true; sendMove({ type: 'check2', title: titleIn.value }); };
+    titleIn.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); submit(); } });
+    draw(container,
+      status(`${players[who]} · ${i + 1}. şarkı · ${Math.round(heard)} sn dinleyip bastın`),
+      timerBox,
+      el('div', { class: 'card ss-card sb-answer' },
+        el('p', { class: 'sb-preview' }, `2/2 · Şarkı doğruysa +${pts.song} (şıklarla +${Math.round(pts.song / 2)})`),
+        el('p', { class: 'muted' }, `Grup cevabın: ${state.current.typedArtist || '—'}`),
+        el('div', { class: 'field' }, el('label', { for: 'sb-title' }, 'Şarkının adı ne?'), titleIn),
+        el('p', { class: 'hint' }, 'Bilmiyorsan boş bırak ya da şıkları iste.'),
       ),
       el('div', { class: 'row sb-actions' },
         el('button', { type: 'button', class: 'btn btn-primary btn-big', onClick: submit }, 'Kontrol et'),
         el('button', { type: 'button', class: 'btn btn-secondary btn-big', onClick: () => { if (!sent) { sent = true; sendMove({ type: 'options' }); } } }, 'Şıkları göster (yarı puan)'),
       ),
-      el('div', { class: 'row', style: { justifyContent: 'center', marginTop: '6px' } },
-        el('button', { type: 'button', class: 'btn btn-small linkish-btn', onClick: () => { artistIn.value = ''; titleIn.value = ''; submit(); } }, 'Bilmiyorum, geç')),
     );
-    setTimeout(() => { try { artistIn.focus(); } catch { /* ignore */ } }, 50);
+    setTimeout(() => { try { titleIn.focus(); } catch { /* ignore */ } }, 50);
     return () => { if (timer) timer.stop(); };
   }
-  if (state.phase === 'options') {
-    const pool = mixPool(ctx.songs, { sources: state.sources, favor: state.favor, picks: state.picks, pickMode: state.pickMode });
-    draw(container,
-      status(`${players[who]} · ${i + 1}. şarkı · şıklarla (yarı puan)`),
-      timerBox,
-      el('p', { class: 'hint' }, 'Hangi grup?'),
-      el('div', { class: 'options' }, artistOptions(pool, song, state.seed + i * 7 + 1, 4, ctx.songs).map((a) =>
-        el('button', { type: 'button', class: 'btn btn-secondary', onClick: () => { mem.covered = true; sendMove({ type: 'choose', artist: a }); } }, a))),
-    );
-    return () => { if (timer) timer.stop(); };
-  }
-  // options2
+  // options2: four song names
   draw(container,
-    status(`${players[who]} · ${i + 1}. şarkı · şıklarla (yarı puan)`),
+    status(`${players[who]} · ${i + 1}. şarkı · şıklarla (şarkı puanı yarım)`),
     timerBox,
-    el('p', { class: 'hint' }, `Grup doğru: ${song.a}. Peki hangi şarkı?`),
+    el('p', { class: 'hint' }, `Grup cevabın: ${state.current.typedArtist || '—'}. Hangi şarkı?`),
     el('div', { class: 'options' }, songOptions(ctx.songs, song, state.seed + i * 7 + 2).map((title) =>
       el('button', { type: 'button', class: 'btn btn-secondary', onClick: () => { mem.covered = true; sendMove({ type: 'choose2', title }); } }, title))),
   );
