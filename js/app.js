@@ -8,7 +8,8 @@ import { load, save, remove, keys } from './lib/storage.js';
 import { loadDictionary, loadCommonWords } from './lib/words.js';
 import { randomSeed, shuffle, createRng } from './lib/rng.js';
 import { nameSuffix, capitalizeTR } from './lib/tr.js';
-import { generateRoomCode, createHost, joinRoom, normalizeRoomCode } from './net/peer.js';
+import { generateRoomCode, createHost, joinRoom, normalizeRoomCode, ICE_SERVERS } from './net/peer.js';
+import { gatherCandidates, checkSignalling, verdictFor } from './net/icetest.js';
 import { setSoundEnabled, playEnd } from './lib/sfx.js';
 
 const app = document.getElementById('app');
@@ -839,6 +840,34 @@ export function showOnline({ code: presetCode = '' } = {}) {
   const hostBtn = el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block' }, 'Oda kur');
   const joinBtn = el('button', { type: 'button', class: 'btn btn-secondary btn-big btn-block' }, 'Odaya katıl');
 
+  // connection self-test: which WebRTC paths this device has (two phones on different networks need the relay)
+  const testBox = el('div');
+  const testBtn = el('button', { type: 'button', class: 'btn btn-secondary btn-block' }, 'Bağlantı testi');
+  testBtn.addEventListener('click', async () => {
+    testBtn.disabled = true;
+    const live = el('p', { class: 'hint' }, 'Sunucular deneniyor… (10 sn kadar sürer)');
+    render(testBox, el('div', { class: 'spinner', 'aria-hidden': 'true' }), live);
+    const [sig, ice] = await Promise.all([
+      checkSignalling(),
+      gatherCandidates(ICE_SERVERS, { timeoutMs: 12000, onProgress: (s) => { live.textContent = `Bulunan yollar: doğrudan ${s.host}, STUN ${s.srflx}, TURN ${s.relay}…`; } }),
+    ]);
+    const v = verdictFor(ice.summary, sig);
+    const mark = (ok) => el('span', { class: `badge ${ok ? 'match' : 'miss'}` }, ok ? '✓' : '✗');
+    const row = (label, ok, detail) => el('div', { class: 'ice-row' }, el('span', {}, label), el('span', { class: 'ice-detail' }, detail || '', ' ', mark(ok)));
+    render(testBox,
+      el('div', { class: `card ice-card ${v.ok ? 'ok' : 'bad'}` },
+        row('Eşleştirme sunucusu (0.peerjs.com)', sig),
+        row('Doğrudan yol (aynı ağ)', ice.summary.host > 0, `${ice.summary.host}`),
+        row('STUN (genel adres)', ice.summary.srflx > 0, `${ice.summary.srflx}`),
+        row('TURN aktarma (farklı ağlar)', ice.summary.relay > 0, `${ice.summary.relay}${ice.summary.relay ? ` (udp ${ice.summary.relayUdp}, tcp ${ice.summary.relayTcp})` : ''}`),
+        ice.errors.length ? el('div', { class: 'muted ice-errors' }, ice.errors.slice(0, 4).map((e) => el('div', {}, `${e.url || 'sunucu'}: ${e.code || ''} ${e.text || 'hata'}`))) : null,
+        el('p', { class: `ice-verdict ${v.ok ? 'notice' : 'rejected-note'}` }, v.text),
+        el('p', { class: 'hint' }, `${(ice.ms / 1000).toFixed(1).replace('.', ',')} sn${ice.complete ? '' : ' (süre doldu)'} · İkiniz de bu testi yapın: farklı ağlardan oynamak için TURN satırı iki telefonda da ✓ olmalı.`),
+      ),
+    );
+    testBtn.disabled = false;
+  });
+
   hostBtn.addEventListener('click', async () => {
     const myName = getName();
     hostBtn.disabled = true; joinBtn.disabled = true;
@@ -894,6 +923,7 @@ export function showOnline({ code: presetCode = '' } = {}) {
       joinBtn,
     ),
     status,
+    el('section', { class: 'section' }, testBtn, testBox),
     el('details', { class: 'rules' }, el('summary', {}, 'Nasıl çalışır?'),
       el('div', { class: 'rules-body' },
         el('p', {}, 'Bağlantı PeerJS ile doğrudan iki telefon arasında kurulur (WebRTC). Oda kodu yalnızca eşleşme için kullanılır; oyun verisi bir sunucuda saklanmaz.'),

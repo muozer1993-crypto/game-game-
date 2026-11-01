@@ -51,3 +51,4 @@ import './dogruluk-cesaret.test.js';
 import './sarki-suresi.test.js';
 import './songs.test.js';
 import './sarkiyi-bil.test.js';
+import './icetest.test.js';

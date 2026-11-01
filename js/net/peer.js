@@ -24,6 +24,9 @@ const PEER_OPTIONS = {
   },
 };
 
+/** The STUN/TURN servers the two phones use (also shown by the connection self-test). */
+export const ICE_SERVERS = PEER_OPTIONS.config.iceServers;
+
 let loadPromise = null;
 function loadPeerJs() {
   if (typeof window !== 'undefined' && window.Peer) return Promise.resolve(window.Peer);
@@ -50,7 +53,7 @@ const ERROR_TEXT = {
   'invalid-id': 'Geçersiz oda kodu',
   'unavailable-id': 'Bu oda kodu kullanımda',
   disconnected: 'Bağlantı koptu',
-  webrtc: 'Telefonlar arasında doğrudan bağlantı kurulamadı (ağ engeli); aynı Wi-Fi\'ye bağlanmayı deneyin',
+  webrtc: 'Telefonlar arasında bağlantı kurulamadı (ağ engeli): "Bağlantı testi" ile TURN satırını kontrol edin ya da aynı Wi-Fi\'ye bağlanın',
 };
 
 function describe(err) {
@@ -212,7 +215,7 @@ export async function joinRoom(code, opts = {}) {
     let settled = false;
     let transport = null;
     const fail = (err) => { if (!settled) { settled = true; try { peer.destroy(); } catch { /* ignore */ } reject(err); } };
-    const timer = setTimeout(() => fail(new Error('Odaya bağlanılamadı (zaman aşımı). Kod doğru mu? İkiniz de internete bağlı mısınız?')), 25000);
+    const timer = setTimeout(() => fail(new Error('Odaya bağlanılamadı (zaman aşımı). Kod doğru mu, ikiniz de internete bağlı mısınız? Farklı ağlardaysanız ikiniz de "Bağlantı testi" yapıp TURN satırına bakın.')), 25000);
     peer.on('open', () => {
       opts.onStatus && opts.onStatus('Odaya bağlanılıyor…');
       transport = makeTransport('guest', roomCode, peer);

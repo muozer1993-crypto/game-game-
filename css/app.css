@@ -1060,6 +1060,13 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .ss-diff { color: var(--muted); font-size: 0.9rem; }
 .ss-verdict { margin-top: 12px; font-weight: 700; }
 
+/* connection self-test (two phones) */
+.ice-card { margin-top: 10px; padding: 12px; display: grid; gap: 6px; }
+.ice-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.ice-detail { display: inline-flex; align-items: center; gap: 6px; font-variant-numeric: tabular-nums; }
+.ice-errors { font-size: 0.85rem; overflow-wrap: anywhere; }
+.ice-verdict { margin-top: 4px; }
+
 /* Şarkıyı Bil + band picking (shared by the song games) */
 .sb-preview { margin-top: 10px; font-weight: 600; font-variant-numeric: tabular-nums; }
 .sb-actions { margin-top: 12px; }

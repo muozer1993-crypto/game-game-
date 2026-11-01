@@ -112,6 +112,10 @@ bir bağlantı da paylaşabilir (WhatsApp vb.); bağlantıyı açan doğrudan ko
 Ev sahibi oyunu ve ayarları seçer, iki telefon da aynı hamleleri aynı sırayla uygular. Sıra size
 geçince telefon kısaca titrer (online ekranından kapatılabilir).
 
+**Bağlantı testi** (aynı ekranda): bu cihazın hangi WebRTC yollarını bulabildiğini gösterir: doğrudan,
+STUN (genel adres) ve TURN aktarma. Farklı ağlardaki (mobil veri) iki telefonun bağlanabilmesi için
+TURN satırı iki telefonda da ✓ olmalı; aynı Wi-Fi'deki cihazlar doğrudan yolla bağlanır.
+
 Bağlantı katmanı **PeerJS** (WebRTC, `vendor/peerjs.min.js`, MIT). Seçilme nedeni: sıfır kurulum.
 Hesap, API anahtarı, sunucu, yapılandırma dosyası gerekmez; eşleştirme için PeerJS'in ücretsiz
 genel sunucusu (`0.peerjs.com`) kullanılır, oyun verisi doğrudan iki telefon arasında akar.
