@@ -2,7 +2,7 @@
 // the host's peer id (namespaced so that it cannot collide with other apps on the public
 // PeerJS server). PeerJS itself is loaded lazily from vendor/peerjs.min.js (MIT).
 import { generateRoomCode, normalizeRoomCode } from './transport.js';
-import { STATIC_TURN, METERED } from './turn-config.js';
+import { STATIC_TURN, METERED, TURN_SECRET } from './turn-config.js';
 
 export { generateRoomCode, normalizeRoomCode };
 
@@ -10,22 +10,20 @@ const PEERJS_URL = new URL('../../vendor/peerjs.min.js', import.meta.url);
 const ID_PREFIX = 'oyungecesi-';
 
 // Two phones on mobile data usually sit behind carrier NATs that STUN alone cannot punch through;
-// a TURN relay carries the data channel in that case. The free public relays of earlier years
-// (openrelay.metered.ca with static credentials, PeerJS's own eu-0/us-0.turn.peerjs.com) were shut
-// down by 2026, so the relay comes from: the player's own free account (js/net/turn-config.js) and,
-// as a best-effort fallback, Metered's shared-secret host for the Open Relay Project, whose
-// short-lived credentials are derived here (TURN REST API: username "<expiry>:<name>", password
-// base64(HMAC-SHA1(secret, username))). The connection test on the online screen shows what answers.
+// a TURN relay carries the data channel in that case. No free public relay survived into 2026
+// (openrelay.metered.ca is parked, PeerJS's eu-0/us-0.turn.peerjs.com were discontinued, Metered's
+// shared-secret host staticauth.openrelay.metered.ca does not answer from anywhere), so the relay
+// comes from the players' own free account configured in js/net/turn-config.js. The connection
+// test on the online screen shows what answers.
 const STUN_SERVERS = [
   { urls: 'stun:stun.l.google.com:19302' },
   { urls: 'stun:stun1.l.google.com:19302' },
   { urls: 'stun:stun.cloudflare.com:3478' },
 ];
-const OPEN_RELAY_STATIC_AUTH = { host: 'staticauth.openrelay.metered.ca', secret: 'openrelayprojectsecret', ttlSec: 24 * 3600 };
 
 const b64 = (bytes) => btoa(String.fromCharCode(...new Uint8Array(bytes)));
 
-/** TURN REST credentials (RFC draft "TURN Server REST API") for a shared secret, valid `ttlSec` from now. */
+/** TURN REST credentials (draft "TURN Server REST API") for a shared-secret relay, valid `ttlSec` from now (for TURN_SECRET in turn-config.js). */
 export async function turnRestCredentials(secret, name, ttlSec, now = Date.now()) {
   const username = `${Math.floor(now / 1000) + ttlSec}:${name}`;
   const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(secret), { name: 'HMAC', hash: 'SHA-1' }, false, ['sign']);
@@ -52,15 +50,14 @@ async function meteredServers() {
   }
 }
 
-/** The STUN/TURN servers to use right now (own account first, then the shared-secret fallback). */
+/** The STUN/TURN servers to use right now: STUN plus whatever js/net/turn-config.js provides. */
 export async function getIceServers() {
   const servers = [...STUN_SERVERS, ...STATIC_TURN.filter((s) => s && s.urls)];
   servers.push(...await meteredServers());
   try {
-    if (typeof crypto !== 'undefined' && crypto.subtle) {
-      const { username, credential } = await turnRestCredentials(OPEN_RELAY_STATIC_AUTH.secret, 'oyungecesi', OPEN_RELAY_STATIC_AUTH.ttlSec);
-      const h = OPEN_RELAY_STATIC_AUTH.host;
-      servers.push({ urls: [`turn:${h}:80`, `turn:${h}:443`, `turn:${h}:443?transport=tcp`, `turns:${h}:443?transport=tcp`], username, credential });
+    if (TURN_SECRET && TURN_SECRET.secret && Array.isArray(TURN_SECRET.urls) && TURN_SECRET.urls.length && typeof crypto !== 'undefined' && crypto.subtle) {
+      const { username, credential } = await turnRestCredentials(TURN_SECRET.secret, 'oyungecesi', TURN_SECRET.ttlSec || 24 * 3600);
+      servers.push({ urls: TURN_SECRET.urls, username, credential });
     }
   } catch (err) {
     console.warn('TURN kimliği üretilemedi', err);
@@ -97,6 +94,9 @@ const ERROR_TEXT = {
   'unavailable-id': 'Bu oda kodu kullanımda',
   disconnected: 'Bağlantı koptu',
   webrtc: 'Telefonlar arasında bağlantı kurulamadı (ağ engeli): "Bağlantı testi" ile TURN satırını kontrol edin ya da aynı Wi-Fi\'ye bağlanın',
+  'negotiation-failed': 'Telefonlar birbirine ulaşamadı (ağ engeli): ikiniz de "Bağlantı testi" yapıp TURN satırına bakın ya da aynı Wi-Fi\'ye bağlanın',
+  'connection-closed': 'Karşı taraf bağlantıyı kapattı',
+  'message-too-big': 'Gönderilen veri çok büyük',
 };
 
 function describe(err) {
@@ -104,28 +104,34 @@ function describe(err) {
   return ERROR_TEXT[type] || (err && err.message) || 'Bağlantı hatası';
 }
 
-/** Wrap a Peer + DataConnection into the transport interface. */
-function makeTransport(role, code, peer) {
+/** Wrap a Peer + DataConnection into the transport interface (exported for the unit tests). */
+export function makeTransport(role, code, peer) {
   const messageHandlers = [];
   const openHandlers = [];
   const closeHandlers = [];
+  const attemptHandlers = []; // host: a guest tried and failed before the channel opened
   let conn = null;
   let open = false;
   let closed = false;
   const queue = [];
 
-  const emitClose = () => {
+  const emitClose = (reason) => {
     if (closed) return;
     closed = true;
-    closeHandlers.forEach((fn) => { try { fn(); } catch (e) { console.warn(e); } });
+    closeHandlers.forEach((fn) => { try { fn(reason); } catch (e) { console.warn(e); } });
   };
 
+  // Mobile browsers freeze the page (and its signalling socket) while the host shares the code in
+  // another app; PeerJS only notices a dead socket much later. Back in the foreground with no data
+  // channel yet, re-register the room id on a fresh socket (same id and token, the server swaps it).
   const onVisibility = () => {
-    if (document.visibilityState === 'visible' && peer && peer.disconnected && !peer.destroyed) {
-      try { peer.reconnect(); } catch (e) { console.warn(e); }
-    }
+    if (typeof document === 'undefined' || document.visibilityState !== 'visible' || !peer || peer.destroyed) return;
+    try {
+      if (peer.disconnected) peer.reconnect();
+      else if (!open && !closed) { peer.disconnect(); peer.reconnect(); }
+    } catch (e) { console.warn(e); }
   };
-  document.addEventListener('visibilitychange', onVisibility);
+  if (typeof document !== 'undefined') document.addEventListener('visibilitychange', onVisibility);
 
   peer.on('disconnected', () => {
     // lost the signalling server; the data channel may still work. Try to get back.
@@ -149,18 +155,34 @@ function makeTransport(role, code, peer) {
       try { old.close(); } catch { /* ignore */ }
     }
     const current = () => conn === c; // events from superseded connections are ignored
+    let wasOpen = !!c.open;
+    // ICE never completed (a NAT no relay could cross): the guest learns why, the host keeps its
+    // room open for the next attempt instead of tearing everything down
+    const failedEarly = (err) => {
+      const type = (err && err.type) || 'negotiation-failed';
+      const reason = Object.assign(new Error(ERROR_TEXT[type] || (err && err.message) || 'Bağlantı kurulamadı'), { type });
+      if (role === 'host') {
+        if (current()) { conn = null; open = false; }
+        attemptHandlers.forEach((fn) => { try { fn(reason); } catch (e) { console.warn(e); } });
+      } else emitClose(reason);
+    };
     c.on('data', (data) => {
       if (!current()) return;
       messageHandlers.forEach((fn) => { try { fn(data); } catch (e) { console.warn(e); } });
     });
     c.on('open', () => {
       if (!current()) return;
+      wasOpen = true;
       open = true;
       openHandlers.forEach((fn) => { try { fn(); } catch (e) { console.warn(e); } });
       while (queue.length) c.send(queue.shift());
     });
-    c.on('close', () => { if (current()) emitClose(); });
-    c.on('error', (err) => { if (!current()) return; console.warn('Bağlantı hatası', err); emitClose(); });
+    c.on('close', () => { if (!current()) return; if (wasOpen) emitClose(); else failedEarly(null); });
+    c.on('error', (err) => {
+      if (!current()) return;
+      console.warn('Bağlantı hatası', err);
+      if (wasOpen) emitClose(Object.assign(new Error(describe(err)), { type: err && err.type })); else failedEarly(err);
+    });
     if (c.open) {
       open = true;
       openHandlers.forEach((fn) => { try { fn(); } catch (e) { console.warn(e); } });
@@ -180,8 +202,10 @@ function makeTransport(role, code, peer) {
     onMessage(fn) { messageHandlers.push(fn); },
     onOpen(fn) { openHandlers.push(fn); if (open) fn(); },
     onClose(fn) { closeHandlers.push(fn); },
+    /** Host only: a guest's attempt failed before the channel opened (the room stays open). */
+    onAttemptFailed(fn) { attemptHandlers.push(fn); },
     close() {
-      document.removeEventListener('visibilitychange', onVisibility);
+      if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', onVisibility);
       closed = true;
       try { if (conn) conn.close(); } catch { /* ignore */ }
       try { peer.destroy(); } catch { /* ignore */ }
@@ -207,6 +231,7 @@ function makeTransport(role, code, peer) {
  */
 export async function createHost(code, opts = {}) {
   const Peer = await loadPeerJs();
+  opts.onStatus && opts.onStatus('Aktarma sunucusu ayarları alınıyor…');
   const PEER_OPTIONS = peerOptions(await getIceServers());
   const attempts = opts.attempts ?? 3;
   let lastError = null;
@@ -251,6 +276,7 @@ export async function createHost(code, opts = {}) {
  */
 export async function joinRoom(code, opts = {}) {
   const Peer = await loadPeerJs();
+  opts.onStatus && opts.onStatus('Aktarma sunucusu ayarları alınıyor…');
   const PEER_OPTIONS = peerOptions(await getIceServers());
   const roomCode = normalizeRoomCode(code);
   if (roomCode.length < 4) throw new Error('Oda kodu en az 4 karakter olmalı');
@@ -272,8 +298,8 @@ export async function joinRoom(code, opts = {}) {
         clearTimeout(timer);
         resolve(transport);
       });
-      transport.onClose(() => {
-        if (!settled) fail(new Error('Bağlantı kurulamadı'));
+      transport.onClose((reason) => {
+        if (!settled) fail(Object.assign(new Error((reason && reason.message) || 'Bağlantı kurulamadı'), { type: reason && reason.type }));
       });
     });
     peer.on('error', (err) => {

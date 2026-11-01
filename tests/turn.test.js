@@ -7,7 +7,49 @@ test('TURN REST kimliği: süreli kullanıcı adı ve HMAC-SHA1 şifre (bilinen 
   assert.equal(c.credential, 'Ao8Bg/Mr6aBvmp0e122IAWi0DCA=', 'matches Python hmac/sha1/base64 for the same input');
   const servers = await getIceServers();
   assert.ok(servers.some((s) => String(s.urls).startsWith('stun:')), 'STUN servers present');
-  const relay = servers.find((s) => Array.isArray(s.urls) && s.urls[0].includes('staticauth.openrelay.metered.ca'));
-  assert.ok(relay && relay.username.includes(':oyungecesi') && relay.credential.length > 20, 'shared-secret relay with fresh credentials');
-  assert.ok(!servers.some((s) => String(s.urls).includes('turn.peerjs.com') || /turn:openrelay\.metered\.ca/.test(String(s.urls))), 'no dead relays');
+  assert.ok(!servers.some((s) => /turn\.peerjs\.com|openrelay\.metered\.ca/.test(String(s.urls))), 'no dead relays (openrelay, peerjs, staticauth)');
+  assert.ok(servers.every((s) => !String(s.urls).startsWith('turn')), 'no relay until turn-config.js is filled in');
+});
+
+import { makeTransport } from '../js/net/peer.js';
+
+function emitter(extra = {}) {
+  const h = {};
+  return Object.assign({ on(ev, fn) { (h[ev] = h[ev] || []).push(fn); }, emit(ev, ...a) { (h[ev] || []).forEach((f) => f(...a)); } }, extra);
+}
+const fakePeer = () => emitter({ disconnected: false, destroyed: false, reconnect() { this.reconnected = (this.reconnected || 0) + 1; }, disconnect() { this.disconnected = true; }, destroy() { this.destroyed = true; } });
+const fakeConn = () => emitter({ open: false, sent: [], send(m) { this.sent.push(m); }, close() { this.closedByUs = true; } });
+
+test('bağlantı: açılmadan düşen deneme ev sahibinin odasını kapatmaz, konuk nedenini öğrenir', () => {
+  const host = makeTransport('host', 'ABCDE', fakePeer());
+  let closed = 0; const attempts = [];
+  host.onClose(() => { closed += 1; });
+  host.onAttemptFailed((reason) => attempts.push(reason));
+  const c1 = fakeConn();
+  host.attach(c1);
+  c1.emit('error', { type: 'negotiation-failed', message: 'Negotiation of connection to x failed.' });
+  assert.equal(closed, 0, 'the room stays open');
+  assert.equal(attempts.length, 1);
+  assert.equal(attempts[0].type, 'negotiation-failed');
+  assert.ok(attempts[0].message.includes('Bağlantı testi'), 'the explanation names the self-test');
+  assert.ok(!host.connected);
+  const c2 = fakeConn();
+  host.attach(c2);
+  host.send({ t: 'hello' });
+  assert.deepEqual(c2.sent, [], 'queued until open');
+  c2.emit('open');
+  assert.ok(host.connected);
+  assert.deepEqual(c2.sent, [{ t: 'hello' }], 'the second attempt works and gets the queued message');
+  c2.emit('close');
+  assert.equal(closed, 1, 'a drop after opening is a real close');
+
+  const guest = makeTransport('guest', 'ABCDE', fakePeer());
+  const reasons = [];
+  guest.onClose((r) => reasons.push(r));
+  const g = fakeConn();
+  guest.attach(g);
+  g.emit('close'); // ICE failed before the channel ever opened
+  assert.equal(reasons.length, 1);
+  assert.equal(reasons[0].type, 'negotiation-failed');
+  assert.ok(reasons[0].message.includes('ağ engeli'));
 });

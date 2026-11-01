@@ -17,3 +17,13 @@ test('bağlantı testi: adaylar türlerine ayrılır, karar aktarma sunucusuna g
   const nothing = verdictFor({ host: 1, srflx: 0, relay: 0 }, true);
   assert.ok(!nothing.ok && nothing.text.includes('engelliyor'));
 });
+
+test('bağlantı testi: TURN-TCP üzerinden gelen aday relayProtocol ile ayrılır', () => {
+  const s = summarizeCandidates([
+    { candidate: 'candidate:3 1 udp 41885439 1.2.3.4 50000 typ relay raddr 85.1.2.3 rport 50000', relayProtocol: 'tcp' },
+    { candidate: 'candidate:4 1 udp 41885439 1.2.3.4 50001 typ relay raddr 85.1.2.3 rport 50000', relayProtocol: 'tls' },
+    { candidate: 'candidate:5 1 udp 41885439 1.2.3.4 50002 typ relay raddr 85.1.2.3 rport 50000', relayProtocol: 'udp' },
+    { candidate: 'candidate:6 1 udp 41885439 1.2.3.4 50003 typ relay raddr 85.1.2.3 rport 50000' },
+  ]);
+  assert.deepEqual([s.relay, s.relayTcp, s.relayUdp], [4, 2, 2]);
+});

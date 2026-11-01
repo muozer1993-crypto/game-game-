@@ -122,11 +122,10 @@ genel sunucusu (`0.peerjs.com`) kullanılır, oyun verisi doğrudan iki telefon 
 İki telefon da farklı mobil operatör ağındaysa (CGNAT) doğrudan bağlantı kurulamayabilir; bu
 durumda veri bir TURN aktarma sunucusu üzerinden geçer. Eski ücretsiz genel aktarma sunucuları
 (openrelay.metered.ca'nın statik kimlikleri, PeerJS'in eu-0/us-0.turn.peerjs.com sunucuları) 2026
-itibarıyla kapalı; `js/net/peer.js` artık Metered'ın Open Relay için yayımladığı paylaşılan gizli
-anahtarla (staticauth.openrelay.metered.ca, TURN REST kimlikleri tarayıcıda üretilir) deniyor ve
-`js/net/turn-config.js` dosyasına yazılan kendi hesabınızın sunucularını (ExpressTURN ya da Metered
-ücretsiz planı: statik kullanıcı adı/şifre ya da Metered API anahtarı) önce kullanıyor. Online
-ekranındaki **Bağlantı testi** hangi yolun çalıştığını gösterir.
+itibarıyla kapalı (Metered'ın paylaşılan anahtarlı staticauth sunucusu da hiçbir yerden yanıt vermiyor).
+Aktarma sunucusu `js/net/turn-config.js` dosyasına yazılan kendi ücretsiz hesabınızdan gelir: Metered
+(önerilen; 80/443 üzerinden UDP/TCP/TLS, ayda 500 MB) ya da ExpressTURN (yalnız 3478); dosyanın başında
+adım adım anlatılıyor. Online ekranındaki **Bağlantı testi** hangi yolun çalıştığını gösterir.
 
 Oyun ekranındaki küçük emoji çubuğu (👍 😂 😮 😅 🔥 🤝) rakibin telefonunda büyükçe belirir; sonuç
 ekranındaki **Sonucu paylaş** skoru paylaşım menüsüne (ya da panoya) verir.

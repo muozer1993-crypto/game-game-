@@ -156,7 +156,11 @@ window.addEventListener('popstate', () => {
     showOnlineLobby({ notify: currentScreen === 'tournament-result' });
     return;
   }
-  if (currentScreen === 'online-wait' && online.transport) { leaveOnline(); showOnline(); return; }
+  if (currentScreen === 'online-wait' && online.transport) {
+    // the back gesture after returning from the share sheet must not close the room by accident
+    if (online.role === 'host' && !confirm('Oda kapatılsın mı? Arkadaşın bu kodla bağlanamaz.')) { history.pushState({ app: true }, '', '#online-wait'); return; }
+    leaveOnline(); showOnline(); return;
+  }
   if (currentScreen === 'online-lobby' && online.transport && !confirm('Odadan çıkılsın mı? Rakibin bağlantısı kesilir.')) {
     history.pushState({ app: true }, '', '#online-lobby');
     return;
@@ -845,7 +849,7 @@ export function showOnline({ code: presetCode = '' } = {}) {
   const testBtn = el('button', { type: 'button', class: 'btn btn-secondary btn-block' }, 'Bağlantı testi');
   testBtn.addEventListener('click', async () => {
     testBtn.disabled = true;
-    const live = el('p', { class: 'hint' }, 'Sunucular deneniyor… (10 sn kadar sürer)');
+    const live = el('p', { class: 'hint' }, 'Sunucular deneniyor… (12 sn kadar sürer)');
     render(testBox, el('div', { class: 'spinner', 'aria-hidden': 'true' }), live);
     const servers = await getIceServers();
     const [sig, ice] = await Promise.all([
@@ -872,6 +876,7 @@ export function showOnline({ code: presetCode = '' } = {}) {
   hostBtn.addEventListener('click', async () => {
     const myName = getName();
     hostBtn.disabled = true; joinBtn.disabled = true;
+    status.classList.remove('rejected-note');
     status.textContent = 'Oda açılıyor…';
     try {
       const code = generateRoomCode();
@@ -881,8 +886,9 @@ export function showOnline({ code: presetCode = '' } = {}) {
       showOnlineWaiting(online.transport.code);
     } catch (err) {
       console.error(err);
-      status.textContent = '';
-      toast(err.message || 'Oda açılamadı', { kind: 'error', duration: 4000 });
+      status.textContent = err.message || 'Oda açılamadı'; // stays on screen (a toast is gone in seconds)
+      status.classList.add('rejected-note');
+      toast('Oda açılamadı', { kind: 'error' });
       hostBtn.disabled = false; joinBtn.disabled = false;
     }
   });
@@ -892,6 +898,7 @@ export function showOnline({ code: presetCode = '' } = {}) {
     const code = normalizeRoomCode(codeInput.value);
     if (code.length < 4) { toast('Oda kodunu gir', { kind: 'error' }); codeInput.focus(); return; }
     hostBtn.disabled = true; joinBtn.disabled = true;
+    status.classList.remove('rejected-note');
     status.textContent = 'Bağlanılıyor…';
     try {
       online.transport = await joinRoom(code, { onStatus: (s) => { status.textContent = s; } });
@@ -900,8 +907,9 @@ export function showOnline({ code: presetCode = '' } = {}) {
       showOnlineWaiting(online.transport.code);
     } catch (err) {
       console.error(err);
-      status.textContent = '';
-      toast(err.message || 'Bağlanılamadı', { kind: 'error', duration: 4000 });
+      status.textContent = err.message || 'Bağlanılamadı';
+      status.classList.add('rejected-note');
+      toast('Bağlanılamadı', { kind: 'error' });
       hostBtn.disabled = false; joinBtn.disabled = false;
     }
   });
@@ -941,6 +949,12 @@ function wireTransport(myName, { resume = false } = {}) {
   if (!resume) online.players = null;
   if (online.session) online.session.transport = t;
   t.onMessage((msg) => handleOnlineMessage(msg));
+  if (t.onAttemptFailed) {
+    t.onAttemptFailed((reason) => {
+      if (online.transport !== t) return;
+      toast(`Arkadaşın bağlanmayı denedi ama olmadı: ${reason && reason.message ? reason.message : 'ağ engeli'}. Oda açık, tekrar deneyebilir.`, { kind: 'error', duration: 9000 });
+    });
+  }
   t.onClose(() => {
     if (online.transport !== t) return; // an old transport we already replaced
     // Mid-game (or in the lobby with a known opponent) offer to reconnect instead of dropping everything.
@@ -1024,12 +1038,12 @@ function showOnlineWaiting(code) {
   setScreen('online-wait');
   const isHost = online.role === 'host';
   render(app,
-    header('Oda', { onBack: () => { leaveOnline(); showOnline(); } }),
+    header('Oda', { onBack: () => { if (isHost && !confirm('Oda kapatılsın mı? Arkadaşın bu kodla bağlanamaz.')) return; leaveOnline(); showOnline(); } }),
     el('section', { class: 'section card center' },
       el('div', { class: 'muted' }, 'Oda kodu'),
       el('div', { class: 'room-code' }, code),
       isHost
-        ? el('p', {}, 'Kodu arkadaşına söyle ya da davet bağlantısını gönder. Katılınca oyun seçimi açılacak.')
+        ? el('p', {}, 'Kodu arkadaşına söyle ya da davet bağlantısını gönder. Katılınca oyun seçimi açılacak. Bu ekranı açık tut.')
         : el('p', {}, 'Bağlanıldı, ev sahibinin oyun seçmesi bekleniyor…'),
       isHost ? el('button', { type: 'button', class: 'btn btn-primary btn-block', onClick: () => shareInvite(code) }, 'Davet bağlantısını gönder') : null,
       isHost ? el('div', { class: 'invite-link muted' }, inviteLink(code)) : null,
