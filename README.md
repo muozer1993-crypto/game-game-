@@ -125,7 +125,9 @@ durumda veri bir TURN aktarma sunucusu üzerinden geçer. Eski ücretsiz genel a
 itibarıyla kapalı (Metered'ın paylaşılan anahtarlı staticauth sunucusu da hiçbir yerden yanıt vermiyor).
 Aktarma sunucusu `js/net/turn-config.js` dosyasına yazılan kendi ücretsiz hesabınızdan gelir: Metered
 (önerilen; 80/443 üzerinden UDP/TCP/TLS, ayda 500 MB) ya da ExpressTURN (yalnız 3478); dosyanın başında
-adım adım anlatılıyor. Online ekranındaki **Bağlantı testi** hangi yolun çalıştığını gösterir.
+adım adım anlatılıyor. Dosya her açılışta ağdan taze alınır (GitHub'da elle düzenlemek yeter, sürüm
+artırmak gerekmez) ve çevrimdışı açılışlar için kopyası saklanır. Online ekranındaki **Bağlantı testi**
+hangi yolun çalıştığını gösterir; reddedilen kimlik (401/403) ya da dolan kota (486) ayrıca açıklanır.
 
 Oyun ekranındaki küçük emoji çubuğu (👍 😂 😮 😅 🔥 🤝) rakibin telefonunda büyükçe belirir; sonuç
 ekranındaki **Sonucu paylaş** skoru paylaşım menüsüne (ya da panoya) verir.

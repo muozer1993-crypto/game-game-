@@ -122,13 +122,15 @@ export function makeTransport(role, code, peer) {
   };
 
   // Mobile browsers freeze the page (and its signalling socket) while the host shares the code in
-  // another app; PeerJS only notices a dead socket much later. Back in the foreground with no data
-  // channel yet, re-register the room id on a fresh socket (same id and token, the server swaps it).
+  // another app; PeerJS only notices a dead socket much later. Back in the foreground with no
+  // connection yet, re-register the room id on a fresh socket (same id and token, the server swaps
+  // it). Not while a connection is being negotiated: PeerJS drops the ICE candidates it would send
+  // during the swap (the late relay ones first), and the offer itself proves the socket was alive.
   const onVisibility = () => {
     if (typeof document === 'undefined' || document.visibilityState !== 'visible' || !peer || peer.destroyed) return;
     try {
       if (peer.disconnected) peer.reconnect();
-      else if (!open && !closed) { peer.disconnect(); peer.reconnect(); }
+      else if (!conn && !closed) { peer.disconnect(); peer.reconnect(); }
     } catch (e) { console.warn(e); }
   };
   if (typeof document !== 'undefined') document.addEventListener('visibilitychange', onVisibility);
@@ -224,10 +226,14 @@ export function makeTransport(role, code, peer) {
   };
 }
 
+const abortError = () => Object.assign(new Error('Vazgeçildi'), { type: 'aborted' });
+const aborted = (opts) => !!(opts.signal && opts.signal.aborted);
+
 /**
  * Open a room. Resolves once the room code is registered (before the guest connects).
  * @param {string} code
- * @param {{ onStatus?: (text: string) => void, attempts?: number }} [opts]
+ * @param {{ onStatus?: (text: string) => void, attempts?: number, signal?: AbortSignal }} [opts]
+ *   signal: the user left the screen; the attempt stops and the room is destroyed.
  */
 export async function createHost(code, opts = {}) {
   const Peer = await loadPeerJs();
@@ -236,6 +242,7 @@ export async function createHost(code, opts = {}) {
   const attempts = opts.attempts ?? 3;
   let lastError = null;
   for (let i = 0; i < attempts; i++) {
+    if (aborted(opts)) throw abortError();
     const roomCode = i === 0 ? code : generateRoomCode();
     opts.onStatus && opts.onStatus(i === 0 ? 'Oda açılıyor…' : 'Yeni kod deneniyor…');
     try {
@@ -243,7 +250,9 @@ export async function createHost(code, opts = {}) {
         const peer = new Peer(ID_PREFIX + roomCode, PEER_OPTIONS);
         let settled = false;
         const fail = (err) => { if (!settled) { settled = true; try { peer.destroy(); } catch { /* ignore */ } reject(err); } };
+        if (opts.signal) opts.signal.addEventListener('abort', () => fail(abortError()), { once: true });
         peer.on('open', () => {
+          if (settled) return; // PeerJS emits 'open' again after every socket re-registration; the room already exists
           settled = true;
           const transport = makeTransport('host', roomCode, peer);
           peer.on('connection', (conn) => {
@@ -272,7 +281,8 @@ export async function createHost(code, opts = {}) {
 /**
  * Join a room by code. Resolves once the data channel to the host is open.
  * @param {string} code
- * @param {{ onStatus?: (text: string) => void }} [opts]
+ * @param {{ onStatus?: (text: string) => void, signal?: AbortSignal }} [opts]
+ *   signal: the user left the screen; the attempt stops and the peer is destroyed.
  */
 export async function joinRoom(code, opts = {}) {
   const Peer = await loadPeerJs();
@@ -280,14 +290,21 @@ export async function joinRoom(code, opts = {}) {
   const PEER_OPTIONS = peerOptions(await getIceServers());
   const roomCode = normalizeRoomCode(code);
   if (roomCode.length < 4) throw new Error('Oda kodu en az 4 karakter olmalı');
+  if (aborted(opts)) throw abortError();
   opts.onStatus && opts.onStatus('Eşleştirme sunucusuna bağlanılıyor…');
   return new Promise((resolve, reject) => {
     const peer = new Peer(PEER_OPTIONS);
     let settled = false;
+    let started = false;
     let transport = null;
     const fail = (err) => { if (!settled) { settled = true; try { peer.destroy(); } catch { /* ignore */ } reject(err); } };
     const timer = setTimeout(() => fail(new Error('Odaya bağlanılamadı (zaman aşımı). Kod doğru mu, ikiniz de internete bağlı mısınız? Farklı ağlardaysanız ikiniz de "Bağlantı testi" yapıp TURN satırına bakın.')), 25000);
+    if (opts.signal) opts.signal.addEventListener('abort', () => { clearTimeout(timer); fail(abortError()); }, { once: true });
     peer.on('open', () => {
+      // PeerJS emits 'open' again after every socket re-registration (reconnect after a freeze):
+      // one connect() per join, or the host would replace the live channel with the duplicate
+      if (started) return;
+      started = true;
       opts.onStatus && opts.onStatus('Odaya bağlanılıyor…');
       transport = makeTransport('guest', roomCode, peer);
       const conn = peer.connect(ID_PREFIX + roomCode, { reliable: true, serialization: 'json' });

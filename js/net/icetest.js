@@ -22,10 +22,19 @@ export function summarizeCandidates(candidates) {
   return out;
 }
 
-/** The relay is what cross-network games need; without it only same-network pairs work. */
-export function verdictFor(summary, signalling) {
+/**
+ * The relay is what cross-network games need; without it only same-network pairs work.
+ * @param {{ host: number, srflx: number, relay: number }} summary
+ * @param {boolean} signalling
+ * @param {{ url?: string, code?: number, text?: string }[]} [errors] from onicecandidateerror: a refused
+ *   credential (401/403) or a used-up quota (486) is a settings problem, not a network one
+ */
+export function verdictFor(summary, signalling, errors = []) {
   if (!signalling) return { ok: false, text: 'Eşleştirme sunucusuna (0.peerjs.com) ulaşılamıyor: oda açılamaz ya da odaya katılınamaz. İnternet bağlantısını kontrol et.' };
   if (summary.relay > 0) return { ok: true, text: 'TURN aktarma sunucusu çalışıyor: farklı ağlardaki iki telefon da bağlanabilmeli.' };
+  const codes = new Set(errors.map((e) => e && Number(e.code)).filter(Boolean));
+  if (codes.has(401) || codes.has(403)) return { ok: false, text: 'TURN aktarma sunucusu kimlik bilgilerini reddetti (401/403): js/net/turn-config.js içindeki kullanıcı adı ve şifre, Metered panelindekiyle birebir aynı olmalı.' };
+  if (codes.has(486)) return { ok: false, text: 'TURN aktarma sunucusunun kotası dolmuş (486): Metered hesabındaki aylık ücretsiz aktarma hakkı bitmiş olabilir; panelden bak.' };
   if (summary.srflx > 0) return { ok: false, text: 'STUN çalışıyor ama TURN aktarma sunucusuna ulaşılamadı: aynı Wi-Fi\'deki cihazlar bağlanır, farklı ağlardaki (mobil veri) telefonlar büyük ihtimalle bağlanamaz.' };
   return { ok: false, text: 'Ne STUN ne TURN yanıt verdi: bu ağ WebRTC\'yi engelliyor olabilir (kurumsal Wi-Fi, VPN, bazı operatörler). Başka bir ağ dene.' };
 }

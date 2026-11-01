@@ -1,6 +1,6 @@
 // Minimal service worker: precache the app shell, serve cache-first, fall back to network.
 // Bump VERSION whenever files change so that old caches are dropped.
-const VERSION = 'v105';
+const VERSION = 'v106';
 const CACHE = `oyun-gecesi-${VERSION}`;
 const SHELL = [
   './',
@@ -28,6 +28,7 @@ const SHELL = [
   './js/net/transport.js',
   './js/net/peer.js',
   './js/net/icetest.js',
+  './js/net/turn-config.js',
   './vendor/peerjs.min.js',
   './games/index.js',
   './games/son-hece.js',
@@ -181,14 +182,34 @@ self.addEventListener('activate', (event) => {
   );
 });
 
+// A JavaScript answer from our own origin (a captive-portal login page is HTML with status 200).
+const isScript = (res) => !!res && res.ok && res.type === 'basic' && /javascript|ecmascript/i.test(res.headers.get('content-type') || '');
+
+// Network-first with the cache as the safety net. The file sits in a static import chain
+// (app.js -> peer.js -> turn-config.js), so a missing answer would leave the whole app blank:
+// a fresh copy is stored for later, and after waitMs the stored copy is served instead.
+async function freshFirst(request, waitMs = 4000) {
+  const cache = await caches.open(CACHE);
+  const cached = await cache.match(request);
+  const fresh = fetch(request, { cache: 'no-store' }).then((res) => {
+    if (isScript(res)) cache.put(request, res.clone()).catch(() => { /* quota or shutdown: nothing to do */ });
+    return res;
+  });
+  if (!cached) return fresh; // nothing stored yet (first run): the network is the only source
+  const timer = new Promise((resolve) => setTimeout(() => resolve(null), waitMs));
+  const res = await Promise.race([fresh.catch(() => null), timer]);
+  return isScript(res) ? res : cached;
+}
+
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   if (request.method !== 'GET') return;
   const url = new URL(request.url);
   if (url.origin !== location.origin) return; // never touch third-party requests (PeerJS, etc.)
-  // the relay settings file is edited by hand and must take effect on the next load without a new version
+  // the relay settings file is edited by hand on GitHub and must take effect on the next load
+  // without a new version: fresh copy first, the stored copy when the network is slow or down
   if (url.pathname.endsWith('/js/net/turn-config.js')) {
-    event.respondWith(fetch(request, { cache: 'no-store' }).catch(() => caches.match(request)));
+    event.respondWith(freshFirst(request));
     return;
   }
   event.respondWith(

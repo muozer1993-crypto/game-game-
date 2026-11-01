@@ -118,6 +118,7 @@ async function loadGameData(game) {
 // ---------------------------------------------------------------- navigation
 let currentScreen = 'menu';
 let teardown = null; // called when leaving the current screen
+let updateReady = false; // a new version took over while another screen was open: reload at the next menu
 let tournament = null; // { ids, index, wins, draws, results, players, onlineHost } while a tournament runs
 
 function setScreen(name, cleanupFn) {
@@ -180,6 +181,12 @@ function header(title, { onBack, left, right } = {}) {
 export function showMenu() {
   if (online.transport || online.resuming || reconnectOverlay) { closeReconnect(); leaveOnline(); } // tells the other device we left
   tournament = null;
+  if (updateReady) {
+    // the new version (and the relay settings it brought) takes over here, as the toast promised
+    setScreen('menu');
+    setTimeout(() => location.reload(), 150); // lets the 'leave' message go out first
+    return;
+  }
   setScreen('menu');
   const themeSelect = el('select', { class: 'select', 'aria-label': 'Tema', onChange: (e) => applyTheme(e.target.value) },
     el('option', { value: 'auto' }, '🌓 Sistem'),
@@ -825,7 +832,10 @@ async function shareInvite(code) {
 }
 
 export function showOnline({ code: presetCode = '' } = {}) {
-  setScreen('online');
+  // leaving the screen cancels a pending "Oda kur" / "Odaya katıl": a late result must not hijack
+  // whatever screen the user is on by then (a relayed join can take 10-25 s)
+  let pending = null;
+  setScreen('online', () => { if (pending) { pending.abort(); pending = null; } });
   let name = prefs.onlineName;
   const nameInput = el('input', {
     type: 'text', class: 'input', id: 'online-name', maxlength: 20, value: name, placeholder: 'Adın',
@@ -856,7 +866,7 @@ export function showOnline({ code: presetCode = '' } = {}) {
       checkSignalling(),
       gatherCandidates(servers, { timeoutMs: 12000, onProgress: (s) => { live.textContent = `Bulunan yollar: doğrudan ${s.host}, STUN ${s.srflx}, TURN ${s.relay}…`; } }),
     ]);
-    const v = verdictFor(ice.summary, sig);
+    const v = verdictFor(ice.summary, sig, ice.errors);
     const mark = (ok) => el('span', { class: `badge ${ok ? 'match' : 'miss'}` }, ok ? '✓' : '✗');
     const row = (label, ok, detail) => el('div', { class: 'ice-row' }, el('span', {}, label), el('span', { class: 'ice-detail' }, detail || '', ' ', mark(ok)));
     render(testBox,
@@ -878,13 +888,20 @@ export function showOnline({ code: presetCode = '' } = {}) {
     hostBtn.disabled = true; joinBtn.disabled = true;
     status.classList.remove('rejected-note');
     status.textContent = 'Oda açılıyor…';
+    const ctrl = new AbortController();
+    pending = ctrl;
     try {
       const code = generateRoomCode();
-      online.transport = await createHost(code, { onStatus: (s) => { status.textContent = s; } });
+      const transport = await createHost(code, { onStatus: (s) => { status.textContent = s; }, signal: ctrl.signal });
+      if (ctrl.signal.aborted) { transport.close(); return; } // the user left the screen meanwhile
+      pending = null;
+      online.transport = transport;
       online.role = 'host'; online.self = 0;
       wireTransport(myName);
       showOnlineWaiting(online.transport.code);
     } catch (err) {
+      if (ctrl.signal.aborted) return;
+      pending = null;
       console.error(err);
       status.textContent = err.message || 'Oda açılamadı'; // stays on screen (a toast is gone in seconds)
       status.classList.add('rejected-note');
@@ -900,12 +917,19 @@ export function showOnline({ code: presetCode = '' } = {}) {
     hostBtn.disabled = true; joinBtn.disabled = true;
     status.classList.remove('rejected-note');
     status.textContent = 'Bağlanılıyor…';
+    const ctrl = new AbortController();
+    pending = ctrl;
     try {
-      online.transport = await joinRoom(code, { onStatus: (s) => { status.textContent = s; } });
+      const transport = await joinRoom(code, { onStatus: (s) => { status.textContent = s; }, signal: ctrl.signal });
+      if (ctrl.signal.aborted) { transport.close(); return; } // the user left the screen meanwhile
+      pending = null;
+      online.transport = transport;
       online.role = 'guest'; online.self = 1;
       wireTransport(myName);
       showOnlineWaiting(online.transport.code);
     } catch (err) {
+      if (ctrl.signal.aborted) return;
+      pending = null;
       console.error(err);
       status.textContent = err.message || 'Bağlanılamadı';
       status.classList.add('rejected-note');
@@ -1222,7 +1246,7 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
   navigator.serviceWorker.addEventListener('controllerchange', () => {
     if (!hadController) { hadController = true; return; } // first install, nothing to refresh
     if (currentScreen === 'menu' && !online.transport) location.reload();
-    else toast('Yeni sürüm hazır: ana menüye dönünce sayfa yenilenecek', { duration: 4000 });
+    else { updateReady = true; toast('Yeni sürüm hazır: ana menüye dönünce sayfa yenilenecek', { duration: 4000 }); }
   });
 }
 
