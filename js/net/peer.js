@@ -13,10 +13,13 @@ const PEER_OPTIONS = {
     iceServers: [
       { urls: 'stun:stun.l.google.com:19302' },
       { urls: 'stun:stun1.l.google.com:19302' },
-      // Two phones on mobile data usually sit behind carrier NATs that STUN alone cannot
-      // punch through; the Open Relay Project's free public TURN servers (static credentials,
-      // published for exactly this use) relay the data channel in that case. Unreachable
-      // servers are simply ignored by ICE.
+      // Two phones on mobile data usually sit behind carrier NATs that STUN alone cannot punch
+      // through; a TURN relay carries the data channel in that case. Unreachable servers are
+      // simply ignored by ICE (the connection test on the online screen shows which ones answer).
+      // PeerJS's own public relays (the library's default config, which a custom config replaces):
+      { urls: ['turn:eu-0.turn.peerjs.com:3478', 'turn:us-0.turn.peerjs.com:3478'], username: 'peerjs', credential: 'peerjsp' },
+      { urls: ['turn:eu-0.turn.peerjs.com:3478?transport=tcp', 'turn:us-0.turn.peerjs.com:3478?transport=tcp'], username: 'peerjs', credential: 'peerjsp' },
+      // The Open Relay Project's free public TURN servers (static credentials published for this use):
       { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
       { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
       { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' },

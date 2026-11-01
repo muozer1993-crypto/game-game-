@@ -120,8 +120,9 @@ Bağlantı katmanı **PeerJS** (WebRTC, `vendor/peerjs.min.js`, MIT). Seçilme n
 Hesap, API anahtarı, sunucu, yapılandırma dosyası gerekmez; eşleştirme için PeerJS'in ücretsiz
 genel sunucusu (`0.peerjs.com`) kullanılır, oyun verisi doğrudan iki telefon arasında akar.
 İki telefon da farklı mobil operatör ağındaysa (CGNAT) doğrudan bağlantı kurulamayabilir; bu
-durumda veri Open Relay Project'in ücretsiz genel TURN sunucuları üzerinden aktarılır
-(`js/net/peer.js` içindeki `iceServers`; sunucu ulaşılamazsa yalnızca doğrudan bağlantı denenir).
+durumda veri bir TURN aktarma sunucusu üzerinden geçer: PeerJS'in kendi genel aktarma sunucuları
+(eu-0/us-0.turn.peerjs.com, kütüphanenin varsayılan yapılandırması) ve Open Relay Project'in ücretsiz
+sunucuları (`js/net/peer.js` içindeki `iceServers`; ulaşılamayan sunucu atlanır).
 
 Oyun ekranındaki küçük emoji çubuğu (👍 😂 😮 😅 🔥 🤝) rakibin telefonunda büyükçe belirir; sonuç
 ekranındaki **Sonucu paylaş** skoru paylaşım menüsüne (ya da panoya) verir.
