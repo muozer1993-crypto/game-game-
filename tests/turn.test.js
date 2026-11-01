@@ -8,7 +8,10 @@ test('TURN REST kimliği: süreli kullanıcı adı ve HMAC-SHA1 şifre (bilinen 
   const servers = await getIceServers();
   assert.ok(servers.some((s) => String(s.urls).startsWith('stun:')), 'STUN servers present');
   assert.ok(!servers.some((s) => /turn\.peerjs\.com|openrelay\.metered\.ca/.test(String(s.urls))), 'no dead relays (openrelay, peerjs, staticauth)');
-  assert.ok(servers.every((s) => !String(s.urls).startsWith('turn')), 'no relay until turn-config.js is filled in');
+  const relays = servers.filter((s) => String(s.urls).startsWith('turn'));
+  assert.equal(relays.length, 4, 'the Metered relays from turn-config.js: udp 80, tcp 80, 443, tls 443');
+  assert.ok(relays.every((s) => s.username && s.credential && /global\.relay\.metered\.ca/.test(String(s.urls))), 'every relay is authenticated and points at the Metered host');
+  assert.ok(relays.some((s) => String(s.urls).startsWith('turns:')), 'a TLS relay on 443 for networks that block everything else');
 });
 
 import { makeTransport } from '../js/net/peer.js';
