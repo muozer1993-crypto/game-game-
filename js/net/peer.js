@@ -2,33 +2,73 @@
 // the host's peer id (namespaced so that it cannot collide with other apps on the public
 // PeerJS server). PeerJS itself is loaded lazily from vendor/peerjs.min.js (MIT).
 import { generateRoomCode, normalizeRoomCode } from './transport.js';
+import { STATIC_TURN, METERED } from './turn-config.js';
 
 export { generateRoomCode, normalizeRoomCode };
 
 const PEERJS_URL = new URL('../../vendor/peerjs.min.js', import.meta.url);
 const ID_PREFIX = 'oyungecesi-';
-const PEER_OPTIONS = {
-  debug: 1,
-  config: {
-    iceServers: [
-      { urls: 'stun:stun.l.google.com:19302' },
-      { urls: 'stun:stun1.l.google.com:19302' },
-      // Two phones on mobile data usually sit behind carrier NATs that STUN alone cannot punch
-      // through; a TURN relay carries the data channel in that case. Unreachable servers are
-      // simply ignored by ICE (the connection test on the online screen shows which ones answer).
-      // PeerJS's own public relays (the library's default config, which a custom config replaces):
-      { urls: ['turn:eu-0.turn.peerjs.com:3478', 'turn:us-0.turn.peerjs.com:3478'], username: 'peerjs', credential: 'peerjsp' },
-      { urls: ['turn:eu-0.turn.peerjs.com:3478?transport=tcp', 'turn:us-0.turn.peerjs.com:3478?transport=tcp'], username: 'peerjs', credential: 'peerjsp' },
-      // The Open Relay Project's free public TURN servers (static credentials published for this use):
-      { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
-      { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
-      { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' },
-    ],
-  },
-};
 
-/** The STUN/TURN servers the two phones use (also shown by the connection self-test). */
-export const ICE_SERVERS = PEER_OPTIONS.config.iceServers;
+// Two phones on mobile data usually sit behind carrier NATs that STUN alone cannot punch through;
+// a TURN relay carries the data channel in that case. The free public relays of earlier years
+// (openrelay.metered.ca with static credentials, PeerJS's own eu-0/us-0.turn.peerjs.com) were shut
+// down by 2026, so the relay comes from: the player's own free account (js/net/turn-config.js) and,
+// as a best-effort fallback, Metered's shared-secret host for the Open Relay Project, whose
+// short-lived credentials are derived here (TURN REST API: username "<expiry>:<name>", password
+// base64(HMAC-SHA1(secret, username))). The connection test on the online screen shows what answers.
+const STUN_SERVERS = [
+  { urls: 'stun:stun.l.google.com:19302' },
+  { urls: 'stun:stun1.l.google.com:19302' },
+  { urls: 'stun:stun.cloudflare.com:3478' },
+];
+const OPEN_RELAY_STATIC_AUTH = { host: 'staticauth.openrelay.metered.ca', secret: 'openrelayprojectsecret', ttlSec: 24 * 3600 };
+
+const b64 = (bytes) => btoa(String.fromCharCode(...new Uint8Array(bytes)));
+
+/** TURN REST credentials (RFC draft "TURN Server REST API") for a shared secret, valid `ttlSec` from now. */
+export async function turnRestCredentials(secret, name, ttlSec, now = Date.now()) {
+  const username = `${Math.floor(now / 1000) + ttlSec}:${name}`;
+  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(secret), { name: 'HMAC', hash: 'SHA-1' }, false, ['sign']);
+  const sig = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(username));
+  return { username, credential: b64(sig) };
+}
+
+let meteredCache = null; // { at, servers }
+async function meteredServers() {
+  if (!METERED.app || !METERED.apiKey) return [];
+  if (meteredCache && Date.now() - meteredCache.at < 10 * 60 * 1000) return meteredCache.servers;
+  try {
+    const ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    const timer = setTimeout(() => ctrl && ctrl.abort(), 8000);
+    const res = await fetch(`https://${METERED.app}.metered.live/api/v1/turn/credentials?apiKey=${encodeURIComponent(METERED.apiKey)}`, { signal: ctrl ? ctrl.signal : undefined });
+    clearTimeout(timer);
+    const list = res.ok ? await res.json() : [];
+    const servers = Array.isArray(list) ? list.filter((s) => s && s.urls) : [];
+    meteredCache = { at: Date.now(), servers };
+    return servers;
+  } catch (err) {
+    console.warn('Metered kimlikleri alınamadı', err);
+    return [];
+  }
+}
+
+/** The STUN/TURN servers to use right now (own account first, then the shared-secret fallback). */
+export async function getIceServers() {
+  const servers = [...STUN_SERVERS, ...STATIC_TURN.filter((s) => s && s.urls)];
+  servers.push(...await meteredServers());
+  try {
+    if (typeof crypto !== 'undefined' && crypto.subtle) {
+      const { username, credential } = await turnRestCredentials(OPEN_RELAY_STATIC_AUTH.secret, 'oyungecesi', OPEN_RELAY_STATIC_AUTH.ttlSec);
+      const h = OPEN_RELAY_STATIC_AUTH.host;
+      servers.push({ urls: [`turn:${h}:80`, `turn:${h}:443`, `turn:${h}:443?transport=tcp`, `turns:${h}:443?transport=tcp`], username, credential });
+    }
+  } catch (err) {
+    console.warn('TURN kimliği üretilemedi', err);
+  }
+  return servers;
+}
+
+const peerOptions = (iceServers) => ({ debug: 1, config: { iceServers } });
 
 let loadPromise = null;
 function loadPeerJs() {
@@ -167,6 +207,7 @@ function makeTransport(role, code, peer) {
  */
 export async function createHost(code, opts = {}) {
   const Peer = await loadPeerJs();
+  const PEER_OPTIONS = peerOptions(await getIceServers());
   const attempts = opts.attempts ?? 3;
   let lastError = null;
   for (let i = 0; i < attempts; i++) {
@@ -210,6 +251,7 @@ export async function createHost(code, opts = {}) {
  */
 export async function joinRoom(code, opts = {}) {
   const Peer = await loadPeerJs();
+  const PEER_OPTIONS = peerOptions(await getIceServers());
   const roomCode = normalizeRoomCode(code);
   if (roomCode.length < 4) throw new Error('Oda kodu en az 4 karakter olmalı');
   opts.onStatus && opts.onStatus('Eşleştirme sunucusuna bağlanılıyor…');

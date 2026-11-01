@@ -8,7 +8,7 @@ import { load, save, remove, keys } from './lib/storage.js';
 import { loadDictionary, loadCommonWords } from './lib/words.js';
 import { randomSeed, shuffle, createRng } from './lib/rng.js';
 import { nameSuffix, capitalizeTR } from './lib/tr.js';
-import { generateRoomCode, createHost, joinRoom, normalizeRoomCode, ICE_SERVERS } from './net/peer.js';
+import { generateRoomCode, createHost, joinRoom, normalizeRoomCode, getIceServers } from './net/peer.js';
 import { gatherCandidates, checkSignalling, verdictFor } from './net/icetest.js';
 import { setSoundEnabled, playEnd } from './lib/sfx.js';
 
@@ -847,9 +847,10 @@ export function showOnline({ code: presetCode = '' } = {}) {
     testBtn.disabled = true;
     const live = el('p', { class: 'hint' }, 'Sunucular deneniyor… (10 sn kadar sürer)');
     render(testBox, el('div', { class: 'spinner', 'aria-hidden': 'true' }), live);
+    const servers = await getIceServers();
     const [sig, ice] = await Promise.all([
       checkSignalling(),
-      gatherCandidates(ICE_SERVERS, { timeoutMs: 12000, onProgress: (s) => { live.textContent = `Bulunan yollar: doğrudan ${s.host}, STUN ${s.srflx}, TURN ${s.relay}…`; } }),
+      gatherCandidates(servers, { timeoutMs: 12000, onProgress: (s) => { live.textContent = `Bulunan yollar: doğrudan ${s.host}, STUN ${s.srflx}, TURN ${s.relay}…`; } }),
     ]);
     const v = verdictFor(ice.summary, sig);
     const mark = (ok) => el('span', { class: `badge ${ok ? 'match' : 'miss'}` }, ok ? '✓' : '✗');
@@ -862,7 +863,7 @@ export function showOnline({ code: presetCode = '' } = {}) {
         row('TURN aktarma (farklı ağlar)', ice.summary.relay > 0, `${ice.summary.relay}${ice.summary.relay ? ` (udp ${ice.summary.relayUdp}, tcp ${ice.summary.relayTcp})` : ''}`),
         ice.errors.length ? el('div', { class: 'muted ice-errors' }, ice.errors.slice(0, 4).map((e) => el('div', {}, `${e.url || 'sunucu'}: ${e.code || ''} ${e.text || 'hata'}`))) : null,
         el('p', { class: `ice-verdict ${v.ok ? 'notice' : 'rejected-note'}` }, v.text),
-        el('p', { class: 'hint' }, `${(ice.ms / 1000).toFixed(1).replace('.', ',')} sn${ice.complete ? '' : ' (süre doldu)'} · İkiniz de bu testi yapın: farklı ağlardan oynamak için TURN satırı iki telefonda da ✓ olmalı.`),
+        el('p', { class: 'hint' }, `${(ice.ms / 1000).toFixed(1).replace('.', ',')} sn${ice.complete ? '' : ' (süre doldu)'} · Denenen TURN: ${servers.filter((s) => String(s.urls).startsWith('turn')).map((s) => (Array.isArray(s.urls) ? s.urls[0] : s.urls).replace(/^turns?:/, '').replace(/[:?].*$/, '')).join(', ') || 'yok'}. İkiniz de bu testi yapın: farklı ağlardan oynamak için TURN satırı iki telefonda da ✓ olmalı.`),
       ),
     );
     testBtn.disabled = false;
