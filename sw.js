@@ -1,6 +1,6 @@
 // Minimal service worker: precache the app shell, serve cache-first, fall back to network.
 // Bump VERSION whenever files change so that old caches are dropped.
-const VERSION = 'v103';
+const VERSION = 'v104';
 const CACHE = `oyun-gecesi-${VERSION}`;
 const SHELL = [
   './',
@@ -28,7 +28,6 @@ const SHELL = [
   './js/net/transport.js',
   './js/net/peer.js',
   './js/net/icetest.js',
-  './js/net/turn-config.js',
   './vendor/peerjs.min.js',
   './games/index.js',
   './games/son-hece.js',
@@ -187,6 +186,11 @@ self.addEventListener('fetch', (event) => {
   if (request.method !== 'GET') return;
   const url = new URL(request.url);
   if (url.origin !== location.origin) return; // never touch third-party requests (PeerJS, etc.)
+  // the relay settings file is edited by hand and must take effect on the next load without a new version
+  if (url.pathname.endsWith('/js/net/turn-config.js')) {
+    event.respondWith(fetch(request, { cache: 'no-store' }).catch(() => caches.match(request)));
+    return;
+  }
   event.respondWith(
     // an invite link (?oda=KOD) is the same app shell
     caches.match(request, request.mode === 'navigate' ? { ignoreSearch: true } : undefined).then((cached) => {

@@ -2,7 +2,8 @@
 // bu sunucu üzerinden geçer. Ücretsiz genel aktarma sunucuları 2026'da kapandı (openrelay.metered.ca
 // park edildi, PeerJS'in sunucuları durduruldu, Metered'ın paylaşılan anahtarlı sunucusu yanıt vermiyor);
 // bu yüzden kendi ücretsiz hesabından alacağın bilgiler burada olmalı. Buraya yazdıkların herkese açık
-// siteye gider; kota şişerse panelden kimliği silip yenisini oluştur ve burayı güncelle.
+// siteye gider; kota şişerse panelden kimliği silip yenisini oluştur ve burayı güncelle. Bu dosya
+// önbelleğe alınmaz: GitHub'da düzenleyince bir sonraki açılışta geçerli olur (sürüm artırmak gerekmez).
 //
 //  1) Metered (önerilen, 80/443 üzerinden UDP/TCP/TLS sunduğu için mobil ağlarda en güvenilir):
 //     https://dashboard.metered.ca/signup — kart istemez, ücretsiz plan ayda 500 MB (yazı tabanlı
