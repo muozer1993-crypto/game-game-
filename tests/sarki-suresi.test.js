@@ -143,13 +143,13 @@ test('şarkı süresi: grup seçimi havuzu, seçim bitince şarkılar çekilir',
   const data = {
     weights: {}, catalog: ['Katatonia', 'Tool', 'Zed'],
     tracks: [
-      ...Array.from({ length: 8 }, (_, i) => ({ a: 'Katatonia', t: `K${i}`, s: 200 + i, dz: 1 + i, g: 'fav' })),
+      ...Array.from({ length: 16 }, (_, i) => ({ a: 'Katatonia', t: `K${i}`, s: 200 + i, dz: 1 + i, g: 'fav' })),
       ...Array.from({ length: 8 }, (_, i) => ({ a: 'Tool', t: `T${i}`, s: 300 + i, dz: 50 + i, g: 'top' })),
       ...Array.from({ length: 8 }, (_, i) => ({ a: 'Zed', t: `Z${i}`, s: 100 + i, dz: 90 + i, g: 'top' })),
     ],
   };
   const c = { songs: data };
-  let s = game.setup({ rounds: 5, pool: 'secim', seed: 3 }, c);
+  let s = game.setup({ rounds: 5, srcSecim: true, seed: 3 }, c);
   assert.equal(s.phase, 'pick');
   assert.deepEqual(game.getTurn(s).player, 0);
   assert.throws(() => game.applyMove(s, 0, { type: 'guess', round: 0, seconds: 100 }, c), 'tahmin sırası değil');
@@ -160,8 +160,22 @@ test('şarkı süresi: grup seçimi havuzu, seçim bitince şarkılar çekilir',
   assert.equal(s.songs.length, 5);
   assert.ok(s.songs.every((x) => x.a === 'Tool' || x.a === 'Zed'));
   assert.deepEqual(game.getTurn(s), { player: 0, private: true });
-  const plain = game.setup({ rounds: 5, pool: 'liste', seed: 3 }, c);
+  const plain = game.setup({ rounds: 5, srcMustafa: true, seed: 3 }, c);
   assert.ok(plain.songs.every((x) => x.a === 'Katatonia'), 'the personal list leaves the broad catalog out');
+  assert.equal(game.setup({ rounds: 5, seed: 3 }, c).songs.length, 5, 'no source ticked: the first list');
+  // hard mode draws a reserve and swaps a song whose sound will not load
+  let h = game.setup({ rounds: 5, mode: 'hard', srcMustafa: true, seed: 4 }, c);
+  assert.equal(h.reserve.length, 6);
+  const first = h.songs[0];
+  const reserve0 = h.reserve[0];
+  h = game.applyMove(h, 0, { type: 'swap', round: 0 }, c);
+  assert.deepEqual(h.songs[0], reserve0);
+  assert.equal(h.reserve.length, 5);
+  assert.notEqual(JSON.stringify(h.songs[0]), JSON.stringify(first));
+  assert.throws(() => game.applyMove(h, 0, { type: 'swap', round: 1 }, c), 'sırası geçti');
+  h = game.applyMove(h, 0, { type: 'guess', round: 0, seconds: 100 }, c);
+  assert.throws(() => game.applyMove(h, 0, { type: 'swap', round: 0 }, c), 'Tahmin verildi');
+  assert.equal(game.setup({ rounds: 5, mode: 'normal', seed: 4 }, c).reserve.length, 0, 'no reserve without audio');
   assert.equal(game.setup({ rounds: 5, clip: 30, seed: 1 }, c).clipSec, 30);
   assert.equal(game.setup({ rounds: 5, seed: 1 }, c).clipSec, 20, 'default clip length');
 });

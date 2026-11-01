@@ -1,117 +1,124 @@
 import { test, assert } from './runner.js';
-import game, { pointsFor, speedFactor, scoreOf, ARTIST_POINTS, SONG_POINTS } from '../games/sarkiyi-bil.js';
+import game, { pointsFor, speedFactor, scoreOf, ARTIST_POINTS, SONG_POINTS, RESERVE } from '../games/sarkiyi-bil.js';
 
 const fixture = {
-  weights: {},
-  catalog: ['Katatonia', 'Opeth', 'Tool'],
+  people: ['Mustafa', 'Beyza'], weights: {}, catalog: ['Katatonia', 'Opeth', 'Tool'],
   tracks: [
-    ...Array.from({ length: 10 }, (_, i) => ({ a: 'Katatonia', t: `Kata ${i}`, s: 200 + i, dz: 1 + i, g: 'fav' })),
-    ...Array.from({ length: 10 }, (_, i) => ({ a: 'Opeth', t: `Opeth ${i}`, s: 400 + i, dz: 100 + i, g: 'fav' })),
+    ...Array.from({ length: 10 }, (_, i) => ({ a: 'Katatonia', t: `Kata ${i}`, s: 200 + i, dz: 1 + i, g: 'sp', w: 1 })),
+    ...Array.from({ length: 10 }, (_, i) => ({ a: 'Opeth', t: `Opeth ${i}`, s: 400 + i, dz: 100 + i, g: 'sp', w: 1 })),
     ...Array.from({ length: 10 }, (_, i) => ({ a: 'Tool', t: `Tool ${i}`, s: 500 + i, dz: 300 + i, g: 'top' })),
-    { a: 'Quiet', t: 'Silent song', s: 100, dz: 999, np: 1, g: 'mix' },
+    ...Array.from({ length: 6 }, (_, i) => ({ a: 'Zara', t: `Zara ${i}`, s: 210 + i, p: 'https://p/z', g: 'fr', w: 2 })),
+    { a: 'Quiet', t: 'Silent song', s: 100, dz: 999, np: 1, g: 'sp', w: 1 },
   ],
 };
 const ctx = { songs: fixture, players: ['Ali', 'Ayşe'] };
 
-test('şarkıyı bil: puanlar dinlenen süreyle 2 kattan 1 kata iner, şıklar yarıya, grup ve şarkı ayrı sayılır', () => {
+test('şarkıyı bil: puanlar dinlenen süreyle 2 kattan 1 kata iner, şıklar yarıya, grup ve şarkı ayrı', () => {
   assert.equal(speedFactor(0, 20), 2);
   assert.equal(speedFactor(10, 20), 1.5);
-  assert.equal(speedFactor(20, 20), 1);
   assert.equal(speedFactor(35, 20), 1, 'never below 1×');
   assert.deepEqual(pointsFor({ heard: 0, clipSec: 20, mode: 'typed', artistOk: true, songOk: true }), { artist: ARTIST_POINTS * 2, song: SONG_POINTS * 2, total: 30 });
   assert.deepEqual(pointsFor({ heard: 20, clipSec: 20, mode: 'typed', artistOk: true, songOk: true }), { artist: 5, song: 10, total: 15 });
-  assert.deepEqual(pointsFor({ heard: 10, clipSec: 20, mode: 'typed', artistOk: true, songOk: false }), { artist: 8, song: 0, total: 8 });
   assert.deepEqual(pointsFor({ heard: 10, clipSec: 20, mode: 'options', artistOk: true, songOk: true }), { artist: 4, song: 8, total: 12 });
-  assert.deepEqual(pointsFor({ heard: 3, clipSec: 20, mode: 'typed', artistOk: false, songOk: true }), { artist: 0, song: 19, total: 19 }, 'the song alone still scores');
+  assert.deepEqual(pointsFor({ heard: 3, clipSec: 20, mode: 'typed', artistOk: false, songOk: true }), { artist: 0, song: 19, total: 19 });
 });
 
-test('şarkıyı bil: sıra, yazılı cevap, şık yolu, sonuç', () => {
-  let s = game.setup({ rounds: 3, clip: 20, favor: 'none', seed: 5 }, ctx);
-  assert.equal(s.songs.length, 6, 'three songs each');
-  assert.ok(s.songs.every((x) => x.a !== 'Quiet'), 'only songs with a clip');
-  assert.deepEqual(game.getTurn(s), { player: 0, private: true });
-  assert.throws(() => game.applyMove(s, 1, { type: 'answer', heard: 2 }), 'Sıra sende değil');
-  assert.throws(() => game.applyMove(s, 0, { type: 'check', artist: 'x', title: 'y' }), 'Biliyorum');
+test('şarkıyı bil: aynı şarkı ikisine, önce basan yazar, öbürü de cevaplar, şıklar, süre dolması, sonuç', () => {
+  let s = game.setup({ rounds: 5, clip: 20, limit: 60, srcMustafa: true, srcBeyza: true, seed: 5 }, ctx);
+  assert.equal(s.songs.length, 5);
+  assert.equal(s.reserve.length, RESERVE);
+  assert.ok(s.songs.concat(s.reserve).every((x) => x.a !== 'Quiet' && x.a !== 'Tool'), 'only songs with a clip, only the ticked sources');
+  assert.equal(s.limitSec, 60);
+  assert.deepEqual(game.getTurn(s), { player: 0, private: false, simultaneous: true });
+  assert.throws(() => game.applyMove(s, 0, { type: 'check', artist: 'x', title: 'y' }), 'Önce düğmene bas');
   assert.throws(() => game.applyMove(s, 0, { type: 'next' }), 'Önce bu şarkı');
-  // turn 1 (Ali): "I know it" after 4 s, both typed right with a slip
+  // song 1: Ayşe buzzes first after 3 s and types both right; Ali answers later with the band only
   const song0 = s.songs[0];
-  s = game.applyMove(s, 0, { type: 'answer', heard: 4 });
+  s = game.applyMove(s, 0, { type: 'buzz', who: 1, heard: 3 });
   assert.equal(s.phase, 'answer');
-  assert.throws(() => game.applyMove(s, 0, { type: 'answer', heard: 4 }), 'Önce dinle');
-  s = game.applyMove(s, 0, { type: 'check', artist: song0.a.toUpperCase(), title: ` ${song0.t.slice(0, -1)}x ` });
-  assert.equal(s.phase, 'result');
-  assert.ok(s.results[0].artistOk && s.results[0].songOk, 'case and one slip do not matter');
-  assert.deepEqual(s.results[0].typed, { a: song0.a.toUpperCase(), t: `${song0.t.slice(0, -1)}x` });
-  assert.deepEqual(s.results[0].points, pointsFor({ heard: 4, clipSec: 20, mode: 'typed', artistOk: true, songOk: true }));
-  assert.equal(scoreOf(s, 0), 27);
+  assert.deepEqual(s.current, { who: 1, mode: 'typed', heard: 3 });
+  assert.deepEqual(game.getTurn(s), { player: 1, private: false, simultaneous: true });
+  assert.throws(() => game.applyMove(s, 0, { type: 'buzz', who: 0, heard: 4 }), 'Şu an basılamaz');
+  s = game.applyMove(s, 1, { type: 'check', artist: song0.a, title: song0.t.toUpperCase() });
+  assert.equal(s.phase, 'listen', 'the other player still has to answer');
+  assert.deepEqual(s.answers[0][1].points, pointsFor({ heard: 3, clipSec: 20, mode: 'typed', artistOk: true, songOk: true }));
+  assert.throws(() => game.applyMove(s, 0, { type: 'buzz', who: 1, heard: 9 }), 'cevap verdin');
+  s = game.applyMove(s, 0, { type: 'buzz', who: 0, heard: 12 });
+  s = game.applyMove(s, 0, { type: 'check', artist: song0.a, title: '' });
+  assert.equal(s.phase, 'reveal');
+  assert.deepEqual(s.answers[0][0].points, { artist: 7, song: 0, total: 7 });
   s = game.applyMove(s, 0, { type: 'next' });
-  assert.deepEqual(game.getTurn(s), { player: 1, private: true }, 'then the other player');
-  // turn 2 (Ayşe): options, wrong band → nothing, song not asked
+  assert.equal(s.index, 1);
+  // song 2: Ali asks for the options after buzzing (half points), Ayşe runs out of time
   const song1 = s.songs[1];
-  s = game.applyMove(s, 1, { type: 'options' });
-  assert.equal(s.phase, 'options');
-  s = game.applyMove(s, 1, { type: 'choose', artist: song1.a === 'Tool' ? 'Opeth' : 'Tool', heard: 6 });
-  assert.equal(s.phase, 'result');
-  assert.equal(s.results[1].points.total, 0);
-  s = game.applyMove(s, 1, { type: 'next' });
-  // turn 3 (Ali): options, band right, song right after 10 s → half points
-  const song2 = s.songs[2];
+  s = game.applyMove(s, 0, { type: 'buzz', who: 0, heard: 10 });
   s = game.applyMove(s, 0, { type: 'options' });
-  s = game.applyMove(s, 0, { type: 'choose', artist: song2.a.toUpperCase(), heard: 8 });
-  assert.equal(s.phase, 'options2', 'band right (case does not matter): now the song');
-  s = game.applyMove(s, 0, { type: 'choose2', title: song2.t, heard: 10 });
-  assert.deepEqual(s.results[2].points, { artist: 4, song: 8, total: 12 });
+  assert.equal(s.phase, 'options');
+  s = game.applyMove(s, 0, { type: 'choose', artist: song1.a.toLowerCase() });
+  assert.equal(s.phase, 'options2');
+  s = game.applyMove(s, 0, { type: 'choose2', title: song1.t });
+  assert.deepEqual(s.answers[1][0].points, { artist: 4, song: 8, total: 12 });
+  assert.equal(s.phase, 'listen');
+  s = game.applyMove(s, 0, { type: 'timeout' });
+  assert.equal(s.phase, 'reveal');
+  assert.equal(s.answers[1][1].mode, 'timeout');
+  assert.equal(s.answers[1][1].points.total, 0);
   s = game.applyMove(s, 0, { type: 'next' });
-  // turn 4 (Ayşe): band only, song box empty
-  const song3 = s.songs[3];
-  s = game.applyMove(s, 1, { type: 'answer', heard: 20 });
-  s = game.applyMove(s, 1, { type: 'check', artist: song3.a, title: '' });
-  assert.deepEqual(s.results[3].points, { artist: 5, song: 0, total: 5 });
-  s = game.applyMove(s, 1, { type: 'next' });
-  // turn 5 (Ali): passes with empty boxes
-  s = game.applyMove(s, 0, { type: 'answer', heard: 20 });
+  // song 3: wrong band in the options ends the answer; the other passes with empty boxes
+  const song2 = s.songs[2];
+  s = game.applyMove(s, 0, { type: 'buzz', who: 1, heard: 2 });
+  s = game.applyMove(s, 1, { type: 'options' });
+  s = game.applyMove(s, 1, { type: 'choose', artist: song2.a === 'Zara' ? 'Opeth' : 'Zara' });
+  assert.equal(s.answers[2][1].points.total, 0);
+  s = game.applyMove(s, 0, { type: 'buzz', who: 0, heard: 20 });
   s = game.applyMove(s, 0, { type: 'check' });
-  assert.equal(s.results[4].points.total, 0);
+  assert.equal(s.answers[2][0].points.total, 0);
   s = game.applyMove(s, 0, { type: 'next' });
-  // turn 6 (Ayşe): wrong band, right song typed → song points only
-  const song5 = s.songs[5];
-  s = game.applyMove(s, 1, { type: 'answer', heard: 25 });
-  s = game.applyMove(s, 1, { type: 'check', artist: 'Bilmemkim', title: song5.t });
-  assert.deepEqual(s.results[5].points, { artist: 0, song: 10, total: 10 });
-  s = game.applyMove(s, 1, { type: 'next' });
+  // songs 4 and 5: time runs out at once
+  s = game.applyMove(s, 0, { type: 'timeout' }); s = game.applyMove(s, 0, { type: 'next' });
+  s = game.applyMove(s, 0, { type: 'timeout' }); s = game.applyMove(s, 0, { type: 'next' });
   assert.equal(s.phase, 'over');
   assert.equal(game.getTurn(s), null);
-  assert.equal(scoreOf(s, 0), 27 + 12);
-  assert.equal(scoreOf(s, 1), 0 + 5 + 10);
-  assert.deepEqual(game.getResult(s), { winner: 0 });
-  assert.throws(() => game.applyMove(s, 0, { type: 'answer', heard: 1 }), 'yapılamaz');
+  assert.equal(scoreOf(s, 0), 7 + 12);
+  assert.equal(scoreOf(s, 1), 28, '9 for the band and 19 for the song at 3 s');
+  assert.deepEqual(game.getResult(s), { winner: 1 });
+  assert.throws(() => game.applyMove(s, 0, { type: 'buzz', who: 0, heard: 1 }), 'yapılamaz');
 });
 
-test('şarkıyı bil: grup seçimi havuzu belirler, berabere mümkün', () => {
-  let s = game.setup({ rounds: 3, pool: 'secim', favor: 'none', seed: 2 }, ctx);
+test('şarkıyı bil: sesi yüklenmeyen şarkı yedekle değişir, iki telefonda herkes kendi adına basar', () => {
+  let s = game.setup({ rounds: 5, srcMustafa: true, seed: 7 }, ctx);
+  const first = s.songs[0];
+  const reserve0 = s.reserve[0];
+  s = game.applyMove(s, 0, { type: 'swap', round: 0 });
+  assert.deepEqual(s.songs[0], reserve0);
+  assert.equal(s.reserve.length, RESERVE - 1);
+  assert.notEqual(JSON.stringify(s.songs[0]), JSON.stringify(first));
+  assert.throws(() => game.applyMove(s, 0, { type: 'swap', round: 3 }), 'sırası geçti');
+  s = game.applyMove(s, 0, { type: 'buzz', who: 0, heard: 1 });
+  assert.throws(() => game.applyMove(s, 0, { type: 'swap', round: 0 }), 'değiştirilemez');
+  // online: the device's own player buzzes, never the other
+  const online = { ...ctx, mode: 'online' };
+  let o = game.setup({ rounds: 5, srcMustafa: true, seed: 8 }, online);
+  assert.throws(() => game.applyMove(o, 0, { type: 'buzz', who: 1, heard: 1 }, online), 'Başkası adına');
+  o = game.applyMove(o, 1, { type: 'buzz', heard: 5 }, online);
+  assert.equal(o.current.who, 1);
+  assert.throws(() => game.applyMove(o, 0, { type: 'check', artist: 'x', title: 'y' }, online), 'Sıra sende değil');
+  o = game.applyMove(o, 1, { type: 'check', artist: o.songs[0].a, title: o.songs[0].t }, online);
+  assert.equal(o.answers[0][1].artistOk, true);
+});
+
+test('şarkıyı bil: grup seçimi havuzu, berabere', () => {
+  let s = game.setup({ rounds: 5, srcSecim: true, seed: 2 }, ctx);
   assert.equal(s.phase, 'pick');
   assert.equal(s.songs.length, 0);
-  assert.deepEqual(game.getTurn(s).player, 0);
-  assert.throws(() => game.applyMove(s, 0, { type: 'answer', heard: 1 }), 'yapılamaz');
+  assert.throws(() => game.applyMove(s, 0, { type: 'buzz', who: 0, heard: 1 }), 'yapılamaz');
   s = game.applyMove(s, 0, { type: 'pick', artists: ['Tool', 'Katatonia'] }, ctx);
-  assert.equal(s.phase, 'pick');
   assert.deepEqual(game.getTurn(s).player, 1);
-  assert.throws(() => game.applyMove(s, 0, { type: 'pick', artists: [] }, ctx), 'Seçimini yaptın');
   s = game.applyMove(s, 1, { type: 'pick', artists: ['Tool'] }, ctx);
   assert.equal(s.phase, 'listen');
-  assert.equal(s.songs.length, 6);
-  assert.ok(s.songs.every((x) => x.a === 'Tool' || x.a === 'Katatonia'), 'songs come from the picked bands');
-  assert.ok(s.songs.filter((x) => x.a === 'Tool').length >= 3, 'the band both picked comes up more');
-  let o = game.setup({ pool: 'ortak', rounds: 3, seed: 3 }, ctx);
-  o = game.applyMove(o, 0, { type: 'pick', artists: ['Tool', 'Opeth'] }, ctx);
-  o = game.applyMove(o, 1, { type: 'pick', artists: ['Opeth', 'Katatonia'] }, ctx);
-  assert.ok(o.songs.every((x) => x.a === 'Opeth'), 'only the common band');
-  // a draw
-  let d = game.setup({ rounds: 3, seed: 9, favor: 'none' }, ctx);
-  for (let k = 0; k < 6; k++) {
-    d = game.applyMove(d, k % 2, { type: 'answer', heard: 20 });
-    d = game.applyMove(d, k % 2, { type: 'check', artist: d.songs[k].a, title: '' });
-    d = game.applyMove(d, k % 2, { type: 'next' });
-  }
+  assert.equal(s.songs.length, 5);
+  assert.ok(s.songs.every((x) => x.a === 'Tool' || x.a === 'Katatonia'));
+  let d = game.setup({ rounds: 5, srcMustafa: true, seed: 9 }, ctx);
+  for (let k = 0; k < 5; k++) { d = game.applyMove(d, 0, { type: 'timeout' }); d = game.applyMove(d, 0, { type: 'next' }); }
   assert.deepEqual(game.getResult(d), { draw: true });
 });

@@ -1,5 +1,5 @@
 import { test, assert } from './runner.js';
-import { poolFor, pickSongs, catalogArtists, pickGroups, artistOptions, songOptions, listTracks, hasAudio, commonArtists, normalizeAnswer, editDistance, answerMatches } from '../js/lib/songs.js';
+import { poolFor, mixPool, sourcesFrom, needsPick, pickSongs, catalogArtists, pickGroups, artistOptions, songOptions, listTracks, hasAudio, commonArtists, normalizeAnswer, editDistance, answerMatches } from '../js/lib/songs.js';
 
 const data = {
   weights: { Katatonia: 3 },
@@ -150,4 +150,36 @@ test('şarkı havuzu: Beyza\'ya yakınlar bayrağı, bölümlü seçim listesi v
   assert.deepEqual(groups[4].artists, ['İki Şarkı', 'Mode XL'], 'the 2–4-song tail is search-only; one-song bands are left out');
   assert.ok(groups[4].searchOnly);
   assert.deepEqual(catalogArtists(d), ['İki Şarkı', 'Katatonia', 'Metallica', 'Mode XL', 'Tarkan', 'Zara'], 'the search-only tail is still pickable');
+});
+
+test('şarkı havuzu: işaretlenen kaynaklar eşit pay alır, kaynak yoksa ilk liste, grup seçimi gerektiği gibi', () => {
+  const d = {
+    people: ['Mustafa', 'Beyza'], weights: { Katatonia: 3 }, catalog: ['Metallica'], catalogTR: ['Tarkan'],
+    tracks: [
+      ...Array.from({ length: 40 }, (_, i) => ({ a: i < 10 ? 'Katatonia' : `Band ${i}`, t: `M${i}`, s: 200, dz: 1 + i, g: 'sp', w: 1, y: i % 4 === 0 ? 1 : 0 })),
+      ...Array.from({ length: 4 }, (_, i) => ({ a: 'Zara', t: `Z${i}`, s: 200, p: 'u', g: 'fr', w: 2 })),
+      { a: 'Hayko Cepkin', t: 'Ortak', s: 200, p: 'u', g: 'jt', w: 3, j: 1 },
+      ...Array.from({ length: 5 }, (_, i) => ({ a: 'Tarkan', t: `T${i}`, s: 300, dz: 300 + i, g: 'tr' })),
+      ...Array.from({ length: 5 }, (_, i) => ({ a: 'Metallica', t: `Met${i}`, s: 300, dz: 400 + i, g: 'top' })),
+    ],
+  };
+  assert.deepEqual(sourcesFrom({}), { srcMustafa: true, srcYakin: false, srcBeyza: false, srcOrtak: false, srcTurkce: false, srcSecim: false }, 'nothing ticked: the first list');
+  assert.ok(needsPick(sourcesFrom({ srcSecim: true })) && !needsPick(sourcesFrom({ srcBeyza: true })));
+  const total = (pool, pred) => pool.tracks.filter(pred).reduce((s, t) => s + pool.weights[`${t.a}|${t.t}`], 0);
+  const two = mixPool(d, { sources: sourcesFrom({ srcMustafa: true, srcBeyza: true }), favor: 'none' });
+  assert.equal(two.tracks.length, 40 + 4 + 1, 'the union, the shared song once');
+  assert.ok(Math.abs(total(two, (t) => t.w === 1) - 500 * 40 / 41) < 1e-6, 'the big list gets half of the draws (41 songs, one of them shared)');
+  assert.ok(Math.abs(total(two, (t) => t.w === 2) - 400) < 1e-6 && Math.abs(two.weights['Hayko Cepkin|Ortak'] - (500 / 41 + 100)) < 1e-6, 'the small list the other half; a song on both lists adds up');
+  const fav = mixPool(d, { sources: sourcesFrom({ srcMustafa: true }), favor: 'high' });
+  assert.ok(fav.weights['Katatonia|M0'] > 2.9 * fav.weights['Band 20|M20'], 'favourite weights apply inside the first list');
+  const yakin = mixPool(d, { sources: sourcesFrom({ srcYakin: true }) });
+  assert.ok(yakin.tracks.length === 10 && yakin.tracks.every((t) => t.y));
+  const three = mixPool(d, { sources: sourcesFrom({ srcOrtak: true, srcTurkce: true, srcBeyza: true }) });
+  for (const pred of [(t) => t.j, (t) => t.g === 'tr', (t) => t.w & 2]) assert.ok(total(three, pred) > 333 - 1e-6, 'each source at least a third (the shared song counts twice)');
+  const picks = mixPool(d, { sources: sourcesFrom({ srcSecim: true }), picks: [['Metallica'], ['Tarkan']] });
+  assert.deepEqual([...new Set(picks.tracks.map((t) => t.a))].sort(), ['Metallica', 'Tarkan']);
+  const noPicks = mixPool(d, { sources: sourcesFrom({ srcSecim: true }), picks: [[], []] });
+  assert.ok(noPicks.tracks.length === 41, 'nobody picked anything: the first list');
+  const drawn = pickSongs(two, { count: 10, seed: 3 });
+  assert.equal(drawn.length, 10);
 });

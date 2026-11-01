@@ -14,7 +14,7 @@ function jsonp(url) {
     const cleanup = () => { delete window[cb]; script.remove(); clearTimeout(timer); };
     window[cb] = (data) => { cleanup(); resolve(data); };
     script.onerror = () => { cleanup(); reject(new Error('Ses sunucusuna ulaşılamadı')); };
-    timer = setTimeout(() => { cleanup(); reject(new Error('Ses sunucusu yanıt vermedi')); }, 8000);
+    timer = setTimeout(() => { cleanup(); reject(new Error('Ses sunucusu yanıt vermedi')); }, 15000);
     script.src = `${url}${url.includes('?') ? '&' : '?'}callback=${cb}`;
     document.head.append(script);
   });
@@ -25,11 +25,36 @@ export function previewUrl(song) {
   if (song.p) return Promise.resolve(song.p);
   if (!song.dz) return Promise.resolve(null);
   if (!previewCache.has(song.dz)) {
-    previewCache.set(song.dz, jsonp(`https://api.deezer.com/track/${encodeURIComponent(song.dz)}?output=jsonp`)
-      .then((d) => (d && typeof d.preview === 'string' && d.preview) || null)
-      .catch(() => null));
+    const url = `https://api.deezer.com/track/${encodeURIComponent(song.dz)}?output=jsonp`;
+    const pick = (d) => (d && typeof d.preview === 'string' && d.preview) || null;
+    previewCache.set(song.dz, jsonp(url).then(pick).catch(() => jsonp(url).then(pick)).catch(() => null)); // one retry
   }
   return previewCache.get(song.dz);
+}
+
+const readyCache = new Map(); // song key -> Promise<boolean>
+
+/**
+ * Can this song's clip really be played here? Resolves the preview url and loads the audio far
+ * enough to know (metadata), so a song whose sound is missing can be swapped before anyone sees it.
+ */
+export function clipReady(song, timeoutMs = 15000) {
+  const key = song.p || `dz:${song.dz}`;
+  if (!readyCache.has(key)) {
+    readyCache.set(key, previewUrl(song).then((url) => new Promise((resolve) => {
+      if (!url) { resolve(false); return; }
+      const audio = new Audio();
+      audio.preload = 'metadata';
+      let settled = false;
+      const done = (ok) => { if (settled) return; settled = true; clearTimeout(timer); audio.removeAttribute('src'); audio.load(); resolve(ok); };
+      const timer = setTimeout(() => done(false), timeoutMs);
+      audio.addEventListener('loadedmetadata', () => done(true));
+      audio.addEventListener('canplay', () => done(true));
+      audio.addEventListener('error', () => done(false));
+      audio.src = url;
+    })).catch(() => false));
+  }
+  return readyCache.get(key);
 }
 
 /**

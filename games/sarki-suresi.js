@@ -4,15 +4,15 @@
 // two players pick at the start (see js/lib/songs.js).
 import { el, render as draw, toast } from '../js/ui/dom.js';
 import { createKeyboard } from '../js/ui/keyboard.js';
-import { createClipPlayer } from '../js/ui/clip.js';
+import { createClipPlayer, clipReady } from '../js/ui/clip.js';
 import { renderArtistPick, rememberedPicks } from '../js/ui/artist-pick.js';
-import { pickSongs, poolFor, pickGroups, hasAudio, fmt, POOL_OPTIONS, POOL_VALUES } from '../js/lib/songs.js';
+import { pickSongs, mixPool, pickGroups, hasAudio, fmt, sourceSettings, sourcesFrom, needsPick } from '../js/lib/songs.js';
 
 export { fmt, hasAudio, pickSongs };
 
 const ROUND_OPTIONS = [5, 10, 15];
 const CLIP_OPTIONS = [10, 15, 20, 30];
-const FAVOR_OPTIONS = ['high', 'mid', 'none'];
+export const RESERVE = 6; // extra songs drawn for hard mode, swapped in when a song's sound will not load
 
 export const meta = {
   group: 'tanisma',
@@ -24,7 +24,7 @@ export const meta = {
     'Normal: şarkının adı ve grubu yazar. Zor: ad gizlidir, ▶ düğmesi şarkıdan seçtiğiniz kadar saniye çalar (internet gerekir); ad ancak ikiniz de tahmin edince açıklanır.',
     'Tek telefonda önce biri tahminini gizlice girer ve telefonu verir, sonra öbürü girer; ardından ikiniz de sonucu görürsünüz. İlk tahmin eden her şarkıda değişir.',
     'Süreyi dakika ve saniye olarak art arda yazarsın: 4 3 2 → 4:32. Oyun sonunda çok tur alan kazanır; eşitlikte tahminlerinin gerçekten toplam sapması az olan.',
-    'Şarkı havuzu: Mustafa\'nın listesi (favori ayarına göre Katatonia, Opeth, Anathema, Antimatter sık), Beyza\'nın listeleri, iki listenin ortak grupları (gruplar eşit pay alır, iki listede de olan şarkılar daha sık), bilinen Türkçe şarkılar, ya da oyun başında ikinizin işaretlediği gruplar: şarkıların yarısı birinin, yarısı öbürünün seçtiklerinden gelir, bir oyuncunun grupları kendi aralarında eşit, ikinizin de seçtiği gruplar iki pay alır ("yalnız ortak" ikinizin de seçtikleriyle sınırlı).',
+    'Şarkı havuzu: işaretlediğin kaynaklar eşit pay alır: Mustafa\'nın listesi (favori ayarına göre Katatonia, Opeth, Anathema, Antimatter sık), Beyza\'nın listeleri, "beyz ve mu" ortak listesi, bilinen Türkçe şarkılar, Mustafa\'nın listesinden Beyza\'ya yakınlar, ya da oyun başında ikinizin işaretlediği gruplar (yarısı birinin, yarısı öbürünün seçtiklerinden; gruplar kendi aralarında eşit, ikinizin de seçtiği gruplar iki pay alır). Zor modda sesi olmayan şarkı çıkmaz.',
   ].join('\n'),
   data: ['songs'],
   handoffNote: 'Tahminler gizli: ekranı yalnızca sırası gelen görmeli.',
@@ -38,16 +38,7 @@ export const meta = {
     },
     { key: 'rounds', label: 'Şarkı sayısı', type: 'select', default: 10, options: ROUND_OPTIONS.map((n) => ({ value: n, label: String(n) })) },
     { key: 'clip', label: 'Zor modda çalma süresi', type: 'select', default: 20, options: CLIP_OPTIONS.map((n) => ({ value: n, label: `${n} saniye` })) },
-    { key: 'pool', label: 'Şarkı havuzu', type: 'select', default: 'liste', options: POOL_OPTIONS },
-    {
-      key: 'favor', label: "Favori gruplar (Mustafa'nın listesinde)", type: 'select', default: 'high',
-      options: [
-        { value: 'high', label: 'Çok çıksın' },
-        { value: 'mid', label: 'Biraz daha sık çıksın' },
-        { value: 'none', label: 'Herkes eşit' },
-      ],
-      help: 'Katatonia, Opeth, Anathema, Antimatter ve benzerleri daha sık gelir.',
-    },
+    ...sourceSettings(),
   ],
 };
 
@@ -81,30 +72,33 @@ export function parseDigits(digits) {
   return { seconds: total };
 }
 
-/** Draw the game's songs from the pool the settings and picks describe. */
+/** Draw the game's songs (plus a reserve in hard mode) from the mix the settings and picks describe. */
 function drawSongs(state, data) {
-  const pool = poolFor(data, { pool: state.pool, picks: state.picks });
-  // the favourite weighting belongs to the first person's list; the other pools carry their own balance
-  return pickSongs(pool, { count: state.count, favor: state.pool === 'liste' ? state.favor : 'high', seed: state.seed, needAudio: state.mode === 'hard' });
+  const pool = mixPool(data, { sources: state.sources, favor: state.favor, picks: state.picks, pickMode: state.pickMode });
+  const hard = state.mode === 'hard';
+  const all = pickSongs(pool, { count: state.count + (hard ? RESERVE : 0), favor: 'high', seed: state.seed, needAudio: hard });
+  return { songs: all.slice(0, state.count), reserve: all.slice(state.count) };
 }
 
 export function setup(options = {}, ctx = {}) {
   const mode = options.mode === 'hard' ? 'hard' : 'normal';
   const count = ROUND_OPTIONS.includes(Number(options.rounds)) ? Number(options.rounds) : 10;
   const clipSec = CLIP_OPTIONS.includes(Number(options.clip)) ? Number(options.clip) : 20;
-  const pool = POOL_VALUES.includes(options.pool) ? options.pool : 'liste';
-  const favor = FAVOR_OPTIONS.includes(options.favor) ? options.favor : 'high';
+  const sources = sourcesFrom(options);
   const state = {
-    mode, count, clipSec, pool, favor,
+    mode, count, clipSec, sources,
+    pickMode: options.pickMode === 'ortak' ? 'ortak' : 'birlesim',
+    favor: ['high', 'mid', 'none'].includes(options.favor) ? options.favor : 'high',
     seed: Number(options.seed) || 1,
-    picks: [null, null],                     // bands each player picked ('secim' / 'ortak' pools)
+    picks: [null, null],                     // bands each player picked (when that source is on)
     songs: [],                               // one per round: { a, t, s, p?, dz? }
+    reserve: [],                             // hard mode: swapped in when a song's sound will not load
     guesses: [],                             // guesses[round][player] in seconds
     index: 0,                                // current round
-    phase: pool === 'secim' || pool === 'ortak' ? 'pick' : 'guess', // pick | guess | reveal | over
+    phase: needsPick(sources) ? 'pick' : 'guess', // pick | guess | reveal | over
   };
   if (state.phase === 'guess') {
-    state.songs = drawSongs(state, ctx.songs);
+    Object.assign(state, drawSongs(state, ctx.songs));
     state.guesses = state.songs.map(() => [null, null]);
   }
   return state;
@@ -146,11 +140,22 @@ export function applyMove(state, player, move, ctx = {}) {
     picks[player] = list;
     const next = { ...state, picks };
     if (picks[0] != null && picks[1] != null) {
-      next.songs = drawSongs(next, ctx.songs);
+      Object.assign(next, drawSongs(next, ctx.songs));
       next.guesses = next.songs.map(() => [null, null]);
       next.phase = 'guess';
     }
     return next;
+  }
+  if (move.type === 'swap') { // hard mode: this song's sound will not load, the next reserve song takes its place
+    if (state.phase !== 'guess') fail('Şarkı değiştirilemez');
+    if (Number(move.round) !== state.index) fail('Bu şarkının sırası geçti');
+    const g = state.guesses[state.index];
+    if (g[0] != null || g[1] != null) fail('Tahmin verildi, şarkı değiştirilemez');
+    if (!state.reserve.length) fail('Yedek şarkı kalmadı');
+    const songs = state.songs.slice();
+    const reserve = state.reserve.slice();
+    songs[state.index] = reserve.shift();
+    return { ...state, songs, reserve };
   }
   if (move.type === 'guess') {
     if (state.phase !== 'guess') fail('Şu an tahmin sırası değil');
@@ -236,6 +241,12 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     let clip = null;
     let card;
     if (state.mode === 'hard') {
+      // a song whose sound will not load is swapped for a reserve song before the first guess; the next one warms up
+      const g = state.guesses[i];
+      if (g[0] == null && g[1] == null && state.reserve.length) {
+        clipReady(song).then((ok) => { if (!ok && state.songs[i] === song) sendMove({ type: 'swap', round: i }); });
+      }
+      if (state.songs[i + 1]) clipReady(state.songs[i + 1]).catch(() => {});
       const fallback = el('div', { class: 'ss-fallback', hidden: true },
         el('div', { class: 'ss-artist' }, song.a), el('div', { class: 'ss-title' }, song.t));
       clip = createClipPlayer(song, {

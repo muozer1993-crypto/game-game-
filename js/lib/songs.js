@@ -19,21 +19,42 @@ export const hasAudio = (t) => !!(t && (t.p || (t.dz && !t.np)));
 /** 257 → "4:17" */
 export const fmt = (secs) => `${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')}`;
 
-export const POOL_OPTIONS = [
-  { value: 'liste', label: "Mustafa'nın listesi (favori gruplar sık)" },
-  { value: 'arkadas', label: "Beyza'nın listeleri" },
-  { value: 'ikisi', label: 'İki listenin ortak grupları' },
-  { value: 'yakin', label: "Mustafa'nın listesinden Beyza'ya yakınlar (Türkçe, bilinenler)" },
-  { value: 'turkce', label: "Bilinen Türkçe şarkılar (90'lar, 2000'ler)" },
-  { value: 'secim', label: 'Dinlediğimiz gruplar (oyunda seçilir)' },
-  { value: 'ortak', label: 'Yalnız ortak gruplar (ikimizin de seçtiği)' },
+/** The song sources a game can mix; each one ticked gets an equal share of the draws. */
+export const SOURCES = [
+  { key: 'srcMustafa', label: "Mustafa'nın listesi", default: true },
+  { key: 'srcYakin', label: "Mustafa'nın listesinden Beyza'ya yakınlar (Türkçe, bilinenler)", default: false },
+  { key: 'srcBeyza', label: "Beyza'nın listeleri", default: true },
+  { key: 'srcOrtak', label: '"beyz ve mu" ortak listesi', default: false },
+  { key: 'srcTurkce', label: "Bilinen Türkçe şarkılar (90'lar, 2000'ler)", default: false },
+  { key: 'srcSecim', label: 'Dinlediğimiz gruplar (oyun başında seçilir)', default: false },
 ];
-export const POOL_VALUES = POOL_OPTIONS.map((o) => o.value);
+export const PICK_OPTIONS = [
+  { value: 'birlesim', label: 'İkimizin seçtikleri (yarı yarıya)' },
+  { value: 'ortak', label: 'Yalnız ikimizin de seçtiği gruplar' },
+];
+/** Settings entries both games show for the sources. */
+export const sourceSettings = () => [
+  ...SOURCES.map((s) => ({ key: s.key, label: s.label, type: 'toggle', default: s.default })),
+  { key: 'pickMode', label: 'Grup seçimi nasıl birleşsin', type: 'select', default: 'birlesim', options: PICK_OPTIONS, help: 'Yalnız "Dinlediğimiz gruplar" işaretliyken.' },
+  {
+    key: 'favor', label: "Favori gruplar (Mustafa'nın listesinde)", type: 'select', default: 'high',
+    options: [{ value: 'high', label: 'Çok çıksın' }, { value: 'mid', label: 'Biraz daha sık çıksın' }, { value: 'none', label: 'Herkes eşit' }],
+    help: 'Katatonia, Opeth, Anathema, Antimatter ve benzerleri daha sık gelir.',
+  },
+];
+/** The source flags out of a game's options (every flag off → the first person's list). */
+export function sourcesFrom(options = {}) {
+  const out = {};
+  for (const s of SOURCES) out[s.key] = !!options[s.key];
+  if (!Object.values(out).some(Boolean)) out.srcMustafa = true;
+  return out;
+}
+export const needsPick = (sources) => !!(sources && sources.srcSecim);
 
 const allTracks = (data) => (data && Array.isArray(data.tracks) ? data.tracks : []).filter((t) => t && t.a && t.t && Number(t.s) >= 30);
 
 /** Whose list a song is on: bit 1 the first person, bit 2 the second. A song without w is the first person's unless it is a catalog song. */
-export const whoHas = (t) => (t.w != null ? Number(t.w) : (t.g === 'top' ? 0 : 1));
+export const whoHas = (t) => (t.w != null ? Number(t.w) : (t.g === 'top' || t.g === 'tr' ? 0 : 1));
 
 /** Songs on person `who`'s list (bit 1 the first person, bit 2 the second); without `who`: anyone's list. */
 export const listTracks = (data, who = 3) => allTracks(data).filter((t) => whoHas(t) & who);
@@ -86,9 +107,47 @@ export function pickGroups(data) {
 export const catalogArtists = (data) => sortNames(pickGroups(data).flatMap((g) => g.artists));
 
 /**
- * The songs a game draws from. pool 'liste': the personal list with its favourite weights.
- * 'secim': every song of a band either player picked (bands both picked weigh 3×).
- * 'ortak': only bands both picked. Empty picks fall back to the wider choice, then to the list.
+ * The songs a game draws from, mixed from the ticked sources: each source gets an equal share of
+ * the draws whatever its size; within a source songs are equal (the first person's list keeps its
+ * favourite weights, picked bands their per-player balance). A song in several sources adds up.
+ * @param {object} data
+ * @param {{ sources?: object, favor?: string, picks?: string[][], pickMode?: string }} opts
+ * @returns {{ tracks: object[], weights: object, perSong: true }}
+ */
+export function mixPool(data, { sources = {}, favor = 'high', picks = [[], []], pickMode = 'birlesim' } = {}) {
+  const parts = [];
+  const favTable = new Map();
+  for (const [k, v] of Object.entries((data && data.weights) || {})) if (Number(v) > 0) favTable.set(normKey(k), Number(v));
+  const favOf = (t) => { const w = favTable.get(normKey(t.a)) || 1; return favor === 'none' ? 1 : favor === 'mid' ? Math.sqrt(w) : w; };
+  if (sources.srcMustafa) parts.push({ tracks: listTracks(data, 1), weightOf: favOf });
+  if (sources.srcYakin) parts.push({ tracks: listTracks(data, 1).filter((t) => t.y), weightOf: () => 1 });
+  if (sources.srcBeyza) parts.push({ tracks: listTracks(data, 2), weightOf: () => 1 });
+  if (sources.srcOrtak) parts.push({ tracks: allTracks(data).filter((t) => t.j), weightOf: () => 1 });
+  if (sources.srcTurkce) parts.push({ tracks: poolFor(data, { pool: 'turkce' }).tracks, weightOf: () => 1 });
+  if (sources.srcSecim) {
+    const p = poolFor(data, { pool: pickMode === 'ortak' ? 'ortak' : 'secim', picks });
+    if (p.tracks.length) parts.push({ tracks: p.tracks, weightOf: (t) => p.weights[t.a] || 1 });
+  }
+  const live = parts.filter((p) => p.tracks.length);
+  if (!live.length) return { tracks: listTracks(data, 1), weights: {}, perSong: true };
+  const byKey = new Map();
+  const weights = {};
+  for (const part of live) {
+    let total = 0;
+    for (const t of part.tracks) total += part.weightOf(t);
+    for (const t of part.tracks) {
+      const k = `${t.a}|${t.t}`;
+      if (!byKey.has(k)) byKey.set(k, t);
+      weights[k] = (weights[k] || 0) + (1000 / live.length) * (part.weightOf(t) / total);
+    }
+  }
+  return { tracks: [...byKey.values()], weights, perSong: true };
+}
+
+/**
+ * One named pool (used by mixPool and the tests). pool 'liste': the personal list with its
+ * favourite weights. 'secim': every song of a band either player picked. 'ortak': only bands both
+ * picked. Empty picks fall back to the wider choice, then to the list.
  * @returns {{ tracks: object[], weights: object }}
  */
 export function poolFor(data, { pool = 'liste', picks = [[], []] } = {}) {
