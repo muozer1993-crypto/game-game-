@@ -20,7 +20,13 @@
  *  { urls: ['turn:global.relay.metered.ca:80', 'turn:global.relay.metered.ca:80?transport=tcp', 'turn:global.relay.metered.ca:443', 'turns:global.relay.metered.ca:443?transport=tcp'], username: '...', credential: '...' }
  *  { urls: ['turn:relay1.expressturn.com:3478?transport=udp', 'turn:relay1.expressturn.com:3478?transport=tcp'], username: 'ef...', credential: '...' }
  */
-export const STATIC_TURN = [];
+export const STATIC_TURN = [
+  { urls: 'stun:stun.relay.metered.ca:80' },
+  { urls: 'turn:global.relay.metered.ca:80', username: '4951c1a436240f07d6ec297f', credential: '0Ib1QR/ePEGAoWqB' },
+  { urls: 'turn:global.relay.metered.ca:80?transport=tcp', username: '4951c1a436240f07d6ec297f', credential: '0Ib1QR/ePEGAoWqB' },
+  { urls: 'turn:global.relay.metered.ca:443', username: '4951c1a436240f07d6ec297f', credential: '0Ib1QR/ePEGAoWqB' },
+  { urls: 'turns:global.relay.metered.ca:443?transport=tcp', username: '4951c1a436240f07d6ec297f', credential: '0Ib1QR/ePEGAoWqB' },
+];
 
 /** Metered hesabı: { app: 'uygulamaadi', apiKey: '...' } — boşsa kullanılmaz. */
 export const METERED = { app: '', apiKey: '' };
