@@ -3,6 +3,7 @@
 // one calls the other a liar. All dice are revealed: if the bid holds, the challenger loses a
 // die, otherwise the bidder does. Whoever runs out of dice loses.
 import { el, render as draw } from '../js/ui/dom.js';
+import { nextButton } from '../js/ui/next.js';
 import { diceOnce } from '../js/lib/sfx.js';
 import { createRng } from '../js/lib/rng.js';
 import { nameSuffix } from '../js/lib/tr.js';
@@ -168,8 +169,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       el('div', { class: 'col-title' }, players[0]), diceRow(L.dice[0], { hit: L.bid.f, wild: state.wild }),
       el('div', { class: 'col-title' }, players[1]), diceRow(L.dice[1], { hit: L.bid.f, wild: state.wild }),
       state.wild ? el('p', { class: 'hint' }, 'Birler joker sayıldı.') : null,
-      el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block', style: { marginTop: '12px' }, onClick: () => sendMove({ type: 'next' }) },
-        state.counts[L.loser] === 0 ? 'Sonucu gör' : 'Sonraki el'),
+      nextButton(ctx, sendMove, state.counts[L.loser] === 0 ? 'Sonucu gör' : 'Sonraki el'),
     );
     return null;
   }

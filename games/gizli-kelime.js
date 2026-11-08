@@ -8,6 +8,9 @@
 import { el, render as draw } from '../js/ui/dom.js';
 import { createKeyboard } from '../js/ui/keyboard.js';
 import { normalizeWord, isTurkishWord, upperTR, nameSuffix } from '../js/lib/tr.js';
+import { toggled, carried, checkObjection } from '../js/lib/objections.js';
+import { unlistedMark, objectionList } from '../js/ui/disputes.js';
+import { nextButton } from '../js/ui/next.js';
 
 // ----------------------------------------------------------------- scoring
 /** Wordle marks with the standard rule for repeated letters. */
@@ -89,7 +92,7 @@ export function createGame(cfg) {
   const drafts = new Map();
   let draftsFor = null; // state.id the drafts belong to
 
-  function validateWord(state, raw, ctx, what) {
+  function validateWord(state, raw, ctx, what, unlisted = false) {
     const word = isNumber ? String(raw || '').trim() : normalizeWord(raw || '');
     if (!word) fail(isNumber ? 'Bir sayı yaz' : 'Bir kelime yaz');
     if (word.length !== state.length) fail(`${state.length} ${isNumber ? 'haneli' : 'harfli'} olmalı`);
@@ -101,7 +104,9 @@ export function createGame(cfg) {
       if (!isTurkishWord(word)) fail('Yalnızca Türkçe harfler kullanılabilir');
       // The sending device validated against its own list; do not re-check remote moves,
       // so that two devices with different list versions never diverge.
-      if (ctx.dict && !ctx.remote && !ctx.dict.has(word)) fail(what === 'secret' ? 'Bu kelime listede yok; listeden bir kelime seç' : 'Kelime listesinde yok');
+      // A word the list does not have goes through only when the player said so: the move then says
+      // it is unlisted, the word is marked and the opponent may object to it at the end.
+      if (ctx.dict && !ctx.remote && !unlisted && !ctx.dict.has(word)) fail(what === 'secret' ? 'Bu kelime listede yok; listeden bir kelime seç' : 'Kelime listesinde yok');
     }
     return word;
   }
@@ -126,8 +131,27 @@ export function createGame(cfg) {
       solved: [null, null],    // number of guesses it took, or null
       gaveUp: null,
       revealed: [null, null],
+      unlistedSecret: [false, false], // a secret the word list does not have (the opponent may object at the end)
+      review: false,           // over, and the objections to unlisted words are being made
+      objected: [],            // `s${owner}` (a secret) or `g${owner}:${index}` (a guess) objected to
     };
   }
+
+  /** Secrets and guesses the word list does not have, as objection items. */
+  function reviewItems(state) {
+    const items = [];
+    for (const p of [0, 1]) {
+      if (state.unlistedSecret && state.unlistedSecret[p]) items.push({ id: `s${p}`, owner: p, word: state.secrets[p] || state.revealed[p] || '…', detail: `tuttuğu ${N.nom}` });
+    }
+    for (const p of [0, 1]) {
+      state.guesses[p].forEach((g, i) => { if (g.unlisted) items.push({ id: `g${p}:${i}`, owner: p, word: g.word, detail: `${i + 1}. tahmini` }); });
+    }
+    return items;
+  }
+
+  /** The game is over: objections first if anyone used a word the list does not have. */
+  const toOver = (state) => ({ ...state, phase: 'over', review: reviewItems(state).length > 0 });
+  const ownerOfItem = (id) => Number(String(id).slice(1, 2));
 
   /** Which player's device holds the secret that guesser `g` is hunting. */
   const ownerOf = (state, g) => (state.shared ? 0 : 1 - g);
@@ -148,11 +172,11 @@ export function createGame(cfg) {
     if (pendingOf(state, 0) >= 0 || pendingOf(state, 1) >= 0) return state;
     // shared word: both see every guess, so the first to find it wins at once (the other could
     // otherwise just copy the answer off the screen to draw)
-    if (state.shared && (state.solved[0] != null || state.solved[1] != null)) return { ...state, phase: 'over' };
+    if (state.shared && (state.solved[0] != null || state.solved[1] != null)) return toOver(state);
     if (n0 !== n1) return state;
     const anySolved = state.solved[0] != null || state.solved[1] != null;
     const exhausted = state.maxGuesses > 0 && n0 >= state.maxGuesses;
-    if (anySolved || exhausted) return { ...state, phase: 'over' };
+    if (anySolved || exhausted) return toOver(state);
     return state;
   }
 
@@ -164,12 +188,15 @@ export function createGame(cfg) {
         if (state.shared && player !== 0) fail(`Ortak ${N.acc} oyunu kuran seçer`);
         if (state.ready[player]) fail(`Gizli ${N.my} zaten hazır`);
         const secrets = state.secrets.slice();
+        const unlisted = !isNumber && !state.shared && !!move.unlisted;
         if (move.secret && move.secret.word != null) {
-          secrets[player] = validateWord(state, move.secret.word, ctx, 'secret');
+          secrets[player] = validateWord(state, move.secret.word, ctx, 'secret', unlisted);
         }
         const ready = state.shared ? [true, true] : state.ready.slice();
         ready[player] = true;
-        const next = { ...state, secrets, ready };
+        const unlistedSecret = (state.unlistedSecret || [false, false]).slice();
+        unlistedSecret[player] = unlisted;
+        const next = { ...state, secrets, ready, unlistedSecret };
         if (ready[0] && ready[1]) next.phase = 'play';
         return next;
       }
@@ -179,10 +206,11 @@ export function createGame(cfg) {
         if (pendingOf(state, player) >= 0) fail('Önceki tahmin puanlanıyor');
         if (pendingOf(state, 1 - player) >= 0) fail('Rakibin tahmini puanlanıyor');
         if (state.maxGuesses > 0 && state.guesses[player].length >= state.maxGuesses) fail('Tahmin hakkın bitti');
-        const word = validateWord(state, move.word, ctx, 'guess');
+        const unlisted = !isNumber && !!move.unlisted;
+        const word = validateWord(state, move.word, ctx, 'guess', unlisted);
         if (state.guesses[player].some((g) => g.word === word)) fail('Bunu zaten denedin');
         const guesses = state.guesses.map((l) => l.slice());
-        guesses[player].push({ word, result: null });
+        guesses[player].push(unlisted ? { word, result: null, unlisted: true } : { word, result: null });
         return { ...state, guesses };
       }
       case 'feedback': {
@@ -206,7 +234,18 @@ export function createGame(cfg) {
       case 'giveup': {
         if (state.phase !== 'play') fail('Şu anda pes edilemez');
         if (player !== whoseTurn(state)) fail('Sıra sende değil');
-        return { ...state, phase: 'over', gaveUp: player };
+        return toOver({ ...state, gaveUp: player });
+      }
+      case 'object': {
+        if (state.phase !== 'over' || !state.review) fail('İtiraz oyun bitince yapılır');
+        const item = reviewItems(state).find((it) => it.id === move.id);
+        checkObjection(item, player, ctx);
+        return { ...state, objected: toggled(state.objected, item.id, !!move.on) };
+      }
+      case 'next': { // closes the objections; they travel with the move as the presser saw them
+        if (state.phase !== 'over' || !state.review) fail('Önce oyun bitsin');
+        const objected = carried(move.objected, reviewItems(state).map((it) => it.id), state.objected || []);
+        return { ...state, objected, review: false };
       }
       case 'reveal': {
         if (state.phase !== 'over') fail(`Oyun bitmeden ${N.nom} açıklanamaz`);
@@ -264,7 +303,11 @@ export function createGame(cfg) {
   }
 
   function getResult(state) {
-    if (state.phase !== 'over') return null;
+    if (state.phase !== 'over' || state.review) return null;
+    // whoever used a word that was objected to loses (both: a draw), whatever else happened
+    const faults = [0, 1].map((p) => (state.objected || []).some((id) => ownerOfItem(id) === p));
+    if (faults[0] && faults[1]) return { draw: true };
+    if (faults[0] || faults[1]) return { winner: faults[0] ? 1 : 0 };
     if (state.gaveUp != null) return { winner: 1 - state.gaveUp };
     const [a, b] = state.solved;
     if (a != null && b != null) return { draw: true };
@@ -305,9 +348,36 @@ export function createGame(cfg) {
 
   let currentFeedback = 'wordle'; // set by render()/board() so tileRow can size +/- rows
 
+  /**
+   * A word the list does not have: the first Enter shows `text(word)` and returns null, the second
+   * (same word) returns true, so the word goes out marked; a listed word (or any number) returns false.
+   */
+  function unlistedConfirm(ctx, length, text) {
+    let warned = null;
+    const note = el('p', { class: 'hint rejected-note', hidden: true });
+    return {
+      note,
+      clear() { if (warned !== null) { warned = null; note.hidden = true; } },
+      check(raw) {
+        if (isNumber || !ctx.dict) return false;
+        const word = normalizeWord(raw || '');
+        if (word.length !== length || !isTurkishWord(word) || ctx.dict.has(word)) return false;
+        if (warned === word) return true;
+        warned = word;
+        note.textContent = text(word);
+        note.hidden = false;
+        return null;
+      },
+    };
+  }
+
   function board(guesses, state, opts = {}) {
     currentFeedback = state.feedback;
-    const rows = guesses.map((g) => tileRow(g.word, g.result, state.length, { small: opts.small, pending: g.result == null }));
+    const rows = guesses.map((g) => {
+      const row = tileRow(g.word, g.result, state.length, { small: opts.small, pending: g.result == null });
+      if (g.unlisted) row.append(unlistedMark()); // a guess the list does not have: open to an objection
+      return row;
+    });
     if (!rows.length) rows.push(el('p', { class: 'hint' }, 'Henüz tahmin yok.'));
     return el('div', { class: 'tiles' }, rows);
   }
@@ -348,20 +418,26 @@ export function createGame(cfg) {
       const rowBox = el('div', { class: 'tiles' });
       const drawRow = () => { drafts.set(draftKey, typed); draw(rowBox, tileRow(typed, null, state.length)); };
       drawRow();
+      const warn = unlistedConfirm(ctx, state.length, (w) => `${show(w)} kelime listesinde yok. Yine de seçmek için tekrar ↵ bas: işaretli kalır, oyun bitince ${players[opp]} itiraz ederse kaybedersin.`);
       const kbBox = el('div');
       const kb = createKeyboard(kbBox, {
         layout,
-        onKey: (k) => { if (typed.length < state.length) { typed += k; drawRow(); } },
-        onBackspace: () => { typed = typed.slice(0, -1); drawRow(); },
-        onEnter: () => sendMove({ type: 'setSecret', secret: { word: typed } }),
+        onKey: (k) => { if (typed.length < state.length) { typed += k; drawRow(); warn.clear(); } },
+        onBackspace: () => { typed = typed.slice(0, -1); drawRow(); warn.clear(); },
+        onEnter: () => {
+          const unlisted = warn.check(typed);
+          if (unlisted === null) return; // warned: the next Enter holds it
+          sendMove(unlisted ? { type: 'setSecret', unlisted: true, secret: { word: typed } } : { type: 'setSecret', secret: { word: typed } });
+        },
       });
       cleanups.push(() => kb.destroy());
       draw(container,
         el('div', { class: 'status-line' }, el('strong', {}, `${players[viewer]}, ${players[opp]} için gizli ${isNumber ? 'bir sayı' : 'bir kelime'} seç`)),
         el('p', { class: 'hint' }, isNumber
           ? 'Rakamları birbirinden farklı 4 haneli bir sayı. Rakibin bunu bulmaya çalışacak.'
-          : `${state.length} harfli, kelime listesinde olan bir kelime. Rakibin bunu bulmaya çalışacak.`),
+          : `${state.length} harfli bir kelime (listede yoksa iki kez onaylarsın). Rakibin bunu bulmaya çalışacak.`),
         rowBox,
+        warn.note,
         kbBox,
       );
       return () => cleanups.forEach((fn) => fn());
@@ -379,9 +455,25 @@ export function createGame(cfg) {
           lines.push(state.solved[p] != null ? `${players[p]} ${state.solved[p]}. tahminde buldu.` : `${players[p]} bulamadı.`);
         }
       }
+      const items = reviewItems(state);
+      const objected = state.objected || [];
+      if (!state.review && objected.length) {
+        const faulty = [0, 1].filter((p) => objected.some((id) => ownerOfItem(id) === p));
+        lines.push(faulty.length === 2 ? 'İkinizin de kelimesine itiraz edildi: berabere.' : `${nameSuffix(players[faulty[0]], 'in')} kelimesine itiraz edildi: ${players[1 - faulty[0]]} kazandı.`);
+      }
+      const objections = items.length ? [
+        objectionList({
+          items, objected, players, viewer, online, sendMove: state.review ? sendMove : null,
+          effect: state.review
+            ? `Listede olmayan (?) bir kelime sence geçersizse itiraz et: itiraz edilen kelimeyi kullanan kaybeder (ikinizinkine de itiraz edilirse berabere).${online ? ' Sonra odayı kuran sonucu açar.' : ''}`
+            : null,
+        }),
+        state.review ? nextButton(ctx, sendMove, 'Sonucu gör', { move: () => ({ type: 'next', objected: state.objected }) }) : null,
+      ] : null;
       const sharedSecret = state.secrets[0] || state.revealed[0];
       draw(container,
-        el('div', { class: 'status-line' }, el('strong', {}, lines.join(' '))),
+        el('div', { class: 'status-line' }, el('strong', {}, state.review ? `${lines.join(' ')} Önce itirazlar:` : lines.join(' '))),
+        objections,
         state.shared
           ? el('div', { class: 'reveal' },
             el('div', { class: 'muted' }, `Ortak ${isNumber ? 'sayı' : 'kelime'}:`),
@@ -420,12 +512,18 @@ export function createGame(cfg) {
     };
     drawCurrent();
 
+    const warn = unlistedConfirm(ctx, state.length, (w) => `${show(w)} kelime listesinde yok. Yine de denemek için tekrar ↵ bas: işaretli kalır, oyun bitince ${players[opp]} itiraz ederse kaybedersin.`);
     const kbBox = el('div');
     const kb = createKeyboard(kbBox, {
       layout,
-      onKey: (k) => { if (!mine || myPending) return; if (typed.length < state.length) { typed += k; drawCurrent(); } },
-      onBackspace: () => { if (!mine || myPending) return; typed = typed.slice(0, -1); drawCurrent(); },
-      onEnter: () => { if (!mine || myPending) return; sendMove({ type: 'guess', word: typed }); },
+      onKey: (k) => { if (!mine || myPending) return; if (typed.length < state.length) { typed += k; drawCurrent(); warn.clear(); } },
+      onBackspace: () => { if (!mine || myPending) return; typed = typed.slice(0, -1); drawCurrent(); warn.clear(); },
+      onEnter: () => {
+        if (!mine || myPending) return;
+        const unlisted = warn.check(typed);
+        if (unlisted === null) return;
+        sendMove(unlisted ? { type: 'guess', word: typed, unlisted: true } : { type: 'guess', word: typed });
+      },
     });
     kb.setDisabled(!mine || myPending);
     // in shared mode both players hunt the same word, so the opponent's clues count too
@@ -445,6 +543,8 @@ export function createGame(cfg) {
     const notices = [];
     if (oppSolved && !mySolved && mine) notices.push(el('p', { class: 'hint notice' }, `${players[opp]} ${N.acc} buldu. Bu son tahminin: bulursan berabere, bulamazsan kaybedersin.`));
     if (mySolved && !mine) notices.push(el('p', { class: 'hint notice' }, `Buldun! ${players[opp]} son tahminini yapıyor…`));
+    if (!state.shared && state.unlistedSecret && state.unlistedSecret[opp]) notices.push(el('p', { class: 'hint' }, unlistedMark(), ` ${nameSuffix(players[opp], 'in')} tuttuğu kelime listede yok: oyun bitince itiraz edebilirsin.`));
+    if (!state.shared && state.unlistedSecret && state.unlistedSecret[viewer]) notices.push(el('p', { class: 'hint' }, unlistedMark(), ` Tuttuğun kelime listede yok: oyun bitince ${players[opp]} itiraz edebilir.`));
     const lastOppView = !online && lastOpp && lastOpp.result
       ? el('div', { class: 'last-opp' },
         el('div', { class: 'col-title' }, `${nameSuffix(players[opp], 'in')} son tahmini`),
@@ -467,6 +567,7 @@ export function createGame(cfg) {
       el('div', { class: 'col-title active' }, `${players[viewer]} — tahminlerin`),
       board(myGuesses, state),
       currentRow,
+      warn.note,
       kbBox,
       oppDetails,
       mine && !myPending ? el('div', { class: 'row', style: { marginTop: '10px' } },
@@ -490,6 +591,7 @@ export const meta = {
     'Renkli mod: yeşil doğru harf doğru yerde, sarı harf var ama yeri yanlış, gri harf yok. Tekrar eden harflerde Wordle kuralı uygulanır.',
     '"+ −" modu: yalnızca sayılar söylenir (+2 −1 gibi), hangi harfin doğru olduğu söylenmez. Daha zordur.',
     'Tahminler kelime listesiyle doğrulanır. Tahmin hakkı biten iki oyuncu da bulamazsa berabere.',
+    'Listede olmayan bir kelimeyi gizli kelime ya da tahmin olarak yine de kullanabilirsin (iki kez onaylarsın): işaretli (?) görünür, oyun bitince rakibin itiraz edebilir. İtiraz edilen kelimeyi kullanan kaybeder (ikiniz de kullandıysanız berabere). Sonuca iki telefonda odayı kuran geçer.',
   ].join('\n'),
   data: ['dictionary', 'common'],
   settings: [

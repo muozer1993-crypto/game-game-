@@ -2,6 +2,7 @@
 // players get the same puzzle and race the clock on their own device; the closest result scores,
 // an exact hit scores most. The solver guarantees every target is reachable and shows a solution.
 import { el, render as draw } from '../js/ui/dom.js';
+import { nextButton } from '../js/ui/next.js';
 import { createTimer } from '../js/ui/timer.js';
 import { createRng, shuffle } from '../js/lib/rng.js';
 
@@ -230,8 +231,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
         an[p].steps.length ? el('div', { class: 'hs-steps' }, an[p].steps.map((s) => el('div', {}, fmtStep(s)))) : el('p', { class: 'hint' }, 'İşlem yapmadı.'),
       ))),
       el('details', { class: 'rules' }, el('summary', {}, 'Bir çözüm'), el('div', { class: 'hs-steps' }, puzzle.solution.map((s) => el('div', {}, fmtStep(s))))),
-      el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block', style: { marginTop: '12px' }, onClick: () => sendMove({ type: 'next' }) },
-        state.round + 1 >= state.rounds ? 'Sonucu gör' : 'Sonraki tur'),
+      nextButton(ctx, sendMove, state.round + 1 >= state.rounds ? 'Sonucu gör' : 'Sonraki tur'),
     );
     return null;
   }

@@ -74,3 +74,20 @@ export function renderArtistPick(container, opts) {
   draw();
   return { destroy: () => {} };
 }
+
+const kept = new WeakMap(); // container -> { key, nodes }
+
+/**
+ * renderArtistPick, but drawing it again with the same key puts the same screen back (search text
+ * and ticks intact): on two phones both pick at once, and the other phone's list arriving redraws
+ * the game while this player is still choosing.
+ */
+export function keepArtistPick(container, key, opts) {
+  const k = kept.get(container);
+  if (k && k.key === key) {
+    container.replaceChildren(...k.nodes);
+    return;
+  }
+  renderArtistPick(container, opts);
+  kept.set(container, { key, nodes: [...container.childNodes] });
+}

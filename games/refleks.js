@@ -2,6 +2,7 @@
 // the round, tapping early loses it. One phone: two tap zones. Two phones: each device
 // times its own player, so network delay does not matter.
 import { el, render as draw } from '../js/ui/dom.js';
+import { nextButton } from '../js/ui/next.js';
 import { createRng } from '../js/lib/rng.js';
 
 export const meta = {
@@ -126,8 +127,11 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   if (state.phase === 'result') {
     // the round ends on a tap: the button that appears under that finger waits a moment, or the
     // same tap would also skip the result
-    const next = el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block', style: { marginTop: '12px' }, disabled: true, onClick: () => sendMove({ type: 'next' }) }, 'Sonraki el');
-    const t = setTimeout(() => { next.disabled = false; }, TAP_GUARD_MS);
+    const next = nextButton(ctx, sendMove, 'Sonraki el');
+    const nextBtn = next.tagName === 'BUTTON' ? next : next.querySelector('button');
+    const wasDisabled = nextBtn.disabled; // the guest's "ready" stays greyed out once it was sent
+    nextBtn.disabled = true;
+    const t = setTimeout(() => { nextBtn.disabled = wasDisabled; }, TAP_GUARD_MS);
     draw(container,
       el('div', { class: 'status-line' }, el('strong', {}, last.winner == null ? 'Bu eli kimse almadı.' : `${players[last.winner]} bu eli aldı!`)),
       score, lastLine, next,

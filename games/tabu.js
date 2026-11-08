@@ -1,6 +1,7 @@
 // Tabu — one player describes the word on the card without saying the five forbidden
 // words, the other guesses aloud. Roles swap every round; "Bildi" +1, "Tabu" −1, "Pas" 0.
 import { el, render as draw } from '../js/ui/dom.js';
+import { nextButton } from '../js/ui/next.js';
 import { createTimer } from '../js/ui/timer.js';
 import { createRng, shuffle } from '../js/lib/rng.js';
 import { nameSuffix, upperTR } from '../js/lib/tr.js';
@@ -200,8 +201,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       el('div', { class: 'status-line' }, el('strong', {}, `${state.round + 1}. tur bitti: ${nameSuffix(players[d], 'in')} ${mime ? 'canlandırdığı' : 'anlattığı'} ${tally('ok')} kart bilindi${tally('taboo') ? `, ${tally('taboo')} ${mime ? 'kartta konuşuldu' : 'tabu'}` : ''}${tally('pass') ? `, ${tally('pass')} pas` : ''}. Tur puanı ${roundScore(entries) > 0 ? '+' : ''}${roundScore(entries)}.`)),
       score,
       el('div', { class: 'tb-list' }, entries.map((e) => el('span', { class: `tb-chip ${e.result}` }, `${MARK[e.result]} ${cards[e.card] ? cards[e.card].word : '?'}`))),
-      el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block', style: { marginTop: '12px' }, onClick: () => sendMove({ type: 'next' }) },
-        state.round + 1 >= state.rounds ? 'Sonucu gör' : `Sonraki tur (${players[g]} ${mime ? 'canlandıracak' : 'anlatacak'})`),
+      nextButton(ctx, sendMove, state.round + 1 >= state.rounds ? 'Sonucu gör' : `Sonraki tur (${players[g]} ${mime ? 'canlandıracak' : 'anlatacak'})`),
     );
     return null;
   }

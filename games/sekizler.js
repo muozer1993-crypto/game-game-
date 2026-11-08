@@ -2,6 +2,7 @@
 // name the suit. Can't play? Draw one card (play it if it fits), otherwise pass. The first to
 // empty their hand scores the cards left in the opponent's hand; rounds until the target.
 import { el, render as draw } from '../js/ui/dom.js';
+import { nextButton } from '../js/ui/next.js';
 import { createRng, shuffle } from '../js/lib/rng.js';
 import { nameSuffix } from '../js/lib/tr.js';
 import { SUITS, cardText } from './pisti.js';
@@ -169,7 +170,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
         : `${players[L.winner]} eli bitirdi: +${L.points} puan.`)),
       legend,
       el('p', { class: 'hint' }, `${nameSuffix(players[1 - L.winner], 'in')} elinde kalanlar: `, el('span', { class: 'ce-row' }, state.hands[1 - L.winner].map((c) => cardEl(c, { small: true })))),
-      state.phase === 'roundOver' ? el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block', style: { marginTop: '12px' }, onClick: () => sendMove({ type: 'next' }) }, 'Sonraki el') : null,
+      state.phase === 'roundOver' ? nextButton(ctx, sendMove, 'Sonraki el') : null,
     );
     return null;
   }

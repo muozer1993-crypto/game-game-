@@ -2,6 +2,7 @@
 // come out over three betting rounds. Blinds, check/call/raise/fold, all-ins with the excess
 // returned, showdown with the best five of seven. The hand ends when one stack is empty.
 import { el, render as draw } from '../js/ui/dom.js';
+import { nextButton } from '../js/ui/next.js';
 import { createRng, shuffle } from '../js/lib/rng.js';
 import { nameSuffix } from '../js/lib/tr.js';
 import { SUITS, cardText } from './pisti.js';
@@ -266,7 +267,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
         el('div', { class: 'ce-row' }, (R.shown || (ctx.mode === 'online' && p === viewer)) ? state.hole[p].map((c) => cardEl(c, { small: true })) : [cardEl(null, { small: true }), cardEl(null, { small: true })]),
       ))),
       stacksLine,
-      state.phase === 'handOver' ? el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block', style: { marginTop: '12px' }, onClick: () => sendMove({ type: 'next' }) }, 'Sonraki el') : null,
+      state.phase === 'handOver' ? nextButton(ctx, sendMove, 'Sonraki el') : null,
     );
     return null;
   }

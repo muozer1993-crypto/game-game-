@@ -5,7 +5,7 @@ import { el, render as draw } from '../js/ui/dom.js';
 import { createTimer } from '../js/ui/timer.js';
 import { createRng } from '../js/lib/rng.js';
 import { upperTR, normalizeWord, isTurkishWord, VOWELS, nameSuffix } from '../js/lib/tr.js';
-import { points, score } from './harf-avi.js';
+import { points, wordList, reviewMove, reviewScreen, afterFinish } from './harf-avi.js';
 
 export const meta = {
   group: 'kelime',
@@ -16,6 +16,7 @@ export const meta = {
     'İkinize de aynı harfler gelir. Harflere sırayla dokunarak kelime oluştur; her harf, rafta kaç tane varsa o kadar kullanılır. En az 3 harf, kelime listesinde olmalı.',
     'Puan: 3–4 harf 1, 5 harf 2, 6 harf 3, 7 harf 5, 8+ harf 11. İkinizin de bulduğu kelime kimseye puan getirmez.',
     'Tek telefonda sırayla oynanır; iki telefonda aynı anda.',
+    'Kelime listesinde olmayan bir kelimeyi de "Yine de ekle" ile ekleyebilirsin: işaretli (?) görünür ve ikiniz de bitirince rakibin itiraz ederse puan getirmez. Sonuca iki telefonda odayı kuran geçer.',
   ].join('\n'),
   data: ['dictionary'],
   handoffNote: 'Bulduğun kelimeler rakibin bitirene kadar gizli kalır.',
@@ -79,6 +80,8 @@ export function setup(options = {}) {
     finished: [false, false],
     counts: [0, 0],
     words: [[], []],
+    unlisted: [[], []],  // words played although the word list does not have them
+    objected: [],        // `${owner}:${word}` the other player objected to
     result: null,
   };
 }
@@ -96,6 +99,7 @@ function cleanWords(list, rack) {
 export function applyMove(state, player, move, ctx = {}) {
   if (!move || typeof move !== 'object') fail('Geçersiz hamle');
   if (player !== 0 && player !== 1) fail('Geçersiz oyuncu');
+  if (state.phase === 'review') return reviewMove(state, player, move, ctx);
   if (state.phase !== 'play') fail('Oyun bitti');
   switch (move.type) {
     case 'start': {
@@ -108,18 +112,22 @@ export function applyMove(state, player, move, ctx = {}) {
       if (!state.started[player]) fail('Önce başla');
       if (state.finished[player]) fail('Süren doldu');
       const words = state.words.map((l) => l.slice());
+      const unlisted = (state.unlisted || [[], []]).map((l) => l.slice());
       if (move.secret && move.secret.word != null) {
         const word = normalizeWord(move.secret.word);
         if ([...word].length < MIN_LEN) fail(`En az ${MIN_LEN} harf`);
         if (!isTurkishWord(word)) fail('Yalnızca Türkçe harfler');
         if (!fitsRack(state.rack, word)) fail('Bu kelime raftaki harflerle yazılamıyor');
         if (words[player].includes(word)) fail('Bunu zaten buldun');
-        if (ctx.dict && !ctx.remote && !ctx.dict.has(word)) fail('Kelime listesinde yok');
+        const listed = !ctx.dict || ctx.dict.has(word);
+        // a word the list does not have goes in only when the player said "Yine de ekle"; it is marked
+        if (!listed && !ctx.remote && !move.secret.unlisted) fail('Kelime listesinde yok');
         words[player].push(word);
+        if (!listed && move.secret.unlisted) unlisted[player].push(word);
       }
       const counts = state.counts.slice();
       counts[player] += 1;
-      return { ...state, words, counts };
+      return { ...state, words, unlisted, counts };
     }
     case 'finish': {
       if (!state.started[player]) fail('Önce başla');
@@ -128,11 +136,13 @@ export function applyMove(state, player, move, ctx = {}) {
       finished[player] = true;
       const words = state.words.map((l) => l.slice());
       if (Array.isArray(move.words)) words[player] = cleanWords(move.words, state.rack);
+      const unlisted = (state.unlisted || [[], []]).map((l) => l.slice());
+      // the finisher's own marks travel with its list (the other phone never saw the words one by one)
+      const marked = Array.isArray(move.unlisted) ? cleanWords(move.unlisted, state.rack) : unlisted[player];
+      unlisted[player] = marked.filter((w) => words[player].includes(w));
       const counts = state.counts.slice();
       counts[player] = words[player].length;
-      const next = { ...state, finished, words, counts };
-      if (finished[0] && finished[1]) return { ...next, phase: 'over', result: score(words[0], words[1]) };
-      return next;
+      return afterFinish({ ...state, finished, words, unlisted, objected: state.objected || [], counts });
     }
     default:
       fail(`Bilinmeyen hamle: ${move.type}`);
@@ -157,14 +167,6 @@ export function getResult(state) {
 const starts = new Map();
 const drafts = new Map(); // `${id}:${player}` -> indexes of rack tiles used, in order
 
-function wordList(words, { shared = [] } = {}) {
-  if (!words.length) return el('p', { class: 'hint' }, 'Henüz kelime yok.');
-  return el('div', { class: 'wh-list' }, words.map((w) => {
-    const dup = shared.includes(w);
-    return el('span', { class: `wh-chip ${dup ? 'shared' : ''}` }, `${upperTR(w)} ${dup ? '0' : `+${points(w)}`}`);
-  }));
-}
-
 export function render(state, viewer, container, sendMove, ctx = {}) {
   const players = ctx.players || ['Oyuncu 1', 'Oyuncu 2'];
   const online = ctx.mode === 'online';
@@ -173,27 +175,32 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const cleanups = [];
   const rackView = () => el('div', { class: 'kt-rack' }, state.rack.map((l) => el('span', { class: 'wh-chip' }, upperTR(l))));
 
+  if (state.phase === 'review') return reviewScreen(state, viewer, container, sendMove, ctx, [rackView()]);
   if (state.phase === 'over') {
     const { points: pts, shared } = state.result;
+    const objected = state.result.objected || [];
+    const unlisted = state.unlisted || [[], []];
     const line = pts[0] === pts[1] ? `Berabere: ${pts[0]}–${pts[1]}` : `${players[pts[0] > pts[1] ? 0 : 1]} kazandı: ${Math.max(...pts)}–${Math.min(...pts)}`;
     draw(container,
       el('div', { class: 'status-line' }, el('strong', {}, line)),
       rackView(),
       shared.length ? el('p', { class: 'hint' }, `İkinizin de bulduğu ${shared.length} kelime puan getirmedi.`) : null,
+      objected.length ? el('p', { class: 'hint' }, `İtiraz edilen ${objected.length} kelime puan getirmedi.`) : null,
       el('div', { class: 'two-col' },
-        el('div', {}, el('div', { class: 'col-title' }, `${players[0]} — ${state.words[0].length} kelime, ${pts[0]} puan`), wordList(state.words[0], { shared })),
-        el('div', {}, el('div', { class: 'col-title' }, `${players[1]} — ${state.words[1].length} kelime, ${pts[1]} puan`), wordList(state.words[1], { shared })),
+        el('div', {}, el('div', { class: 'col-title' }, `${players[0]} — ${state.words[0].length} kelime, ${pts[0]} puan`), wordList(state.words[0], { shared, unlisted: unlisted[0], objected, owner: 0 })),
+        el('div', {}, el('div', { class: 'col-title' }, `${players[1]} — ${state.words[1].length} kelime, ${pts[1]} puan`), wordList(state.words[1], { shared, unlisted: unlisted[1], objected, owner: 1 })),
       ),
     );
     return null;
   }
   const mine = state.words[viewer];
+  const myUnlisted = (state.unlisted || [[], []])[viewer];
   if (state.finished[viewer]) {
     draw(container,
       el('div', { class: 'status-line' }, el('strong', {}, `Bitirdin: ${mine.length} kelime.`)),
       el('p', { class: 'hint' }, state.finished[opp] ? 'Sonuç hazırlanıyor…' : (state.started[opp] ? `${players[opp]} oynuyor… (${state.counts[opp]} kelime)` : `${players[opp]} henüz başlamadı.`)),
       el('div', { class: 'spinner', 'aria-hidden': 'true' }),
-      wordList(mine),
+      wordList(mine, { unlisted: myUnlisted }),
     );
     return null;
   }
@@ -214,19 +221,38 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const wordOf = (u) => u.map((i) => state.rack[i]).join('');
   if (used.length && mine.includes(wordOf(used))) used = [];
   drafts.set(key, used);
-  const finish = () => sendMove({ type: 'finish', words: state.words[viewer] });
+  const finish = () => sendMove({ type: 'finish', words: state.words[viewer], unlisted: myUnlisted });
   const timerBox = el('div');
   const timer = createTimer(timerBox, { deadline, total: state.seconds * 1000, onExpire: finish });
   cleanups.push(() => timer.stop());
 
   const wordBox = el('div', { class: 'wh-word' });
   const tiles = [];
-  const submitBtn = el('button', { type: 'button', class: 'btn btn-primary', onClick: () => { if (used.length >= MIN_LEN) sendMove({ type: 'word', secret: { word: wordOf(used) } }); } }, 'Gönder');
+  // a word the list does not have: the first tap warns, the second adds it marked ("Yine de ekle")
+  let warned = null;
+  const warnNote = el('p', { class: 'hint rejected-note', hidden: true });
+  const submitBtn = el('button', {
+    type: 'button', class: 'btn btn-primary',
+    onClick: () => {
+      if (used.length < MIN_LEN) return;
+      const word = wordOf(used);
+      const listed = !ctx.dict || ctx.dict.has(word);
+      if (!listed && warned !== word && !mine.includes(word)) {
+        warned = word;
+        warnNote.textContent = `${upperTR(word)} kelime listesinde yok. Yine de eklersen işaretli kalır; rakibin sonunda itiraz ederse puan getirmez.`;
+        warnNote.hidden = false;
+        submitBtn.textContent = 'Yine de ekle';
+        return;
+      }
+      sendMove({ type: 'word', secret: { word, unlisted: !listed } });
+    },
+  }, 'Gönder');
   const update = () => {
     drafts.set(key, used);
     tiles.forEach((t, i) => { t.disabled = used.includes(i); });
     wordBox.textContent = used.length ? upperTR(wordOf(used)) : '';
     submitBtn.disabled = used.length < MIN_LEN;
+    if (warned !== null && warned !== wordOf(used)) { warned = null; warnNote.hidden = true; submitBtn.textContent = 'Gönder'; }
   };
   const rack = el('div', { class: 'kt-tiles' }, state.rack.map((l, i) => {
     const t = el('button', { type: 'button', class: 'wh-cell kt-tile', 'aria-label': upperTR(l), onClick: () => { if (!used.includes(i)) { used = used.concat([i]); update(); } } }, upperTR(l));
@@ -239,6 +265,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     timerBox,
     el('div', { class: 'status-line' }, el('strong', {}, `${players[viewer]}: ${mine.length} kelime, ${provisional} puan${online && state.started[opp] ? ` · ${players[opp]}: ${state.counts[opp]} kelime` : ''}`)),
     wordBox,
+    warnNote,
     rack,
     el('div', { class: 'row', style: { justifyContent: 'center', gap: '8px', marginTop: '8px' } },
       el('button', { type: 'button', class: 'btn btn-secondary', onClick: () => { used = used.slice(0, -1); update(); } }, 'Sil'),
@@ -247,7 +274,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       el('button', { type: 'button', class: 'btn btn-secondary', onClick: () => { if (confirm('Süren bitmeden bitirilsin mi?')) finish(); } }, 'Bitir'),
     ),
     el('div', { class: 'col-title', style: { marginTop: '10px' } }, 'Bulduğun kelimeler'),
-    wordList(mine.slice().reverse()),
+    wordList(mine.slice().reverse(), { unlisted: myUnlisted }),
   );
   return () => cleanups.forEach((fn) => fn());
 }

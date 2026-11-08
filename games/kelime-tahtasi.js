@@ -3,6 +3,9 @@
 import { el, render as draw } from '../js/ui/dom.js';
 import { createRng, shuffle } from '../js/lib/rng.js';
 import { upperTR, nameSuffix } from '../js/lib/tr.js';
+import { toggled, carried, checkObjection } from '../js/lib/objections.js';
+import { unlistedMark, objectionList } from '../js/ui/disputes.js';
+import { nextButton } from '../js/ui/next.js';
 
 export const meta = {
   group: 'kelime',
@@ -12,6 +15,7 @@ export const meta = {
   rules: [
     'Her oyuncu torbadan yedi harf alır. Sırası gelen, harflerini tek bir satıra ya da sütuna, tahtadaki harflere bitişik olacak şekilde dizer; ilk kelime ortadaki yıldızdan geçer.',
     'Oluşan bütün kelimeler (yan kelimeler dahil) kelime listesinde olmalı. Puan: harf değerleri toplamı; mavi kareler harfi 2× / 3×, kırmızı kareler kelimeyi 2× / 3× katlar (yalnızca o tur konan harfler için). Yedi harfi birden koyan +50 alır.',
+    'Kelime listesinde olmayan bir kelimeyi de "Yine de oyna" ile koyabilirsin: tahtada işaretli (?) kalır ve oyun bitince rakibin itiraz ederse o hamlenin puanı silinir. Sonuca iki telefonda odayı kuran geçer.',
     'Pas geçilebilir ya da (torbada en az 7 harf varken) harf değiştirilebilir. Torba bitip bir oyuncunun harfi tükenince ya da art arda dört puansız hamle (pas ya da değiştirme) olunca oyun biter. Harflerini bitiren, rakibinin elinde kalan harflerin değerini kendi puanına ekler (rakipten düşülür); puansız hamlelerle biterse herkesin kalan harfleri kendisinden düşülür. Çok puan kazanır.',
   ].join('\n'),
   data: ['dictionary'],
@@ -61,10 +65,21 @@ export function setup(options = {}) {
     turn: (Number(options.seed) || 0) % 2,
     passes: 0,
     last: [],          // cells placed in the last move
-    lastWords: [],     // { word, points }
+    lastWords: [],     // { word, points, unlisted? }
+    disputes: [],      // moves with words the list does not have: { id, player, words, points, cells }
+    objected: [],      // dispute ids the other player objected to (their points are taken off)
+    review: false,     // the game is over and the objections are being made
     over: false,
     reason: null,
   };
+}
+
+/** Scores once the objections are in: an objected move scores nothing. */
+export function finalScores(state) {
+  const scores = state.scores.slice();
+  const objected = new Set(state.objected || []);
+  for (const d of state.disputes || []) if (objected.has(d.id)) scores[d.player] -= d.points;
+  return scores;
 }
 
 const rowOf = (i) => Math.floor(i / SIZE);
@@ -151,8 +166,23 @@ export function scoreWords(words, placed, board) {
   return { total, detail, bingo: placed.length === RACK };
 }
 
+function reviewMove(state, player, move, ctx) {
+  const disputes = state.disputes || [];
+  if (move.type === 'object') {
+    const d = disputes.find((x) => x.id === move.id);
+    checkObjection(d && { owner: d.player }, player, ctx);
+    return { ...state, objected: toggled(state.objected, d.id, !!move.on) };
+  }
+  if (move.type === 'next') { // the objections as the presser saw them travel with the move
+    const objected = carried(move.objected, disputes.map((d) => d.id), state.objected || []);
+    return { ...state, objected, review: false, over: true };
+  }
+  return fail('Önce itirazlar bitsin');
+}
+
 export function applyMove(state, player, move, ctx = {}) {
   if (!move || typeof move !== 'object') fail('Geçersiz hamle');
+  if (state.review) return reviewMove(state, player, move, ctx);
   if (state.over) fail('Oyun bitti');
   if (player !== state.turn) fail('Sıra sende değil');
   const rack = state.racks[player].slice();
@@ -167,7 +197,9 @@ export function applyMove(state, player, move, ctx = {}) {
       const left = (p) => out.racks[p].reduce((s, l) => s + (VALUES[l] || 0), 0);
       if (rackEmpty) { scores[player] += left(other); scores[other] -= left(other); }
       else { scores[0] -= left(0); scores[1] -= left(1); }
-      out = { ...out, scores, over: true, reason: rackEmpty ? 'empty' : 'passes' };
+      // words the list does not have were played: the other player may object before the result
+      const review = (out.disputes || []).length > 0;
+      out = { ...out, scores, over: !review, review, reason: rackEmpty ? 'empty' : 'passes' };
     }
     return out;
   };
@@ -202,25 +234,39 @@ export function applyMove(state, player, move, ctx = {}) {
   if (res.error) fail(res.error);
   const board = state.board.slice();
   tiles.forEach((t) => { board[t.cell] = t.letter; });
+  // A word the list does not have is played only when the player said so ("Yine de oyna"): the move
+  // names such words, the other phone takes the move's word for it (its list may differ), and the
+  // move stays open to an objection until the end.
+  const formed = res.words.map((w) => w.word);
+  const declared = Array.isArray(move.unlisted) ? move.unlisted.map((w) => String(w)) : [];
   if (ctx.dict && !ctx.remote) {
-    for (const w of res.words) if (!ctx.dict.has(w.word)) fail(`"${upperTR(w.word)}" kelime listesinde yok`);
+    const missing = formed.filter((w) => !ctx.dict.has(w) && !declared.includes(w));
+    if (missing.length) fail(`"${upperTR(missing[0])}" kelime listesinde yok`);
   }
+  const unlisted = [...new Set(declared.filter((w) => formed.includes(w)))];
   const placed = tiles.map((t) => t.cell);
   const sc = scoreWords(res.words, placed, board);
   while (rack.length < RACK && bag.length) rack.push(bag.pop());
   racks[player] = rack;
   const scores = state.scores.slice();
   scores[player] += sc.total;
-  return finishTurn({ ...state, board, bag, racks, scores, passes: 0, last: placed, lastWords: sc.detail.concat(sc.bingo ? [{ word: 'Yedi harf!', points: 50 }] : []) });
+  const disputes = (state.disputes || []).slice();
+  if (unlisted.length) {
+    const cells = [...new Set(res.words.filter((w) => unlisted.includes(w.word)).flatMap((w) => w.cells))];
+    disputes.push({ id: `d${disputes.length}`, player, words: unlisted, points: sc.total, cells });
+  }
+  const lastWords = sc.detail.map((d) => (unlisted.includes(d.word) ? { ...d, unlisted: true } : d)).concat(sc.bingo ? [{ word: 'Yedi harf!', points: 50 }] : []);
+  return finishTurn({ ...state, board, bag, racks, scores, disputes, passes: 0, last: placed, lastWords });
 }
 
 export function getTurn(state) {
+  if (state.review) return null; // the objections are made at the same screen
   return state.over ? null : { player: state.turn, private: true };
 }
 
 export function getResult(state) {
   if (!state.over) return null;
-  const [a, b] = state.scores;
+  const [a, b] = finalScores(state);
   if (a === b) return { draw: true };
   return { winner: a > b ? 0 : 1 };
 }
@@ -233,7 +279,14 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const players = ctx.players || ['Oyuncu 1', 'Oyuncu 2'];
   if (draftsFor !== state.id) { drafts.clear(); draftsFor = state.id; }
   const opp = 1 - viewer;
-  const mine = !state.over && viewer === state.turn;
+  const online = ctx.mode === 'online';
+  const reviewing = !!state.review;
+  const mine = !state.over && !reviewing && viewer === state.turn;
+  const disputes = state.disputes || [];
+  const objectedSet = new Set(state.objected || []);
+  const disputedCells = new Map(); // cell -> objected?
+  for (const d of disputes) for (const c of d.cells) disputedCells.set(c, disputedCells.get(c) || objectedSet.has(d.id));
+  const disputeItems = disputes.map((d) => ({ id: d.id, owner: d.player, word: d.words.join(', '), detail: `${d.points} puan` }));
   const key = `${state.id}:${viewer}`;
   if (!drafts.has(key)) drafts.set(key, { tiles: [], selected: null, exchange: null });
   const draft = drafts.get(key);
@@ -253,8 +306,8 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     const board = state.board.slice();
     draft.tiles.forEach((t) => { board[t.cell] = t.letter; });
     const sc = scoreWords(res.words, draft.tiles.map((t) => t.cell), board);
-    const missing = ctx.dict ? res.words.filter((w) => !ctx.dict.has(w.word)).map((w) => upperTR(w.word)) : [];
-    return { total: sc.total, words: sc.detail, missing };
+    const missingRaw = ctx.dict ? [...new Set(res.words.filter((w) => !ctx.dict.has(w.word)).map((w) => w.word))] : [];
+    return { total: sc.total, words: sc.detail, missing: missingRaw.map(upperTR), missingRaw };
   };
 
   const redraw = () => {
@@ -267,7 +320,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       const canDrop = mine && state.board[i] === null && !pending.has(i) && draft.selected != null;
       board.append(el('button', {
         type: 'button',
-        class: `kb-cell ${prem ? prem.toLowerCase() : ''} ${letter ? 'filled' : ''} ${pending.has(i) ? 'pending' : ''} ${lastSet.has(i) ? 'last' : ''} ${i === CENTER && !letter ? 'star' : ''}`,
+        class: `kb-cell ${prem ? prem.toLowerCase() : ''} ${letter ? 'filled' : ''} ${pending.has(i) ? 'pending' : ''} ${lastSet.has(i) ? 'last' : ''} ${i === CENTER && !letter ? 'star' : ''} ${disputedCells.has(i) ? `disputed${disputedCells.get(i) ? ' objected' : ''}` : ''}`,
         disabled: !mine || (state.board[i] !== null) || (!pending.has(i) && draft.selected == null),
         'aria-label': `${rowOf(i) + 1}. satır ${colOf(i) + 1}. sütun${letter ? `, ${upperTR(letter)}` : prem ? `, ${prem}` : ''}`,
         onClick: () => {
@@ -297,10 +350,14 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     if (mine && draft.exchange) info.push(el('p', { class: 'hint' }, `Değiştirilecek harfleri seç (${draft.exchange.size}), sonra onayla.`));
     else if (mine && pv) {
       if (pv.error) info.push(el('p', { class: 'hint rejected-note' }, pv.error));
-      else info.push(el('p', { class: `hint ${pv.missing.length ? 'rejected-note' : 'notice'}` }, `${pv.words.map((w) => `${upperTR(w.word)} ${w.points}`).join(' + ')} = ${pv.total} puan${pv.missing.length ? ` · listede yok: ${pv.missing.join(', ')}` : ''}`));
+      else {
+        info.push(el('p', { class: `hint ${pv.missing.length ? 'rejected-note' : 'notice'}` }, `${pv.words.map((w) => `${upperTR(w.word)} ${w.points}`).join(' + ')} = ${pv.total} puan${pv.missing.length ? ` · listede yok: ${pv.missing.join(', ')}` : ''}`));
+        if (pv.missing.length) info.push(el('p', { class: 'hint' }, 'Yine de oynayabilirsin: kelime işaretli kalır, oyun bitince rakibin itiraz ederse bu hamlenin puanı silinir.'));
+      }
     } else if (mine) info.push(el('p', { class: 'hint' }, draft.selected != null ? 'Şimdi tahtada bir kareye dokun.' : (firstMove ? 'Raftan bir harf seç; ilk kelime ★ kareden geçmeli.' : 'Raftan bir harf seç, tahtaya koy.')));
     infoBox.replaceChildren(...info);
     btnPlay.disabled = !mine || !pv || !!pv.error || !!draft.exchange;
+    btnPlay.textContent = pv && !pv.error && pv.missing.length ? 'Yine de oyna' : 'Oyna';
     btnClear.disabled = !draft.tiles.length && !draft.exchange;
     btnSwap.textContent = draft.exchange ? `Değiştir (${draft.exchange.size})` : 'Harf değiştir';
     btnSwap.disabled = !mine || state.bag.length < RACK || (draft.exchange && !draft.exchange.size);
@@ -308,7 +365,10 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   };
   const btnPlay = el('button', { type: 'button', class: 'btn btn-primary', onClick: () => {
     const tiles = draft.tiles.map((t) => ({ cell: t.cell, letter: t.letter }));
-    sendMove({ type: 'play', tiles });
+    const pv = preview();
+    const unlisted = pv && !pv.error ? pv.missingRaw : [];
+    if (unlisted.length && !confirm(`${unlisted.map(upperTR).join(', ')} kelime listesinde yok. Yine de oynansın mı? Oyun bitince rakibin itiraz ederse bu hamlenin puanı silinir.`)) return;
+    sendMove(unlisted.length ? { type: 'play', tiles, unlisted } : { type: 'play', tiles });
   } }, 'Oyna');
   const btnClear = el('button', { type: 'button', class: 'btn btn-secondary btn-small', onClick: () => { draft.tiles = []; draft.selected = null; draft.exchange = null; redraw(); } }, 'Geri al');
   const btnSwap = el('button', { type: 'button', class: 'btn btn-secondary btn-small', onClick: () => {
@@ -319,23 +379,49 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   } }, 'Harf değiştir');
   const btnPass = el('button', { type: 'button', class: 'btn btn-secondary btn-small', onClick: () => { if (confirm('Pas geçilsin mi?')) sendMove({ type: 'pass' }); } }, 'Pas');
 
+  const fmt = (x) => (x < 0 ? `−${-x}` : String(x)); // a real minus sign, so '3 – −9' stays readable
+  const shownScores = state.over ? finalScores(state) : state.scores;
   let status;
   if (state.over) {
-    const [a, b] = state.scores;
-    const fmt = (x) => (x < 0 ? `−${-x}` : String(x)); // a real minus sign, so '3 – −9' stays readable
+    const [a, b] = shownScores;
     status = `${a === b ? 'Berabere' : `${players[a > b ? 0 : 1]} kazandı`}: ${fmt(a)} – ${fmt(b)} (${state.reason === 'passes' ? 'art arda puansız hamleler' : 'harfler bitti'})`;
-  } else if (mine) status = `Sıra sende, ${players[viewer]}`;
+  } else if (reviewing) status = 'Oyun bitti: itiraz zamanı';
+  else if (mine) status = `Sıra sende, ${players[viewer]}`;
   else status = `${players[state.turn]} kelime diziyor…`;
-  const lastLine = state.lastWords.length ? el('p', { class: 'hint' }, `Son hamle (${players[opp === state.turn ? viewer : opp]}): ${state.lastWords.map((w) => `${upperTR(w.word)} ${w.points}`).join(', ')}`) : null;
+  const lastLine = state.lastWords.length && !reviewing
+    ? el('p', { class: 'hint' }, `Son hamle (${players[opp === state.turn ? viewer : opp]}): `,
+      state.lastWords.map((w, k) => [k ? ', ' : '', `${upperTR(w.word)} ${w.points}`, w.unlisted ? unlistedMark() : null]))
+    : null;
+  const objectedCount = disputes.filter((d) => objectedSet.has(d.id)).length;
+  let disputeBox = null;
+  if (reviewing) {
+    disputeBox = [
+      objectionList({
+        items: disputeItems, objected: state.objected, players, viewer, online, sendMove,
+        effect: online
+          ? 'Rakibinin listede olmayan (?) kelimesi sence geçersizse itiraz et: o hamlenin puanı silinir (harfler tahtada kalır). Sonra odayı kuran sonucu açar.'
+          : 'Listede olmayan (?) bir kelime geçersizse rakibi itiraz etsin: o hamlenin puanı silinir (harfler tahtada kalır). Bitince sonucu açın.',
+      }),
+      nextButton(ctx, sendMove, 'Sonucu gör', { move: () => ({ type: 'next', objected: state.objected }) }),
+    ];
+  } else if (disputes.length) {
+    disputeBox = objectionList({
+      items: disputeItems, objected: state.objected, players, viewer, online,
+      title: state.over ? 'Listede olmayan kelimeler' : 'Listede olmayan kelimeler · oyun bitince itiraz edilebilir',
+      effect: state.over && objectedCount ? `İtiraz edilen ${objectedCount} hamlenin puanı silindi.` : null,
+    });
+  }
   draw(container,
     el('div', { class: 'status-line' }, el('strong', {}, status)),
-    el('div', { class: 'c4-legend' }, el('span', {}, `${players[0]}: ${state.scores[0]}`), el('span', {}, `${players[1]}: ${state.scores[1]}`), el('span', { class: 'muted' }, `torba ${state.bag.length}`)),
+    el('div', { class: 'c4-legend' }, el('span', {}, `${players[0]}: ${fmt(shownScores[0])}`), el('span', {}, `${players[1]}: ${fmt(shownScores[1])}`), el('span', { class: 'muted' }, `torba ${state.bag.length}`)),
     lastLine,
+    reviewing ? disputeBox : null,
     boardBox,
-    state.over ? null : el('div', { class: 'col-title active' }, `${players[viewer]} — rafın${mine ? '' : ' (bekle)'}`),
-    state.over ? null : rackBox,
-    state.over ? null : infoBox,
-    state.over ? null : el('div', { class: 'row', style: { justifyContent: 'center', gap: '8px', marginTop: '8px', flexWrap: 'wrap' } }, btnPlay, btnClear, btnSwap, btnPass),
+    state.over || reviewing ? null : el('div', { class: 'col-title active' }, `${players[viewer]} — rafın${mine ? '' : ' (bekle)'}`),
+    state.over || reviewing ? null : rackBox,
+    state.over || reviewing ? null : infoBox,
+    state.over || reviewing ? null : el('div', { class: 'row', style: { justifyContent: 'center', gap: '8px', marginTop: '8px', flexWrap: 'wrap' } }, btnPlay, btnClear, btnSwap, btnPass),
+    reviewing ? null : disputeBox,
   );
   redraw();
   return null;

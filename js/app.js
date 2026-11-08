@@ -639,6 +639,7 @@ export function showPlay(p) {
     mode: p.mode,
     self: p.self,
     transport: isOnline ? online.transport : null,
+    tag: isOnline ? (online.gameNo || 0) : null, // a guest's "ready" from an earlier game must not count here
     ctx: { ...p.ctx, vibrate: prefs.vibrate },
     onChange: updateScore,
     onEnd: (result) => {
@@ -1205,6 +1206,11 @@ async function handleOnlineMessage(msg) {
     }
     case 'rematch': {
       toast(`${online.players ? online.players[1] : 'Rakip'} yeni tur istiyor`, { duration: 3000 });
+      return;
+    }
+    case 'ask': { // the guest is ready for the next round; only the host moves the game on
+      if (online.role !== 'host' || !online.session) return;
+      if (online.session.receiveAsk(msg)) toast(`${online.players ? online.players[1] : 'Rakip'} hazır: sonrakine geçebilirsin`, { duration: 3000 });
       return;
     }
     case 'emoji': {

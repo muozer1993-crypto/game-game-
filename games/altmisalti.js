@@ -2,6 +2,7 @@
 // While the stock is open anything goes; once it is closed or empty you must follow suit, head
 // the trick if you can, or trump. Marriages score 20 (40 in trumps); first to 66 wins the hand.
 import { el, render as draw } from '../js/ui/dom.js';
+import { nextButton } from '../js/ui/next.js';
 import { createRng, shuffle } from '../js/lib/rng.js';
 import { nameSuffix } from '../js/lib/tr.js';
 import { SUITS } from './pisti.js';
@@ -244,7 +245,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       el('div', { class: 'status-line' }, el('strong', {}, state.phase === 'over' ? (a === b ? `Berabere: ${a}–${b}` : `${players[a > b ? 0 : 1]} kazandı: ${Math.max(a, b)}–${Math.min(a, b)}`) : line)),
       state.phase === 'over' ? el('p', { class: 'hint' }, line) : null,
       legend, declared, lastLine,
-      state.phase === 'handOver' ? el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block', style: { marginTop: '12px' }, onClick: () => sendMove({ type: 'next' }) }, 'Sonraki el') : null,
+      state.phase === 'handOver' ? nextButton(ctx, sendMove, 'Sonraki el') : null,
     );
     return null;
   }

@@ -2,6 +2,7 @@
 // the indicator decides the okey (joker). Draw from the pile or take the opponent's last discard,
 // discard one; finish by showing 14 tiles in runs/sets (or seven pairs) and throwing the 15th.
 import { el, render as draw } from '../js/ui/dom.js';
+import { nextButton } from '../js/ui/next.js';
 import { createRng, shuffle } from '../js/lib/rng.js';
 import { nameSuffix } from '../js/lib/tr.js';
 
@@ -256,7 +257,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       state.phase === 'over' ? el('p', { class: 'hint' }, line) : null,
       legend,
       ...[0, 1].map((p) => el('div', {}, el('div', { class: 'col-title' }, `${players[p]} (${state.hands[p].length} taş)`), el('div', { class: 'ok-rack small' }, state.hands[p].slice().sort((x, y) => sortKey(x, okey, false) - sortKey(y, okey, false)).map((t) => tileEl(t, okey, { small: true }))))),
-      state.phase === 'handOver' ? el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block', style: { marginTop: '12px' }, onClick: () => sendMove({ type: 'next' }) }, 'Sonraki el') : null,
+      state.phase === 'handOver' ? nextButton(ctx, sendMove, 'Sonraki el') : null,
     );
     return null;
   }

@@ -69,21 +69,15 @@ test('son hece: hecenin kendisi sözlükte bir kelimeyse kabul edilir (sa-at →
 test('son hece: ünlüsüz "kelime" reddedilir, gönderenin known kararı geçerlidir', () => {
   let s = start();
   assert.throws(() => game.applyMove(s, 0, { type: 'word', word: 'kdv', at: T }, ctx), 'ünlü');
-  // the sender's device says the word is unknown although our list has it: goes to challenge
+  // the sender's device says the word is unknown although our list has it: it goes in marked
   const c = game.applyMove(s, 0, { type: 'word', word: 'kitap', at: T, known: false }, ctx);
-  assert.equal(c.phase, 'challenge');
+  assert.equal(c.phase, 'play');
+  assert.equal(c.words[0].unlisted, true);
   // and the other way round: the sender vouches for a word our list lacks
   const k = game.applyMove(s, 0, { type: 'word', word: 'zebra', at: T, known: true }, ctx);
   assert.equal(k.phase, 'play');
   assert.equal(k.required, 'ra');
-  // after a rejection the player sees which word was refused; it clears on the next accepted word
-  let r = start();
-  r = game.applyMove(r, 0, { type: 'word', word: 'kitap', at: T }, ctx);
-  r = game.applyMove(r, 1, { type: 'word', word: 'tapir', at: T }, ctx);
-  r = game.applyMove(r, 0, { type: 'reject', at: T }, ctx);
-  assert.equal(r.rejected, 'tapir');
-  r = game.applyMove(r, 1, { type: 'word', word: 'tapınak', at: T }, ctx);
-  assert.equal(r.rejected, null);
+  assert.equal(k.words[0].unlisted, undefined);
 });
 
 test('son hece: aynı kelime iki kez kullanılamaz', () => {
@@ -113,31 +107,46 @@ test('son hece: ğ kuralı — yasak', () => {
   assert.throws(() => game.applyMove(s, 0, { type: 'word', word: 'kağıt', at: T }, ctx), 'yasak');
 });
 
-test('son hece: listede olmayan kelime itiraz/kabul akışı', () => {
+test('son hece: listede olmayan kelime işaretli kabul edilir, oyun akar; itiraz sonda yapılır', () => {
   let s = start();
   s = game.applyMove(s, 0, { type: 'word', word: 'kitap', at: T }, ctx);
-  // player 1 says an unknown word with 12s left on the clock
-  const sayAt = s.deadline - 12000;
-  s = game.applyMove(s, 1, { type: 'word', word: 'tapir', at: sayAt }, ctx);
-  assert.equal(s.phase, 'challenge');
-  assert.equal(s.deadline, null);
-  assert.deepEqual(s.challenge, { player: 1, word: 'tapir', remainingMs: 12000 });
-  assert.deepEqual(game.getTurn(s), { player: 0, private: false }); // opponent decides
-  assert.throws(() => game.applyMove(s, 1, { type: 'accept', at: T }, ctx), 'rakip karar verir');
-  // reject: same player continues with the remaining time
-  const rejected = game.applyMove(s, 0, { type: 'reject', at: 5000 }, ctx);
-  assert.equal(rejected.phase, 'play');
-  assert.equal(rejected.turn, 1);
-  assert.equal(rejected.deadline, 5000 + 12000);
-  assert.equal(rejected.words.length, 1);
-  // accept: word counts, turn passes
-  const accepted = game.applyMove(s, 0, { type: 'accept', at: 5000 }, ctx);
-  assert.equal(accepted.phase, 'play');
-  assert.equal(accepted.turn, 0);
-  assert.equal(accepted.required, 'pir');
-  assert.equal(accepted.words[1].word, 'tapir');
-  assert.equal(accepted.words[1].challenged, true);
-  assert.equal(accepted.deadline, 5000 + 20000);
+  s = game.applyMove(s, 1, { type: 'word', word: 'tapir', at: T + 3000 }, ctx); // not in the list
+  assert.equal(s.phase, 'play', 'no stop for a decision');
+  assert.equal(s.turn, 0);
+  assert.equal(s.required, 'pir');
+  assert.equal(s.deadline, T + 3000 + 20000);
+  assert.deepEqual(s.words[1], { player: 1, word: 'tapir', syllables: ['ta', 'pir'], unlisted: true });
+  assert.throws(() => game.applyMove(s, 0, { type: 'object', id: 'w1', on: true }, ctx), 'oyun bitince');
+  s = game.applyMove(s, 0, { type: 'word', word: 'pirinç', at: T + 5000 }, ctx); // also unlisted
+  s = game.applyMove(s, 1, { type: 'giveup', at: T + 6000 }, ctx);
+  assert.equal(s.phase, 'review', 'unlisted words in the chain: objections before the result');
+  assert.equal(game.getResult(s), null);
+  assert.equal(game.getTurn(s), null);
+  const on = { ...ctx, mode: 'online' };
+  assert.throws(() => game.applyMove(s, 1, { type: 'object', id: 'w1', on: true }, on), 'Kendi kelimene');
+  assert.throws(() => game.applyMove(s, 0, { type: 'object', id: 'w0', on: true }, on), 'itiraz edilemez');
+  // no objection: the normal result (player 1 gave up)
+  const none = game.applyMove(s, 0, { type: 'next', objected: [] }, ctx);
+  assert.equal(none.phase, 'over');
+  assert.deepEqual(game.getResult(none), { winner: 0 });
+  // both words objected: the earlier one decides — player 1 said tapir first, so player 1 loses
+  let both = game.applyMove(s, 0, { type: 'object', id: 'w1', on: true }, on);
+  both = game.applyMove(both, 1, { type: 'object', id: 'w2', on: true }, on);
+  both = game.applyMove(both, 0, { type: 'next', objected: both.objected });
+  assert.equal(both.reason, 'objection');
+  assert.equal(both.objectedWord, 'tapir');
+  assert.deepEqual(game.getResult(both), { winner: 0 });
+  // only pirinç objected: player 0 broke the chain, so player 0 loses although player 1 gave up
+  const late = game.applyMove(s, 0, { type: 'next', objected: ['w2'] });
+  assert.equal(late.loser, 0);
+  assert.deepEqual(game.getResult(late), { winner: 1 });
+});
+
+test('son hece: listede olmayan kelime yoksa itiraz adımı olmadan biter', () => {
+  let s = start();
+  s = game.applyMove(s, 0, { type: 'word', word: 'kitap', at: T }, ctx);
+  s = game.applyMove(s, 1, { type: 'timeout', at: T + 99999 }, ctx);
+  assert.equal(s.phase, 'over');
 });
 
 test('son hece: süre dolunca ve pes edince kaybeder', () => {

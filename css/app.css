@@ -208,6 +208,18 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 
 /* play screen */
 .game-box { min-height: 200px; }
+/* a new round just began (js/session.js): taps are ignored for a moment and the new screen fades in */
+.game-box.screen-new > * { animation: screen-new-in 0.4s ease-out; }
+@keyframes screen-new-in { from { opacity: 0.4; } to { opacity: 1; } }
+/* two phones: the guest says it is ready, the host's "next" button shows it (js/ui/next.js) */
+.next-btn.next-ready { box-shadow: 0 0 0 3px var(--correct); animation: next-ready-pulse 1.6s ease-in-out infinite; }
+.next-ready-tag { font-weight: 600; }
+@keyframes next-ready-pulse { 50% { box-shadow: 0 0 0 6px var(--correct); } }
+.next-ask { text-align: center; }
+.next-ask .next-ask-note { margin: 6px 0 0; }
+@media (prefers-reduced-motion: reduce) {
+  .game-box.screen-new > *, .next-btn.next-ready { animation: none; }
+}
 .play-actions { margin-top: 16px; }
 .result-banner { font-size: 1.3rem; font-weight: 700; text-align: center; margin: 8px 0 12px; }
 .status-line { text-align: center; margin: 8px 0; min-height: 1.4em; }
@@ -644,6 +656,19 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .wh-list { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
 .wh-chip { padding: 2px 10px; border-radius: 999px; background: var(--secondary); color: var(--secondary-fg); font-size: 0.9rem; font-weight: 600; }
 .wh-chip.shared { text-decoration: line-through; opacity: 0.6; }
+/* words the word list does not have: played anyway, open to an objection at the end (js/ui/disputes.js) */
+.unlisted-mark { display: inline-block; margin-left: 2px; padding: 0 5px; border-radius: 999px; background: var(--present); color: #fff; font-size: 0.7em; font-weight: 800; line-height: 1.5; vertical-align: super; }
+.wh-chip.unlisted, .chain-word.unlisted { outline: 2px dashed var(--present); outline-offset: 1px; }
+.wh-chip.objected, .chain-word.objected { text-decoration: line-through; opacity: 0.6; }
+.objections { margin: 10px 0; }
+.objections-title { font-weight: 800; margin-bottom: 4px; }
+.objection-rows { display: flex; flex-direction: column; gap: 8px; }
+.objection-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; padding: 6px 8px; border: 1px solid var(--border); border-radius: 10px; }
+.objection-row.objected .objection-word { text-decoration: line-through; opacity: 0.65; }
+.objection-word { font-weight: 800; }
+.objection-btn { margin-left: auto; min-height: 40px; }
+.kb-cell.disputed { box-shadow: inset 0 0 0 2px var(--present); background-image: repeating-linear-gradient(135deg, transparent 0 5px, rgba(255, 152, 0, 0.18) 5px 8px); }
+.kb-cell.disputed.objected { opacity: 0.55; }
 
 /* ---- Tabu */
 .tb-card { text-align: center; padding: 18px 12px; margin: 10px 0; }

@@ -1,6 +1,6 @@
 // Minimal service worker: precache the app shell, serve cache-first, fall back to network.
 // Bump VERSION whenever files change so that old caches are dropped.
-const VERSION = 'v106';
+const VERSION = 'v107';
 const CACHE = `oyun-gecesi-${VERSION}`;
 const SHELL = [
   './',
@@ -17,6 +17,7 @@ const SHELL = [
   './js/lib/sfx.js',
   './js/lib/words.js',
   './js/lib/songs.js',
+  './js/lib/objections.js',
   './js/ui/dom.js',
   './js/ui/paint.js',
   './js/ui/keyboard.js',
@@ -25,6 +26,8 @@ const SHELL = [
   './js/ui/clip.js',
   './js/ui/artist-pick.js',
   './js/ui/scoreboard.js',
+  './js/ui/next.js',
+  './js/ui/disputes.js',
   './js/net/transport.js',
   './js/net/peer.js',
   './js/net/icetest.js',

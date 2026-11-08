@@ -128,3 +128,37 @@ test('adam asmaca: rastgele mod havuzu ve otomatik kelime; berabere', () => {
   assert.deepEqual(game.getResult(d), { draw: true });
   assert.ok(MIN_LEN < MAX_LEN);
 });
+
+test('adam asmaca: listede olmayan kelime onayla tutulur; açılınca itiraz edilirse bulmaya çalışan tam puan alır', () => {
+  const dict = new Set(['kalem', 'kitap']);
+  let s = game.setup({ rounds: 2, lives: 6, seed: 0 });
+  const setter = s.setter;
+  const guesser = 1 - setter;
+  assert.throws(() => game.applyMove(s, setter, { type: 'setSecret', length: 5, secret: { word: 'zıpkı' } }, { dict }), 'listede yok');
+  s = game.applyMove(s, setter, { type: 'setSecret', length: 5, unlisted: true, secret: { word: 'zıpkı' } }, { dict });
+  assert.equal(s.unlisted, true);
+  // the other phone only learns that the word is unlisted, not the word
+  const there = game.applyMove(game.setup({ rounds: 2, lives: 6, seed: 0 }), setter, { type: 'setSecret', length: 5, unlisted: true }, { remote: true });
+  assert.equal(there.unlisted, true);
+  assert.equal(there.secret, null);
+  assert.throws(() => game.applyMove(s, guesser, { type: 'object', on: true }, { mode: 'online' }), 'itiraz edilemez');
+  // the guesser misses six times: hanged, no points
+  for (const ch of ['a', 'e', 'i', 'o', 'u', 'ö']) {
+    s = game.applyMove(s, guesser, { type: 'guess', kind: 'letter', value: ch });
+    s = game.applyMove(s, setter, game.autoMove(s, setter));
+  }
+  assert.equal(s.phase, 'result');
+  assert.equal(s.solved, false);
+  assert.equal(s.scores[guesser], 0);
+  assert.equal(s.history[0].unlisted, true);
+  assert.throws(() => game.applyMove(s, setter, { type: 'object', on: true }, { mode: 'online' }), 'bulmaya çalışan');
+  s = game.applyMove(s, guesser, { type: 'object', on: true }, { mode: 'online' });
+  assert.equal(s.objected, true);
+  // the host's 'next' carries the objection as it saw it
+  const next = game.applyMove(s, 0, { type: 'next', objected: true });
+  assert.equal(next.scores[guesser], 6, 'full points for the objected word');
+  assert.equal(next.history[0].objected, true);
+  assert.equal(next.unlisted, false, 'the next word starts clean');
+  const kept = game.applyMove(s, 0, { type: 'next', objected: false });
+  assert.equal(kept.scores[guesser], 0, 'withdrawn before the next word: no points');
+});

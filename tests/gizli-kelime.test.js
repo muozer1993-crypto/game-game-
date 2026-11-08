@@ -267,3 +267,56 @@ test('gizli sayı: doğrulama ve akış', () => {
   assert.deepEqual(s.guesses[1][0].result, { plus: 1, minus: 3 });
   assert.equal(s.phase, 'play');
 });
+
+test('gizli kelime: listede olmayan gizli kelime ve tahmin onayla kullanılır; itiraz edilen kelimeyi kullanan kaybeder', () => {
+  const play = (state, player, move) => {
+    let s = game.applyMove(state, player, move, ctx);
+    for (const p of [0, 1]) { const m = game.autoMove(s, p, ctx); if (m) s = game.applyMove(s, p, m, ctx); }
+    return s;
+  };
+  let s = game.setup({ length: 5, secretMode: 'manual', feedback: 'wordle', maxGuesses: 2, seed: 4 });
+  assert.throws(() => game.applyMove(s, 0, { type: 'setSecret', secret: { word: 'pizza' } }, ctx), 'listede yok');
+  s = game.applyMove(s, 0, { type: 'setSecret', unlisted: true, secret: { word: 'pizza' } }, ctx);
+  s = game.applyMove(s, 1, { type: 'setSecret', secret: { word: 'kalem' } }, ctx);
+  assert.deepEqual(s.unlistedSecret, [true, false]);
+  assert.equal(s.phase, 'play');
+  const first = game.whoseTurn(s);
+  // the guesser types the unlisted word itself: refused without the flag, marked with it
+  const g0 = s.guesses;
+  assert.throws(() => game.applyMove(s, first, { type: 'guess', word: 'zzzzz' }, ctx), 'listesinde yok');
+  s = play(s, first, first === 1 ? { type: 'guess', word: 'pizza', unlisted: true } : { type: 'guess', word: 'kitap' });
+  assert.notEqual(s.guesses, g0);
+  s = play(s, 1 - first, 1 - first === 1 ? { type: 'guess', word: 'pizza', unlisted: true } : { type: 'guess', word: 'kitap' });
+  assert.equal(s.phase, 'over', 'player 1 found pizza');
+  assert.equal(s.review, true, 'unlisted words were used: objections first');
+  assert.equal(game.getResult(s), null);
+  assert.deepEqual(s.guesses[1][0].unlisted, true);
+  const on = { ...ctx, mode: 'online' };
+  assert.throws(() => game.applyMove(s, 0, { type: 'object', id: 's0', on: true }, on), 'Kendi kelimene');
+  // no objection: player 1 found the word, player 0 did not
+  const fair = game.applyMove(s, 0, { type: 'next', objected: [] }, ctx);
+  assert.deepEqual(game.getResult(fair), { winner: 1 });
+  // player 1 objects to the secret pizza: player 0 used an objected word and loses anyway
+  const one = game.applyMove(game.applyMove(s, 1, { type: 'object', id: 's0', on: true }, on), 0, { type: 'next', objected: ['s0'] }, ctx);
+  assert.deepEqual(game.getResult(one), { winner: 1 });
+  // player 0 objects to player 1's guess pizza: player 1 used an objected word and loses
+  const other = game.applyMove(s, 0, { type: 'next', objected: ['g1:0'] }, ctx);
+  assert.deepEqual(game.getResult(other), { winner: 0 });
+  // both objected: a draw
+  const both = game.applyMove(s, 0, { type: 'next', objected: ['g1:0', 's0', 'x9'] }, ctx);
+  assert.deepEqual(both.objected, ['g1:0', 's0']);
+  assert.deepEqual(game.getResult(both), { draw: true });
+});
+
+test('gizli kelime: listede olmayan kelime yoksa oyun itirazsız biter; sayı oyununda işaret olmaz', () => {
+  let s = game.setup({ length: 5, secretMode: 'manual', feedback: 'wordle', maxGuesses: 6, seed: 2 });
+  s = game.applyMove(s, 0, { type: 'setSecret', secret: { word: 'kalem' } }, ctx);
+  s = game.applyMove(s, 1, { type: 'setSecret', secret: { word: 'kitap' } }, ctx);
+  s = game.applyMove(s, game.whoseTurn(s), { type: 'giveup' }, ctx);
+  assert.equal(s.phase, 'over');
+  assert.equal(s.review, false);
+  assert.ok(game.getResult(s));
+  let n = sayi.setup({ secretMode: 'manual', seed: 1 });
+  n = sayi.applyMove(n, 0, { type: 'setSecret', unlisted: true, secret: { word: '1234' } }, {});
+  assert.deepEqual(n.unlistedSecret, [false, false], 'numbers have no word list');
+});

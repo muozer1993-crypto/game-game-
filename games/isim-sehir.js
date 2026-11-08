@@ -3,6 +3,7 @@
 // same answer 5, an empty or wrong-letter answer 0. Answers stay on the writer's device until
 // both have finished; the compare screen lets the opponent veto made-up answers.
 import { el, render as draw } from '../js/ui/dom.js';
+import { nextButton } from '../js/ui/next.js';
 import { createTimer } from '../js/ui/timer.js';
 import { createRng, shuffle } from '../js/lib/rng.js';
 import { upperTR, lowerTR, nameSuffix } from '../js/lib/tr.js';
@@ -220,8 +221,8 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
         cats.flatMap((name, c) => [el('div', { class: 'is-cat' }, name), cell(0, c), cell(1, c)]),
       ),
       el('p', { class: 'hint' }, online ? 'Rakibinin uydurma cevabına "Geçersiz" diyebilirsin.' : 'Uydurma bir cevaba "Geçersiz" deyin; puan tura geçerken yazılır.'),
-      el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block', style: { marginTop: '12px' }, onClick: () => sendMove({ type: 'next', vetoes: entry.vetoes }) },
-        state.round + 1 >= state.rounds ? 'Sonucu gör' : 'Sonraki tur'),
+      // the vetoes as the presser sees them travel with the move (see applyMove)
+      nextButton(ctx, sendMove, state.round + 1 >= state.rounds ? 'Sonucu gör' : 'Sonraki tur', { move: () => ({ type: 'next', vetoes: entry.vetoes }) }),
     );
     return null;
   }

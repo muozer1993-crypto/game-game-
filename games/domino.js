@@ -2,6 +2,7 @@
 // the boneyard when you cannot play, pass when it is empty. Going out scores the opponent's
 // pips; a blocked hand goes to the lighter hand. Rounds up to a target.
 import { el, render as draw } from '../js/ui/dom.js';
+import { nextButton } from '../js/ui/next.js';
 import { createRng, shuffle } from '../js/lib/rng.js';
 import { nameSuffix } from '../js/lib/tr.js';
 
@@ -180,7 +181,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       state.phase === 'over' ? el('p', { class: 'hint' }, line) : null,
       legend, lineView,
       ...[0, 1].map((p) => el('div', {}, el('div', { class: 'col-title' }, `${players[p]} — ${pips(state.hands[p])} nokta`), el('div', { class: 'dm-hand' }, state.hands[p].map((t) => tileEl(t, { small: true }))))),
-      state.phase === 'handOver' ? el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block', style: { marginTop: '12px' }, onClick: () => sendMove({ type: 'next' }) }, 'Sonraki el') : null,
+      state.phase === 'handOver' ? nextButton(ctx, sendMove, 'Sonraki el') : null,
     );
     return null;
   }

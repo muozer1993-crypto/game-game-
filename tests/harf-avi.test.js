@@ -73,3 +73,26 @@ test('harf avı: başla, kelime (gizli), bitir; iki taraf bitince puanlama ve or
   assert.throws(() => game.applyMove(fromRemote, 1, { type: 'start' }), 'Oyun bitti');
   assert.deepEqual(score(['kal'], ['kal']), { points: [0, 0], shared: ['kal'] });
 });
+
+import { scoreReviewed } from '../games/harf-avi.js';
+
+test('harf avı: listede olmayan kelime işaretli eklenir; itiraz edilen puan getirmez, ortak kelime zaten getirmez', () => {
+  let s = fresh();
+  s = game.applyMove(s, 0, { type: 'start' });
+  assert.throws(() => game.applyMove(s, 0, { type: 'word', secret: { word: 'lel' } }, ctx), 'listesinde yok');
+  s = game.applyMove(s, 0, { type: 'word', secret: { word: 'lel', unlisted: true } }, ctx);
+  s = game.applyMove(s, 0, { type: 'word', secret: { word: 'kalem' } }, ctx);
+  s = game.applyMove(s, 0, { type: 'finish', words: s.words[0], unlisted: s.unlisted[0] });
+  s = game.applyMove(s, 1, { type: 'start' });
+  s = game.applyMove(s, 1, { type: 'word', secret: { word: 'lel', unlisted: true } }, ctx);
+  s = game.applyMove(s, 1, { type: 'word', secret: { word: 'lale' } }, ctx);
+  s = game.applyMove(s, 1, { type: 'finish', words: s.words[1], unlisted: s.unlisted[1] });
+  assert.equal(s.phase, 'review');
+  assert.deepEqual(s.unlisted, [['lel'], ['lel']]);
+  s = game.applyMove(s, 1, { type: 'object', id: '0:lel', on: true }, { mode: 'online' });
+  s = game.applyMove(s, 0, { type: 'next', objected: s.objected });
+  assert.deepEqual(s.result.shared, ['lel']);
+  assert.deepEqual(s.result.points, [2, 1], 'kalem 2 against lale 1; lel was found by both, objected or not');
+  assert.deepEqual(scoreReviewed([['kalem', 'kal'], ['lale']], ['0:kal']).points, [2, 1]);
+  assert.deepEqual(scoreReviewed([['kalem', 'kal'], ['lale']], []).points, [3, 1]);
+});

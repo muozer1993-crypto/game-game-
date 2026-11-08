@@ -2,8 +2,10 @@
 // letter; roles swap every word. The word stays on the setter's device: the guesser's
 // device only sees letter positions that the setter's device reports back.
 import { el, svg, render as draw } from '../js/ui/dom.js';
+import { nextButton } from '../js/ui/next.js';
 import { createKeyboard } from '../js/ui/keyboard.js';
 import { normalizeWord, isTurkishWord, upperTR, nameSuffix, LETTERS } from '../js/lib/tr.js';
+import { unlistedMark } from '../js/ui/disputes.js';
 
 export const MIN_LEN = 3;
 export const MAX_LEN = 12;
@@ -17,6 +19,7 @@ export const meta = {
     'Bir oyuncu rakibi için bir kelime tutar (kendisi yazar ya da ayara göre rastgele gelir); rakip harf harf bulmaya çalışır.',
     'Her yanlış harf bir can götürür. Kelimeyi bütün olarak da tahmin edebilirsin; yanlışsa yine bir can gider.',
     'Kelimeyi bulan kalan canı kadar puan alır; adam asılırsa puan yok. Roller her kelimede değişir, kelimeler bitince puanı çok olan kazanır.',
+    'Kelime listesinde olmayan bir kelime de tutulabilir (iki kez onaylarsın): bulan bunu bilir, kelime açılınca itiraz edebilir; itiraz ederse o kelimeden tam puan (can sayısı kadar) alır. Sonraki kelimeye iki telefonda odayı kuran geçer.',
   ].join('\n'),
   data: ['dictionary', 'common'],
   handoffNote: 'Tuttuğun kelimeyi rakibin görmemeli.',
@@ -63,19 +66,21 @@ export function setup(options = {}) {
   };
 }
 
-function validateWord(raw, ctx) {
+function validateWord(raw, ctx, unlisted = false) {
   const word = normalizeWord(raw || '');
   if (!word) fail('Bir kelime yaz');
   if (!isTurkishWord(word)) fail('Yalnızca Türkçe harfler kullanılabilir');
   if (word.length < MIN_LEN || word.length > MAX_LEN) fail(`${MIN_LEN}–${MAX_LEN} harfli bir kelime olmalı`);
   // The sending device checked its own list; remote moves are not re-checked so that two
-  // devices with different list versions never diverge.
-  if (ctx.dict && !ctx.remote && !ctx.dict.has(word)) fail('Bu kelime listede yok; listeden bir kelime seç');
+  // devices with different list versions never diverge. A word the list does not have is
+  // held only when the setter said so (the move says it is unlisted, the guesser may object).
+  if (ctx.dict && !ctx.remote && !unlisted && !ctx.dict.has(word)) fail('Bu kelime listede yok; listeden bir kelime seç');
   return word;
 }
 
 const freshWord = (length) => ({
   length, revealed: new Array(length).fill(null), tried: [], wrongWords: [], wrong: 0, pending: null, solved: null, points: 0, word: null,
+  unlisted: false, objected: false, // a word the list does not have, and whether the guesser objected to it
 });
 
 export function applyMove(state, player, move, ctx = {}) {
@@ -87,10 +92,10 @@ export function applyMove(state, player, move, ctx = {}) {
       if (state.phase !== 'secret') fail('Kelime artık değiştirilemez');
       if (player !== state.setter) fail('Bu kelimeyi rakibin tutuyor');
       let secret = null;
-      if (move.secret && move.secret.word != null) secret = validateWord(move.secret.word, ctx);
+      if (move.secret && move.secret.word != null) secret = validateWord(move.secret.word, ctx, !!move.unlisted);
       const length = secret ? secret.length : Number(move.length);
       if (!Number.isInteger(length) || length < MIN_LEN || length > MAX_LEN) fail(`${MIN_LEN}–${MAX_LEN} harfli bir kelime olmalı`);
-      return { ...state, ...freshWord(length), phase: 'play', secret };
+      return { ...state, ...freshWord(length), phase: 'play', secret, unlisted: !!move.unlisted };
     }
     case 'guess': {
       if (state.phase !== 'play') fail('Oyun bu aşamada değil');
@@ -140,15 +145,29 @@ export function applyMove(state, player, move, ctx = {}) {
         const scores = state.scores.slice();
         scores[guesser] += points;
         const word = typeof move.word === 'string' ? move.word : (solved ? revealed.join('') : state.secret);
-        next = { ...next, phase: 'result', solved, points, scores, word, history: state.history.concat([{ setter: state.setter, word, solved, wrong }]) };
+        next = { ...next, phase: 'result', solved, points, scores, word, history: state.history.concat([{ setter: state.setter, word, solved, wrong, ...(state.unlisted ? { unlisted: true } : {}) }]) };
       }
       return next;
     }
+    case 'object': { // the word is out: the guesser says a word the list does not have is no word at all
+      if (state.phase !== 'result' || !state.unlisted) fail('Bu kelimeye itiraz edilemez');
+      if (ctx.mode === 'online' && player !== guesser) fail('İtirazı kelimeyi bulmaya çalışan yapar');
+      return { ...state, objected: !!move.on };
+    }
     case 'next': {
       if (state.phase !== 'result') fail('Bu kelime henüz bitmedi');
+      // the objection as the presser saw it travels with the move, so a crossing one cannot split the scores
+      const objected = !!state.unlisted && (typeof move.objected === 'boolean' ? move.objected : !!state.objected);
+      let { scores, history } = state;
+      if (objected) { // an objected word: the guesser gets the word's full points
+        scores = scores.slice();
+        scores[guesser] += state.lives - state.points;
+        history = history.map((h, k) => (k === history.length - 1 ? { ...h, objected: true } : h));
+      }
+      const base = { ...state, scores, history, objected };
       const round = state.round + 1;
-      if (round >= state.rounds) return { ...state, phase: 'over' };
-      return { ...state, ...freshWord(0), round, setter: guesser, phase: 'secret', secret: null, revealed: [] };
+      if (round >= state.rounds) return { ...base, phase: 'over' };
+      return { ...base, ...freshWord(0), round, setter: guesser, phase: 'secret', secret: null, revealed: [] };
     }
     default:
       fail(`Bilinmeyen hamle: ${move.type}`);
@@ -252,8 +271,10 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       head,
       el('div', { class: 'hm-history' }, state.history.map((h, i) => el('div', { class: 'hm-hist-row' },
         el('span', { class: 'muted' }, `${i + 1}.`),
-        el('strong', {}, upperTR(h.word || '…')),
-        el('span', { class: 'muted' }, h.solved ? `${players[1 - h.setter]} buldu, +${state.lives - h.wrong}` : `${players[1 - h.setter]} bulamadı`)))),
+        el('strong', {}, upperTR(h.word || '…'), h.unlisted ? unlistedMark() : null),
+        el('span', { class: 'muted' }, h.objected
+          ? `itiraz edildi: ${players[1 - h.setter]} +${state.lives}`
+          : h.solved ? `${players[1 - h.setter]} buldu, +${state.lives - h.wrong}` : `${players[1 - h.setter]} bulamadı`)))),
     );
     return null;
   }
@@ -276,17 +297,32 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     const rowBox = el('div');
     const drawRow = () => { drafts.set(key, typed); draw(rowBox, wordRow([...typed], { cursor: typed.length < MAX_LEN })); };
     drawRow();
+    // a word the list does not have: the first Enter warns, the second holds it (marked; the guesser may object)
+    let warned = null;
+    const warnNote = el('p', { class: 'hint rejected-note', hidden: true });
+    const clearWarn = () => { if (warned !== null) { warned = null; warnNote.hidden = true; } };
     const kbBox = el('div');
     const kb = createKeyboard(kbBox, {
-      onKey: (k) => { if (typed.length < MAX_LEN) { typed += k; drawRow(); } },
-      onBackspace: () => { typed = typed.slice(0, -1); drawRow(); },
-      onEnter: () => sendMove({ type: 'setSecret', length: typed.length, secret: { word: typed } }),
+      onKey: (k) => { if (typed.length < MAX_LEN) { typed += k; drawRow(); clearWarn(); } },
+      onBackspace: () => { typed = typed.slice(0, -1); drawRow(); clearWarn(); },
+      onEnter: () => {
+        const word = normalizeWord(typed);
+        const listed = !ctx.dict || ctx.dict.has(word);
+        if (!listed && word.length >= MIN_LEN && warned !== word) {
+          warned = word;
+          warnNote.textContent = `${upperTR(word)} kelime listesinde yok. Yine de tutmak için tekrar ↵ bas: ${players[guesser]} kelime açılınca itiraz ederse tam puan alır.`;
+          warnNote.hidden = false;
+          return;
+        }
+        sendMove(listed ? { type: 'setSecret', length: typed.length, secret: { word: typed } } : { type: 'setSecret', length: typed.length, unlisted: true, secret: { word: typed } });
+      },
     });
     cleanups.push(() => kb.destroy());
     draw(container,
       el('div', { class: 'status-line' }, el('strong', {}, `${players[viewer]}, ${players[guesser]} için bir kelime tut`)),
-      el('p', { class: 'hint' }, `${MIN_LEN}–${MAX_LEN} harfli, kelime listesinde olan bir kelime. ${players[guesser]} bunu harf harf bulmaya çalışacak; ${state.lives} canı var.`),
+      el('p', { class: 'hint' }, `${MIN_LEN}–${MAX_LEN} harfli bir kelime (listede yoksa iki kez onaylarsın). ${players[guesser]} bunu harf harf bulmaya çalışacak; ${state.lives} canı var.`),
       rowBox,
+      warnNote,
       kbBox,
       head,
     );
@@ -353,6 +389,17 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     : null;
 
   const shown = result && state.word ? [...state.word] : state.revealed;
+  // the word is out and the list does not have it: the guesser may object (full points for this word)
+  const objectionBox = () => el('div', { class: 'card objections' },
+    el('div', { class: 'objections-title' }, upperTR(state.word || ''), unlistedMark(), ' listede yok'),
+    el('p', { class: 'hint' }, state.objected
+      ? `${players[guesser]} itiraz etti: bu kelimeden tam puan (+${state.lives}) alacak.`
+      : `${players[guesser]} kelimeyi geçersiz bulursa itiraz edebilir; itiraz ederse bu kelimeden tam puan (+${state.lives}) alır.`),
+    ctx.mode !== 'online' || viewer === guesser
+      ? el('button', { type: 'button', class: `btn btn-small ${state.objected ? 'btn-secondary' : 'btn-danger'}`, onClick: () => sendMove({ type: 'object', on: !state.objected }) },
+        state.objected ? 'İtirazı geri al' : 'İtiraz et: kelime geçersiz')
+      : null,
+  );
   draw(container,
     statusBox,
     head,
@@ -363,9 +410,15 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       ? `Yanlış: ${misses.map(upperTR).concat(state.wrongWords.map(upperTR)).join(' ')}`
       : ''),
     !mine && !result && state.secret ? el('p', { class: 'hint' }, `Tuttuğun kelime: ${upperTR(state.secret)}`) : null,
+    state.unlisted && !result
+      ? el('p', { class: 'hint' }, unlistedMark(), viewer === guesser || ctx.mode !== 'online'
+        ? ` Tutulan kelime listede yok: kelime açılınca ${players[guesser]} itiraz edebilir.`
+        : ` Tuttuğun kelime listede yok: kelime açılınca ${players[guesser]} itiraz edebilir.`)
+      : null,
+    state.unlisted && result ? objectionBox() : null,
     result
-      ? el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block', style: { marginTop: '12px' }, onClick: () => sendMove({ type: 'next' }) },
-        state.round + 1 >= state.rounds ? 'Sonucu gör' : (ctx.mode === 'online' ? 'Sonraki kelime' : `Sonraki kelime: ${players[guesser]} kelime tutar, ${players[setter]} bulur`))
+      ? nextButton(ctx, sendMove, state.round + 1 >= state.rounds ? 'Sonucu gör' : (ctx.mode === 'online' ? 'Sonraki kelime' : `Sonraki kelime: ${players[guesser]} kelime tutar, ${players[setter]} bulur`),
+        { move: () => ({ type: 'next', objected: !!state.objected }) })
       : null,
     typedBox,
     result ? null : kbBox,

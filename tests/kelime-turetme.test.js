@@ -48,3 +48,49 @@ test('kelime türetme: başla, kelime, bitir, puanlama, ortak kelimeler', () => 
   assert.deepEqual(game.getResult(s), { winner: 0 });
   assert.throws(() => game.applyMove(s, 0, { type: 'start' }), 'Oyun bitti');
 });
+
+test('kelime türetme: listede olmayan kelime "yine de" eklenir, işaretlenir; itiraz edilen puan getirmez', () => {
+  let s = fresh();
+  s = game.applyMove(s, 0, { type: 'start' });
+  assert.throws(() => game.applyMove(s, 0, { type: 'word', secret: { word: 'tek' } }, ctx), 'listesinde yok');
+  s = game.applyMove(s, 0, { type: 'word', secret: { word: 'tek', unlisted: true } }, ctx);
+  s = game.applyMove(s, 0, { type: 'word', secret: { word: 'kale', unlisted: true } }, ctx); // listed after all: no mark
+  assert.deepEqual(s.words[0], ['tek', 'kale']);
+  assert.deepEqual(s.unlisted[0], ['tek']);
+  s = game.applyMove(s, 0, { type: 'finish', words: s.words[0], unlisted: s.unlisted[0] });
+  assert.equal(s.phase, 'play');
+  s = game.applyMove(s, 1, { type: 'start' });
+  s = game.applyMove(s, 1, { type: 'word', secret: { word: 'elma' } }, ctx);
+  // the other phone's list: its marks travel with it, words it does not hold are dropped
+  s = game.applyMove(s, 1, { type: 'finish', words: ['elma', 'mert'], unlisted: ['mert', 'zzz', 'kale'] }, { remote: true });
+  assert.deepEqual(s.unlisted[1], ['mert']);
+  assert.equal(s.phase, 'review', 'an unlisted word: objections before the result');
+  assert.equal(game.getResult(s), null);
+  assert.equal(game.getTurn(s), null, 'both look at the same screen');
+  const on = { mode: 'online' };
+  assert.throws(() => game.applyMove(s, 0, { type: 'object', id: '0:tek', on: true }, on), 'Kendi kelimene');
+  assert.throws(() => game.applyMove(s, 1, { type: 'object', id: '0:kale', on: true }, on), 'itiraz edilemez');
+  s = game.applyMove(s, 1, { type: 'object', id: '0:tek', on: true }, on);
+  assert.deepEqual(s.objected, ['0:tek']);
+  s = game.applyMove(s, 0, { type: 'object', id: '1:mert', on: true }, {}); // one phone: the button acts for the owner's opponent
+  s = game.applyMove(s, 0, { type: 'object', id: '1:mert', on: false }, {});
+  assert.deepEqual(s.objected, ['0:tek']);
+  assert.throws(() => game.applyMove(s, 0, { type: 'word', secret: { word: 'kal' } }, ctx), 'itirazlar');
+  // the finishing 'next' carries the objections as the host saw them; unknown ids are dropped
+  s = game.applyMove(s, 0, { type: 'next', objected: ['0:tek', '9:bogus'] });
+  assert.equal(s.phase, 'over');
+  assert.deepEqual(s.result.points, [1, 2], 'tek (objected) scores nothing: kale 1 against elma 1 + mert 1');
+  assert.deepEqual(s.result.objected, ['0:tek']);
+  assert.deepEqual(game.getResult(s), { winner: 1 });
+});
+
+test('kelime türetme: kimse listede olmayan kelime oynamadıysa itiraz adımı yok', () => {
+  let s = fresh();
+  for (const p of [0, 1]) {
+    s = game.applyMove(s, p, { type: 'start' });
+    s = game.applyMove(s, p, { type: 'word', secret: { word: 'kale' } }, ctx);
+    s = game.applyMove(s, p, { type: 'finish', words: s.words[p], unlisted: s.unlisted[p] });
+  }
+  assert.equal(s.phase, 'over');
+  assert.deepEqual(game.getResult(s), { draw: true });
+});

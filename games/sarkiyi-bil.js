@@ -5,9 +5,10 @@
 // round has a time limit that only runs while the clip screen is up. Songs whose sound cannot be
 // loaded are swapped for a reserve song before they show.
 import { el, render as draw } from '../js/ui/dom.js';
+import { nextButton } from '../js/ui/next.js';
 import { createTimer } from '../js/ui/timer.js';
 import { createClipPlayer, clipReady } from '../js/ui/clip.js';
-import { renderArtistPick } from '../js/ui/artist-pick.js';
+import { keepArtistPick } from '../js/ui/artist-pick.js';
 import { pickSongs, mixPool, pickGroups, songOptions, normKey, answerMatches, sourceSettings, sourcesFrom, needsPick } from '../js/lib/songs.js';
 
 export const ARTIST_POINTS = 5;
@@ -180,7 +181,8 @@ export function applyMove(state, player, move, ctx = {}) {
 }
 
 export function getTurn(state) {
-  if (state.phase === 'pick') return { player: state.picks[0] == null ? 0 : 1, private: false, note: 'Önce dinlediğin grupları seçeceksin.' };
+  // one phone takes the band lists in turn, two phones choose at the same time
+  if (state.phase === 'pick') return { player: state.picks[0] == null ? 0 : 1, private: false, simultaneous: true, note: 'Önce dinlediğin grupları seçeceksin.' };
   if (state.phase === 'over') return null;
   // both players sit at the same screen; the answering player is only shown their boxes behind a cover
   const who = state.current ? state.current.who : 0;
@@ -205,12 +207,11 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const online = ctx.mode === 'online';
 
   if (state.phase === 'pick') {
-    const turn = getTurn(state);
-    if (turn.player !== viewer) {
-      draw(container, el('p', { class: 'hint' }, `${players[turn.player]} dinlediği grupları seçiyor…`), el('div', { class: 'spinner', 'aria-hidden': 'true' }));
+    if (state.picks[viewer] != null) { // two phones: this list is in, the other phone is still choosing
+      draw(container, el('p', { class: 'hint' }, `Seçimin alındı. ${players[1 - viewer]} dinlediği grupları seçiyor…`), el('div', { class: 'spinner', 'aria-hidden': 'true' }));
       return null;
     }
-    renderArtistPick(container, {
+    keepArtistPick(container, `${state.seed}:${viewer}`, {
       groups: pickGroups(ctx.songs),
       playerName: players[viewer],
       otherPicks: state.picks[1 - viewer],
@@ -276,7 +277,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
         el('div', { class: 'ss-title' }, song.t),
         el('div', { class: 'ss-guesses' }, rowFor(0), rowFor(1)),
       ),
-      el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block', onClick: () => sendMove({ type: 'next' }) }, last ? 'Sonucu gör' : 'Sonraki şarkı'),
+      nextButton(ctx, sendMove, last ? 'Sonucu gör' : 'Sonraki şarkı', { style: null }),
     );
     return null;
   }

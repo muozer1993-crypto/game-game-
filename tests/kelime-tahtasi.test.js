@@ -109,3 +109,56 @@ test('kelime tahtası: hamleler — oynama, sözlük, raf yenileme, pas, değiş
   assert.deepEqual(game.getResult(e), { winner: p });
   assert.throws(() => game.applyMove(e, 1 - p, { type: 'pass' }), 'Oyun bitti');
 });
+
+import { finalScores } from '../games/kelime-tahtasi.js';
+
+test('kelime tahtası: listede olmayan kelime "yine de" oynanır, işaretlenir; oyun sonunda itiraz edilirse hamlenin puanı silinir', () => {
+  let s = game.setup({ seed: 3 });
+  const p = s.turn;
+  s = { ...s, racks: s.racks.map((r, i) => (i === p ? ['k', 'a', 'l', 'e', 'm', 'z', 'ş'] : r)) };
+  const kaz = [{ cell: CENTER - 1, letter: 'k' }, { cell: CENTER, letter: 'a' }, { cell: CENTER + 1, letter: 'z' }];
+  assert.throws(() => game.applyMove(s, p, { type: 'play', tiles: kaz }, ctx), 'listesinde yok');
+  assert.throws(() => game.applyMove(s, p, { type: 'play', tiles: kaz, unlisted: ['kar'] }, ctx), 'listesinde yok', 'naming another word does not let it through');
+  const before = s;
+  s = game.applyMove(s, p, { type: 'play', tiles: kaz, unlisted: ['kaz', 'xyz'] }, ctx);
+  const pts = s.scores[p];
+  assert.ok(pts > 0);
+  assert.equal(s.disputes.length, 1);
+  assert.deepEqual(s.disputes[0], { id: 'd0', player: p, words: ['kaz'], points: pts, cells: [CENTER - 1, CENTER, CENTER + 1] });
+  assert.deepEqual(s.lastWords, [{ word: 'kaz', points: pts, unlisted: true }]);
+  // the other phone takes the move's word for it
+  const there = game.applyMove(before, p, { type: 'play', tiles: kaz, unlisted: ['kaz'] }, { remote: true });
+  assert.deepEqual(there.disputes, s.disputes, 'the same mark on both phones');
+  // four passes end the game: objections come before the result
+  for (let i = 0; i < 4; i++) s = game.applyMove(s, s.turn, { type: 'pass' }, ctx);
+  assert.equal(s.review, true);
+  assert.equal(s.over, false);
+  assert.equal(game.getResult(s), null);
+  assert.equal(game.getTurn(s), null);
+  assert.throws(() => game.applyMove(s, s.turn, { type: 'pass' }, ctx), 'itirazlar');
+  const on = { mode: 'online' };
+  assert.throws(() => game.applyMove(s, p, { type: 'object', id: 'd0', on: true }, on), 'Kendi kelimene');
+  assert.throws(() => game.applyMove(s, 1 - p, { type: 'object', id: 'd9', on: true }, on), 'itiraz edilemez');
+  s = game.applyMove(s, 1 - p, { type: 'object', id: 'd0', on: true }, on);
+  assert.deepEqual(s.objected, ['d0']);
+  const raw = s.scores.slice();
+  s = game.applyMove(s, 0, { type: 'next', objected: s.objected });
+  assert.equal(s.over, true);
+  assert.equal(s.review, false);
+  assert.deepEqual(finalScores(s), [p === 0 ? raw[0] - pts : raw[0], p === 1 ? raw[1] - pts : raw[1]]);
+  const [a, b] = finalScores(s);
+  assert.deepEqual(game.getResult(s), a === b ? { draw: true } : { winner: a > b ? 0 : 1 });
+});
+
+test('kelime tahtası: çapraz giden itiraz ve "sonucu gör" iki telefonda aynı sonucu verir', () => {
+  let s = game.setup({ seed: 5 });
+  const p = s.turn;
+  s = { ...s, racks: s.racks.map((r, i) => (i === p ? ['k', 'a', 'z', 'e', 'm', 'l', 'ş'] : r)) };
+  s = game.applyMove(s, p, { type: 'play', tiles: [{ cell: CENTER - 1, letter: 'k' }, { cell: CENTER, letter: 'a' }, { cell: CENTER + 1, letter: 'z' }], unlisted: ['kaz'] }, ctx);
+  for (let i = 0; i < 4; i++) s = game.applyMove(s, s.turn, { type: 'pass' }, ctx);
+  // the host closes the review while the guest's objection is on its way
+  const host = game.applyMove(s, 0, { type: 'next', objected: [] });
+  const guest = game.applyMove(game.applyMove(s, 1 - p, { type: 'object', id: 'd0', on: true }, { mode: 'online' }), 0, { type: 'next', objected: [] }, { remote: true });
+  assert.deepEqual(finalScores(host), finalScores(guest), 'the closing move decides on both phones');
+  assert.throws(() => game.applyMove(host, 1 - p, { type: 'object', id: 'd0', on: true }, { mode: 'online', remote: true }), 'Oyun bitti');
+});

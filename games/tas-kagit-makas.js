@@ -1,5 +1,6 @@
 // Taş Kağıt Makas — both players pick secretly, then the picks are revealed. Best of N rounds.
 import { el, render as draw } from '../js/ui/dom.js';
+import { nextButton } from '../js/ui/next.js';
 import { nameSuffix } from '../js/lib/tr.js';
 
 export const meta = {
@@ -134,7 +135,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     draw(container,
       el('div', { class: 'status-line' }, el('strong', {}, last.winner == null ? 'Berabere el!' : `${players[last.winner]} bu eli aldı.`)),
       score, lastView,
-      el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block', style: { marginTop: '12px' }, onClick: () => sendMove({ type: 'next' }) }, 'Sonraki el'),
+      nextButton(ctx, sendMove, 'Sonraki el'),
     );
     return null;
   }

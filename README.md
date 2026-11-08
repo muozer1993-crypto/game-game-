@@ -9,19 +9,19 @@ Tek telefonda elden ele ya da iki telefonda oda koduyla oynanır. Ana ekrana ekl
 
 | Oyun | Kısaca |
 |---|---|
-| **Son Hece** | Her kelime bir öncekinin son hecesiyle başlar (kitap → tapınak → nakış). Süre, itiraz/kabul, ğ kuralı. |
+| **Son Hece** | Her kelime bir öncekinin son hecesiyle başlar (kitap → tapınak → nakış). Süre, ğ kuralı; listede olmayan kelime işaretli kabul edilir, oyun sonunda itiraz edilebilir. |
 | **Gizli Kelime** | Karşılıklı Wordle. 4–6 harf, renkli ya da "+2 −1" modu. İkisi aynı turda bulursa berabere. |
 | **Gizli Sayı** | Rakamları farklı 4 haneli sayı, "+ −" ipuçlarıyla. |
 | **Adam Asmaca** | Biri kelimeyi tutar (ya da rastgele gelir), öbürü harf harf bulur; roller her kelimede değişir, kalan can kadar puan. |
 | **Harf Avı** | Aynı 4×4/5×5 harf tablosunda süreye karşı komşu harflerden kelime çıkar; ortak kelimeler puan getirmez. |
 | **Kelime Türetme** | Aynı 7–9 harften süreye karşı kelime türet; uzun kelime çok puan, ortak kelimeler puan getirmez. |
 | **İsim Şehir** | Klasik kâğıt oyunu: aynı harfle isim, şehir, hayvan, bitki, eşya (+ ülke, meslek, yemek). Farklı cevap 10, aynı 5; rakibin uydurmasına "Geçersiz". |
-| **Kelime Tahtası** | Scrabble benzeri: 11×11 tahta, katlı kareler, yedişer harf, sözlük denetimi, pas/değiştirme. |
+| **Kelime Tahtası** | Scrabble benzeri: 11×11 tahta, katlı kareler, yedişer harf, sözlük denetimi, pas/değiştirme. Listede olmayan kelime "Yine de oyna" ile konur, tahtada işaretli kalır; oyun sonunda rakip itiraz ederse o hamlenin puanı silinir. |
 | **Tabu** | Yasaklı beş kelimeyi söylemeden anlat, eşin tahmin etsin; 220+ kart, roller her turda değişir. Telefon gösterdiği kartları hatırlar: bütün kartlar görülmeden hiçbir kelime tekrar gelmez. |
 | **Beni Ne Kadar Tanıyorsun?** | Aynı sorular ikinize; önce kendi cevabın, sonra rakibin tahmini; karşılaştırma otomatik. Hazır havuz + kendi sorularınız. |
 | **Genel Kültür Düellosu** | Aynı sorular ikinize; doğru sayısı, eşitlikte hız. 240+ soruluk havuz. |
 | **Doğruluk mu Cesaret mi?** | Parti klasiği: sırayla doğruluk (1) ya da cesaret (2) seç, rakibin hakem; 60+50 dostça kart (`data/dogruluk.json`), bir kez kart değiştirme. |
-| **Şarkı Süresi** | Bir şarkı gelir; ikiniz de kaç dakika sürdüğünü tahmin edersiniz (4 3 2 → 4:32), gerçeğe yakın olan turu alır. Normal: ad yazar; Zor: ad gizli, şarkıdan 10–30 saniye çalar (sesi olmayan şarkı çıkmaz). Havuz çok seçmeli, işaretlenen kaynaklar eşit pay alır: Mustafa'nın Spotify listesi (7000 şarkı; Katatonia, Opeth, Anathema, Antimatter sık), Beyza'nın listeleri, "beyz ve mu" ortak listesi, Mustafa'nın listesinden Beyza'ya yakınlar (Türkçe, popüler), bilinen Türkçe şarkılar (90'lar, 2000'ler), oyun başında ikinizin işaretlediği gruplar (yarısı birinin, yarısı öbürünün) (`data/sarkilar.json`). |
+| **Şarkı Süresi** | Bir şarkı gelir; ikiniz de kaç dakika sürdüğünü tahmin edersiniz (4 3 2 → 4:32), gerçeğe yakın olan turu alır. İki telefonda ikiniz aynı anda tahmin edersiniz. Normal: ad yazar; Zor: ad gizli, şarkıdan 10–30 saniye çalar (sesi olmayan şarkı çıkmaz). Havuz çok seçmeli, işaretlenen kaynaklar eşit pay alır: Mustafa'nın Spotify listesi (7000 şarkı; Katatonia, Opeth, Anathema, Antimatter sık), Beyza'nın listeleri, "beyz ve mu" ortak listesi, Mustafa'nın listesinden Beyza'ya yakınlar (Türkçe, popüler), bilinen Türkçe şarkılar (90'lar, 2000'ler), oyun başında ikinizin işaretlediği gruplar (yarısı birinin, yarısı öbürünün) (`data/sarkilar.json`). |
 | **Şarkıyı Bil** | Aynı şarkı ikinize çalar; bilen kendi "Tahmin et" düğmesine basar, telefonu alıp önce grubu, sonra şarkının adını gizlice yazar (yazım hatasına tolerans var; şarkı için yarı puana dört şık istenebilir); sonra öbürü de cevaplar. Grup 5, şarkı 10 puan, düğmeye erken basana 2 kata kadar çarpan; her şarkıya süre sınırı (yalnız dinleme ekranında işler). Aynı havuz seçenekleri. |
 | **Hesap Yarışı** | Aynı aritmetik işlemler ikinize (kolay/orta/zor); doğru sayısı, eşitlikte hız. |
 | **Hedef Sayı** | Altı sayı, dört işlem, üç basamaklı hedef; aynı bulmacada süreye karşı en yakına ulaş (tam 10, ≤5 uzak 7, ≤10 uzak 5). Tur sonunda çözüm gösterilir. |
@@ -111,6 +111,17 @@ Ana menüden **İki telefonda oyna** → biri **Oda kur** der, 5 karakterlik kod
 bir bağlantı da paylaşabilir (WhatsApp vb.); bağlantıyı açan doğrudan kod dolu katılma ekranına gelir.
 Ev sahibi oyunu ve ayarları seçer, iki telefon da aynı hamleleri aynı sırayla uygular. Sıra size
 geçince telefon kısaca titrer (online ekranından kapatılabilir).
+
+**Sonraki tur:** el, tur ya da şarkı bitince sonrakine yalnızca odayı kuran geçer; öbür telefonda
+"Hazırım" düğmesi çıkar, basınca odayı kuranın düğmesinde "… hazır" yazar. Yeni ekran gelince iki
+telefonda da dokunuşlar bir an (0,8 sn) yok sayılır: aynı anda basılan düğmenin yerine gelen düğmeye
+yanlışlıkla basılmaz (tek telefonda da aynı).
+
+**Kelime oyunlarında itiraz:** kelime listesinde olmayan bir kelime yine de oynanabilir (Kelime Tahtası,
+Kelime Türetme, Harf Avı, Son Hece, Adam Asmaca, Gizli Kelime): oynarken bir kez daha onaylarsın, kelime
+"?" işaretiyle görünür ve oyun (Adam Asmaca'da kelime) bitince rakip itiraz edebilir. İtirazın bedeli
+oyuna göre değişir: hamlenin ya da kelimenin puanı silinir, Son Hece'de ve Gizli Kelime'de kelimeyi
+kullanan kaybeder, Adam Asmaca'da bulmaya çalışan tam puan alır.
 
 **Bağlantı testi** (aynı ekranda): bu cihazın hangi WebRTC yollarını bulabildiğini gösterir: doğrudan,
 STUN (genel adres) ve TURN aktarma. Farklı ağlardaki (mobil veri) iki telefonun bağlanabilmesi için
