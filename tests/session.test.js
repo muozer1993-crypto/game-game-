@@ -215,9 +215,15 @@ test('sonraki tur: yeni ekran gelince dokunuşlar bir an yok sayılır (iki tele
   const s0 = rounds.setup();
   sessions[0].start(s0);
   sessions[1].start(JSON.parse(JSON.stringify(s0)));
-  sessions[0].dispatch(0, { type: 'end' });
+  assert.equal(sessions[1].container.style.pointerEvents, 'none', "a new game's first screen is guarded too");
+  sessions.forEach((s) => s.unblockTaps()); // as if the moment had passed
+  sessions[0].dispatch(0, { type: 'tap' });
   deliver();
   assert.equal(sessions[1].container.style.pointerEvents || '', '', 'an ordinary move does not block anything');
+  sessions[0].dispatch(0, { type: 'end' });
+  deliver();
+  assert.equal(sessions[1].container.style.pointerEvents, 'none', "the round's end screen comes up under a finger still playing");
+  sessions.forEach((s) => s.unblockTaps());
   sessions[0].dispatch(0, { type: 'next' });
   assert.equal(sessions[0].container.style.pointerEvents, 'none', 'the host: a double tap cannot act on the new screen');
   deliver();
@@ -235,4 +241,40 @@ test('sonraki tur: yeni ekran gelince dokunuşlar bir an yok sayılır (iki tele
   }
   local.destroy();
   sessions.forEach((s) => s.destroy());
+});
+
+import { freshScreen } from '../js/session.js';
+import harfAvi from '../games/harf-avi.js';
+
+test('dokunma koruması: rakibin kendi "Başla"sı oynayan telefonu dondurmaz; ortak başlangıç ve tur sonu korunur', () => {
+  // Harf Avı: each phone starts its own timed round
+  const s0 = harfAvi.setup({ seed: 5, seconds: 60 });
+  const s1 = harfAvi.applyMove(s0, 1, { type: 'start' });
+  assert.equal(freshScreen(s0, s1, { type: 'start' }, true), false, "the other phone's Başla changes nothing here");
+  assert.equal(freshScreen(s0, s1, { type: 'start' }, false), true, 'my own Başla brings up my grid');
+  // a shared start (Refleks, Tabu, Son Hece) changes the phase on both phones
+  assert.equal(freshScreen({ phase: 'ready' }, { phase: 'wait' }, { type: 'start' }, true), true);
+  assert.equal(freshScreen({ phase: 'play' }, { phase: 'handOver' }, { type: 'play' }, true), true, "a round's end");
+  assert.equal(freshScreen({ phase: 'play' }, { phase: 'review' }, { type: 'finish' }, false), true, 'objections');
+  assert.equal(freshScreen({ over: false, review: false }, { over: false, review: true }, { type: 'pass' }, true), true, 'objections (flag)');
+  assert.equal(freshScreen({ phase: 'play' }, { phase: 'play' }, { type: 'word' }, true), false, 'an ordinary move');
+});
+
+test('sonraki tur (iki telefon): bağlantı dönünce "hazırım" yeniden gönderilir; ev sahibi tekrarı saymaz', () => {
+  const { sessions, inbox, deliver } = pairWith(rounds);
+  const s0 = rounds.setup();
+  sessions[0].start(s0);
+  sessions[1].start(JSON.parse(JSON.stringify(s0)));
+  sessions[0].dispatch(0, { type: 'end' });
+  deliver();
+  sessions[1].requestNext({ render: false });
+  inbox[0].length = 0; // lost while the link was down
+  assert.ok(!sessions[0].ask.peerAsked);
+  sessions[1].resendAsk();
+  deliver();
+  assert.ok(sessions[0].ask.peerAsked, 'the repeat arrives after the reconnect');
+  sessions[1].resendAsk();
+  assert.equal(sessions[0].receiveAsk(inbox[0].shift()), false, 'a second repeat changes nothing');
+  sessions[0].resendAsk();
+  assert.equal(inbox[1].length, 0, 'the host never sends one');
 });

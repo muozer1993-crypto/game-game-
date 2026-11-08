@@ -201,7 +201,8 @@ export function getTurn(state) {
     const g = state.guesses[state.index];
     return { player: g[f] == null ? f : 1 - f, private: true, simultaneous: true };
   }
-  if (state.phase === 'reveal') return { player: 1 - firstGuesser(state.index), private: false };
+  // the reveal is looked at together; on one phone the second guesser is holding it
+  if (state.phase === 'reveal') return { player: 1 - firstGuesser(state.index), private: false, simultaneous: true };
   return null;
 }
 

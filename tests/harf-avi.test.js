@@ -81,6 +81,7 @@ test('harf avı: listede olmayan kelime işaretli eklenir; itiraz edilen puan ge
   s = game.applyMove(s, 0, { type: 'start' });
   assert.throws(() => game.applyMove(s, 0, { type: 'word', secret: { word: 'lel' } }, ctx), 'listesinde yok');
   s = game.applyMove(s, 0, { type: 'word', secret: { word: 'lel', unlisted: true } }, ctx);
+  s = game.applyMove(s, 0, { type: 'word', secret: { word: 'mel', unlisted: true } }, ctx);
   s = game.applyMove(s, 0, { type: 'word', secret: { word: 'kalem' } }, ctx);
   s = game.applyMove(s, 0, { type: 'finish', words: s.words[0], unlisted: s.unlisted[0] });
   s = game.applyMove(s, 1, { type: 'start' });
@@ -88,11 +89,23 @@ test('harf avı: listede olmayan kelime işaretli eklenir; itiraz edilen puan ge
   s = game.applyMove(s, 1, { type: 'word', secret: { word: 'lale' } }, ctx);
   s = game.applyMove(s, 1, { type: 'finish', words: s.words[1], unlisted: s.unlisted[1] });
   assert.equal(s.phase, 'review');
-  assert.deepEqual(s.unlisted, [['lel'], ['lel']]);
-  s = game.applyMove(s, 1, { type: 'object', id: '0:lel', on: true }, { mode: 'online' });
+  assert.deepEqual(s.unlisted, [['lel', 'mel'], ['lel']]);
+  assert.throws(() => game.applyMove(s, 1, { type: 'object', id: '0:lel', on: true }, { mode: 'online' }), 'itiraz edilemez', 'a word both found scores nothing: nothing to object to');
+  s = game.applyMove(s, 1, { type: 'object', id: '0:mel', on: true }, { mode: 'online' });
   s = game.applyMove(s, 0, { type: 'next', objected: s.objected });
   assert.deepEqual(s.result.shared, ['lel']);
-  assert.deepEqual(s.result.points, [2, 1], 'kalem 2 against lale 1; lel was found by both, objected or not');
+  assert.deepEqual(s.result.points, [2, 1], 'kalem 2 (mel objected, lel shared) against lale 1');
   assert.deepEqual(scoreReviewed([['kalem', 'kal'], ['lale']], ['0:kal']).points, [2, 1]);
   assert.deepEqual(scoreReviewed([['kalem', 'kal'], ['lale']], []).points, [3, 1]);
+});
+
+test('harf avı: listede olmayan kelimeyi ikisi de bulduysa itiraz adımı açılmaz', () => {
+  let s = fresh();
+  for (const p of [0, 1]) {
+    s = game.applyMove(s, p, { type: 'start' });
+    s = game.applyMove(s, p, { type: 'word', secret: { word: 'lel', unlisted: true } }, ctx);
+    s = game.applyMove(s, p, { type: 'finish', words: s.words[p], unlisted: s.unlisted[p] });
+  }
+  assert.equal(s.phase, 'over', 'lel scores nothing for either: no objections to make');
+  assert.deepEqual(game.getResult(s), { draw: true });
 });

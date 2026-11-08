@@ -402,7 +402,8 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
           ? 'Rakibinin listede olmayan (?) kelimesi sence geçersizse itiraz et: o hamlenin puanı silinir (harfler tahtada kalır). Sonra odayı kuran sonucu açar.'
           : 'Listede olmayan (?) bir kelime geçersizse rakibi itiraz etsin: o hamlenin puanı silinir (harfler tahtada kalır). Bitince sonucu açın.',
       }),
-      nextButton(ctx, sendMove, 'Sonucu gör', { move: () => ({ type: 'next', objected: state.objected }) }),
+      // two phones: the host's own moves are the guest's to object to, so the host waits for "Hazırım" (or confirms)
+      nextButton(ctx, sendMove, 'Sonucu gör', { move: () => ({ type: 'next', objected: state.objected }), waitForPeer: disputes.some((d) => d.player === 0) }),
     ];
   } else if (disputes.length) {
     disputeBox = objectionList({

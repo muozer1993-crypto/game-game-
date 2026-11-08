@@ -104,6 +104,7 @@ export function getResult(state) {
 
 // ------------------------------------------------------------------ rendering
 const goAt = new Map(); // `${id}:${round}` -> timestamp when this device turns green
+const resultAt = new Map(); // `${id}:${round}` -> when this device first showed that round's result
 const TAP_GUARD_MS = 600;
 
 const fmt = (t) => (t == null ? '—' : t === 'early' ? 'erken!' : t === 'none' ? 'dokunmadı' : `${t} ms`);
@@ -127,11 +128,18 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   if (state.phase === 'result') {
     // the round ends on a tap: the button that appears under that finger waits a moment, or the
     // same tap would also skip the result
+    // (timed from the first time this result showed: a redraw must not grey the button out again)
+    const rkey = `${state.id}:${state.round}`;
+    if (!resultAt.has(rkey)) resultAt.set(rkey, Date.now());
+    const left = TAP_GUARD_MS - (Date.now() - resultAt.get(rkey));
     const next = nextButton(ctx, sendMove, 'Sonraki el');
     const nextBtn = next.tagName === 'BUTTON' ? next : next.querySelector('button');
     const wasDisabled = nextBtn.disabled; // the guest's "ready" stays greyed out once it was sent
-    nextBtn.disabled = true;
-    const t = setTimeout(() => { nextBtn.disabled = wasDisabled; }, TAP_GUARD_MS);
+    let t = null;
+    if (left > 0) {
+      nextBtn.disabled = true;
+      t = setTimeout(() => { nextBtn.disabled = wasDisabled; }, left);
+    }
     draw(container,
       el('div', { class: 'status-line' }, el('strong', {}, last.winner == null ? 'Bu eli kimse almadı.' : `${players[last.winner]} bu eli aldı!`)),
       score, lastLine, next,

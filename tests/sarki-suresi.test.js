@@ -81,7 +81,7 @@ test('şarkı süresi: sıra, gizli tahminler, açıklama ve sonuç', () => {
   assert.equal(roundWinner(s, 0), null, 'round open');
   s = game.applyMove(s, 1, { type: 'guess', round: 0, seconds: real - 3 });
   assert.equal(s.phase, 'reveal');
-  assert.deepEqual(game.getTurn(s), { player: 1, private: false }, 'the second guesser holds the phone on the reveal');
+  assert.deepEqual(game.getTurn(s), { player: 1, private: false, simultaneous: true }, 'the second guesser holds the phone on the reveal; two phones look at it together');
   assert.equal(roundWinner(s, 0), 1, 'closer guess takes the round');
   assert.deepEqual(scoreOf(s, 1), { points: 1, error: 3 });
   assert.deepEqual(scoreOf(s, 0), { points: 0, error: 10 });

@@ -290,7 +290,7 @@ test('gizli kelime: listede olmayan gizli kelime ve tahmin onayla kullanılır; 
   assert.equal(s.phase, 'over', 'player 1 found pizza');
   assert.equal(s.review, true, 'unlisted words were used: objections first');
   assert.equal(game.getResult(s), null);
-  assert.deepEqual(s.guesses[1][0].unlisted, true);
+  assert.equal(s.review, true, 'the unlisted secret is still open to an objection');
   const on = { ...ctx, mode: 'online' };
   assert.throws(() => game.applyMove(s, 0, { type: 'object', id: 's0', on: true }, on), 'Kendi kelimene');
   // no objection: player 1 found the word, player 0 did not
@@ -299,10 +299,26 @@ test('gizli kelime: listede olmayan gizli kelime ve tahmin onayla kullanılır; 
   // player 1 objects to the secret pizza: player 0 used an objected word and loses anyway
   const one = game.applyMove(game.applyMove(s, 1, { type: 'object', id: 's0', on: true }, on), 0, { type: 'next', objected: ['s0'] }, ctx);
   assert.deepEqual(game.getResult(one), { winner: 1 });
-  // player 0 objects to player 1's guess pizza: player 1 used an objected word and loses
+  // the guess that found pizza is the hunted word itself: its holder cannot object to it
+  assert.equal(s.guesses[1][0].unlisted, undefined, 'the solving guess carries no mark');
+  assert.throws(() => game.applyMove(s, 0, { type: 'object', id: 'g1:0', on: true }, on), 'itiraz edilemez');
   const other = game.applyMove(s, 0, { type: 'next', objected: ['g1:0'] }, ctx);
-  assert.deepEqual(game.getResult(other), { winner: 0 });
-  // both objected: a draw
+  assert.deepEqual(other.objected, [], 'not an objection item');
+  assert.deepEqual(game.getResult(other), { winner: 1 });
+});
+
+test('gizli kelime: bulamayan tahmin listede yoksa itiraz edilir; ikisinin de kelimesine itiraz berabere', () => {
+  let s = game.setup({ length: 5, secretMode: 'manual', feedback: 'wordle', maxGuesses: 1, seed: 6 });
+  s = game.applyMove(s, 0, { type: 'setSecret', unlisted: true, secret: { word: 'pizza' } }, ctx);
+  s = game.applyMove(s, 1, { type: 'setSecret', secret: { word: 'kalem' } }, ctx);
+  const auto = (st) => { let t = st; for (const p of [0, 1]) { const m = game.autoMove(t, p, ctx); if (m) t = game.applyMove(t, p, m, ctx); } return t; };
+  const order = [game.whoseTurn(s), 1 - game.whoseTurn(s)];
+  for (const p of order) s = auto(game.applyMove(s, p, p === 1 ? { type: 'guess', word: 'zzzzz', unlisted: true } : { type: 'guess', word: 'kitap' }, ctx));
+  assert.equal(s.phase, 'over');
+  assert.equal(s.review, true);
+  assert.equal(s.guesses[1][0].unlisted, true, 'a guess that did not find the word keeps its mark');
+  const one = game.applyMove(s, 0, { type: 'next', objected: ['g1:0'] }, ctx);
+  assert.deepEqual(game.getResult(one), { winner: 0 }, 'player 1 used an objected word');
   const both = game.applyMove(s, 0, { type: 'next', objected: ['g1:0', 's0', 'x9'] }, ctx);
   assert.deepEqual(both.objected, ['g1:0', 's0']);
   assert.deepEqual(game.getResult(both), { draw: true });

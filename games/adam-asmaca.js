@@ -322,8 +322,8 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       el('div', { class: 'status-line' }, el('strong', {}, `${players[viewer]}, ${players[guesser]} için bir kelime tut`)),
       el('p', { class: 'hint' }, `${MIN_LEN}–${MAX_LEN} harfli bir kelime (listede yoksa iki kez onaylarsın). ${players[guesser]} bunu harf harf bulmaya çalışacak; ${state.lives} canı var.`),
       rowBox,
-      warnNote,
       kbBox,
+      warnNote, // below the keyboard: showing it must not move ↵ away from the finger
       head,
     );
     return () => cleanups.forEach((fn) => fn());
@@ -418,7 +418,8 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     state.unlisted && result ? objectionBox() : null,
     result
       ? nextButton(ctx, sendMove, state.round + 1 >= state.rounds ? 'Sonucu gör' : (ctx.mode === 'online' ? 'Sonraki kelime' : `Sonraki kelime: ${players[guesser]} kelime tutar, ${players[setter]} bulur`),
-        { move: () => ({ type: 'next', objected: !!state.objected }) })
+        // two phones: when the guest is the one who may object, the host waits for "Hazırım" (or confirms)
+        { move: () => ({ type: 'next', objected: !!state.objected }), waitForPeer: !!state.unlisted && guesser === 1 })
       : null,
     typedBox,
     result ? null : kbBox,

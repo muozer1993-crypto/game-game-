@@ -154,6 +154,8 @@ export function applyMove(state, player, move, ctx = {}) {
       return finish('options', normKey(move.title) === normKey(song.t), String(move.title || ''));
     case 'timeout': { // the round's time is up: whoever has not answered gets nothing
       if (!['listen', 'answer', 'answer2', 'options2'].includes(state.phase)) fail('Süre işlemiyor');
+      // a phone's clock that ran out on the previous song must not end the next one
+      if (move.round != null && Number(move.round) !== i) fail('Bu şarkının süresi değil');
       for (const p of [0, 1]) if (round[p] == null) round[p] = { mode: 'timeout', heard: 0, artistOk: false, songOk: false, points: { artist: 0, song: 0, total: 0 } };
       const answers = state.answers.slice();
       answers[i] = round;
@@ -251,7 +253,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const total = state.limitSec * 1000;
   if (state.phase === 'listen') { // the clock runs only here; it pauses while someone answers
     if (!mem.runningSince) mem.runningSince = Date.now();
-    timer = createTimer(timerBox, { deadline: mem.runningSince + mem.leftMs, total, onExpire: () => sendMove({ type: 'timeout' }) });
+    timer = createTimer(timerBox, { deadline: mem.runningSince + mem.leftMs, total, onExpire: () => sendMove({ type: 'timeout', round: i }) });
   } else if (state.phase !== 'reveal') {
     if (mem.runningSince) { mem.leftMs = Math.max(0, mem.leftMs - (Date.now() - mem.runningSince)); mem.runningSince = null; }
     timer = createTimer(timerBox, { deadline: 0, total, paused: true, remaining: mem.leftMs });

@@ -166,6 +166,7 @@ export function getResult(state) {
 // ----------------------------------------------------------------- render
 const starts = new Map();
 const drafts = new Map(); // `${id}:${player}` -> indexes of rack tiles used, in order
+const warnedWords = new Map(); // `${id}:${player}` -> the unlisted word the player was warned about (kept across redraws)
 
 export function render(state, viewer, container, sendMove, ctx = {}) {
   const players = ctx.players || ['Oyuncu 1', 'Oyuncu 2'];
@@ -228,22 +229,25 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
 
   const wordBox = el('div', { class: 'wh-word' });
   const tiles = [];
-  // a word the list does not have: the first tap warns, the second adds it marked ("Yine de ekle")
-  let warned = null;
+  // a word the list does not have: the first tap warns, the second adds it marked ("Yine de ekle");
+  // the warning survives a redraw (the other phone's moves redraw this screen)
+  let warned = warnedWords.get(key) ?? null;
   const warnNote = el('p', { class: 'hint rejected-note', hidden: true });
+  const warn = (word) => {
+    warned = word;
+    warnedWords.set(key, word);
+    warnNote.textContent = `${upperTR(word)} kelime listesinde yok. Yine de eklersen işaretli kalır; rakibin sonunda itiraz ederse puan getirmez.`;
+    warnNote.hidden = false;
+    submitBtn.textContent = 'Yine de ekle';
+  };
   const submitBtn = el('button', {
     type: 'button', class: 'btn btn-primary',
     onClick: () => {
       if (used.length < MIN_LEN) return;
       const word = wordOf(used);
       const listed = !ctx.dict || ctx.dict.has(word);
-      if (!listed && warned !== word && !mine.includes(word)) {
-        warned = word;
-        warnNote.textContent = `${upperTR(word)} kelime listesinde yok. Yine de eklersen işaretli kalır; rakibin sonunda itiraz ederse puan getirmez.`;
-        warnNote.hidden = false;
-        submitBtn.textContent = 'Yine de ekle';
-        return;
-      }
+      if (!listed && warned !== word && !mine.includes(word)) { warn(word); return; }
+      warnedWords.delete(key);
       sendMove({ type: 'word', secret: { word, unlisted: !listed } });
     },
   }, 'Gönder');
@@ -252,7 +256,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     tiles.forEach((t, i) => { t.disabled = used.includes(i); });
     wordBox.textContent = used.length ? upperTR(wordOf(used)) : '';
     submitBtn.disabled = used.length < MIN_LEN;
-    if (warned !== null && warned !== wordOf(used)) { warned = null; warnNote.hidden = true; submitBtn.textContent = 'Gönder'; }
+    if (warned !== null && warned !== wordOf(used)) { warned = null; warnedWords.delete(key); warnNote.hidden = true; submitBtn.textContent = 'Gönder'; }
   };
   const rack = el('div', { class: 'kt-tiles' }, state.rack.map((l, i) => {
     const t = el('button', { type: 'button', class: 'wh-cell kt-tile', 'aria-label': upperTR(l), onClick: () => { if (!used.includes(i)) { used = used.concat([i]); update(); } } }, upperTR(l));
@@ -260,12 +264,12 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     return t;
   }));
   update();
+  if (warned !== null) warn(warned); // put the warning back after a redraw
   const provisional = mine.reduce((s, w) => s + points(w), 0);
   draw(container,
     timerBox,
     el('div', { class: 'status-line' }, el('strong', {}, `${players[viewer]}: ${mine.length} kelime, ${provisional} puan${online && state.started[opp] ? ` · ${players[opp]}: ${state.counts[opp]} kelime` : ''}`)),
     wordBox,
-    warnNote,
     rack,
     el('div', { class: 'row', style: { justifyContent: 'center', gap: '8px', marginTop: '8px' } },
       el('button', { type: 'button', class: 'btn btn-secondary', onClick: () => { used = used.slice(0, -1); update(); } }, 'Sil'),
@@ -273,6 +277,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       submitBtn,
       el('button', { type: 'button', class: 'btn btn-secondary', onClick: () => { if (confirm('Süren bitmeden bitirilsin mi?')) finish(); } }, 'Bitir'),
     ),
+    warnNote, // below the buttons: showing it must not move "Yine de ekle" away from the finger
     el('div', { class: 'col-title', style: { marginTop: '10px' } }, 'Bulduğun kelimeler'),
     wordList(mine.slice().reverse(), { unlisted: myUnlisted }),
   );

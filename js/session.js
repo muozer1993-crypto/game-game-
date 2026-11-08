@@ -11,14 +11,27 @@
 //
 // Moving on to the next round (a move of type 'next') is the host's call on two phones: the
 // guest's phone turns its own 'next' into a request ('ask'), so the two players can never both
-// press it and have the second tap land on whatever the new screen shows under the finger. After
-// a 'next' or 'start' move (either phone, or one phone) taps are ignored for a moment as well.
+// press it and have the second tap land on whatever the new screen shows under the finger. When a
+// new screen comes up (a new game, a 'next', a shared 'start', a round's end or objections) taps
+// are ignored for a moment as well, on either phone and on one phone.
 import { showHandoff } from './ui/handoff.js';
 import { toast } from './ui/dom.js';
+import { markNextReady } from './ui/next.js';
 
 const SWITCH_GUARD_MS = 350; // taps ignored this long after the turn passes to the other player (one phone) or to this phone (two phones)
-export const ADVANCE_GUARD_MS = 800; // and this long after a new round or screen starts ('next' / 'start')
-export const ADVANCE_MOVES = new Set(['next', 'start']);
+export const ADVANCE_GUARD_MS = 800; // and this long after a new screen comes up (see freshScreen)
+/** Phases that end a round: their screen (result, buttons) comes up under a finger still playing. */
+export const ROUND_END_PHASES = new Set(['result', 'reveal', 'summary', 'compare', 'handOver', 'roundOver', 'review']);
+
+/** Does this move bring up a new screen on this phone? */
+export function freshScreen(prev, next, move, remote) {
+  if (!prev || !next || !move) return false;
+  if (move.type === 'next') return true;
+  // the other phone's own 'Başla' (each plays a separate timed round) leaves this screen as it is
+  if (move.type === 'start') return !remote || prev.phase !== next.phase;
+  if (next.phase !== prev.phase && ROUND_END_PHASES.has(next.phase)) return true;
+  return !!next.review && !prev.review; // objections to unlisted words (word games)
+}
 
 const say = (message, opts) => { if (typeof document !== 'undefined') toast(message, opts); };
 
@@ -93,6 +106,7 @@ export class Session {
     this.lastTurn = null;
     this.lastViewer = null;
     Object.assign(this.ask, { asked: false, peerAsked: false, nexts: 0 });
+    this.guardPending = true; // a new game's first screen: a late tap on "Başla" / "Yeni tur" must not act in it
     this.runAuto();
     this.checkEnd();
     this.render();
@@ -117,9 +131,10 @@ export class Session {
       return false;
     }
     if (!next || next === this.state) return false;
+    const prev = this.state;
     this.state = next;
     if (move.type === 'next') Object.assign(this.ask, { asked: false, peerAsked: false, nexts: this.ask.nexts + 1 });
-    if (ADVANCE_MOVES.has(move.type)) this.guardPending = true; // a new screen: see renderNow
+    if (freshScreen(prev, next, move, remote)) this.guardPending = true; // see renderNow
     const publicMove = stripSecret(move);
     if (!remote && this.mode === 'online') {
       const seq = this.sent++;
@@ -159,22 +174,37 @@ export class Session {
     }
   }
 
-  /** Guest (two phones): tell the host this player is ready for the next round. */
-  requestNext() {
+  /**
+   * Guest (two phones): tell the host this player is ready for the next round. The "Hazırım" button
+   * (js/ui/next.js) updates itself and passes render: false, so the rest of the screen stays as it is.
+   */
+  requestNext({ render = true } = {}) {
     if (this.mode !== 'online' || this.self === 0 || this.destroyed || this.ended || this.ask.asked) return false;
     this.ask.asked = true;
-    if (this.transport) this.transport.send({ t: 'ask', what: 'next', nexts: this.ask.nexts, tag: this.tag });
-    this.render();
+    this.sendAsk();
+    if (render) this.render();
     return true;
   }
 
-  /** Host (two phones): the guest is ready for the next round. False for a request about another screen. */
+  sendAsk() {
+    if (this.transport) this.transport.send({ t: 'ask', what: 'next', nexts: this.ask.nexts, tag: this.tag });
+  }
+
+  /** After a reconnect: a "ready" sent while the link was down never arrived, so say it again (the host ignores repeats). */
+  resendAsk() {
+    if (this.mode === 'online' && this.self !== 0 && !this.destroyed && !this.ended && this.ask.asked) this.sendAsk();
+  }
+
+  /**
+   * Host (two phones): the guest is ready for the next round. False for a request about another screen.
+   * The "next" button is updated in place: redrawing the whole game would reset what is on the screen.
+   */
   receiveAsk(msg) {
     if (this.mode !== 'online' || this.self !== 0 || this.destroyed || this.ended) return false;
     if (!msg || msg.what !== 'next' || (msg.tag ?? null) !== this.tag) return false;
     if (Number(msg.nexts) !== this.ask.nexts || this.ask.peerAsked) return false; // asked before our last 'next', or again
     this.ask.peerAsked = true;
-    this.render();
+    markNextReady(this.container, this.players[1]);
     return true;
   }
 

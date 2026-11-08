@@ -113,15 +113,20 @@ Ev sahibi oyunu ve ayarları seçer, iki telefon da aynı hamleleri aynı sıray
 geçince telefon kısaca titrer (online ekranından kapatılabilir).
 
 **Sonraki tur:** el, tur ya da şarkı bitince sonrakine yalnızca odayı kuran geçer; öbür telefonda
-"Hazırım" düğmesi çıkar, basınca odayı kuranın düğmesinde "… hazır" yazar. Yeni ekran gelince iki
-telefonda da dokunuşlar bir an (0,8 sn) yok sayılır: aynı anda basılan düğmenin yerine gelen düğmeye
-yanlışlıkla basılmaz (tek telefonda da aynı).
+"Hazırım" düğmesi çıkar, basınca odayı kuranın düğmesinde "… hazır" yazar (bağlantı koparsa istek
+yeniden gönderilir). Yeni ekran gelince (yeni oyun, sonraki tur, ortak başlangıç, tur sonu, itiraz
+ekranı) iki telefonda da dokunuşlar bir an (0,8 sn) yok sayılır: aynı anda basılan düğmenin yerine
+gelen düğmeye yanlışlıkla basılmaz (tek telefonda da aynı). Rakibin kendi "Başla"sı (Harf Avı, Kelime
+Türetme, Renk Tuzağı) oynayan telefonu durdurmaz.
 
 **Kelime oyunlarında itiraz:** kelime listesinde olmayan bir kelime yine de oynanabilir (Kelime Tahtası,
 Kelime Türetme, Harf Avı, Son Hece, Adam Asmaca, Gizli Kelime): oynarken bir kez daha onaylarsın, kelime
 "?" işaretiyle görünür ve oyun (Adam Asmaca'da kelime) bitince rakip itiraz edebilir. İtirazın bedeli
 oyuna göre değişir: hamlenin ya da kelimenin puanı silinir, Son Hece'de ve Gizli Kelime'de kelimeyi
-kullanan kaybeder, Adam Asmaca'da bulmaya çalışan tam puan alır.
+kullanan kaybeder, Adam Asmaca'da bulmaya çalışan tam puan alır. İki telefonda itiraz sırası konuktaysa
+odayı kuranın "Sonucu gör" düğmesi, konuk "Hazırım" demeden basılırsa onay ister. İkinizin de bulduğu
+kelime zaten puan getirmediği için itiraz listesine girmez; Gizli Kelime'de kelimeyi bulan tahmin de
+girmez (uydurma kelimeye itiraz, tutulan kelimenin kendisine yapılır).
 
 **Bağlantı testi** (aynı ekranda): bu cihazın hangi WebRTC yollarını bulabildiğini gösterir: doğrudan,
 STUN (genel adres) ve TURN aktarma. Farklı ağlardaki (mobil veri) iki telefonun bağlanabilmesi için

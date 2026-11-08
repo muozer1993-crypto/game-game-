@@ -213,7 +213,8 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
         items: reviewItems(state), objected: state.objected, players, viewer, online, sendMove,
         effect: `İtiraz yoksa ${players[1 - state.loser]} kazanır. İtiraz edilen ilk kelimeyi söyleyen kaybeder (zincir orada kopmuş sayılır).${online ? ' Sonra odayı kuran sonucu açar.' : ''}`,
       }),
-      nextButton(ctx, sendMove, 'Sonucu gör', { move: () => ({ type: 'next', objected: state.objected }) }),
+      // two phones: the host's own words are the guest's to object to, so the host waits for "Hazırım" (or confirms)
+      nextButton(ctx, sendMove, 'Sonucu gör', { move: () => ({ type: 'next', objected: state.objected }), waitForPeer: reviewItems(state).some((it) => it.owner === 0) }),
     );
     return null;
   }
@@ -288,8 +289,8 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     chainView(state),
     requiredText,
     typedView,
-    warnNote,
     kbBox,
+    warnNote, // below the keyboard: showing it must not move ↵ away from the finger
     mine ? el('div', { class: 'row', style: { marginTop: '10px' } },
       el('button', { type: 'button', class: 'btn btn-secondary btn-small', onClick: () => { if (confirm('Pes ediyor musun? Bu turu kaybedersin.')) sendMove({ type: 'giveup', at: Date.now() }); } }, 'Pes'),
     ) : null,

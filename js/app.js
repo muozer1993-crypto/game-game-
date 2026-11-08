@@ -1168,7 +1168,10 @@ async function handleOnlineMessage(msg) {
         online.transport.send({ t: 'resumeMoves', moves: online.session.ownMovesFrom(Number(msg.received) || 0), received: online.session.received, final: true, gameNo: online.gameNo || 0 });
       }
       closeReconnect();
-      if (online.session) online.session.render();
+      if (online.session) {
+        online.session.render();
+        online.session.resendAsk(); // a "Hazırım" sent while the link was down never arrived
+      }
       toast('Bağlantı yeniden kuruldu', { duration: 2500 });
       return;
     }

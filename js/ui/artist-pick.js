@@ -85,7 +85,9 @@ const kept = new WeakMap(); // container -> { key, nodes }
 export function keepArtistPick(container, key, opts) {
   const k = kept.get(container);
   if (k && k.key === key) {
-    container.replaceChildren(...k.nodes);
+    // already on the screen: leave it (re-inserting would take the focus from the search box)
+    const same = container.childNodes.length === k.nodes.length && k.nodes.every((n, i) => container.childNodes[i] === n);
+    if (!same) container.replaceChildren(...k.nodes);
     return;
   }
   renderArtistPick(container, opts);
