@@ -68,17 +68,23 @@ export function setup(options = {}) {
     lastWords: [],     // { word, points, unlisted? }
     disputes: [],      // moves with words the list does not have: { id, player, words, points, cells }
     objected: [],      // dispute ids the other player objected to (their points are taken off)
+    outBonus: null,    // the rack emptied the game: { player, points (the other's leftover), dispute (the move's, if any) }
     review: false,     // the game is over and the objections are being made
     over: false,
     reason: null,
   };
 }
 
-/** Scores once the objections are in: an objected move scores nothing. */
+/**
+ * Scores once the objections are in: an objected move scores nothing, and when it was the move that
+ * emptied the rack the going-out bonus (the other player's leftover tiles) is cancelled too.
+ */
 export function finalScores(state) {
   const scores = state.scores.slice();
   const objected = new Set(state.objected || []);
   for (const d of state.disputes || []) if (objected.has(d.id)) scores[d.player] -= d.points;
+  const ob = state.outBonus;
+  if (ob && ob.dispute && objected.has(ob.dispute)) { scores[ob.player] -= ob.points; scores[1 - ob.player] += ob.points; }
   return scores;
 }
 
@@ -188,18 +194,21 @@ export function applyMove(state, player, move, ctx = {}) {
   const rack = state.racks[player].slice();
   const bag = state.bag.slice();
   const racks = state.racks.map((r) => r.slice());
-  const finishTurn = (next) => {
+  const finishTurn = (next, dispute = null) => { // dispute: the id this move opened, if any
     const other = 1 - player;
     let out = { ...next, turn: other };
     const rackEmpty = !out.racks[player].length;
     if ((rackEmpty && !out.bag.length) || out.passes >= 4) {
       const scores = out.scores.slice();
       const left = (p) => out.racks[p].reduce((s, l) => s + (VALUES[l] || 0), 0);
-      if (rackEmpty) { scores[player] += left(other); scores[other] -= left(other); }
-      else { scores[0] -= left(0); scores[1] -= left(1); }
+      let outBonus = null;
+      if (rackEmpty) {
+        scores[player] += left(other); scores[other] -= left(other);
+        outBonus = { player, points: left(other), dispute };
+      } else { scores[0] -= left(0); scores[1] -= left(1); }
       // words the list does not have were played: the other player may object before the result
       const review = (out.disputes || []).length > 0;
-      out = { ...out, scores, over: !review, review, reason: rackEmpty ? 'empty' : 'passes' };
+      out = { ...out, scores, outBonus, over: !review, review, reason: rackEmpty ? 'empty' : 'passes' };
     }
     return out;
   };
@@ -256,7 +265,7 @@ export function applyMove(state, player, move, ctx = {}) {
     disputes.push({ id: `d${disputes.length}`, player, words: unlisted, points: sc.total, cells });
   }
   const lastWords = sc.detail.map((d) => (unlisted.includes(d.word) ? { ...d, unlisted: true } : d)).concat(sc.bingo ? [{ word: 'Yedi harf!', points: 50 }] : []);
-  return finishTurn({ ...state, board, bag, racks, scores, disputes, passes: 0, last: placed, lastWords });
+  return finishTurn({ ...state, board, bag, racks, scores, disputes, passes: 0, last: placed, lastWords }, unlisted.length ? disputes[disputes.length - 1].id : null);
 }
 
 export function getTurn(state) {
@@ -380,7 +389,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const btnPass = el('button', { type: 'button', class: 'btn btn-secondary btn-small', onClick: () => { if (confirm('Pas geçilsin mi?')) sendMove({ type: 'pass' }); } }, 'Pas');
 
   const fmt = (x) => (x < 0 ? `−${-x}` : String(x)); // a real minus sign, so '3 – −9' stays readable
-  const shownScores = state.over ? finalScores(state) : state.scores;
+  const shownScores = state.over || state.review ? finalScores(state) : state.scores; // the review shows the objections' effect at once
   let status;
   if (state.over) {
     const [a, b] = shownScores;
@@ -409,7 +418,9 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     disputeBox = objectionList({
       items: disputeItems, objected: state.objected, players, viewer, online,
       title: state.over ? 'Listede olmayan kelimeler' : 'Listede olmayan kelimeler · oyun bitince itiraz edilebilir',
-      effect: state.over && objectedCount ? `İtiraz edilen ${objectedCount} hamlenin puanı silindi.` : null,
+      effect: state.over && objectedCount
+        ? `İtiraz edilen ${objectedCount} hamlenin puanı silindi${state.outBonus && state.outBonus.dispute && objectedSet.has(state.outBonus.dispute) ? '; son harfleri bitiren hamle olduğu için bitirme bonusu da' : ''}.`
+        : null,
     });
   }
   draw(container,

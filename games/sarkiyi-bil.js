@@ -7,12 +7,12 @@
 // Each player has their own answer slot (answering[p]), so on two phones both may press at the same
 // moment and every answer move still commutes; buzz and swap name the song they are about, and only
 // the host ends a round (its timeout says whose answers it had) or swaps a song (the guest asks).
-import { el, render as draw } from '../js/ui/dom.js';
+import { el, render as draw, toast } from '../js/ui/dom.js';
 import { nextButton } from '../js/ui/next.js';
 import { createTimer } from '../js/ui/timer.js';
 import { createClipPlayer, clipReady } from '../js/ui/clip.js';
 import { keepArtistPick } from '../js/ui/artist-pick.js';
-import { pickSongs, mixPool, topUp, pickGroups, songOptions, normKey, answerMatches, artistMatches, titleMatches, sourceSettings, sourcesFrom, needsPick, silentArtists } from '../js/lib/songs.js';
+import { pickSongs, mixPool, topUp, pickGroups, songOptions, normKey, answerMatches, artistMatches, titleMatches, sourceSettings, sourcesFrom, needsPick, silentArtists, noSharedPick } from '../js/lib/songs.js';
 
 export const ARTIST_POINTS = 5;
 export const SONG_POINTS = 10;
@@ -32,7 +32,7 @@ export const meta = {
     'Puanlar düğmeye basıldığı andaki dinlenen süreye göre katlanır: hiç dinlemeden 2 katı, klibin tamamı 1 katı (arası orantılı). Tekrar dinlemek de süreye sayılır.',
     'Şarkı adında "Şıkları göster" dersen dört ad arasından seçersin; şarkı puanı yarıya iner (grup puanı değişmez). Küçük yazım hataları, fazla kelimeler ve ş/s, ı/i farkları sorun olmaz.',
     'Her şarkının süre sınırı vardır (ayarlardan) ve yalnız dinleme ekranındayken işler; biri tahmin ederken durur. Süre dolunca cevap vermeyen o şarkıdan puan alamaz. Oyun sonunda toplam puanı çok olan kazanır.',
-    'Şarkı havuzu: işaretlediğin kaynaklar eşit pay alır (Mustafa\'nın listesi, Beyza\'nın listeleri, ortak liste, Türkçe bilinenler, oyun başında seçilen gruplar…). Sesi olmayan şarkı çıkmaz.',
+    'Şarkı havuzu: işaretlediğin kaynaklar eşit pay alır (Mustafa\'nın listesi, Beyza\'nın listeleri, ortak liste, Türkçe bilinenler, oyun başında seçilen gruplar…). Sesi olmayan şarkı çıkmaz; ses yine de açılmazsa "Ses yok: şarkıyı değiştir" ile yedek şarkıya geçilir.',
   ].join('\n'),
   data: ['songs'],
   settings: [
@@ -250,6 +250,7 @@ export function getResult(state) {
 // ----------------------------------------------------------------- render
 // per round, on this device: listened seconds and the clip's position, the time left (it only runs
 // on the clip screen), the privacy cover, and the newest state drawn (a late sound check reads it)
+const ortakTold = new Set(); // games (by seed) already told that no band was picked by both
 const roundMem = new WeakMap(); // container -> { key, heard, pos, leftMs, runningSince, covered, swapping, state, stepKey, stepAt }
 const keptAnswer = new WeakMap(); // container -> { key, nodes }: the answer step on screen
 const songKey = (state) => `${state.index}:${songKeyOf(state.songs[state.index])}`;
@@ -280,6 +281,11 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const i = state.index;
   const n = state.songs.length;
   const song = state.songs[i];
+  // 'only bands both picked' and there were none: say once that every picked band plays
+  if (state.pickMode === 'ortak' && state.phase !== 'over' && state.sources && state.sources.srcSecim && !ortakTold.has(state.seed)) {
+    ortakTold.add(state.seed);
+    if (noSharedPick(ctx.songs, state.picks, true)) toast('Ortak grubunuz çıkmadı: ikinizin seçtiği bütün gruplardan çalınıyor', { duration: 5000 });
+  }
   // the open song's answers stay hidden until its reveal: the score line counts finished songs only
   const open = state.phase === 'listen' ? state.answers[i] : null;
   const scores = [0, 1].map((p) => scoreOf(state, p) - (open && open[p] ? open[p].points.total : 0));
@@ -352,7 +358,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const who = online ? (answering[viewer] ? viewer : -1) : busy;
   if (who < 0) {
     if (online && busy >= 0) { // the other player is answering; the music stops here too
-      draw(container, status(`Şarkı ${i + 1}/${n}`), timerBox, el('p', { class: 'hint' }, `${players[busy]} cevaplıyor…`), el('div', { class: 'spinner', 'aria-hidden': 'true' }));
+      draw(container, status(`Şarkı ${i + 1}/${n}`), timerBox, el('p', { class: 'hint' }, `${players[busy]} cevaplıyor… (${Math.round(answering[busy].heard)} sn dinleyip bastı)`), el('div', { class: 'spinner', 'aria-hidden': 'true' }));
       return stopTimer;
     }
     const round = state.answers[i];
@@ -385,10 +391,22 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       const pts = pointsFor({ heard, clipSec: state.clipSec, mode: 'typed', artistOk: true, songOk: true });
       preview.textContent = `${Math.round(heard)} sn dinlendi · şimdi basan: grup +${pts.artist}, şarkı +${pts.song}`;
     };
+    // the clip passed the sound check but will not play here (the connection went, say): nobody has
+    // to wait out the time limit; on two phones the guest's press asks the host, as a failed check does
+    const swapNow = () => {
+      const now = mem.state;
+      if (mem.swapping || roundMem.get(container) !== mem || now.phase !== 'listen' || now.index !== i
+        || now.answers[i].some((r) => r != null) || (now.answering || []).some(Boolean)) return;
+      mem.swapping = true;
+      skipBtn.disabled = true;
+      sendMove({ type: 'swap', round: i, song: songKeyOf(song) });
+    };
+    const skipBtn = el('button', { type: 'button', class: 'btn btn-secondary btn-small sb-skip', hidden: true, onClick: swapNow }, 'Ses yok: şarkıyı değiştir');
     const clip = createClipPlayer(song, {
       seconds: state.clipSec, pausable: true, heard: mem.heard, at: mem.pos,
       note: 'Bilen kendi "Tahmin et" düğmesine bassın: az dinleyen çok kazanır. Sayaç tahmin sırasında durur.',
       onTick: (heard) => { mem.heard = heard; showPreview(heard); },
+      onFail: () => { if (!mem.swapping && round.every((r) => r == null)) skipBtn.hidden = false; },
     });
     showPreview(mem.heard);
     const buzzers = (online ? [viewer] : [0, 1]).map((p) => {
@@ -402,7 +420,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     draw(container,
       status(`Şarkı ${i + 1}/${n}`),
       timerBox,
-      el('div', { class: 'card ss-card' }, el('div', { class: 'ss-secret' }, `🎧 ${i + 1}. şarkı`), clip.root, preview),
+      el('div', { class: 'card ss-card' }, el('div', { class: 'ss-secret' }, `🎧 ${i + 1}. şarkı`), clip.root, preview, skipBtn),
       el('div', { class: 'row sb-buzzers' }, buzzers),
       waiting,
     );

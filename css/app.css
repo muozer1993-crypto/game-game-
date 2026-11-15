@@ -111,6 +111,14 @@ a { color: var(--primary); }
   min-height: 52px;
 }
 .topbar-title { font-size: 1.25rem; text-align: center; margin: 0; }
+/* a new version waits for the menu: said in the topbar's bottom padding, so nothing on the screen moves */
+.topbar { position: relative; }
+.update-ready .topbar::after {
+  content: 'Yeni sürüm hazır · ana menüde yenilenecek';
+  position: absolute; left: 0; right: 0; bottom: 0;
+  font-size: 0.68rem; line-height: 12px; font-weight: 600; text-align: center; color: var(--correct);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none;
+}
 .topbar .select { justify-self: end; }
 .topbar .select { width: auto; min-width: 44px; max-width: 150px; padding: 6px 8px; font-size: 0.8rem; }
 
@@ -212,13 +220,13 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .game-box.screen-new > * { animation: screen-new-in 0.4s ease-out; }
 @keyframes screen-new-in { from { opacity: 0.4; } to { opacity: 1; } }
 /* two phones: the guest says it is ready, the host's "next" button shows it (js/ui/next.js) */
-.next-btn.next-ready { box-shadow: 0 0 0 3px var(--correct); animation: next-ready-pulse 1.6s ease-in-out infinite; }
+.next-btn.next-ready, .rematch-btn.next-ready { box-shadow: 0 0 0 3px var(--correct); animation: next-ready-pulse 1.6s ease-in-out infinite; }
 .next-ready-tag { font-weight: 600; }
 @keyframes next-ready-pulse { 50% { box-shadow: 0 0 0 6px var(--correct); } }
 .next-ask { text-align: center; }
 .next-ask .next-ask-note { margin: 6px 0 0; }
 @media (prefers-reduced-motion: reduce) {
-  .game-box.screen-new > *, .next-btn.next-ready { animation: none; }
+  .game-box.screen-new > *, .next-btn.next-ready, .rematch-btn.next-ready { animation: none; }
 }
 .play-actions { margin-top: 16px; }
 .result-banner { font-size: 1.3rem; font-weight: 700; text-align: center; margin: 8px 0 12px; }
@@ -1114,6 +1122,7 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 
 /* Şarkıyı Bil + band picking (shared by the song games) */
 .sb-preview { margin-top: 10px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.sb-skip { margin-top: 10px; }
 .sb-actions { margin-top: 12px; }
 .sb-actions .btn { flex: 1 1 45%; white-space: normal; }
 .sb-answer .field { text-align: left; margin: 10px 0 0; }

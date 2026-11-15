@@ -143,8 +143,11 @@ export function createGame(cfg) {
     for (const p of [0, 1]) {
       if (state.unlistedSecret && state.unlistedSecret[p]) items.push({ id: `s${p}`, owner: p, word: state.secrets[p] || state.revealed[p] || '…', detail: `tuttuğu ${N.nom}` });
     }
+    // a word both players tried "yine de" counts as accepted by both: neither may object to it
+    // (the guesses are known on both phones, so both list the same items)
+    const tried = [0, 1].map((p) => new Set(state.guesses[p].filter((g) => g.unlisted).map((g) => g.word)));
     for (const p of [0, 1]) {
-      state.guesses[p].forEach((g, i) => { if (g.unlisted) items.push({ id: `g${p}:${i}`, owner: p, word: g.word, detail: `${i + 1}. tahmini` }); });
+      state.guesses[p].forEach((g, i) => { if (g.unlisted && !tried[1 - p].has(g.word)) items.push({ id: `g${p}:${i}`, owner: p, word: g.word, detail: `${i + 1}. tahmini` }); });
     }
     return items;
   }
@@ -468,9 +471,10 @@ export function createGame(cfg) {
       }
       const items = reviewItems(state);
       const objected = state.objected || [];
-      if (!state.review && objected.length) {
+      if (objected.length) {
         const faulty = [0, 1].filter((p) => objected.some((id) => ownerOfItem(id) === p));
-        lines.push(faulty.length === 2 ? 'İkinizin de kelimesine itiraz edildi: berabere.' : `${nameSuffix(players[faulty[0]], 'in')} kelimesine itiraz edildi: ${players[1 - faulty[0]]} kazandı.`);
+        if (state.review) lines.push(`Şu anki itirazlarla ${faulty.length === 2 ? 'berabere' : `${players[1 - faulty[0]]} kazanır`}.`); // before "Sonucu gör"
+        else lines.push(faulty.length === 2 ? 'İkinizin de kelimesine itiraz edildi: berabere.' : `${nameSuffix(players[faulty[0]], 'in')} kelimesine itiraz edildi: ${players[1 - faulty[0]]} kazandı.`);
       }
       const objections = items.length ? [
         objectionList({
@@ -602,7 +606,7 @@ export const meta = {
     'Renkli mod: yeşil doğru harf doğru yerde, sarı harf var ama yeri yanlış, gri harf yok. Tekrar eden harflerde Wordle kuralı uygulanır.',
     '"+ −" modu: yalnızca sayılar söylenir (+2 −1 gibi), hangi harfin doğru olduğu söylenmez. Daha zordur.',
     'Tahminler kelime listesiyle doğrulanır. Tahmin hakkı biten iki oyuncu da bulamazsa berabere.',
-    'Listede olmayan bir kelimeyi gizli kelime ya da tahmin olarak yine de kullanabilirsin (iki kez onaylarsın): işaretli (?) görünür, oyun bitince rakibin itiraz edebilir. İtiraz edilen kelimeyi kullanan kaybeder (ikiniz de kullandıysanız berabere). Sonuca iki telefonda odayı kuran geçer.',
+    'Listede olmayan bir kelimeyi gizli kelime ya da tahmin olarak yine de kullanabilirsin (iki kez onaylarsın): işaretli (?) görünür, oyun bitince rakibin itiraz edebilir. İtiraz edilen kelimeyi kullanan kaybeder (ikinize de itiraz edildiyse berabere); ikinizin de tahmin olarak denediği kelimeye itiraz edilmez. Sonuca iki telefonda odayı kuran geçer.',
   ].join('\n'),
   data: ['dictionary', 'common'],
   settings: [

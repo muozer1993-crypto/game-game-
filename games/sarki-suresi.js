@@ -2,12 +2,12 @@
 // the real length takes the round. Normal mode shows the title; hard mode hides it and plays a clip
 // instead. The songs come from the personal list (favourite bands weighted) or from the bands the
 // two players pick at the start (see js/lib/songs.js).
-import { el, render as draw, toast } from '../js/ui/dom.js';
+import { el, render as draw, toast, scrollKeeper } from '../js/ui/dom.js';
 import { nextButton } from '../js/ui/next.js';
 import { createKeyboard } from '../js/ui/keyboard.js';
 import { createClipPlayer, clipReady } from '../js/ui/clip.js';
 import { keepArtistPick, rememberedPicks } from '../js/ui/artist-pick.js';
-import { pickSongs, mixPool, topUp, pickGroups, hasAudio, fmt, sourceSettings, sourcesFrom, needsPick, silentArtists } from '../js/lib/songs.js';
+import { pickSongs, mixPool, topUp, pickGroups, hasAudio, fmt, sourceSettings, sourcesFrom, needsPick, silentArtists, noSharedPick } from '../js/lib/songs.js';
 
 export { fmt, hasAudio, pickSongs };
 
@@ -222,6 +222,7 @@ export function getResult(state) {
 // once): its clip keeps playing and the typed digits stay. The session tears the old screen down
 // before every render, so a kept screen is only destroyed if the render after it does not take it back.
 const keptGuess = new WeakMap(); // container -> { key, nodes, setStatus, destroy, dropping, dead }
+const ortakTold = new Set(); // games (by seed) already told that no band was picked by both
 const roundMem = new WeakMap();  // container -> { key, state, swapping }: the newest state for the async sound check
 
 /** A short phone: once the screen is laid out, scroll so that the whole keypad (GİR too) is on screen. */
@@ -269,6 +270,11 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const n = state.songs.length;
   const i = state.index;
   const song = state.songs[i];
+  // 'only bands both picked' and there were none: say once that every picked band plays
+  if (state.pickMode === 'ortak' && state.phase !== 'over' && state.sources && state.sources.srcSecim && !ortakTold.has(state.seed)) {
+    ortakTold.add(state.seed);
+    if (noSharedPick(ctx.songs, state.picks, state.mode === 'hard')) toast('Ortak grubunuz çıkmadı: ikinizin seçtiği bütün gruplardan çalınıyor', { duration: 5000 });
+  }
   const scores = [scoreOf(state, 0), scoreOf(state, 1)];
   const status = (extra) => el('div', { class: 'status-line' },
     el('div', {}, el('strong', {}, `${players[0]} ${scores[0].points} – ${scores[1].points} ${players[1]}`)),
@@ -280,7 +286,16 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     const first = firstGuesser(i);
     const key = `${i}:${songKeyOf(song)}`;
     let mem = roundMem.get(container);
-    if (!mem || mem.key !== key) { mem = { key, state, swapping: false }; roundMem.set(container, mem); }
+    if (!mem || mem.key !== key) {
+      // two phones: the other phone found the song silent and swapped it after this guess went in;
+      // the guess screen comes back, so say why
+      const was = mem && mem.state;
+      if (online && was && was.phase === 'guess' && was.index === i && was.guesses[i][viewer] != null) {
+        toast('Şarkının sesi açılmadı, yerine yeni şarkı geldi: tahminini yeniden yap', { duration: 4000 });
+      }
+      mem = { key, state, swapping: false };
+      roundMem.set(container, mem);
+    }
     mem.state = state;
     const other = 1 - viewer;
     const statusText = online
@@ -303,7 +318,9 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     const old = keptGuess.get(container);
     if (old && old.key === skey && !old.dead) { // the same screen, still being used: put it back
       old.dropping = false;
+      const back = scrollKeeper(container); // keysIntoView's scroll stays: the keys stay under the finger
       container.replaceChildren(...old.nodes);
+      back();
       old.setStatus(statusText);
       return () => release(container, old);
     }

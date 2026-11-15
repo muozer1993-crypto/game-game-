@@ -183,5 +183,18 @@ test('öne dönünce soket yalnızca ortada bir bağlantı yokken tazelenir', ()
     c3.emit('error', { type: 'negotiation-failed' });
     assert.equal(peer2.swaps, 1, 'a host that never left the screen keeps its socket');
     t2.close();
+    // back while an attempt is pending, and that attempt opens: a later failed attempt changes nothing
+    const peer3 = emitter({ disconnected: false, destroyed: false, swaps: 0, disconnect() { this.disconnected = true; }, reconnect() { this.disconnected = false; this.swaps += 1; }, destroy() { this.destroyed = true; } });
+    listeners.length = 0;
+    const t3 = makeTransport('host', 'ABCDE', peer3);
+    const c4 = fakeConn();
+    t3.attach(c4);
+    foreground();
+    c4.emit('open');
+    const c5 = fakeConn();
+    t3.attach(c5);
+    c5.emit('error', { type: 'negotiation-failed' });
+    assert.equal(peer3.swaps, 0, 'the skipped refresh was spent when its attempt opened');
+    t3.close();
   } finally { delete globalThis.document; }
 });

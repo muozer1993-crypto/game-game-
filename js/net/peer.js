@@ -187,6 +187,7 @@ export function makeTransport(role, code, peer) {
       if (!current()) return;
       wasOpen = true;
       open = true;
+      refreshSkipped = false; // the attempt it waited for went through: nothing to refresh
       openHandlers.forEach((fn) => { try { fn(); } catch (e) { console.warn(e); } });
       while (queue.length) c.send(queue.shift());
     });
@@ -198,6 +199,7 @@ export function makeTransport(role, code, peer) {
     });
     if (c.open) {
       open = true;
+      refreshSkipped = false;
       openHandlers.forEach((fn) => { try { fn(); } catch (e) { console.warn(e); } });
     } else if (role === 'host') {
       // a guest that gave up (or vanished) never says so, and its connection can sit in ICE

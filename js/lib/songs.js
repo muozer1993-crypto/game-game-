@@ -213,6 +213,17 @@ export function poolFor(data, { pool = 'liste', picks = [[], []], needAudio = fa
 }
 
 /**
+ * 'Yalnız ikimizin de seçtiği gruplar' found no band both picked (with sound, when the game needs
+ * it), so every picked band plays: the games say so when the first song comes up.
+ */
+export function noSharedPick(data, picks = [[], []], needAudio = false) {
+  const sound = needAudio ? new Set(allTracks(data).filter(hasAudio).map((t) => normKey(t.a))) : null;
+  const sets = [0, 1].map((i) => new Set((Array.isArray(picks[i]) ? picks[i] : []).map(normKey).filter((a) => !sound || sound.has(a))));
+  if (!sets[0].size && !sets[1].size) return false; // nobody picked: the lists play, nothing to explain
+  return ![...sets[0]].some((a) => sets[1].has(a));
+}
+
+/**
  * Pick `count` songs, deterministic from the seed. Weighted bands (the weights table) come up more
  * often: favor 'high' uses the weights as they are, 'mid' their square root, 'none' ignores them.
  * No song twice, at most a few songs per band, and no band in two rounds in a row while the pool
@@ -303,7 +314,16 @@ export function songOptions(data, song, seed, n = 4) {
   const same = shuffle(rng, [...new Set(all.filter((t) => normKey(t.a) === normKey(song.a) && normKey(t.t) !== normKey(song.t)).map((t) => t.t))]);
   let picked = same.slice(0, n - 1);
   if (picked.length < n - 1) {
-    const rest = shuffle(rng, [...new Set(all.filter((t) => normKey(t.a) !== normKey(song.a)).map((t) => t.t))]);
+    // a band with few songs: the other names come from bands of the same language first, so a
+    // Turkish title among English ones does not give the answer away
+    const tr = new Set(((data && data.catalogTR) || []).map(normKey));
+    const turkish = (t) => tr.has(normKey(t.a)) || /[çğıöşüÇĞİÖŞÜ]/.test(t.t);
+    const mine = turkish(song);
+    const others = all.filter((t) => normKey(t.a) !== normKey(song.a) && normKey(t.t) !== normKey(song.t));
+    const titles = (list) => [...new Set(list.map((t) => t.t))];
+    const near = shuffle(rng, titles(others.filter((t) => turkish(t) === mine)));
+    const far = shuffle(rng, titles(others.filter((t) => turkish(t) !== mine)));
+    const rest = [...new Set([...near, ...far])].filter((t) => !picked.includes(t));
     picked = picked.concat(rest.slice(0, n - 1 - picked.length));
   }
   return shuffle(rng, [song.t, ...picked]);
@@ -390,7 +410,9 @@ const numbersAgree = (a, b, answer) => {
   const typed = numbersOf(a);
   if (!numbersOf(b).every((n) => typed.includes(n))) return false;
   if (!typed.length) return true;
-  const whole = numbersOf(norm(String(answer || '').replace(/[()[\]]/g, ' ').replace(/\s+-\s+/g, ' ')));
+  // each part of the full title on its own, so that a numeral closing any part counts
+  // ("Ruun II - The Epitaph", "Devour Me, Colossus - Part I - Blackholes")
+  const whole = [...numbersOf(b), ...String(answer || '').split(/\s+-\s+|[()[\]]/).flatMap((part) => numbersOf(norm(part)))];
   return typed.every((n) => whole.includes(n));
 };
 

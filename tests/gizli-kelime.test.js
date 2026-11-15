@@ -324,6 +324,29 @@ test('gizli kelime: bulamayan tahmin listede yoksa itiraz edilir; ikisinin de ke
   assert.deepEqual(game.getResult(both), { draw: true });
 });
 
+test('gizli kelime: ikisinin de "yine de" denediği kelimeye itiraz edilmez', () => {
+  let s = game.setup({ length: 5, secretMode: 'manual', feedback: 'wordle', maxGuesses: 2, seed: 6 });
+  s = game.applyMove(s, 0, { type: 'setSecret', secret: { word: 'kalem' } }, ctx);
+  s = game.applyMove(s, 1, { type: 'setSecret', secret: { word: 'kitap' } }, ctx);
+  const auto = (st) => { let t = st; for (let k = 0; k < 4; k++) for (const p of [0, 1]) { const m = game.autoMove(t, p, ctx); if (m) t = game.applyMove(t, p, m, ctx); } return t; };
+  const words = [['zzzzz', 'pizza'], ['zzzzz', 'tahta']]; // both try ZZZZZ; only player 0 tries PIZZA
+  for (let r = 0; r < 2; r++) {
+    for (let k = 0; k < 2; k++) {
+      const p = game.whoseTurn(s);
+      const w = words[p][r];
+      s = auto(game.applyMove(s, p, dict.has(w) ? { type: 'guess', word: w } : { type: 'guess', word: w, unlisted: true }, ctx));
+    }
+  }
+  assert.equal(s.phase, 'over');
+  assert.equal(s.review, true);
+  const ids = game.reviewItems ? game.reviewItems(s).map((it) => it.id) : null;
+  if (ids) assert.deepEqual(ids, ['g0:1'], 'only the word one of them used');
+  assert.throws(() => game.applyMove(s, 1, { type: 'object', id: 'g0:0', on: true }, { ...ctx, mode: 'online' }));
+  assert.throws(() => game.applyMove(s, 0, { type: 'object', id: 'g1:0', on: true }, { ...ctx, mode: 'online' }));
+  const after = game.applyMove(s, 0, { type: 'next', objected: ['g0:0', 'g1:0'] }, ctx);
+  assert.deepEqual(after.objected, [], 'the shared word cannot be objected even by the closing move');
+});
+
 test('gizli kelime: listede olmayan kelime yoksa oyun itirazsız biter; sayı oyununda işaret olmaz', () => {
   let s = game.setup({ length: 5, secretMode: 'manual', feedback: 'wordle', maxGuesses: 6, seed: 2 });
   s = game.applyMove(s, 0, { type: 'setSecret', secret: { word: 'kalem' } }, ctx);

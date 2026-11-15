@@ -258,9 +258,13 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const guesser = 1 - setter;
   const cleanups = [];
   const livesLeft = Math.max(0, state.lives - state.wrong);
+  // an objection on the result screen: the scores show its full points at once (they are settled
+  // by the 'next' move, which carries the objection as the presser saw it)
+  const objectedNow = state.phase === 'result' && !!state.unlisted && !!state.objected;
+  const shownScores = state.scores.map((x, p) => (objectedNow && p === guesser ? x + state.lives - state.points : x));
   const head = el('div', { class: 'c4-legend' },
-    el('span', {}, `${players[0]}: ${state.scores[0]}`),
-    el('span', {}, `${players[1]}: ${state.scores[1]}`),
+    el('span', {}, `${players[0]}: ${shownScores[0]}`),
+    el('span', {}, `${players[1]}: ${shownScores[1]}`),
     el('span', { class: 'muted' }, `${Math.min(state.round + 1, state.rounds)}. kelime / ${state.rounds}`),
   );
 
@@ -340,6 +344,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   let typed = wordMode ? (drafts.get(typedKey) || '').slice(0, state.length) : '';
 
   const statusText = () => {
+    if (result && objectedNow) return el('strong', {}, `${players[guesser]} itiraz etti: +${state.lives} puan`);
     if (result) return el('strong', {}, state.solved ? `${players[guesser]} kelimeyi buldu! +${state.points} puan` : `Adam asıldı! ${players[guesser]} bulamadı.`);
     if (pending) return el('span', { class: 'muted' }, 'Değerlendiriliyor…');
     if (mine) return el('strong', {}, `Sıra sende, ${players[viewer]}: ${wordMode ? 'kelimeyi yaz' : 'bir harf seç'}`);

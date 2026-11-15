@@ -131,6 +131,7 @@ const rounds = {
   applyMove(state, player, move) {
     if (move.type === 'tap') { if (state.phase !== 'play') throw new Error('tur bitti'); const taps = state.taps.slice(); taps[player] += 1; return { ...state, taps }; }
     if (move.type === 'end') { if (state.phase !== 'play') throw new Error('zaten bitti'); return { ...state, phase: 'result' }; }
+    if (move.type === 'object') { if (state.phase !== 'result') throw new Error('itiraz yok'); return { ...state, objected: move.on ? [move.id] : [] }; }
     if (move.type === 'next') { if (state.phase !== 'result') throw new Error('tur bitmedi'); return { ...state, round: state.round + 1, phase: 'play' }; }
     throw new Error('?');
   },
@@ -191,6 +192,30 @@ test('sonraki tur (iki telefon): konuğun "sonraki"si oda kurucuya istek olur, o
   assert.ok(!sessions[0].ask.peerAsked && !sessions[1].ask.asked, 'the requests are cleared on both phones');
   assert.equal(sessions[0].ask.nexts, 1);
   assert.equal(sessions[1].ask.nexts, 1);
+});
+
+test('sonraki tur (iki telefon): konuk "Hazırım" dedikten sonra itirazını değiştirirse yeniden hazır demesi beklenir', () => {
+  const { sessions, deliver } = pairWith(rounds, { tag: 8 });
+  const s0 = rounds.setup();
+  sessions[0].start(s0);
+  sessions[1].start(JSON.parse(JSON.stringify(s0)));
+  sessions[0].dispatch(0, { type: 'end' });
+  deliver();
+  sessions[1].requestNext();
+  deliver();
+  assert.ok(sessions[0].ask.peerAsked);
+  sessions[1].dispatch(1, { type: 'object', id: 'w1', on: true });
+  assert.ok(!sessions[1].ask.asked, 'the guest is not ready any more');
+  deliver();
+  assert.ok(!sessions[0].ask.peerAsked, "the host's mark is gone");
+  assert.deepEqual(sessions[0].state.objected, ['w1']);
+  assert.equal(sessions[1].requestNext(), true, 'the guest can say it again');
+  deliver();
+  assert.ok(sessions[0].ask.peerAsked);
+  // the host's own objections leave the guest's readiness alone
+  sessions[0].dispatch(0, { type: 'object', id: 'w2', on: true });
+  deliver();
+  assert.ok(sessions[0].ask.peerAsked && sessions[1].ask.asked);
 });
 
 test('sonraki tur (iki telefon): ev sahibinin geçişiyle çaprazlanan eski istek yeni ekranda sayılmaz', () => {

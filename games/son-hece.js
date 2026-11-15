@@ -206,8 +206,14 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   // ---- review: the game is over; objections to the words the list does not have
   if (state.phase === 'review') {
     const ended = state.reason === 'timeout' ? `${players[state.loser]} süresini doldurdu` : `${players[state.loser]} pes etti`;
+    // what the objections made so far would give (the first objected word breaks the chain)
+    const objectedNow = (state.objected || []).map((id) => Number(String(id).slice(1))).filter((k) => state.words[k]);
+    const firstOut = objectedNow.length ? state.words[Math.min(...objectedNow)] : null;
     draw(container,
-      el('div', { class: 'status-line' }, el('strong', {}, `${ended}. Önce itirazlar:`)),
+      el('div', { class: 'status-line' }, el('strong', {}, `${ended}. Önce itirazlar:`),
+        el('div', { class: 'muted' }, firstOut
+          ? `Şu anki itirazlarla ${upperTR(firstOut.word)} yüzünden ${players[firstOut.player]} kaybeder.`
+          : `İtiraz olmazsa ${players[1 - state.loser]} kazanır.`)),
       chainView(state),
       objectionList({
         items: reviewItems(state), objected: state.objected, players, viewer, online, sendMove,

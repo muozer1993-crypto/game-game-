@@ -696,7 +696,7 @@ export function showPlay(p) {
       } else if (isOnline && p.self === 1 && online.tournament) {
         again = el('span', { class: 'muted' }, tally && tally.index >= tally.total ? 'Turnuva bitti.' : 'Ev sahibi sonraki oyunu başlatacak…');
       } else {
-        again = el('button', { type: 'button', class: 'btn btn-primary btn-big' }, 'Yeni tur');
+        again = el('button', { type: 'button', class: `btn btn-primary btn-big${isOnline && p.self === 0 ? ' rematch-btn' : ''}` }, 'Yeni tur');
         if (isOnline && p.self !== 0) {
           again.textContent = 'Yeni tur iste';
           again.addEventListener('click', () => { online.transport.send({ t: 'rematch' }); again.disabled = true; again.textContent = 'İstek gönderildi'; });
@@ -903,7 +903,17 @@ export function showOnline({ code: presetCode = '' } = {}) {
     testBtn.disabled = false;
   });
 
+  // no network at all: say so at once instead of after the signalling server's timeout
+  const offline = () => {
+    if (typeof navigator === 'undefined' || navigator.onLine !== false) return false;
+    status.textContent = 'İnternet bağlantısı yok: Wi-Fi ya da mobil veriyi açıp yeniden dene.';
+    status.classList.add('rejected-note');
+    toast('İnternet bağlantısı yok', { kind: 'error' });
+    return true;
+  };
+
   hostBtn.addEventListener('click', async () => {
+    if (offline()) return;
     const myName = getName();
     hostBtn.disabled = true; joinBtn.disabled = true;
     status.classList.remove('rejected-note');
@@ -934,6 +944,7 @@ export function showOnline({ code: presetCode = '' } = {}) {
     const myName = getName();
     const code = normalizeRoomCode(codeInput.value);
     if (code.length < 4) { toast('Oda kodunu gir', { kind: 'error' }); codeInput.focus(); return; }
+    if (offline()) return;
     hostBtn.disabled = true; joinBtn.disabled = true;
     status.classList.remove('rejected-note');
     status.textContent = 'Bağlanılıyor…';
@@ -1137,6 +1148,21 @@ function flushOnlineQueue() {
   for (const msg of q) handleOnlineMessage(msg);
 }
 
+/**
+ * The other phone runs another build. The older one fetches the new version at once (an installed
+ * app has no reload button; the update reloads the page on the menu, see 'controllerchange'), and
+ * each phone is told which of the two has to refresh.
+ */
+function versionMismatch(theirs, other) {
+  const num = (v) => parseInt(String(v).replace(/\D/g, ''), 10) || 0;
+  if (num(theirs) > num(APP_VERSION)) {
+    try { navigator.serviceWorker.getRegistration().then((r) => r && r.update()).catch(() => {}); } catch { /* no service worker */ }
+    toast(`Uygulaman eski (${APP_VERSION}, ${nameSuffix(other, 'de')} ${theirs}): yeni sürüm iniyor, ana menüye dönünce sayfa yenilenecek (olmazsa uygulamayı kapatıp aç)`, { kind: 'error', duration: 9000 });
+  } else {
+    toast(`${other} eski sürümde (${theirs}, sende ${APP_VERSION}): ana menüye dönünce onun sayfası yenilenecek, sonra yeniden bağlanın`, { kind: 'error', duration: 9000 });
+  }
+}
+
 async function handleOnlineMessage(msg) {
   if (!msg || typeof msg !== 'object') return;
   switch (msg.t) {
@@ -1146,7 +1172,7 @@ async function handleOnlineMessage(msg) {
       online.peerTabuSeen = tabuHistory.fromPeer(msg.tabuSeen, msg.clock);
       online.players = online.role === 'host' ? [online.myName, other] : [other, online.myName];
       // a stale cached build on one phone would desync the games: say so before anything starts
-      if (msg.v && msg.v !== APP_VERSION) toast(`Uygulama sürümleri farklı (sende ${APP_VERSION}, rakipte ${msg.v}): ikiniz de ana menüye dönüp sayfayı yenileyin`, { kind: 'error', duration: 8000 });
+      if (msg.v && msg.v !== APP_VERSION) versionMismatch(String(msg.v).slice(0, 12), other);
       if (online.resuming) {
         const hadGame = !!(activeSession && !activeSession.destroyed);
         closeReconnect();
@@ -1232,7 +1258,18 @@ async function handleOnlineMessage(msg) {
       return;
     }
     case 'rematch': {
-      toast(`${online.players ? online.players[1] : 'Rakip'} yeni tur istiyor`, { duration: 3000 });
+      // the host's "Yeni tur" button says it, as "· Ayşe hazır" does; a toast when it cannot be seen
+      const who = online.players ? online.players[1] : 'Rakip';
+      const btn = typeof document !== 'undefined' && document.querySelector('.rematch-btn');
+      let shown = false;
+      if (btn && !btn.classList.contains('next-ready')) {
+        btn.classList.add('next-ready');
+        const tag = el('span', { class: 'next-ready-tag' }, ` · ${who} istiyor`);
+        btn.append(tag);
+        const r = tag.getBoundingClientRect();
+        shown = r.height > 0 && r.top >= 0 && r.bottom <= innerHeight;
+      } else shown = !!btn;
+      if (!shown) toast(`${who} yeni tur istiyor`, { duration: 3000 });
       return;
     }
     case 'ask': { // the guest is ready for the next round; only the host moves the game on
@@ -1280,7 +1317,11 @@ if ('serviceWorker' in navigator && location.protocol !== 'file:') {
   navigator.serviceWorker.addEventListener('controllerchange', () => {
     if (!hadController) { hadController = true; return; } // first install, nothing to refresh
     if (currentScreen === 'menu' && !online.transport) location.reload();
-    else { updateReady = true; toast('Yeni sürüm hazır: ana menüye dönünce sayfa yenilenecek', { duration: 4000 }); }
+    else {
+      updateReady = true;
+      document.documentElement.classList.add('update-ready'); // a line under the title until the reload
+      toast('Yeni sürüm hazır: ana menüye dönünce sayfa yenilenecek', { duration: 4000 });
+    }
   });
 }
 

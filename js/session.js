@@ -22,6 +22,13 @@ const SWITCH_GUARD_MS = 350; // taps ignored this long after the turn passes to 
 export const ADVANCE_GUARD_MS = 800; // and this long after a new screen comes up (see freshScreen)
 /** Phases that end a round: their screen (result, buttons) comes up under a finger still playing. */
 export const ROUND_END_PHASES = new Set(['result', 'reveal', 'summary', 'compare', 'handOver', 'roundOver', 'review']);
+/** An objection this phone had made that the closing move left out (arrays of ids, or Adam Asmaca's flag). */
+const lostObjection = (had, closed) => {
+  if (Array.isArray(had) && Array.isArray(closed)) return had.some((id) => !closed.includes(id));
+  return had === true && closed === false;
+};
+/** Moves that change what a review screen will settle (objections, İsim Şehir's vetoes). */
+const REVIEW_MOVES = new Set(['object', 'veto']);
 
 /**
  * Does this move bring up a new screen on this phone? 'short' for this phone's own 'Başla': a timed
@@ -137,6 +144,17 @@ export class Session {
     const prev = this.state;
     this.state = next;
     if (move.type === 'next') Object.assign(this.ask, { asked: false, peerAsked: false, nexts: this.ask.nexts + 1 });
+    // two phones: the host closed the objections before the guest's last one reached it (the 'next'
+    // carries the host's view); the guest's own objection is gone, so say why
+    if (remote && move.type === 'next' && this.mode === 'online' && this.self !== 0 && lostObjection(prev.objected, move.objected)) {
+      say(`İtirazın ${this.players[0]} sonucu açmadan ulaşamadı; sonuç onun gördüğü itirazlarla açıldı.`, { kind: 'error', duration: 5000 });
+    }
+    // two phones: the guest changed an objection (or a veto) after saying "Hazırım": it is not ready
+    // any more, so the host's button loses its mark (and asks to confirm) until it says so again
+    if (this.mode === 'online' && REVIEW_MOVES.has(move.type)) {
+      if (!remote && this.self !== 0) this.ask.asked = false;
+      if (remote && this.self === 0) this.ask.peerAsked = false;
+    }
     const fresh = freshScreen(prev, next, move, remote);
     if (fresh) this.guardPending = fresh; // see renderNow
     const publicMove = stripSecret(move);

@@ -162,3 +162,27 @@ test('kelime tahtası: çapraz giden itiraz ve "sonucu gör" iki telefonda aynı
   assert.deepEqual(finalScores(host), finalScores(guest), 'the closing move decides on both phones');
   assert.throws(() => game.applyMove(host, 1 - p, { type: 'object', id: 'd0', on: true }, { mode: 'online', remote: true }), 'Oyun bitti');
 });
+
+test('kelime tahtası: itiraz edilen hamle eldeki son harfleri bitirdiyse bitirme bonusu da silinir', () => {
+  let s = game.setup({ seed: 3 });
+  const p = s.turn;
+  // three letters left, the bag empty: the unlisted word empties the rack and ends the game
+  s = { ...s, bag: [], racks: s.racks.map((r, i) => (i === p ? ['k', 'a', 'z'] : ['e', 'l', 'm'])) };
+  s = game.applyMove(s, p, { type: 'play', tiles: [{ cell: CENTER - 1, letter: 'k' }, { cell: CENTER, letter: 'a' }, { cell: CENTER + 1, letter: 'z' }], unlisted: ['kaz'] }, ctx);
+  assert.equal(s.review, true);
+  assert.equal(s.reason, 'empty');
+  const left = s.outBonus.points;
+  assert.ok(left > 0);
+  assert.deepEqual(s.outBonus, { player: p, points: left, dispute: 'd0' });
+  const pts = s.disputes[0].points;
+  const raw = s.scores.slice();
+  // not objected: the move and the bonus both count
+  const kept = game.applyMove(s, 0, { type: 'next', objected: [] });
+  assert.deepEqual(finalScores(kept), raw);
+  // objected: the move's points and the going-out bonus are both taken back
+  const gone = game.applyMove(s, 0, { type: 'next', objected: ['d0'] });
+  const want = raw.slice();
+  want[p] -= pts + left;
+  want[1 - p] += left;
+  assert.deepEqual(finalScores(gone), want);
+});

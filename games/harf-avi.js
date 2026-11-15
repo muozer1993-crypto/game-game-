@@ -274,8 +274,11 @@ export function reviewScreen(state, viewer, container, sendMove, ctx, extra = []
   const list = (p) => el('div', {},
     el('div', { class: 'col-title' }, `${players[p]} — ${state.words[p].length} kelime`),
     wordList(state.words[p], { shared: prov.shared, unlisted: state.unlisted[p], objected: state.objected, owner: p }));
+  // what the objections made so far would give: both see the outcome before "Sonucu gör"
+  const now = scoreReviewed(state.words, state.objected || []).points;
   draw(container,
-    el('div', { class: 'status-line' }, el('strong', {}, 'İkiniz de bitirdiniz: itiraz zamanı')),
+    el('div', { class: 'status-line' }, el('strong', {}, 'İkiniz de bitirdiniz: itiraz zamanı'),
+      el('div', { class: 'muted' }, `Şu anki itirazlarla: ${players[0]} ${now[0]} – ${now[1]} ${players[1]}`)),
     ...extra,
     objectionList({
       items: reviewItems(state), objected: state.objected, players, viewer, online, sendMove,

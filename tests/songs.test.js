@@ -1,5 +1,5 @@
 import { test, assert } from './runner.js';
-import { poolFor, mixPool, sourcesFrom, needsPick, pickSongs, catalogArtists, pickGroups, artistOptions, songOptions, listTracks, hasAudio, commonArtists, normalizeAnswer, editDistance, answerMatches, titleMatches, artistMatches, topUp, silentArtists } from '../js/lib/songs.js';
+import { poolFor, mixPool, sourcesFrom, needsPick, pickSongs, catalogArtists, pickGroups, artistOptions, songOptions, listTracks, hasAudio, commonArtists, normalizeAnswer, editDistance, answerMatches, titleMatches, artistMatches, topUp, silentArtists, noSharedPick } from '../js/lib/songs.js';
 
 const data = {
   weights: { Katatonia: 3 },
@@ -62,6 +62,18 @@ test('şarkı havuzu: seçim tohumla aynı, ses gerekince sessizler elenir, şı
   const few = songOptions(data, { a: 'Silent', t: 'No audio' }, 2);
   assert.equal(few.length, 4, 'a band with one song is filled up from the others');
   assert.ok(few.includes('No audio'));
+  // a Turkish song of a band with one song: the other names are Turkish ones first
+  const mixed = { catalogTR: ['Duman', 'Mor ve Ötesi'], tracks: [
+    { a: 'Yalnız Grup', t: 'Gönül Dağı', s: 200 },
+    ...['Bu Akşam', 'Senden Daha Güzel', 'Haberin Yok Ölüyorum'].map((t) => ({ a: 'Duman', t, s: 200 })),
+    ...['Bir Derdim Var', 'Cambaz'].map((t) => ({ a: 'Mor ve Ötesi', t, s: 200 })),
+    ...Array.from({ length: 8 }, (_, i) => ({ a: 'Tool', t: `Tool ${i}`, s: 200 })),
+  ] };
+  for (let seed = 1; seed <= 10; seed++) {
+    const opts = songOptions(mixed, { a: 'Yalnız Grup', t: 'Gönül Dağı' }, seed);
+    assert.equal(opts.length, 4);
+    assert.ok(opts.every((x) => !x.startsWith('Tool')), `same language first: ${opts}`);
+  }
   const small = artistOptions({ tracks: [{ a: 'Only' }] }, { a: 'Only', t: 'x' }, 1);
   assert.deepEqual(small, ['Only'], 'a pool with one band and no data to fill from gives one option');
 });
@@ -204,6 +216,12 @@ test('yazılı cevap: aynı grubun başka şarkısı, başka numara, kelime içi
   assert.equal(answerMatches('Epitome 14', 'Epitome XIV'), true);
   assert.equal(answerMatches('In the Presence of Enemies Part 1', 'In the Presence of Enemies - Part I'), true, 'the number after " - "');
   assert.equal(answerMatches('Sun Was High So Was I', 'Sun Was High (So Was I)'), true);
+  assert.equal(answerMatches('Ruen II - The Epitaph', 'Ruun II - The Epitaph'), true, 'a slip in a title whose numeral is followed by " - …"');
+  assert.equal(answerMatches('Misericord I', 'Misericorde I - As the Flesh Falls'), true);
+  assert.equal(answerMatches('Ruun III', 'Ruun II - The Epitaph'), false);
+  assert.equal(answerMatches('Devour Me Colossus Part 1', 'Devour Me, Colossus - Part I - Blackholes'), true, 'a numeral closing a middle part');
+  assert.equal(answerMatches('Heaven Torn Lov I', 'Heaven Torn Low I (the passage)'), true);
+  assert.equal(answerMatches('Devour Me Colossus Part 2', 'Devour Me, Colossus - Part I - Blackholes'), false);
   // a title that is all brackets, letters that drop out of the plain alphabet
   assert.equal(normalizeAnswer('(A)'), 'a');
   assert.equal(answerMatches('A', '(A)'), true);
@@ -262,4 +280,8 @@ test('şarkı havuzu: sesi olmayan seçim yedeğe döner, az şarkı iki listede
   // both picked only a silent band in common: the bands each picked, not the whole list
   const shared = mixPool(data, { sources: { srcSecim: true }, pickMode: 'ortak', picks: [['Silent', 'Metallica'], ['Silent', 'Tool']], needAudio: true });
   assert.deepEqual([...new Set(shared.tracks.map((x) => x.a))].sort(), ['Metallica', 'Tool']);
+  assert.equal(noSharedPick(data, [['Silent', 'Metallica'], ['Silent', 'Tool']], true), true, 'the silent band is no shared band');
+  assert.equal(noSharedPick(data, [['Silent', 'Metallica'], ['Silent', 'Tool']]), false);
+  assert.equal(noSharedPick(data, [['Tool'], ['tool']], true), false);
+  assert.equal(noSharedPick(data, [[], []], true), false, 'nobody picked: nothing to explain');
 });
