@@ -106,6 +106,9 @@ export function getResult(state) {
 const goAt = new Map(); // `${id}:${round}` -> timestamp when this device turns green
 const resultAt = new Map(); // `${id}:${round}` -> when this device first showed that round's result
 const TAP_GUARD_MS = 600;
+// taps ignored this long after the screen turns red: a slow second tap on Başlat (it sits over the
+// red zone) is not a false start; 'go' comes 1500 ms later at the earliest
+const RED_GUARD_MS = 800;
 
 const fmt = (t) => (t == null ? '—' : t === 'early' ? 'erken!' : t === 'none' ? 'dokunmadı' : `${t} ms`);
 
@@ -160,11 +163,13 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const key = `${state.id}:${state.round}`;
   if (!goAt.has(key)) goAt.set(key, Date.now() + state.delays[state.round % state.delays.length]);
   const go = goAt.get(key);
+  const redAt = go - state.delays[state.round % state.delays.length]; // when this screen turned red
   const zones = online ? [viewer] : [0, 1];
   const reported = new Set();
   const tap = (who) => {
     if (reported.has(who) || state.times[who] != null) return;
     const now = Date.now();
+    if (now - redAt < RED_GUARD_MS) return;
     if (now < go) { reported.add(who); sendMove({ type: 'tap', who, time: 'early' }); return; }
     reported.add(who);
     sendMove({ type: 'tap', who, time: now - go });

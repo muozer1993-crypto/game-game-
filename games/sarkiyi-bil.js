@@ -6,7 +6,7 @@
 // loaded are swapped for a reserve song before they show.
 // Each player has their own answer slot (answering[p]), so on two phones both may press at the same
 // moment and every answer move still commutes; buzz and swap name the song they are about, and only
-// the host's clock ends a round (its timeout says whose answers it had).
+// the host ends a round (its timeout says whose answers it had) or swaps a song (the guest asks).
 import { el, render as draw } from '../js/ui/dom.js';
 import { nextButton } from '../js/ui/next.js';
 import { createTimer } from '../js/ui/timer.js';
@@ -20,6 +20,7 @@ export const RESERVE = 6; // extra songs drawn, swapped in when a song's sound w
 const ROUND_OPTIONS = [5, 8, 12];
 const CLIP_OPTIONS = [15, 20, 30];
 const LIMIT_OPTIONS = [60, 90, 120, 180];
+const STEP_GUARD_MS = 350; // taps ignored this long after an answer step comes up (its buttons sit where the last ones were)
 
 export const meta = {
   group: 'tanisma',
@@ -120,8 +121,14 @@ export function applyMove(state, player, move, ctx = {}) {
     }
     return next;
   }
-  if (state.phase === 'pick' || state.phase === 'over') fail('Şu an bu hamle yapılamaz');
   const online = ctx.mode === 'online';
+  // two phones: only the host swaps a song, so a swap can never cross the host's timeout or 'next'.
+  // The guest's failed sound check is only a request; the host's screen turns it into the swap.
+  // (Recorded in any phase: a request that arrives late changes nothing on either phone.)
+  if (move.type === 'swap' && online && player !== 0) {
+    return { ...state, swapAsk: { round: Number(move.round), song: String(move.song || '') } };
+  }
+  if (state.phase === 'pick' || state.phase === 'over') fail('Şu an bu hamle yapılamaz');
   const i = state.index;
   const song = state.songs[i];
   const round = state.answers[i].slice();
@@ -197,8 +204,8 @@ export function applyMove(state, player, move, ctx = {}) {
       if (state.phase !== 'listen') fail('Şarkı değiştirilemez');
       if (Number(move.round) !== i) fail('Bu şarkının sırası geçti');
       if (move.song != null && move.song !== songKeyOf(song)) fail('Bu şarkı zaten değişti'); // both phones found it silent
-      // the other phone swapped before our press reached it: the press was for a song it never played,
-      // so it is dropped here too (that phone rejects it, the song key no longer matches)
+      // the host swapped before the guest's press reached it: the press was for a song the host no
+      // longer plays, so it is dropped here too (the host rejects it, the song key no longer matches)
       const crossed = online && ctx.remote;
       if (!crossed && (round[0] != null || round[1] != null || answering.some(Boolean))) fail('Cevap verildi, şarkı değiştirilemez');
       const answers = state.answers.slice();
@@ -243,7 +250,8 @@ export function getResult(state) {
 // ----------------------------------------------------------------- render
 // per round, on this device: listened seconds and the clip's position, the time left (it only runs
 // on the clip screen), the privacy cover, and the newest state drawn (a late sound check reads it)
-const roundMem = new WeakMap(); // container -> { key, heard, pos, leftMs, runningSince, covered, swapping, state }
+const roundMem = new WeakMap(); // container -> { key, heard, pos, leftMs, runningSince, covered, swapping, state, stepKey, stepAt }
+const keptAnswer = new WeakMap(); // container -> { key, nodes }: the answer step on screen
 const songKey = (state) => `${state.index}:${songKeyOf(state.songs[state.index])}`;
 const blankPoints = (r) => r.mode === 'timeout' || r.mode === 'nosound';
 const blankLabel = (r) => (r.mode === 'nosound' ? 'ses yüklenemedi' : 'süre doldu');
@@ -348,7 +356,20 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       return stopTimer;
     }
     const round = state.answers[i];
-    // a song whose sound will not load is swapped before anyone hears about it; the next one warms up meanwhile
+    // two phones: the guest's sound check failed and it asked for a swap; the host makes it
+    const ask = state.swapAsk;
+    if (online && ctx.isHost && !mem.swapping && ask && ask.round === i && ask.song === songKeyOf(song)
+      && round.every((r) => r == null)) {
+      mem.swapping = true;
+      setTimeout(() => {
+        const now = mem.state; // not from inside this draw; by then someone may have pressed
+        if (roundMem.get(container) !== mem || now.phase !== 'listen' || now.index !== i || songKeyOf(now.songs[i]) !== ask.song
+          || now.answers[i].some((r) => r != null) || (now.answering || []).some(Boolean)) return;
+        sendMove({ type: 'swap', round: i, song: ask.song });
+      }, 0);
+    }
+    // a song whose sound will not load is swapped before anyone hears about it (two phones: the
+    // guest's swap is a request to the host); the next one warms up meanwhile
     if (!mem.swapping) {
       clipReady(song).then((ok) => {
         const now = mem.state; // the newest state: by now someone may have pressed, or the song changed
@@ -404,12 +425,23 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   }
   const slot = answering[who];
   const heard = slot.heard;
+  // a step's buttons come up where the last step's were: a double tap on Devam (or on Hazırım)
+  // must not also answer the next step empty
+  const stepKey = `${key}:${who}:${slot.step}`;
+  if (mem.stepKey !== stepKey) { mem.stepKey = stepKey; mem.stepAt = Date.now(); }
+  const settled = () => Date.now() - mem.stepAt >= STEP_GUARD_MS;
+  // the same step drawn again (two phones: the other player's answer arriving) keeps the drawn
+  // nodes, so what this player has typed, the focus and the caret stay
+  const kept = keptAnswer.get(container);
+  if (kept && kept.key === stepKey && container.childNodes.length === kept.nodes.length
+    && kept.nodes.every((node, k) => container.childNodes[k] === node)) return stopTimer;
+  const keep = () => keptAnswer.set(container, { key: stepKey, nodes: [...container.childNodes] });
   const pts = pointsFor({ heard, clipSec: state.clipSec, mode: 'typed', artistOk: true, songOk: true });
   const typedBox = (id, placeholder) => el('input', { type: 'text', class: 'input', id, autocomplete: 'off', autocapitalize: 'words', spellcheck: 'false', placeholder, 'aria-label': placeholder });
   if (slot.step === 'band') { // step 1: the band
     let sent = false;
     const artistIn = typedBox('sb-artist', 'Grup');
-    const submit = () => { if (sent) return; sent = true; sendMove({ type: 'check1', artist: artistIn.value }); };
+    const submit = () => { if (sent || !settled()) return; sent = true; sendMove({ type: 'check1', artist: artistIn.value }); };
     artistIn.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); submit(); } });
     draw(container,
       status(`${players[who]} · ${i + 1}. şarkı · ${Math.round(heard)} sn dinleyip bastın`),
@@ -423,13 +455,14 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
         el('button', { type: 'button', class: 'btn btn-primary btn-big', onClick: submit }, 'Devam: şarkının adı'),
       ),
     );
+    keep();
     setTimeout(() => { try { artistIn.focus(); } catch { /* ignore */ } }, 50);
     return stopTimer;
   }
   if (slot.step === 'song') { // step 2: the song, typed or from four names
     let sent = false;
     const titleIn = typedBox('sb-title', 'Şarkının adı');
-    const submit = () => { if (sent) return; sent = true; mem.covered = true; sendMove({ type: 'check2', title: titleIn.value }); };
+    const submit = () => { if (sent || !settled()) return; sent = true; mem.covered = true; sendMove({ type: 'check2', title: titleIn.value }); };
     titleIn.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); submit(); } });
     const half = pointsFor({ heard, clipSec: state.clipSec, mode: 'options', artistOk: true, songOk: true }).song;
     draw(container,
@@ -443,9 +476,10 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       ),
       el('div', { class: 'row sb-actions' },
         el('button', { type: 'button', class: 'btn btn-primary btn-big', onClick: submit }, 'Kontrol et'),
-        el('button', { type: 'button', class: 'btn btn-secondary btn-big', onClick: () => { if (!sent) { sent = true; sendMove({ type: 'options' }); } } }, 'Şıkları göster (yarı puan)'),
+        el('button', { type: 'button', class: 'btn btn-secondary btn-big', onClick: () => { if (!sent && settled()) { sent = true; sendMove({ type: 'options' }); } } }, 'Şıkları göster (yarı puan)'),
       ),
     );
+    keep();
     setTimeout(() => { try { titleIn.focus(); } catch { /* ignore */ } }, 50);
     return stopTimer;
   }
@@ -456,8 +490,9 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     timerBox,
     el('p', { class: 'hint' }, `Grup cevabın: ${slot.typedArtist || '—'}. Hangi şarkı?`),
     el('div', { class: 'options' }, songOptions(ctx.songs, song, state.seed + i * 7 + 2).map((title) =>
-      el('button', { type: 'button', class: 'btn btn-secondary', onClick: () => { if (chosen) return; chosen = true; mem.covered = true; sendMove({ type: 'choose2', title }); } }, title))),
+      el('button', { type: 'button', class: 'btn btn-secondary', onClick: () => { if (chosen || !settled()) return; chosen = true; mem.covered = true; sendMove({ type: 'choose2', title }); } }, title))),
   );
+  keep();
   return stopTimer;
 }
 

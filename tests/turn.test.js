@@ -168,5 +168,20 @@ test('öne dönünce soket yalnızca ortada bir bağlantı yokken tazelenir', ()
     foreground();
     assert.equal(peer.swaps, 2, 'a socket PeerJS itself reports as lost is reopened');
     t.close();
+    // back while an attempt is pending: the refresh comes once that attempt is given up
+    const peer2 = emitter({ disconnected: false, destroyed: false, swaps: 0, disconnect() { this.disconnected = true; }, reconnect() { this.disconnected = false; this.swaps += 1; }, destroy() { this.destroyed = true; } });
+    listeners.length = 0;
+    const t2 = makeTransport('host', 'ABCDE', peer2);
+    const c2 = fakeConn();
+    t2.attach(c2);
+    foreground();
+    assert.equal(peer2.swaps, 0, 'pending attempt: left alone');
+    c2.emit('error', { type: 'negotiation-failed' });
+    assert.equal(peer2.swaps, 1, 'the attempt failed: the skipped refresh runs now');
+    const c3 = fakeConn();
+    t2.attach(c3);
+    c3.emit('error', { type: 'negotiation-failed' });
+    assert.equal(peer2.swaps, 1, 'a host that never left the screen keeps its socket');
+    t2.close();
   } finally { delete globalThis.document; }
 });

@@ -178,16 +178,17 @@ function header(title, { onBack, left, right } = {}) {
 }
 
 // ---------------------------------------------------------------- menu
-export function showMenu() {
+/** @param {{ notice?: [string, string] }} [opts] notice: a toast just shown, kept across the update reload */
+export function showMenu({ notice } = {}) {
   if (online.transport || online.resuming || reconnectOverlay) { closeReconnect(); leaveOnline(); } // tells the other device we left
   tournament = null;
   if (updateReady) {
     // the new version (and the relay settings it brought) takes over here, as the toast promised
     setScreen('menu');
-    // a message on the screen right now ("Rakip odadan ayrıldı") is shown again after the reload
-    const shown = typeof document !== 'undefined' && document.getElementById('toast');
-    if (shown && shown.classList.contains('show')) {
-      try { sessionStorage.setItem('oyun-gecesi:toast', JSON.stringify([shown.textContent, shown.classList.contains('error') ? 'error' : ''])); } catch { /* storage blocked */ }
+    // why we left the room ("Rakip odadan ayrıldı") is shown again after the reload; other toasts
+    // still on screen ("Yeni sürüm hazır", "sürümleri farklı", …) would be stale on the new page
+    if (Array.isArray(notice)) {
+      try { sessionStorage.setItem('oyun-gecesi:toast', JSON.stringify(notice)); } catch { /* storage blocked */ }
     }
     setTimeout(() => location.reload(), 150); // lets the 'leave' message go out first
     return;
@@ -1008,7 +1009,7 @@ function wireTransport(myName, { resume = false } = {}) {
     }
     leaveOnline({ silent: true });
     toast('Bağlantı koptu', { kind: 'error', duration: 4000 });
-    showMenu();
+    showMenu({ notice: ['Bağlantı koptu', 'error'] });
   });
   t.onOpen(() => {
     // Decided when the channel opens, not when the handler was registered: the host keeps its
@@ -1171,7 +1172,13 @@ async function handleOnlineMessage(msg) {
       if ((Number(msg.gameNo) || 0) !== (online.gameNo || 0)) {
         // the other side is in a different game (a new round started while it was away): the host's
         // current game is authoritative, so it re-sends the start; the guest just waits for it
-        if (online.role === 'host' && online.lastStart) { online.transport.send(online.lastStart); closeReconnect(); }
+        if (online.role === 'host' && online.lastStart) {
+          online.transport.send(online.lastStart);
+          // the moves the host already made in this game went down with the old link: replay them
+          // after the start (as plain moves: a guest still loading the game's data queues them)
+          for (const m of online.session.ownMovesFrom(0)) online.transport.send(m);
+          closeReconnect();
+        }
         return;
       }
       online.transport.send({ t: 'resumeMoves', moves: online.session.ownMovesFrom(Number(msg.received) || 0), received: online.session.received, gameNo: online.gameNo || 0 });
@@ -1230,7 +1237,7 @@ async function handleOnlineMessage(msg) {
     }
     case 'ask': { // the guest is ready for the next round; only the host moves the game on
       if (online.role !== 'host' || !online.session) return;
-      // the button says it ("· Ayşe hazır"); a toast only when no such button is on the screen yet
+      // the button says it ("· Ayşe hazır"); a toast only when no such button can be seen (none yet, or below the fold)
       if (online.session.receiveAsk(msg) && !online.session.ask.marked) toast(`${online.players ? online.players[1] : 'Rakip'} hazır: sonrakine geçebilirsin`, { duration: 3000 });
       return;
     }
@@ -1255,7 +1262,7 @@ async function handleOnlineMessage(msg) {
     case 'leave': {
       leaveOnline({ silent: true });
       toast('Rakip odadan ayrıldı', { kind: 'error', duration: 4000 });
-      showMenu();
+      showMenu({ notice: ['Rakip odadan ayrıldı', 'error'] });
       return;
     }
     default:

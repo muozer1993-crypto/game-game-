@@ -221,3 +221,36 @@ test('şarkıyı bil iki telefonda: şarkı değişimi bir basışla çaprazlan�
   // a press for the old song after the swap is refused
   assert.throws(() => game.applyMove(h2, 1, { type: 'buzz', heard: 1, song: key }, remote), 'Şarkı değişti');
 });
+
+test('şarkıyı bil iki telefonda: yalnız ev sahibi şarkı değiştirir; konuğun isteği süre bitişi ya da sonraki şarkıyla çaprazlanınca da iki telefon aynı kalır', () => {
+  const s = game.setup({ rounds: 5, srcMustafa: true, seed: 14 }, online);
+  const key = `${s.songs[0].a}|${s.songs[0].t}`;
+  const ask = { type: 'swap', round: 0, song: key };
+  // the guest's swap is only a request: the song stays until the host swaps it
+  const asked = game.applyMove(s, 1, ask, online);
+  assert.deepEqual(asked.songs, s.songs);
+  assert.deepEqual(asked.reserve, s.reserve);
+  assert.deepEqual(asked.swapAsk, { round: 0, song: key });
+  // the host's timeout crosses the guest's request
+  const [h, g] = both(s, [{ type: 'timeout', round: 0, had: [false, false] }], [ask]);
+  assert.deepEqual(h, g);
+  assert.equal(h.phase, 'reveal');
+  assert.deepEqual(h.songs[0], s.songs[0]);
+  // the host had answered right before its time ran out (no reserve left): the answer counts on both phones
+  let empty = { ...s, reserve: [] };
+  const song = s.songs[0];
+  const mine = [{ type: 'buzz', heard: 1, song: key }, { type: 'check1', artist: song.a }, { type: 'check2', title: song.t }, { type: 'timeout', round: 0, had: [true, false] }];
+  const [h2, g2] = both(empty, mine, [ask]);
+  assert.deepEqual(h2, g2);
+  assert.equal(h2.answers[0][0].mode, 'typed');
+  assert.ok(h2.answers[0][0].points.total > 0);
+  // the host already moved on to the next song: the late request changes nothing
+  empty = game.applyMove(game.applyMove(s, 0, { type: 'timeout', round: 0, had: [false, false] }, online), 0, { type: 'next' }, online);
+  const [h3, g3] = both(empty, [], [ask]);
+  assert.deepEqual(h3.songs, g3.songs);
+  assert.equal(h3.index, 1);
+  // the host's own swap still works and is the one both phones apply
+  const [h4, g4] = both(asked, [{ type: 'swap', round: 0, song: key }], []);
+  assert.deepEqual(h4, g4);
+  assert.deepEqual(h4.songs[0], s.reserve[0]);
+});

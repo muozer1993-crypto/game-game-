@@ -130,11 +130,15 @@ export function makeTransport(role, code, peer) {
   // connection yet, re-register the room id on a fresh socket (same id and token, the server swaps
   // it). Not while a connection is being negotiated: PeerJS drops the ICE candidates it would send
   // during the swap (the late relay ones first), and the offer itself proves the socket was alive.
+  // Back while an attempt was still pending: the refresh waits until that attempt is dropped
+  // (it may have died with the frozen page, and nothing else would re-register the room).
+  let refreshSkipped = false;
   const onVisibility = () => {
     if (typeof document === 'undefined' || document.visibilityState !== 'visible' || !peer || peer.destroyed) return;
     try {
       if (peer.disconnected) peer.reconnect();
-      else if (!conn && !closed) { peer.disconnect(); peer.reconnect(); }
+      else if (!conn && !closed) { refreshSkipped = false; peer.disconnect(); peer.reconnect(); }
+      else if (!open && !closed) refreshSkipped = true;
     } catch (e) { console.warn(e); }
   };
   if (typeof document !== 'undefined') document.addEventListener('visibilitychange', onVisibility);
@@ -168,7 +172,10 @@ export function makeTransport(role, code, peer) {
       const type = (err && err.type) || 'negotiation-failed';
       const reason = Object.assign(new Error(ERROR_TEXT[type] || (err && err.message) || 'Bağlantı kurulamadı'), { type });
       if (role === 'host') {
-        if (current()) { conn = null; open = false; }
+        if (current()) {
+          conn = null; open = false;
+          if (refreshSkipped) { refreshSkipped = false; onVisibility(); } // the refresh skipped for this attempt
+        }
         attemptHandlers.forEach((fn) => { try { fn(reason); } catch (e) { console.warn(e); } });
       } else emitClose(reason);
     };

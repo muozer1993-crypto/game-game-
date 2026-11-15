@@ -135,7 +135,7 @@ export function mixPool(data, { sources = {}, favor = 'high', picks = [[], []], 
   if (sources.srcOrtak) parts.push({ tracks: allTracks(data).filter((t) => t.j), weightOf: () => 1 });
   if (sources.srcTurkce) parts.push({ tracks: poolFor(data, { pool: 'turkce' }).tracks, weightOf: () => 1 });
   if (sources.srcSecim) {
-    const p = poolFor(data, { pool: pickMode === 'ortak' ? 'ortak' : 'secim', picks });
+    const p = poolFor(data, { pool: pickMode === 'ortak' ? 'ortak' : 'secim', picks, needAudio });
     if (p.tracks.length) parts.push({ tracks: p.tracks, weightOf: (t) => p.weights[t.a] || 1, shares: p.shares });
   }
   if (needAudio) for (const p of parts) p.tracks = p.tracks.filter(hasAudio);
@@ -160,10 +160,12 @@ export function mixPool(data, { sources = {}, favor = 'high', picks = [[], []], 
 /**
  * One named pool (used by mixPool and the tests). pool 'liste': the personal list with its
  * favourite weights. 'secim': every song of a band either player picked. 'ortak': only bands both
- * picked. Empty picks fall back to the wider choice, then to the list.
+ * picked. Empty picks fall back to the wider choice, then to the list. With `needAudio` ('secim',
+ * 'ortak') only songs with a clip count, and a picked band none of whose songs can play counts as
+ * not picked: its player's other bands share that player's half, a shared one is no shared band.
  * @returns {{ tracks: object[], weights: object }}
  */
-export function poolFor(data, { pool = 'liste', picks = [[], []] } = {}) {
+export function poolFor(data, { pool = 'liste', picks = [[], []], needAudio = false } = {}) {
   if (pool === 'arkadas') return { tracks: listTracks(data, 2), weights: {} };
   if (pool === 'ikisi') {
     // every song (both lists and the catalogs) by a band on both lists; the bands share the draws
@@ -187,12 +189,13 @@ export function poolFor(data, { pool = 'liste', picks = [[], []] } = {}) {
     return { tracks: tracks.length ? tracks : listTracks(data, 3), weights: {} };
   }
   if (pool !== 'secim' && pool !== 'ortak') return { tracks: listTracks(data, 1), weights: (data && data.weights) || {} };
-  const sets = [0, 1].map((i) => new Set((Array.isArray(picks[i]) ? picks[i] : []).map(normKey)));
+  const sound = needAudio ? new Set(allTracks(data).filter(hasAudio).map((t) => normKey(t.a))) : null;
+  const sets = [0, 1].map((i) => new Set((Array.isArray(picks[i]) ? picks[i] : []).map(normKey).filter((a) => !sound || sound.has(a))));
   const union = new Set([...sets[0], ...sets[1]]);
   const both = new Set([...sets[0]].filter((a) => sets[1].has(a)));
   const chosen = pool === 'ortak' && both.size ? both : union;
   if (!chosen.size) return { tracks: listTracks(data, 1), weights: (data && data.weights) || {} };
-  const tracks = allTracks(data).filter((t) => chosen.has(normKey(t.a)));
+  const tracks = allTracks(data).filter((t) => chosen.has(normKey(t.a)) && (!needAudio || hasAudio(t)));
   // each player's picks get half of the draws, split equally between their bands whatever their
   // song counts; a band both picked collects a share from both sides, so it comes up more
   const counts = new Map();
@@ -307,12 +310,14 @@ export function songOptions(data, song, seed, n = 4) {
 }
 
 // ----------------------------------------------------------------- typed answers (Şarkıyı Bil)
-const LETTER_MAP = { 'ı': 'i', 'ø': 'o', 'æ': 'ae', 'ß': 'ss', 'ł': 'l', 'đ': 'd', 'þ': 'th', 'ð': 'd', 'œ': 'oe' };
+// (µ is the micro sign of "µ-Ziq", not Greek mu: a Greek name keeps its letters)
+const LETTER_MAP = { 'ı': 'i', 'ø': 'o', 'æ': 'ae', 'ß': 'ss', 'ł': 'l', 'đ': 'd', 'þ': 'th', 'ð': 'd', 'œ': 'oe', 'ə': 'e', 'µ': 'mu' };
 // Russian/Ukrainian band and song names: typed in Latin letters (or as written) they still match
 const CYRILLIC = {
   а: 'a', б: 'b', в: 'v', г: 'g', д: 'd', е: 'e', ё: 'e', ж: 'zh', з: 'z', и: 'i', й: 'y', к: 'k', л: 'l', м: 'm', н: 'n', о: 'o', п: 'p',
   р: 'r', с: 's', т: 't', у: 'u', ф: 'f', х: 'kh', ц: 'ts', ч: 'ch', ш: 'sh', щ: 'shch', ъ: '', ы: 'y', ь: '', э: 'e', ю: 'yu', я: 'ya',
   і: 'i', ї: 'yi', є: 'ye', ґ: 'g',
+  ә: 'a', ғ: 'g', қ: 'k', ң: 'n', ө: 'o', ұ: 'u', ү: 'u', һ: 'h', // Kazakh
 };
 
 const normCache = new Map(); // the same few thousand names are compared again and again
@@ -331,10 +336,12 @@ export function normalizeAnswer(s) {
 
 function normalizeRaw(s) {
   let x = String(s || '').replace(/İ/g, 'i').replace(/I/g, 'i').toLowerCase();
-  x = x.replace(/[ıøæßłđþðœ]/g, (c) => LETTER_MAP[c] || c);
-  x = x.replace(/[а-яёіїєґ]/g, (c) => CYRILLIC[c] ?? c);
+  x = x.replace(/[ıøæßłđþðœəµ]/g, (c) => LETTER_MAP[c] || c);
+  x = x.replace(/[а-яёіїєґәғқңөұүһ]/g, (c) => CYRILLIC[c] ?? c);
   x = x.normalize('NFKD').replace(/[̀-ͯ]/g, '');
-  x = x.replace(/\s+-\s+.*$/, '').replace(/[([].*?[)\]]/g, ' ');
+  x = x.replace(/\s+-\s+.*$/, '');
+  const bare = x.replace(/[([].*?[)\]]/g, ' ');
+  if (bare.trim()) x = bare; // a title that is all "(…)" ("(A)") keeps what is inside
   x = x.replace(/&/g, ' and ').replace(/['’`´]/g, '');
   const ascii = x.replace(/[^a-z0-9]+/g, ' ').trim().replace(/\s+/g, ' ');
   if (ascii) return ascii.replace(/^the /, '');
@@ -359,11 +366,32 @@ export function editDistance(a, b) {
 }
 
 const ROMAN = /^(?:x{0,3})(?:ix|iv|v?i{0,3})$/;
-/** The numbers in a name (digits, and a closing Roman numeral): "Unforgiven II", "Pt. 2" are other songs. */
-const numbersOf = (x) => {
-  const w = x.split(' ');
-  const last = w.length > 1 && ROMAN.test(w[w.length - 1]) ? w[w.length - 1] : '';
-  return `${(x.match(/\d+/g) || []).map(Number).join(',')}|${last}`;
+const ROMAN_VALUE = { i: 1, v: 5, x: 10 };
+const romanValue = (r) => [...r].reduce((n, c, k) => n + (ROMAN_VALUE[r[k + 1]] > ROMAN_VALUE[c] ? -1 : 1) * ROMAN_VALUE[c], 0);
+const numCache = new Map();
+/** normalizeAnswer with a closing Roman numeral as digits: "Unforgiven II" and "Unforgiven 2" are one song. */
+const norm = (s) => {
+  const n = normalizeAnswer(s);
+  let hit = numCache.get(n);
+  if (hit === undefined) {
+    if (numCache.size > 50000) numCache.clear();
+    hit = n.replace(/ ([ivx]+)$/, (m, r) => (ROMAN.test(r) ? ` ${romanValue(r)}` : m));
+    numCache.set(n, hit);
+  }
+  return hit;
+};
+const numbersOf = (x) => (x.match(/\d+/g) || []).map(Number);
+/**
+ * A different number never matches: the answer's own numbers must be typed ("Unforgiven II" is not
+ * "Unforgiven"), and a typed number must be in the full title, "(…)" and " - …" parts included
+ * ("Eternity Part 2" is "Eternity (Part 2)", "Eternity Part 1" is not).
+ */
+const numbersAgree = (a, b, answer) => {
+  const typed = numbersOf(a);
+  if (!numbersOf(b).every((n) => typed.includes(n))) return false;
+  if (!typed.length) return true;
+  const whole = numbersOf(norm(String(answer || '').replace(/[()[\]]/g, ' ').replace(/\s+-\s+/g, ' ')));
+  return typed.every((n) => whole.includes(n));
 };
 
 /**
@@ -372,14 +400,14 @@ const numbersOf = (x) => {
  * and the start of a long title counts when it covers most of it. A different number never matches.
  */
 export function answerMatches(typed, answer) {
-  const a = normalizeAnswer(typed);
-  const b = normalizeAnswer(answer);
+  const a = norm(typed);
+  const b = norm(answer);
   if (!a || !b) return false;
   if (a === b) return true;
   // "II - I Fly Among the Stars": the part after a leading numeral is the title people know
   const dash = String(answer || '').match(/^\s*(?:[ivxlc]+|\d+)\s+-\s+(.+)$/i);
   if (dash && answerMatches(typed, dash[1])) return true;
-  if (numbersOf(a) !== numbersOf(b)) return false;
+  if (!numbersAgree(a, b, answer)) return false;
   const tol = b.length < 5 ? 0 : b.length < 9 ? 1 : b.length < 13 ? 2 : 3;
   if (editDistance(a, b) <= tol) return true;
   if (b.length >= 4 && ` ${a} `.includes(` ${b} `)) return true; // whole words: "Shed" is not in "Vanished"
@@ -393,13 +421,13 @@ export function answerMatches(typed, answer) {
  */
 function bestMatch(typed, answer, others) {
   if (!answerMatches(typed, answer)) return false;
-  const a = normalizeAnswer(typed);
-  const b = normalizeAnswer(answer);
+  const a = norm(typed);
+  const b = norm(answer);
   if (a === b) return true;
   const flat = (x) => x.replace(/ /g, '');
   const d = editDistance(a, b);
   return !others.some((o) => {
-    const c = normalizeAnswer(o);
+    const c = norm(o);
     if (!c || flat(c) === flat(b) || Math.abs(c.length - a.length) >= d) return false; // cannot be closer
     return answerMatches(typed, o) && editDistance(a, c) < d;
   });

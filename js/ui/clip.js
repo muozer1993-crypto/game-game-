@@ -20,14 +20,18 @@ function jsonp(url) {
   });
 }
 
-/** The 30-second preview url for a song, or null when there is none. */
+/**
+ * The 30-second preview url for a song, or null when there is none. Rejects when Deezer cannot be
+ * reached (and asks again next time: the connection may come back).
+ */
 export function previewUrl(song) {
   if (song.p) return Promise.resolve(song.p);
   if (!song.dz) return Promise.resolve(null);
   if (!previewCache.has(song.dz)) {
     const url = `https://api.deezer.com/track/${encodeURIComponent(song.dz)}?output=jsonp`;
     const pick = (d) => (d && typeof d.preview === 'string' && d.preview) || null;
-    previewCache.set(song.dz, jsonp(url).then(pick).catch(() => jsonp(url).then(pick)).catch(() => null)); // one retry
+    previewCache.set(song.dz, jsonp(url).then(pick).catch(() => jsonp(url).then(pick)) // one retry
+      .catch((e) => { previewCache.delete(song.dz); throw e; }));
   }
   return previewCache.get(song.dz);
 }
@@ -41,8 +45,9 @@ const readyCache = new Map(); // song key -> Promise<boolean>
 export function clipReady(song, timeoutMs = 15000) {
   const key = song.p || `dz:${song.dz}`;
   if (!readyCache.has(key)) {
-    readyCache.set(key, previewUrl(song).then((url) => new Promise((resolve) => {
-      if (!url) { resolve(false); return; }
+    let noPreview = false;
+    const check = previewUrl(song).then((url) => new Promise((resolve) => {
+      if (!url) { noPreview = true; resolve(false); return; }
       const audio = new Audio();
       audio.preload = 'metadata';
       let settled = false;
@@ -52,7 +57,13 @@ export function clipReady(song, timeoutMs = 15000) {
       audio.addEventListener('canplay', () => done(true));
       audio.addEventListener('error', () => done(false));
       audio.src = url;
-    })).catch(() => false));
+    })).catch(() => false);
+    readyCache.set(key, check);
+    // a song with no preview stays silent; one that failed to load (no connection?) is tried
+    // again after a while instead of counting as silent for the rest of the evening
+    check.then((ok) => {
+      if (!ok && !noPreview) setTimeout(() => { if (readyCache.get(key) === check) readyCache.delete(key); }, 30000);
+    });
   }
   return readyCache.get(key);
 }
@@ -93,6 +104,7 @@ export function createClipPlayer(song, opts) {
     btn.disabled = true;
     btn.textContent = 'Ses çalınamadı';
     note.textContent = why;
+    note.classList.add('clip-why'); // the reason stays visible where the instruction line is hidden
     if (opts.onFail) opts.onFail();
   };
   const ready = previewUrl(song).then((url) => {
@@ -102,7 +114,7 @@ export function createClipPlayer(song, opts) {
     audio.preload = 'auto';
     audio.addEventListener('error', () => setFailed('Ses yüklenemedi (bağlantı yok mu?).'));
     audio.src = url;
-  });
+  }, () => { if (!destroyed) setFailed('Ses yüklenemedi (bağlantı yok mu?).'); }); // Deezer out of reach
   const tick = () => {
     if (!audio || !playing) return;
     const pos = audio.currentTime;

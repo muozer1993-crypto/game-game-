@@ -363,12 +363,15 @@ export function createGame(cfg) {
     return {
       note,
       clear() { if (warned !== null) { warned = null; drafts.delete(memo); note.hidden = true; } },
-      /** `tried`: guesses already made; a repeat is refused at once with the real reason, not warned about */
+      /**
+       * `tried`: guesses already made; a repeat is not warned about but sent as it was (unlisted),
+       * so the game refuses it at once with the real reason ("Bunu zaten denedin")
+       */
       check(raw, tried = []) {
         if (isNumber || !ctx.dict) return false;
         const word = normalizeWord(raw || '');
         if (word.length !== length || !isTurkishWord(word) || ctx.dict.has(word)) return false;
-        if (tried.some((g) => g.word === word)) return false;
+        if (tried.some((g) => g.word === word)) return true;
         if (warned === word) return true;
         warned = word;
         drafts.set(memo, word);

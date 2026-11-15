@@ -224,6 +224,14 @@ export function getResult(state) {
 const keptGuess = new WeakMap(); // container -> { key, nodes, setStatus, destroy, dropping, dead }
 const roundMem = new WeakMap();  // container -> { key, state, swapping }: the newest state for the async sound check
 
+/** A short phone: once the screen is laid out, scroll so that the whole keypad (GİR too) is on screen. */
+function keysIntoView(box) {
+  if (typeof requestAnimationFrame !== 'function' || typeof innerHeight !== 'number') return;
+  requestAnimationFrame(() => {
+    if (box.isConnected && box.getBoundingClientRect().bottom > innerHeight) box.scrollIntoView({ block: 'end' });
+  });
+}
+
 function release(container, entry) {
   entry.dropping = true;
   Promise.resolve().then(() => {
@@ -321,7 +329,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       clip = createClipPlayer(song, {
         seconds: state.clipSec,
         note: 'Dinle, süresini tahmin et. İstersen tekrar çalabilirsin.',
-        onFail: () => { fallback.hidden = false; },
+        onFail: () => { fallback.hidden = false; keysIntoView(kbBox); }, // the title grows the card
       });
       card = el('div', { class: 'card ss-card ss-hard' }, el('div', { class: 'ss-secret' }, '🎧 Gizli şarkı'), clip.root, fallback);
     } else {
@@ -355,6 +363,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       display,
       kbBox,
     );
+    keysIntoView(kbBox);
     const entry = {
       key: skey,
       nodes: [...container.childNodes],

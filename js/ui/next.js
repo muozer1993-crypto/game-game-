@@ -56,14 +56,25 @@ export function nextButton(ctx, sendMove, label, opts = {}) {
   return el('div', { class: 'next-ask', style }, button, note);
 }
 
-/** Host: the guest said it is ready; mark the "next" buttons on the screen without redrawing it. Returns how many. */
+/** Is this node inside the viewport? (No layout to ask, as in tests: yes.) */
+const onScreen = (node) => {
+  if (typeof node.getBoundingClientRect !== 'function' || typeof window === 'undefined' || !window.innerHeight) return true;
+  const r = node.getBoundingClientRect();
+  return r.height > 0 && r.top >= 0 && r.bottom <= window.innerHeight;
+};
+
+/**
+ * Host: the guest said it is ready; mark the "next" buttons on the screen without redrawing it.
+ * Returns how many of the marks can be seen (a button below the fold needs the toast as well).
+ */
 export function markNextReady(container, name) {
   if (!container || typeof container.querySelectorAll !== 'function') return 0;
   let n = 0;
   for (const b of container.querySelectorAll('.next-btn:not(.next-ready)')) {
     b.classList.add('next-ready');
-    (b.querySelector('.next-label') || b).append(readyTag(name)); // one line with the label, not a second column
-    n++;
+    const tag = readyTag(name);
+    (b.querySelector('.next-label') || b).append(tag); // one line with the label, not a second column
+    if (onScreen(tag)) n++;
   }
   return n;
 }

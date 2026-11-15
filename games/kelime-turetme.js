@@ -271,7 +271,9 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const provisional = mine.reduce((s, w) => s + points(w), 0);
   draw(container,
     timerBox,
-    el('div', { class: 'status-line' }, el('strong', {}, `${players[viewer]}: ${mine.length} kelime, ${provisional} puan${online && state.started[opp] ? ` · ${players[opp]}: ${state.counts[opp]} kelime` : ''}`)),
+    el('div', { class: 'status-line' }, el('strong', {}, `${players[viewer]}: ${mine.length} kelime, ${provisional} puan`),
+      // two phones: the other player's part is always there, on its own line, so their Başla does not move the board
+      online ? el('div', { class: 'muted status-opp' }, state.started[opp] ? `${players[opp]}: ${state.counts[opp]} kelime` : `${players[opp]} henüz başlamadı`) : null),
     wordBox,
     rack,
     el('div', { class: 'row', style: { justifyContent: 'center', gap: '8px', marginTop: '8px' } },

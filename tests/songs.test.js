@@ -195,6 +195,22 @@ test('yazılı cevap: aynı grubun başka şarkısı, başka numara, kelime içi
   assert.equal(answerMatches('!!!', '!!!'), true, 'a name of symbols only can still be typed');
   assert.equal(answerMatches('', '!!!'), false);
   assert.equal(answerMatches('dumanlar', 'Duman'), false);
+  // numbers: the answer's own must be typed, a typed one must be in the full title; Roman = Arabic
+  assert.equal(answerMatches('Eternity Part 2', 'Eternity (Part 2)'), true, 'the number inside the brackets');
+  assert.equal(answerMatches('Eternity Part 1', 'Eternity (Part 2)'), false);
+  assert.equal(answerMatches('Eternity', 'Eternity (Part 2)'), true);
+  assert.equal(answerMatches('The Unforgiven 2', 'The Unforgiven II'), true, 'Roman and Arabic numerals');
+  assert.equal(answerMatches('The Unforgiven 3', 'The Unforgiven II'), false);
+  assert.equal(answerMatches('Epitome 14', 'Epitome XIV'), true);
+  assert.equal(answerMatches('In the Presence of Enemies Part 1', 'In the Presence of Enemies - Part I'), true, 'the number after " - "');
+  assert.equal(answerMatches('Sun Was High So Was I', 'Sun Was High (So Was I)'), true);
+  // a title that is all brackets, letters that drop out of the plain alphabet
+  assert.equal(normalizeAnswer('(A)'), 'a');
+  assert.equal(answerMatches('A', '(A)'), true);
+  assert.equal(answerMatches('Getme', 'Getmə'), true);
+  assert.equal(answerMatches('Nermine Memmedova', 'Nərminə Məmmədova'), true);
+  assert.equal(answerMatches('Mu-Ziq', 'µ-Ziq'), true);
+  assert.equal(answerMatches('Er Turan', 'Ер Тұран'), true);
   const songs = { tracks: [
     { a: 'Katatonia', t: 'Deliberation', s: 200 }, { a: 'Katatonia', t: 'Liberation', s: 210 },
     { a: 'Bathory', t: 'The Lake', s: 300 }, { a: 'Bathory', t: 'Lake of Fire', s: 310 },
@@ -231,4 +247,19 @@ test('şarkı havuzu: sesi olmayan seçim yedeğe döner, az şarkı iki listede
     total += got.length;
   }
   assert.ok(single / total > 0.4, `Opeth got ${single} of ${total}`);
+  // with needAudio a picked band's silent songs do not eat its share, and a silent band counts as not picked
+  const loud = { ...data, tracks: [...data.tracks, ...Array.from({ length: 6 }, (_, i) => ({ a: 'Opeth', t: `Opeth mute ${i}`, s: 90, dz: 900 + i, np: 1 }))] };
+  single = 0;
+  total = 0;
+  for (let seed = 1; seed <= 60; seed++) {
+    const pool = mixPool(loud, { sources: { srcSecim: true }, picks: [['Opeth', 'Silent'], ['Katatonia', 'Metallica', 'Tool']], needAudio: true });
+    const got = pickSongs(pool, { count: 10, seed, favor: 'high' });
+    assert.ok(got.every(hasAudio));
+    single += got.filter((x) => x.a === 'Opeth').length;
+    total += got.length;
+  }
+  assert.ok(single / total > 0.4, `Opeth with silent songs got ${single} of ${total}`);
+  // both picked only a silent band in common: the bands each picked, not the whole list
+  const shared = mixPool(data, { sources: { srcSecim: true }, pickMode: 'ortak', picks: [['Silent', 'Metallica'], ['Silent', 'Tool']], needAudio: true });
+  assert.deepEqual([...new Set(shared.tracks.map((x) => x.a))].sort(), ['Metallica', 'Tool']);
 });

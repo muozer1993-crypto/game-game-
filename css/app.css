@@ -224,6 +224,7 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .result-banner { font-size: 1.3rem; font-weight: 700; text-align: center; margin: 8px 0 12px; }
 .status-line { text-align: center; margin: 8px 0; min-height: 1.4em; }
 .status-line strong { font-size: 1.15rem; }
+.status-opp { font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .hint { text-align: center; color: var(--muted); font-size: 0.95rem; }
 
 /* timer */
@@ -1072,7 +1073,8 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 
 /* Şarkı Süresi */
 .ss-card { text-align: center; padding: 16px 12px; }
-.ss-artist { color: var(--muted); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.06em; }
+/* no text-transform: in a lang="tr" page "Pink Floyd" would read PİNK FLOYD */
+.ss-artist { color: var(--muted); font-size: 0.9rem; font-weight: 600; letter-spacing: 0.02em; }
 .ss-title { font-size: 1.35rem; font-weight: 800; margin-top: 4px; text-wrap: balance; overflow-wrap: anywhere; }
 .ss-secret { font-size: 1.1rem; font-weight: 700; }
 .ss-clip { margin-top: 10px; }
@@ -1094,8 +1096,13 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 @media (max-height: 760px) {
   .ss-hard { padding: 10px 12px; }
   .ss-hard .ss-clip { margin-top: 6px; }
-  .ss-hard .ss-note { display: none; }
+  .ss-hard .ss-note:not(.clip-why) { display: none; } /* the instruction, not why the sound failed */
   .ss-hard .ss-bar { margin-top: 8px; }
+  .ss-hard ~ .ss-time { font-size: 2.4rem; line-height: 1.2; margin: 0; }
+}
+@media (max-height: 680px) {
+  .ss-hard + .hint { font-size: 0.85rem; line-height: 1.25; margin-bottom: 0; }
+  .ss-hard ~ .ss-time { font-size: 2.2rem; }
 }
 
 /* connection self-test (two phones) */

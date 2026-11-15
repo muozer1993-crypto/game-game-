@@ -208,7 +208,7 @@ export class Session {
     if (!msg || msg.what !== 'next' || (msg.tag ?? null) !== this.tag) return false;
     if (Number(msg.nexts) !== this.ask.nexts || this.ask.peerAsked) return false; // asked before our last 'next', or again
     this.ask.peerAsked = true;
-    this.ask.marked = markNextReady(this.container, this.players[1]) > 0; // the host's button shows it
+    this.ask.marked = markNextReady(this.container, this.players[1]) > 0; // the host's button shows it, on screen
     return true;
   }
 
