@@ -184,6 +184,11 @@ export function showMenu() {
   if (updateReady) {
     // the new version (and the relay settings it brought) takes over here, as the toast promised
     setScreen('menu');
+    // a message on the screen right now ("Rakip odadan ayrıldı") is shown again after the reload
+    const shown = typeof document !== 'undefined' && document.getElementById('toast');
+    if (shown && shown.classList.contains('show')) {
+      try { sessionStorage.setItem('oyun-gecesi:toast', JSON.stringify([shown.textContent, shown.classList.contains('error') ? 'error' : ''])); } catch { /* storage blocked */ }
+    }
     setTimeout(() => location.reload(), 150); // lets the 'leave' message go out first
     return;
   }
@@ -367,15 +372,18 @@ function showTournamentResult() {
   );
 }
 
+/** Lower case without Turkish marks: "sarki" finds "Şarkı Süresi", "kizma" finds "Kızma Birader". */
+const foldTR = (x) => String(x).toLocaleLowerCase('tr-TR').replace(/[şçğıöüâîû]/g, (c) => ({ ş: 's', ç: 'c', ğ: 'g', ı: 'i', ö: 'o', ü: 'u', â: 'a', î: 'i', û: 'u' })[c]);
+
 /** Filters the game cards below by name as you type (46 games are a long list). */
 function searchBox() {
   const input = el('input', {
     type: 'search', class: 'input', id: 'game-search', placeholder: 'Oyun ara…', autocomplete: 'off', 'aria-label': 'Oyun ara',
     onInput: (e) => {
-      const q = e.target.value.trim().toLocaleLowerCase('tr-TR');
+      const q = foldTR(e.target.value.trim());
       document.querySelectorAll('.game-card-wrap').forEach((card) => {
         const name = (card.querySelector('.game-name') || {}).textContent || '';
-        card.hidden = !!q && !name.toLocaleLowerCase('tr-TR').includes(q);
+        card.hidden = !!q && !foldTR(name).includes(q);
       });
       document.querySelectorAll('#app section.section').forEach((sec) => {
         const cards = sec.querySelectorAll('.game-card-wrap');
@@ -672,8 +680,18 @@ export function showPlay(p) {
       if (t) {
         const last = t.index >= t.ids.length;
         const nextGame = last ? null : findGame(t.ids[t.index]);
-        again = el('button', { type: 'button', class: 'btn btn-primary btn-big', onClick: () => (last ? showTournamentResult() : startTournamentGame()) },
-          last ? 'Turnuva sonucu' : `Sonraki oyun: ${nextGame ? nextGame.meta.name : '?'}`);
+        again = el('button', {
+          type: 'button', class: 'btn btn-primary btn-big',
+          onClick: async (e) => {
+            if (last) { showTournamentResult(); return; }
+            const b = e.currentTarget; // the next game's data may take a moment (the song list is large)
+            const label = b.textContent;
+            b.disabled = true;
+            b.textContent = 'Yükleniyor…';
+            await startTournamentGame();
+            if (b.isConnected) { b.disabled = false; b.textContent = label; }
+          },
+        }, last ? 'Turnuva sonucu' : `Sonraki oyun: ${nextGame ? nextGame.meta.name : '?'}`);
       } else if (isOnline && p.self === 1 && online.tournament) {
         again = el('span', { class: 'muted' }, tally && tally.index >= tally.total ? 'Turnuva bitti.' : 'Ev sahibi sonraki oyunu başlatacak…');
       } else {
@@ -878,7 +896,7 @@ export function showOnline({ code: presetCode = '' } = {}) {
         row('TURN aktarma (farklı ağlar)', ice.summary.relay > 0, `${ice.summary.relay}${ice.summary.relay ? ` (udp ${ice.summary.relayUdp}, tcp ${ice.summary.relayTcp})` : ''}`),
         ice.errors.length ? el('div', { class: 'muted ice-errors' }, ice.errors.slice(0, 4).map((e) => el('div', {}, `${e.url || 'sunucu'}: ${e.code || ''} ${e.text || 'hata'}`))) : null,
         el('p', { class: `ice-verdict ${v.ok ? 'notice' : 'rejected-note'}` }, v.text),
-        el('p', { class: 'hint' }, `${(ice.ms / 1000).toFixed(1).replace('.', ',')} sn${ice.complete ? '' : ' (süre doldu)'} · Denenen TURN: ${servers.filter((s) => String(s.urls).startsWith('turn')).map((s) => (Array.isArray(s.urls) ? s.urls[0] : s.urls).replace(/^turns?:/, '').replace(/[:?].*$/, '')).join(', ') || 'yok'}. İkiniz de bu testi yapın: farklı ağlardan oynamak için TURN satırı iki telefonda da ✓ olmalı.`),
+        el('p', { class: 'hint' }, `${(ice.ms / 1000).toFixed(1).replace('.', ',')} sn${ice.complete ? '' : ' (süre doldu)'} · Denenen TURN: ${[...new Set(servers.filter((s) => String(s.urls).startsWith('turn')).map((s) => (Array.isArray(s.urls) ? s.urls[0] : s.urls).replace(/^turns?:/, '').replace(/[:?].*$/, '')))].join(', ') || 'yok'}. İkiniz de bu testi yapın: farklı ağlardan oynamak için TURN satırı iki telefonda da ✓ olmalı.`),
       ),
     );
     testBtn.disabled = false;
@@ -1168,10 +1186,9 @@ async function handleOnlineMessage(msg) {
         online.transport.send({ t: 'resumeMoves', moves: online.session.ownMovesFrom(Number(msg.received) || 0), received: online.session.received, final: true, gameNo: online.gameNo || 0 });
       }
       closeReconnect();
-      if (online.session) {
-        online.session.render();
-        online.session.resendAsk(); // a "Hazırım" sent while the link was down never arrived
-      }
+      // no redraw here: every replayed move already drew its screen, and a redraw would stop a playing
+      // clip and clear half-typed answers
+      if (online.session) online.session.resendAsk(); // a "Hazırım" sent while the link was down never arrived
       toast('Bağlantı yeniden kuruldu', { duration: 2500 });
       return;
     }
@@ -1213,7 +1230,8 @@ async function handleOnlineMessage(msg) {
     }
     case 'ask': { // the guest is ready for the next round; only the host moves the game on
       if (online.role !== 'host' || !online.session) return;
-      if (online.session.receiveAsk(msg)) toast(`${online.players ? online.players[1] : 'Rakip'} hazır: sonrakine geçebilirsin`, { duration: 3000 });
+      // the button says it ("· Ayşe hazır"); a toast only when no such button is on the screen yet
+      if (online.session.receiveAsk(msg) && !online.session.ask.marked) toast(`${online.players ? online.players[1] : 'Rakip'} hazır: sonrakine geçebilirsin`, { duration: 3000 });
       return;
     }
     case 'emoji': {
@@ -1272,3 +1290,11 @@ else if (bootScreen === 'online') { showMenu(); showOnline(); }
 else if (bootScreen === 'rastgele') { showMenu(); showSetup(games[Math.floor(Math.random() * games.length)]); }
 else if (bootGame) { showMenu(); showSetup(bootGame); }
 else showMenu();
+try { // the message that was on the screen when the page reloaded for a new version
+  const saved = sessionStorage.getItem('oyun-gecesi:toast');
+  if (saved) {
+    sessionStorage.removeItem('oyun-gecesi:toast');
+    const [text, kind] = JSON.parse(saved);
+    if (text) toast(String(text), { kind: kind === 'error' ? 'error' : undefined, duration: 4000 });
+  }
+} catch { /* storage blocked */ }

@@ -23,12 +23,15 @@ export const ADVANCE_GUARD_MS = 800; // and this long after a new screen comes u
 /** Phases that end a round: their screen (result, buttons) comes up under a finger still playing. */
 export const ROUND_END_PHASES = new Set(['result', 'reveal', 'summary', 'compare', 'handOver', 'roundOver', 'review']);
 
-/** Does this move bring up a new screen on this phone? */
+/**
+ * Does this move bring up a new screen on this phone? 'short' for this phone's own 'Başla': a timed
+ * turn starts there, so only a double tap on Başla is stopped (the switch guard), not the first keys.
+ */
 export function freshScreen(prev, next, move, remote) {
   if (!prev || !next || !move) return false;
   if (move.type === 'next') return true;
   // the other phone's own 'Başla' (each plays a separate timed round) leaves this screen as it is
-  if (move.type === 'start') return !remote || prev.phase !== next.phase;
+  if (move.type === 'start') return remote ? prev.phase !== next.phase : 'short';
   if (next.phase !== prev.phase && ROUND_END_PHASES.has(next.phase)) return true;
   return !!next.review && !prev.review; // objections to unlisted words (word games)
 }
@@ -79,7 +82,7 @@ export class Session {
       options: this.options,
       isHost: this.mode !== 'online' || this.self === 0,
       ask: this.ask,
-      requestNext: () => this.requestNext(),
+      requestNext: (opts) => this.requestNext(opts),
     };
     this.onEnd = opts.onEnd || (() => {});
     this.onChange = opts.onChange || (() => {});
@@ -134,7 +137,8 @@ export class Session {
     const prev = this.state;
     this.state = next;
     if (move.type === 'next') Object.assign(this.ask, { asked: false, peerAsked: false, nexts: this.ask.nexts + 1 });
-    if (freshScreen(prev, next, move, remote)) this.guardPending = true; // see renderNow
+    const fresh = freshScreen(prev, next, move, remote);
+    if (fresh) this.guardPending = fresh; // see renderNow
     const publicMove = stripSecret(move);
     if (!remote && this.mode === 'online') {
       const seq = this.sent++;
@@ -204,7 +208,7 @@ export class Session {
     if (!msg || msg.what !== 'next' || (msg.tag ?? null) !== this.tag) return false;
     if (Number(msg.nexts) !== this.ask.nexts || this.ask.peerAsked) return false; // asked before our last 'next', or again
     this.ask.peerAsked = true;
-    markNextReady(this.container, this.players[1]);
+    this.ask.marked = markNextReady(this.container, this.players[1]) > 0; // the host's button shows it
     return true;
   }
 
@@ -291,7 +295,11 @@ export class Session {
     const turn = this.currentTurn();
     // a new round or screen ('next' / 'start', from either phone): the tap that was still on its way
     // to the old button must not press what the new screen puts in its place
-    if (this.guardPending) { this.guardPending = false; this.blockTaps(ADVANCE_GUARD_MS, true); }
+    if (this.guardPending) {
+      const short = this.guardPending === 'short';
+      this.guardPending = false;
+      this.blockTaps(short ? SWITCH_GUARD_MS : ADVANCE_GUARD_MS, true);
+    }
     let viewer;
     if (this.mode === 'online') {
       viewer = this.self;

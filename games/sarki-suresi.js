@@ -7,7 +7,7 @@ import { nextButton } from '../js/ui/next.js';
 import { createKeyboard } from '../js/ui/keyboard.js';
 import { createClipPlayer, clipReady } from '../js/ui/clip.js';
 import { keepArtistPick, rememberedPicks } from '../js/ui/artist-pick.js';
-import { pickSongs, mixPool, pickGroups, hasAudio, fmt, sourceSettings, sourcesFrom, needsPick } from '../js/lib/songs.js';
+import { pickSongs, mixPool, topUp, pickGroups, hasAudio, fmt, sourceSettings, sourcesFrom, needsPick, silentArtists } from '../js/lib/songs.js';
 
 export { fmt, hasAudio, pickSongs };
 
@@ -25,7 +25,7 @@ export const meta = {
     'Normal: şarkının adı ve grubu yazar. Zor: ad gizlidir, ▶ düğmesi şarkıdan seçtiğiniz kadar saniye çalar (internet gerekir); ad ancak ikiniz de tahmin edince açıklanır.',
     'İki telefonda şarkı ikinize birden gelir, ikiniz aynı anda tahmin edersiniz (kimse beklemez); ikiniz de girince sonuç açılır. Sonraki şarkıya odayı kuran geçer, öbürü "Hazırım" der.',
     'Tek telefonda önce biri tahminini gizlice girer ve telefonu verir, sonra öbürü girer; ardından ikiniz de sonucu görürsünüz. İlk tahmin eden her şarkıda değişir.',
-    'Süreyi dakika ve saniye olarak art arda yazarsın: 4 3 2 → 4:32. Oyun sonunda çok tur alan kazanır; eşitlikte tahminlerinin gerçekten toplam sapması az olan.',
+    'Süreyi dakika ve saniye olarak art arda yazarsın: 4 3 2 → 4:32. Oyun sonunda çok tur alan kazanır; eşitlikte tahminlerinin gerçek süreden toplam sapması az olan kazanır.',
     'Şarkı havuzu: işaretlediğin kaynaklar eşit pay alır: Mustafa\'nın listesi (favori ayarına göre Katatonia, Opeth, Anathema, Antimatter sık), Beyza\'nın listeleri, "beyz ve mu" ortak listesi, bilinen Türkçe şarkılar, Mustafa\'nın listesinden Beyza\'ya yakınlar, ya da oyun başında ikinizin işaretlediği gruplar (yarısı birinin, yarısı öbürünün seçtiklerinden; gruplar kendi aralarında eşit, ikinizin de seçtiği gruplar iki pay alır). Zor modda sesi olmayan şarkı çıkmaz.',
   ].join('\n'),
   data: ['songs'],
@@ -76,9 +76,10 @@ export function parseDigits(digits) {
 
 /** Draw the game's songs (plus a reserve in hard mode) from the mix the settings and picks describe. */
 function drawSongs(state, data) {
-  const pool = mixPool(data, { sources: state.sources, favor: state.favor, picks: state.picks, pickMode: state.pickMode });
   const hard = state.mode === 'hard';
-  const all = pickSongs(pool, { count: state.count + (hard ? RESERVE : 0), favor: 'high', seed: state.seed, needAudio: hard });
+  const pool = mixPool(data, { sources: state.sources, favor: state.favor, picks: state.picks, pickMode: state.pickMode, needAudio: hard });
+  const want = state.count + (hard ? RESERVE : 0);
+  const all = topUp(pickSongs(pool, { count: want, favor: 'high', seed: state.seed, needAudio: hard }), data, state, want, hard);
   return { songs: all.slice(0, state.count), reserve: all.slice(state.count) };
 }
 
@@ -201,8 +202,9 @@ export function getTurn(state) {
     const g = state.guesses[state.index];
     return { player: g[f] == null ? f : 1 - f, private: true, simultaneous: true };
   }
-  // the reveal is looked at together; on one phone the second guesser is holding it
-  if (state.phase === 'reveal') return { player: 1 - firstGuesser(state.index), private: false, simultaneous: true };
+  // the reveal is looked at together: it belongs to nobody, so on one phone the next song's first
+  // guess always comes behind a "give the phone" screen (its guesser may be the one holding it now)
+  if (state.phase === 'reveal') return { player: null, private: false, simultaneous: true };
   return null;
 }
 
@@ -248,6 +250,9 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       groups: pickGroups(ctx.songs),
       playerName: players[viewer],
       otherPicks: state.picks[1 - viewer],
+      pickMode: state.pickMode,
+      otherSources: Object.values(state.sources || {}).filter(Boolean).length - 1,
+      silent: state.mode === 'hard' ? silentArtists(ctx.songs) : null,
       onDone: (artists) => sendMove({ type: 'pick', artists }),
     });
     return null;
@@ -302,7 +307,8 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       if (!mem.swapping && state.reserve.length) {
         clipReady(song).then((ok) => {
           const now = mem.state;
-          if (ok || mem.swapping || roundMem.get(container) !== mem || !now || now.phase !== 'guess' || now.index !== i) return;
+          // entry.dead: this guess screen is gone (the guess went in and the phone was handed over)
+          if (ok || entry.dead || mem.swapping || roundMem.get(container) !== mem || !now || now.phase !== 'guess' || now.index !== i) return;
           const gg = now.guesses[i];
           if (gg[0] != null || gg[1] != null) return; // a guess is in: this phone keeps the song (the clip shows its title)
           mem.swapping = true;
@@ -317,7 +323,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
         note: 'Dinle, süresini tahmin et. İstersen tekrar çalabilirsin.',
         onFail: () => { fallback.hidden = false; },
       });
-      card = el('div', { class: 'card ss-card' }, el('div', { class: 'ss-secret' }, '🎧 Gizli şarkı'), clip.root, fallback);
+      card = el('div', { class: 'card ss-card ss-hard' }, el('div', { class: 'ss-secret' }, '🎧 Gizli şarkı'), clip.root, fallback);
     } else {
       card = el('div', { class: 'card ss-card' }, el('div', { class: 'ss-artist' }, song.a), el('div', { class: 'ss-title' }, song.t));
     }

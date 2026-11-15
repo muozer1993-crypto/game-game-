@@ -35,7 +35,7 @@ export function nextButton(ctx, sendMove, label, opts = {}) {
           && !confirm(`${players[1]} henüz "Hazırım" demedi; itirazlarını bitirmemiş olabilir. Yine de geçilsin mi?`)) return;
         sendMove(typeof move === 'function' ? move() : move);
       },
-    }, label, ready ? readyTag(players[1]) : null);
+    }, el('span', { class: 'next-label' }, label, ready ? readyTag(players[1]) : null));
   }
   const asked = !!ask.asked;
   const note = el('p', { class: 'hint next-ask-note' }, asked
@@ -56,11 +56,14 @@ export function nextButton(ctx, sendMove, label, opts = {}) {
   return el('div', { class: 'next-ask', style }, button, note);
 }
 
-/** Host: the guest said it is ready; mark the "next" buttons on the screen without redrawing it. */
+/** Host: the guest said it is ready; mark the "next" buttons on the screen without redrawing it. Returns how many. */
 export function markNextReady(container, name) {
-  if (!container || typeof container.querySelectorAll !== 'function') return;
+  if (!container || typeof container.querySelectorAll !== 'function') return 0;
+  let n = 0;
   for (const b of container.querySelectorAll('.next-btn:not(.next-ready)')) {
     b.classList.add('next-ready');
-    b.append(readyTag(name));
+    (b.querySelector('.next-label') || b).append(readyTag(name)); // one line with the label, not a second column
+    n++;
   }
+  return n;
 }

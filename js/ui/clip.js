@@ -63,16 +63,19 @@ export function clipReady(song, timeoutMs = 15000) {
  * @param {number} opts.seconds    how much of the preview plays before it stops (replay allowed)
  * @param {boolean} [opts.pausable]  the button pauses while playing (quiz); default: it is disabled while playing
  * @param {number} [opts.heard]    seconds already listened before this render (carried across re-renders)
+ * @param {number} [opts.at]       where in the clip to go on from (a re-render while it was paused halfway)
  * @param {(heard: number, playing: boolean) => void} [opts.onTick]  called while playing and on stop
  * @param {() => void} [opts.onFail]  no preview, or it could not be loaded
  * @param {string} [opts.note]     text under the bar
- * @returns {{ root: HTMLElement, destroy(): void, heard(): number }}
+ * @returns {{ root: HTMLElement, destroy(): void, heard(): number, position(): number }}
  */
 export function createClipPlayer(song, opts) {
   const seconds = Number(opts.seconds) || 10;
   const label = `▶ ${seconds} saniye çal`;
-  const btn = el('button', { type: 'button', class: 'btn btn-primary btn-big ss-play' }, label);
-  const fill = el('div', { class: 'ss-fill' });
+  let startAt = Math.max(0, Number(opts.at) || 0);
+  if (startAt >= seconds - 0.05) startAt = 0;
+  const btn = el('button', { type: 'button', class: 'btn btn-primary btn-big ss-play' }, startAt && opts.pausable ? '▶ Devam et' : label);
+  const fill = el('div', { class: 'ss-fill', style: { width: `${(startAt / seconds) * 100}%` } });
   const bar = el('div', { class: 'ss-bar', 'aria-hidden': 'true' }, fill);
   const note = el('p', { class: 'hint ss-note' }, opts.note || 'Dinle, istersen tekrar çalabilirsin.');
   const root = el('div', { class: 'ss-clip' }, btn, bar, note);
@@ -82,7 +85,8 @@ export function createClipPlayer(song, opts) {
   let stopTimer = null;
   let raf = null;
   let heard = Number(opts.heard) || 0; // seconds listened in total, replays included
-  let lastPos = 0;
+  let lastPos = startAt;
+  let destroyed = false; // the screen was redrawn or left: a late load must not start anything
   const setFailed = (why) => {
     if (failed) return;
     failed = true;
@@ -92,6 +96,7 @@ export function createClipPlayer(song, opts) {
     if (opts.onFail) opts.onFail();
   };
   const ready = previewUrl(song).then((url) => {
+    if (destroyed) return;
     if (!url) { setFailed('Bu şarkının ses örneği yok.'); return; }
     audio = new Audio();
     audio.preload = 'auto';
@@ -122,18 +127,21 @@ export function createClipPlayer(song, opts) {
   btn.addEventListener('click', async () => {
     if (failed) return;
     if (playing) { if (opts.pausable) stop(false); return; }
-    if (!audio) { btn.textContent = 'Yükleniyor…'; await ready; if (!audio) return; }
+    if (!audio) { btn.textContent = 'Yükleniyor…'; await ready; if (!audio || destroyed) return; }
     try {
+      if (startAt) { try { audio.currentTime = startAt; } catch { /* not seekable yet */ } startAt = 0; }
       const atEnd = audio.currentTime >= seconds - 0.05;
       if (atEnd || audio.ended) { try { audio.currentTime = 0; } catch { /* not seekable yet */ } }
       lastPos = audio.currentTime;
       await audio.play();
+      if (destroyed) { if (audio) audio.pause(); return; }
       playing = true;
       btn.disabled = !opts.pausable;
       btn.textContent = opts.pausable ? '⏸ Durdur' : 'Çalıyor…';
       raf = requestAnimationFrame(tick);
       stopTimer = setTimeout(() => stop(true), (seconds - lastPos + 2) * 1000); // buffering may delay the start
     } catch {
+      if (destroyed) return;
       btn.disabled = false;
       btn.textContent = label;
       toast('Çalınamadı; bir daha dokun', { kind: 'error' });
@@ -142,6 +150,7 @@ export function createClipPlayer(song, opts) {
   return {
     root,
     heard: () => heard,
-    destroy: () => { stop(false); if (audio) { audio.removeAttribute('src'); audio.load(); audio = null; } },
+    position: () => startAt || (audio ? audio.currentTime : 0),
+    destroy: () => { destroyed = true; stop(false); if (audio) { audio.removeAttribute('src'); audio.load(); audio = null; } },
   };
 }

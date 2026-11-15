@@ -251,7 +251,7 @@ test('dokunma koruması: rakibin kendi "Başla"sı oynayan telefonu dondurmaz; o
   const s0 = harfAvi.setup({ seed: 5, seconds: 60 });
   const s1 = harfAvi.applyMove(s0, 1, { type: 'start' });
   assert.equal(freshScreen(s0, s1, { type: 'start' }, true), false, "the other phone's Başla changes nothing here");
-  assert.equal(freshScreen(s0, s1, { type: 'start' }, false), true, 'my own Başla brings up my grid');
+  assert.equal(freshScreen(s0, s1, { type: 'start' }, false), 'short', 'my own Başla brings up my grid (a short guard: my clock is running)');
   // a shared start (Refleks, Tabu, Son Hece) changes the phase on both phones
   assert.equal(freshScreen({ phase: 'ready' }, { phase: 'wait' }, { type: 'start' }, true), true);
   assert.equal(freshScreen({ phase: 'play' }, { phase: 'handOver' }, { type: 'play' }, true), true, "a round's end");

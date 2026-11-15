@@ -1,5 +1,5 @@
 import { test, assert } from './runner.js';
-import { poolFor, mixPool, sourcesFrom, needsPick, pickSongs, catalogArtists, pickGroups, artistOptions, songOptions, listTracks, hasAudio, commonArtists, normalizeAnswer, editDistance, answerMatches } from '../js/lib/songs.js';
+import { poolFor, mixPool, sourcesFrom, needsPick, pickSongs, catalogArtists, pickGroups, artistOptions, songOptions, listTracks, hasAudio, commonArtists, normalizeAnswer, editDistance, answerMatches, titleMatches, artistMatches, topUp, silentArtists } from '../js/lib/songs.js';
 
 const data = {
   weights: { Katatonia: 3 },
@@ -182,4 +182,53 @@ test('şarkı havuzu: işaretlenen kaynaklar eşit pay alır, kaynak yoksa ilk l
   assert.ok(noPicks.tracks.length === 41, 'nobody picked anything: the first list');
   const drawn = pickSongs(two, { count: 10, seed: 3 });
   assert.equal(drawn.length, 10);
+});
+
+test('yazılı cevap: aynı grubun başka şarkısı, başka numara, kelime içi parça ve başka alfabeler', () => {
+  assert.equal(answerMatches('The Unforgiven II', 'The Unforgiven'), false, 'a number names another song');
+  assert.equal(answerMatches('Vermilion', 'Vermilion, Pt. 2'), false);
+  assert.equal(answerMatches('Vanished', 'Shed'), false, 'whole words only');
+  assert.equal(answerMatches('Hello I Love You', 'Hello, I Love You'), true, 'an I in the middle is not a number');
+  assert.equal(answerMatches('I Fly Among the Stars', 'II - I Fly Among the Stars'), true, 'the title after a leading numeral');
+  assert.equal(answerMatches('batushka', 'БАТЮШКА'), true, 'Cyrillic typed in Latin letters');
+  assert.equal(answerMatches('БАТЮШКА', 'БАТЮШКА'), true);
+  assert.equal(answerMatches('!!!', '!!!'), true, 'a name of symbols only can still be typed');
+  assert.equal(answerMatches('', '!!!'), false);
+  assert.equal(answerMatches('dumanlar', 'Duman'), false);
+  const songs = { tracks: [
+    { a: 'Katatonia', t: 'Deliberation', s: 200 }, { a: 'Katatonia', t: 'Liberation', s: 210 },
+    { a: 'Bathory', t: 'The Lake', s: 300 }, { a: 'Bathory', t: 'Lake of Fire', s: 310 },
+    { a: 'Death', t: 'Crystal Mountain', s: 300 }, { a: 'Death Cab for Cutie', t: 'Transatlanticism', s: 400 },
+  ] };
+  assert.equal(titleMatches(songs, { a: 'Katatonia', t: 'Deliberation' }, 'Liberation'), false, "the band's other song");
+  assert.equal(titleMatches(songs, { a: 'Katatonia', t: 'Deliberation' }, 'deliberaton'), true, 'a slip is still forgiven');
+  assert.equal(titleMatches(songs, { a: 'Bathory', t: 'The Lake' }, 'Lake of Fire'), false);
+  assert.equal(titleMatches(songs, { a: 'Bathory', t: 'The Lake' }, 'the lake'), true);
+  assert.equal(artistMatches(songs, { a: 'Death' }, 'Death Cab for Cutie'), false, 'another band in the list');
+  assert.equal(artistMatches(songs, { a: 'Death' }, 'death'), true);
+});
+
+test('şarkı havuzu: sesi olmayan seçim yedeğe döner, az şarkı iki listeden tamamlanır, tek grup yarı payını alır', () => {
+  // picked bands with no sound: with needAudio the pick falls back instead of leaving nothing
+  const silentPick = mixPool(data, { sources: { srcSecim: true }, picks: [['Silent'], ['Silent']], needAudio: true });
+  assert.ok(silentPick.tracks.length > 0 && silentPick.tracks.every(hasAudio));
+  assert.ok(silentArtists(data).has('silent') && !silentArtists(data).has('tool'));
+  // two songs in the pick: topped up to the full count from the lists, no song twice, same seed same songs
+  const tiny = pickSongs(mixPool(data, { sources: { srcSecim: true }, picks: [['Mix Band'], []] }), { count: 2, seed: 3 });
+  const full = topUp(tiny.slice(), data, { seed: 3 }, 10, true);
+  assert.equal(full.length, 10);
+  assert.equal(new Set(full.map((x) => `${x.a}|${x.t}`)).size, 10);
+  assert.deepEqual(full.slice(0, 2), tiny);
+  assert.deepEqual(full, topUp(tiny.slice(), data, { seed: 3 }, 10, true));
+  assert.ok(full.every(hasAudio));
+  // one player picks a single band, the other three: the single band gets about half of the songs
+  let single = 0;
+  let total = 0;
+  for (let seed = 1; seed <= 60; seed++) {
+    const pool = mixPool(data, { sources: { srcSecim: true }, picks: [['Opeth'], ['Katatonia', 'Metallica', 'Tool']] });
+    const got = pickSongs(pool, { count: 10, seed, favor: 'high' }); // as the games draw: the pool's weights decide
+    single += got.filter((x) => x.a === 'Opeth').length;
+    total += got.length;
+  }
+  assert.ok(single / total > 0.4, `Opeth got ${single} of ${total}`);
 });

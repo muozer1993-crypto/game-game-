@@ -260,7 +260,9 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     if (!mine) return;
     const word = state.required + typed;
     const known = ctx.dict ? ctx.dict.has(normalizeWord(word)) : true;
-    if (!known && warned !== word && normalizeWord(word) !== state.required) {
+    // warn only about a word the rules would take: any other is refused at once with its real reason
+    const wouldTake = () => { try { applyMove(state, viewer, { type: 'word', word, known: false, at: Date.now() }, ctx); return true; } catch { return false; } };
+    if (!known && warned !== word && wouldTake()) {
       warned = word;
       warnNote.textContent = `${upperTR(word)} kelime listesinde yok. Yine de söylemek için tekrar ↵ bas: zincirde işaretli kalır, oyun bitince rakibin itiraz ederse kaybedersin.`;
       warnNote.hidden = false;

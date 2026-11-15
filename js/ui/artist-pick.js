@@ -1,7 +1,7 @@
 // "Which bands do you listen to?" — chips with a search box; the choice is remembered per player name.
 import { el, render } from './dom.js';
 import { load, save } from '../lib/storage.js';
-import { normKey } from '../lib/songs.js';
+import { normKey, normalizeAnswer } from '../lib/songs.js';
 import { nameSuffix } from '../lib/tr.js';
 
 const KEY = (name) => `song-picks:${normKey(name)}`;
@@ -10,7 +10,10 @@ export const rememberedPicks = (name) => (load(KEY(name), []) || []).filter((a) 
 
 /**
  * @param {HTMLElement} container
- * @param {{ groups: { title: string, artists: string[] }[], playerName: string, otherPicks?: string[]|null, onDone: (picked: string[]) => void }} opts
+ * @param {{ groups: { title: string, artists: string[] }[], playerName: string, otherPicks?: string[]|null, onDone: (picked: string[]) => void,
+ *   pickMode?: string, otherSources?: number, silent?: Set<string> }} opts
+ *   pickMode 'ortak': only bands both pick play; otherSources: how many other ticked sources bring songs
+ *   too; silent: bands (normKey) none of whose songs can play a clip, in a game that needs the sound
  */
 export function renderArtistPick(container, opts) {
   const groups = opts.groups || [{ title: '', artists: opts.artists || [] }];
@@ -18,6 +21,7 @@ export function renderArtistPick(container, opts) {
   const known = new Set(all.map(normKey));
   const picked = new Set(rememberedPicks(opts.playerName).filter((a) => known.has(normKey(a))).map(normKey));
   const other = new Set((opts.otherPicks || []).map(normKey));
+  const silent = opts.silent || new Set();
   const count = el('span', { class: 'ap-count' });
   const grid = el('div', { class: 'ap-grid' });
   const search = el('input', { type: 'search', class: 'input', id: 'ap-search', placeholder: 'Grup ara…', autocomplete: 'off', inputmode: 'search' });
@@ -38,12 +42,13 @@ export function renderArtistPick(container, opts) {
       e.currentTarget.setAttribute('aria-pressed', picked.has(k) ? 'true' : 'false');
       update();
     },
-  }, a);
+  }, a, silent.has(normKey(a)) ? ' 🔇' : '');
   const draw = () => {
     const q = normKey(search.value);
+    const qa = normalizeAnswer(search.value); // "sebnem" finds "Şebnem Ferah"
     render(grid, groups.map((g) => {
       if (g.searchOnly && !q) return null; // a long tail that only the search box reaches
-      const names = g.artists.filter((a) => !q || normKey(a).includes(q));
+      const names = g.artists.filter((a) => !q || normKey(a).includes(q) || (qa && normalizeAnswer(a).includes(qa)));
       if (!names.length) return null;
       return el('div', { class: 'ap-group' },
         g.title ? el('h3', { class: 'ap-group-title' }, g.title) : null,
@@ -60,9 +65,15 @@ export function renderArtistPick(container, opts) {
   });
   render(container,
     el('h2', { class: 'ap-title' }, `${opts.playerName}, dinlediğin grupları seç`),
-    el('p', { class: 'hint' }, opts.otherPicks
-      ? 'Kesikli çerçeveliler rakibinin seçtikleri. Aradığın grup listede yoksa yukarıdan ara. Seçimin bu telefonda adınla hatırlanır.'
-      : 'Şarkıların yarısı senin, yarısı rakibinin seçtiği gruplardan gelir; ikinizin de seçtiği gruplar iki pay alır. Aradığın grup listede yoksa yukarıdan ara. Seçimin bu telefonda adınla hatırlanır.'),
+    el('p', { class: 'hint' }, [
+      opts.otherPicks ? 'Kesikli çerçeveliler rakibinin seçtikleri.' : null,
+      opts.pickMode === 'ortak'
+        ? 'Yalnız ikinizin de seçtiği gruplar çalar (ortak grup yoksa ikinizin seçtiklerinin hepsi).'
+        : 'Seçilen gruplardan gelen şarkıların yarısı senin, yarısı rakibinin seçtiklerinden; ikinizin de seçtiği gruplar iki pay alır.',
+      opts.otherSources > 0 ? 'Ayarlarda işaretli öbür kaynaklar da şarkı getirir.' : null,
+      silent.size ? '🔇: bu grubun şarkılarının sesi yok, bu oyunda çalmaz.' : null,
+      'Aradığın grup listede yoksa yukarıdan ara. Seçimin bu telefonda adınla hatırlanır.',
+    ].filter(Boolean).join(' ')),
     el('div', { class: 'ap-tools' },
       search,
       el('button', { type: 'button', class: 'btn btn-small', onClick: () => { picked.clear(); update(); } }, 'Temizle'),

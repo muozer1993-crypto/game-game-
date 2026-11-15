@@ -100,9 +100,13 @@ const ERROR_TEXT = {
 };
 
 function describe(err) {
-  const type = err && err.type;
+  let type = err && err.type;
+  // PeerJS reports a failed id request as a server error even when the phone simply has no internet
+  if (type === 'server-error' && typeof navigator !== 'undefined' && navigator.onLine === false) type = 'network';
   return ERROR_TEXT[type] || (err && err.message) || 'Bağlantı hatası';
 }
+
+const HOST_GIVE_UP_MS = 30000; // the guest gives up on an unopened connection after 25 s
 
 /** Wrap a Peer + DataConnection into the transport interface (exported for the unit tests). */
 export function makeTransport(role, code, peer) {
@@ -188,6 +192,16 @@ export function makeTransport(role, code, peer) {
     if (c.open) {
       open = true;
       openHandlers.forEach((fn) => { try { fn(); } catch (e) { console.warn(e); } });
+    } else if (role === 'host') {
+      // a guest that gave up (or vanished) never says so, and its connection can sit in ICE
+      // 'disconnected' for minutes: past the guest's own limit the attempt counts as failed, so the
+      // room is re-registered when the host comes back to the app and the next attempt can come in
+      const giveUp = setTimeout(() => {
+        if (closed || wasOpen || !current()) return;
+        failedEarly({ type: 'negotiation-failed' });
+        try { c.close(); } catch { /* ignore */ }
+      }, HOST_GIVE_UP_MS);
+      if (giveUp && typeof giveUp.unref === 'function') giveUp.unref();
     }
   };
 

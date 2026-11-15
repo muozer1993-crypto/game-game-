@@ -238,10 +238,13 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     warnedWords.set(key, word);
     warnNote.textContent = `${upperTR(word)} kelime listesinde yok. Yine de eklersen işaretli kalır; rakibin sonunda itiraz ederse puan getirmez.`;
     warnNote.hidden = false;
-    submitBtn.textContent = 'Yine de ekle';
+    submitLabel.textContent = 'Yine de ekle';
   };
+  // the button is as wide as "Yine de ekle" from the start: growing would reflow the row and put
+  // "Temizle" under the finger that confirms
+  const submitLabel = el('span', {}, 'Gönder');
   const submitBtn = el('button', {
-    type: 'button', class: 'btn btn-primary',
+    type: 'button', class: 'btn btn-primary btn-stack',
     onClick: () => {
       if (used.length < MIN_LEN) return;
       const word = wordOf(used);
@@ -250,13 +253,13 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       warnedWords.delete(key);
       sendMove({ type: 'word', secret: { word, unlisted: !listed } });
     },
-  }, 'Gönder');
+  }, submitLabel, el('span', { 'aria-hidden': 'true', class: 'btn-stack-sizer' }, 'Yine de ekle'));
   const update = () => {
     drafts.set(key, used);
     tiles.forEach((t, i) => { t.disabled = used.includes(i); });
     wordBox.textContent = used.length ? upperTR(wordOf(used)) : '';
     submitBtn.disabled = used.length < MIN_LEN;
-    if (warned !== null && warned !== wordOf(used)) { warned = null; warnedWords.delete(key); warnNote.hidden = true; submitBtn.textContent = 'Gönder'; }
+    if (warned !== null && warned !== wordOf(used)) { warned = null; warnedWords.delete(key); warnNote.hidden = true; submitLabel.textContent = 'Gönder'; }
   };
   const rack = el('div', { class: 'kt-tiles' }, state.rack.map((l, i) => {
     const t = el('button', { type: 'button', class: 'wh-cell kt-tile', 'aria-label': upperTR(l), onClick: () => { if (!used.includes(i)) { used = used.concat([i]); update(); } } }, upperTR(l));

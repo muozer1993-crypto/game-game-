@@ -363,10 +363,12 @@ export function createGame(cfg) {
     return {
       note,
       clear() { if (warned !== null) { warned = null; drafts.delete(memo); note.hidden = true; } },
-      check(raw) {
+      /** `tried`: guesses already made; a repeat is refused at once with the real reason, not warned about */
+      check(raw, tried = []) {
         if (isNumber || !ctx.dict) return false;
         const word = normalizeWord(raw || '');
         if (word.length !== length || !isTurkishWord(word) || ctx.dict.has(word)) return false;
+        if (tried.some((g) => g.word === word)) return false;
         if (warned === word) return true;
         warned = word;
         drafts.set(memo, word);
@@ -526,7 +528,7 @@ export function createGame(cfg) {
       onBackspace: () => { if (!mine || myPending) return; typed = typed.slice(0, -1); drawCurrent(); warn.clear(); },
       onEnter: () => {
         if (!mine || myPending) return;
-        const unlisted = warn.check(typed);
+        const unlisted = warn.check(typed, myGuesses);
         if (unlisted === null) return;
         sendMove(unlisted ? { type: 'guess', word: typed, unlisted: true } : { type: 'guess', word: typed });
       },

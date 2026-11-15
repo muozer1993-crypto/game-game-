@@ -37,6 +37,10 @@ test('tr: bulunma eki (-de/-da/-te/-ta)', () => {
   assert.equal(nameSuffix('Mustafa', 'de'), "Mustafa'da");
   assert.equal(nameSuffix('Ahmet', 'de'), "Ahmet'te");
   assert.equal(nameSuffix('Burak', 'de'), "Burak'ta");
+  assert.equal(nameSuffix('Kemal', 'de'), "Kemal'de", 'a soft final l takes front suffixes');
+  assert.equal(nameSuffix('Meral', 'in'), "Meral'in");
+  assert.equal(nameSuffix('Celâl', 'i'), "Celâl'i");
+  assert.equal(nameSuffix('Kemal', 'e'), "Kemal'e");
   assert.equal(nameSuffix('Gül', 'de'), "Gül'de");
   assert.equal(nameSuffix('Oyuncu 1', 'de'), "Oyuncu 1'de");
   assert.equal(nameSuffix('Oyuncu 2', 'de'), "Oyuncu 2'de");

@@ -103,6 +103,14 @@ export function pickGroups(data) {
   return groups;
 }
 
+/** Bands (normKey) none of whose songs can play a clip: marked in the picker of a game that needs the sound. */
+export function silentArtists(data) {
+  const sound = new Set();
+  const all = new Set();
+  for (const t of allTracks(data)) { const k = normKey(t.a); all.add(k); if (hasAudio(t)) sound.add(k); }
+  return new Set([...all].filter((k) => !sound.has(k)));
+}
+
 /** Every band the players can pick, flat and sorted. */
 export const catalogArtists = (data) => sortNames(pickGroups(data).flatMap((g) => g.artists));
 
@@ -111,10 +119,12 @@ export const catalogArtists = (data) => sortNames(pickGroups(data).flatMap((g) =
  * the draws whatever its size; within a source songs are equal (the first person's list keeps its
  * favourite weights, picked bands their per-player balance). A song in several sources adds up.
  * @param {object} data
- * @param {{ sources?: object, favor?: string, picks?: string[][], pickMode?: string }} opts
- * @returns {{ tracks: object[], weights: object, perSong: true }}
+ * With `needAudio` songs without a clip are left out first, so a source that has none (bands picked
+ * whose songs have no sound) falls back like an empty one instead of leaving nothing to draw.
+ * @param {{ sources?: object, favor?: string, picks?: string[][], pickMode?: string, needAudio?: boolean }} opts
+ * @returns {{ tracks: object[], weights: object, perSong: true, shares: object }}
  */
-export function mixPool(data, { sources = {}, favor = 'high', picks = [[], []], pickMode = 'birlesim' } = {}) {
+export function mixPool(data, { sources = {}, favor = 'high', picks = [[], []], pickMode = 'birlesim', needAudio = false } = {}) {
   const parts = [];
   const favTable = new Map();
   for (const [k, v] of Object.entries((data && data.weights) || {})) if (Number(v) > 0) favTable.set(normKey(k), Number(v));
@@ -126,10 +136,11 @@ export function mixPool(data, { sources = {}, favor = 'high', picks = [[], []], 
   if (sources.srcTurkce) parts.push({ tracks: poolFor(data, { pool: 'turkce' }).tracks, weightOf: () => 1 });
   if (sources.srcSecim) {
     const p = poolFor(data, { pool: pickMode === 'ortak' ? 'ortak' : 'secim', picks });
-    if (p.tracks.length) parts.push({ tracks: p.tracks, weightOf: (t) => p.weights[t.a] || 1 });
+    if (p.tracks.length) parts.push({ tracks: p.tracks, weightOf: (t) => p.weights[t.a] || 1, shares: p.shares });
   }
+  if (needAudio) for (const p of parts) p.tracks = p.tracks.filter(hasAudio);
   const live = parts.filter((p) => p.tracks.length);
-  if (!live.length) return { tracks: listTracks(data, 1), weights: {}, perSong: true };
+  if (!live.length) return { tracks: listTracks(data, 1).filter((t) => !needAudio || hasAudio(t)), weights: {}, perSong: true, shares: {} };
   const byKey = new Map();
   const weights = {};
   for (const part of live) {
@@ -141,7 +152,9 @@ export function mixPool(data, { sources = {}, favor = 'high', picks = [[], []], 
       weights[k] = (weights[k] || 0) + (1000 / live.length) * (part.weightOf(t) / total);
     }
   }
-  return { tracks: [...byKey.values()], weights, perSong: true };
+  const shares = {}; // picked bands: each one's part of all the draws (pickSongs lets a big part come up often)
+  for (const part of live) for (const [a, x] of Object.entries(part.shares || {})) shares[a] = (shares[a] || 0) + x / live.length;
+  return { tracks: [...byKey.values()], weights, perSong: true, shares };
 }
 
 /**
@@ -191,7 +204,9 @@ export function poolFor(data, { pool = 'liste', picks = [[], []] } = {}) {
   }
   const weights = {};
   for (const t of tracks) weights[t.a] = (1000 * (share.get(normKey(t.a)) || 0)) / counts.get(normKey(t.a));
-  return { tracks, weights };
+  const shares = {}; // each band's part of the draws (0–1): a player's only band holds half
+  for (const [a, x] of share) shares[a] = x / 2;
+  return { tracks, weights, shares };
 }
 
 /**
@@ -212,6 +227,10 @@ export function pickSongs(data, { count, favor = 'high', seed = 1, needAudio = f
   };
   const rng = createRng(seed);
   const cap = Math.max(2, Math.ceil(count / 4));
+  // a picked band that holds a big part of the draws (a player's only band) may come up as often as
+  // its part asks for, and back to back
+  const shareOf = (a) => Number((data && data.shares && data.shares[a]) || 0);
+  const capOf = (a) => Math.max(cap, Math.ceil(count * shareOf(a)));
   const perArtist = new Map();
   const used = new Set();
   const picked = [];
@@ -219,8 +238,8 @@ export function pickSongs(data, { count, favor = 'high', seed = 1, needAudio = f
   while (picked.length < n) {
     const last = picked.length ? normKey(picked[picked.length - 1].a) : null;
     const free = tracks.filter((t) => !used.has(t));
-    let pool = free.filter((t) => (perArtist.get(normKey(t.a)) || 0) < cap && normKey(t.a) !== last);
-    if (!pool.length) pool = free.filter((t) => (perArtist.get(normKey(t.a)) || 0) < cap);
+    let pool = free.filter((t) => (perArtist.get(normKey(t.a)) || 0) < capOf(normKey(t.a)) && (normKey(t.a) !== last || shareOf(last) * 3 >= 1));
+    if (!pool.length) pool = free.filter((t) => (perArtist.get(normKey(t.a)) || 0) < capOf(normKey(t.a)));
     if (!pool.length) pool = free;
     let total = 0;
     for (const t of pool) total += weightOf(t);
@@ -235,6 +254,19 @@ export function pickSongs(data, { count, favor = 'high', seed = 1, needAudio = f
     picked.push(chosen);
   }
   return picked.map(compact);
+}
+
+/**
+ * Too few songs in the ticked sources (a couple of small bands picked): fill `all` up to `want` from
+ * both lists, so the game has its full length and its reserve. Deterministic from the seed.
+ */
+export function topUp(all, data, { favor = 'high', seed = 1 } = {}, want, needAudio = false) {
+  if (all.length >= want) return all;
+  const have = new Set(all.map((x) => normKey(`${x.a}|${x.t}`)));
+  const wide = mixPool(data, { sources: { srcMustafa: true, srcBeyza: true }, favor, needAudio });
+  const tracks = wide.tracks.filter((t) => !have.has(normKey(`${t.a}|${t.t}`)) && (!needAudio || hasAudio(t)));
+  if (tracks.length) all.push(...pickSongs({ ...wide, tracks }, { count: want - all.length, favor: 'high', seed: seed + 1, needAudio }));
+  return all;
 }
 
 /** The fields a game state keeps for a song. */
@@ -276,16 +308,38 @@ export function songOptions(data, song, seed, n = 4) {
 
 // ----------------------------------------------------------------- typed answers (Şarkıyı Bil)
 const LETTER_MAP = { 'ı': 'i', 'ø': 'o', 'æ': 'ae', 'ß': 'ss', 'ł': 'l', 'đ': 'd', 'þ': 'th', 'ð': 'd', 'œ': 'oe' };
+// Russian/Ukrainian band and song names: typed in Latin letters (or as written) they still match
+const CYRILLIC = {
+  а: 'a', б: 'b', в: 'v', г: 'g', д: 'd', е: 'e', ё: 'e', ж: 'zh', з: 'z', и: 'i', й: 'y', к: 'k', л: 'l', м: 'm', н: 'n', о: 'o', п: 'p',
+  р: 'r', с: 's', т: 't', у: 'u', ф: 'f', х: 'kh', ц: 'ts', ч: 'ch', ш: 'sh', щ: 'shch', ъ: '', ы: 'y', ь: '', э: 'e', ю: 'yu', я: 'ya',
+  і: 'i', ї: 'yi', є: 'ye', ґ: 'g',
+};
+
+const normCache = new Map(); // the same few thousand names are compared again and again
 
 /** Lower-case ASCII skeleton of a band or song name: accents, punctuation, "(…)" and " - …" tails dropped, a leading "the" too. */
 export function normalizeAnswer(s) {
+  const raw = String(s || '');
+  let hit = normCache.get(raw);
+  if (hit === undefined) {
+    if (normCache.size > 50000) normCache.clear();
+    hit = normalizeRaw(raw);
+    normCache.set(raw, hit);
+  }
+  return hit;
+}
+
+function normalizeRaw(s) {
   let x = String(s || '').replace(/İ/g, 'i').replace(/I/g, 'i').toLowerCase();
   x = x.replace(/[ıøæßłđþðœ]/g, (c) => LETTER_MAP[c] || c);
+  x = x.replace(/[а-яёіїєґ]/g, (c) => CYRILLIC[c] ?? c);
   x = x.normalize('NFKD').replace(/[̀-ͯ]/g, '');
   x = x.replace(/\s+-\s+.*$/, '').replace(/[([].*?[)\]]/g, ' ');
   x = x.replace(/&/g, ' and ').replace(/['’`´]/g, '');
-  x = x.replace(/[^a-z0-9]+/g, ' ').trim().replace(/\s+/g, ' ');
-  return x.replace(/^the /, '');
+  const ascii = x.replace(/[^a-z0-9]+/g, ' ').trim().replace(/\s+/g, ' ');
+  if (ascii) return ascii.replace(/^the /, '');
+  // a name in another script (Greek…) or of symbols only ("!!!"): compare it as written
+  return x.replace(/[^\p{L}\p{N}]+/gu, ' ').trim().replace(/\s+/g, ' ') || x.replace(/\s+/g, '');
 }
 
 /** Levenshtein distance. */
@@ -304,19 +358,60 @@ export function editDistance(a, b) {
   return prev[b.length];
 }
 
+const ROMAN = /^(?:x{0,3})(?:ix|iv|v?i{0,3})$/;
+/** The numbers in a name (digits, and a closing Roman numeral): "Unforgiven II", "Pt. 2" are other songs. */
+const numbersOf = (x) => {
+  const w = x.split(' ');
+  const last = w.length > 1 && ROMAN.test(w[w.length - 1]) ? w[w.length - 1] : '';
+  return `${(x.match(/\d+/g) || []).map(Number).join(',')}|${last}`;
+};
+
 /**
  * Does a typed answer name the band or song? Spelling slips are forgiven in proportion to the
  * length (none under 5 letters, up to 3 for long names); extra words around the answer are fine,
- * and the start of a long title counts when it covers most of it.
+ * and the start of a long title counts when it covers most of it. A different number never matches.
  */
 export function answerMatches(typed, answer) {
   const a = normalizeAnswer(typed);
   const b = normalizeAnswer(answer);
   if (!a || !b) return false;
   if (a === b) return true;
+  // "II - I Fly Among the Stars": the part after a leading numeral is the title people know
+  const dash = String(answer || '').match(/^\s*(?:[ivxlc]+|\d+)\s+-\s+(.+)$/i);
+  if (dash && answerMatches(typed, dash[1])) return true;
+  if (numbersOf(a) !== numbersOf(b)) return false;
   const tol = b.length < 5 ? 0 : b.length < 9 ? 1 : b.length < 13 ? 2 : 3;
   if (editDistance(a, b) <= tol) return true;
-  if (b.length >= 4 && a.includes(b)) return true;
+  if (b.length >= 4 && ` ${a} `.includes(` ${b} `)) return true; // whole words: "Shed" is not in "Vanished"
   if (a.length >= 4 && b.startsWith(a) && a.length >= Math.ceil(b.length * 0.6)) return true;
   return false;
+}
+
+/**
+ * answerMatches, but an answer that names another candidate better is not taken: "Liberation" is
+ * Katatonia's other song, not a slip for "Deliberation"; "Death Cab for Cutie" is not "Death".
+ */
+function bestMatch(typed, answer, others) {
+  if (!answerMatches(typed, answer)) return false;
+  const a = normalizeAnswer(typed);
+  const b = normalizeAnswer(answer);
+  if (a === b) return true;
+  const flat = (x) => x.replace(/ /g, '');
+  const d = editDistance(a, b);
+  return !others.some((o) => {
+    const c = normalizeAnswer(o);
+    if (!c || flat(c) === flat(b) || Math.abs(c.length - a.length) >= d) return false; // cannot be closer
+    return answerMatches(typed, o) && editDistance(a, c) < d;
+  });
+}
+
+/** Does the typed song title name this song (and not another song by the same band)? */
+export function titleMatches(data, song, typed) {
+  const same = allTracks(data).filter((t) => normKey(t.a) === normKey(song.a)).map((t) => t.t);
+  return bestMatch(typed, song.t, same);
+}
+
+/** Does the typed band name this song's band (and not another band in the data)? */
+export function artistMatches(data, song, typed) {
+  return bestMatch(typed, song.a, [...new Set(allTracks(data).map((t) => t.a))]);
 }

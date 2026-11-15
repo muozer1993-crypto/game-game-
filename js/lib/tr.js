@@ -65,8 +65,14 @@ export function nameSuffix(name, kind) {
   if (!n) return n;
   const last = lowerTR(n[n.length - 1]);
   const isDigit = /[0-9]/.test(last);
+  // names with a soft final l take front suffixes against the vowel harmony: Kemal'de, Meral'in
+  const softL = !isDigit && SOFT_L_NAMES.has(lowerTR(n.split(/\s+/).pop()).replace(/â/g, 'a'));
   let back, voiceless, endsWithVowel;
-  if (isDigit) {
+  if (softL) {
+    back = false;
+    voiceless = false;
+    endsWithVowel = false;
+  } else if (isDigit) {
     back = DIGIT_BACK[last];
     voiceless = !!DIGIT_VOICELESS[last];
     endsWithVowel = !!DIGIT_ENDS_WITH_VOWEL[last];
@@ -84,17 +90,19 @@ export function nameSuffix(name, kind) {
   }
   if (kind === 'in') {
     // four-way harmony for genitive
-    const lv = lastVowel(n, isDigit, last);
+    const lv = softL ? 'e' : lastVowel(n, isDigit, last);
     const v = ({ a: 'ı', ı: 'ı', o: 'u', u: 'u', e: 'i', i: 'i', ö: 'ü', ü: 'ü' })[lv] || 'i';
     return `${n}'${endsWithVowel ? 'n' : ''}${v}n`;
   }
   if (kind === 'i') {
-    const lv = lastVowel(n, isDigit, last);
+    const lv = softL ? 'e' : lastVowel(n, isDigit, last);
     const v = ({ a: 'ı', ı: 'ı', o: 'u', u: 'u', e: 'i', i: 'i', ö: 'ü', ü: 'ü' })[lv] || 'i';
     return `${n}'${endsWithVowel ? 'y' : ''}${v}`;
   }
   return n;
 }
+
+const SOFT_L_NAMES = new Set(['kemal', 'cemal', 'celal', 'bilal', 'hilal', 'nihal', 'meral', 'hayal', 'zülal', 'visal', 'ikbal', 'iqbal', 'lal']);
 
 const DIGIT_LAST_VOWEL = { 0: 'ı', 1: 'i', 2: 'i', 3: 'ü', 4: 'ö', 5: 'e', 6: 'ı', 7: 'i', 8: 'i', 9: 'u' };
 function lastVowel(n, isDigit, last) {
