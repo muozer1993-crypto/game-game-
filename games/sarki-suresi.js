@@ -279,9 +279,10 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     if (noSharedPick(ctx.songs, state.picks, state.mode === 'hard')) toast('Ortak grubunuz çıkmadı: ikinizin seçtiği bütün gruplardan çalınıyor', { duration: 5000 });
   }
   const scores = [scoreOf(state, 0), scoreOf(state, 1)];
-  const status = (extra) => el('div', { class: 'status-line' },
+  // twoLines: the line keeps two lines' room, so a shorter text arriving while the player types does not move the keypad
+  const status = (extra, twoLines = false) => el('div', { class: 'status-line' },
     el('div', {}, el('strong', {}, `${players[0]} ${scores[0].points} – ${scores[1].points} ${players[1]}`)),
-    el('div', { class: 'muted' }, extra),
+    el('div', { class: twoLines ? 'muted two-lines' : 'muted' }, extra),
   );
 
   if (state.phase === 'guess') {
@@ -389,7 +390,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
         if (kbBox.isConnected && entry && !entry.dropping) { sent = false; kb.setDisabled(false); }
       },
     });
-    const statusBox = status(statusText);
+    const statusBox = status(statusText, online); // two phones: the other guess changes this text under the typing finger
     draw(container,
       statusBox,
       card,

@@ -343,7 +343,10 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     el('p', { class: 'hint' }, flip ? 'Pulların sağ alttaki eve doğru ilerler.' : `${players[0]} sağ alttaki eve, ${players[1]} sağ üstteki eve doğru ilerler.`),
     actionRow,
   );
-  if (actionRow) keysIntoView(actionRow); // a short phone: "Zar at" below the board stays on screen
+  // a short phone: "Zar at" below the board stays on screen when the row comes up (a new turn, after
+  // "Zar at", "Geri al" back to the start); not after a checker step: the page would move the board
+  // the player scrolled to see, under the finger, between one die's move and the next
+  if (actionRow && !state.moves.length) keysIntoView(actionRow);
   return null;
 }
 

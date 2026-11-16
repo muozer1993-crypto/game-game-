@@ -61,6 +61,10 @@ export function renderArtistPick(container, opts) {
   done.addEventListener('click', () => {
     const list = all.filter((a) => picked.has(normKey(a)));
     save(KEY(opts.playerName), list);
+    // the next screen is a new one (one phone: the other player's list): with nothing of this list
+    // focused, the redraw does not put this list's scroll back (see scrollKeeper in dom.js)
+    const a = typeof document !== 'undefined' ? document.activeElement : null;
+    if (a && a !== document.body && container.contains(a) && typeof a.blur === 'function') a.blur();
     opts.onDone(list);
   });
   render(container,
@@ -103,4 +107,6 @@ export function keepArtistPick(container, key, opts) {
   }
   renderArtistPick(container, opts);
   kept.set(container, { key, nodes: [...container.childNodes] });
+  // a new list (one phone: the other player's turn to choose) starts at the top: title, search box
+  if (typeof scrollY === 'number' && scrollY > 0 && typeof scrollTo === 'function') scrollTo(0, 0);
 }

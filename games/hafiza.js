@@ -105,7 +105,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   else if (waitingHide) status = 'Eşleşmedi…';
   else status = mine ? `Sıra sende, ${players[viewer]}: ${state.open.length ? 'ikinci kartı aç' : 'bir kart aç'}` : `${players[state.turn]} oynuyor…`;
   draw(container,
-    el('div', { class: 'status-line' }, el('strong', {}, status)),
+    el('div', { class: 'status-line two' }, el('strong', {}, status)),
     el('div', { class: 'c4-legend' }, el('span', {}, `${players[0]}: ${state.scores[0]}`), el('span', {}, `${players[1]}: ${state.scores[1]}`)),
     board,
   );

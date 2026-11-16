@@ -109,7 +109,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   if (state.over) status = state.winner == null ? 'Tahta doldu: berabere.' : `${players[state.winner]} dört yaptı!`;
   else status = mine ? `Sıra sende, ${players[viewer]}: bir sütuna dokun` : `${players[state.turn]} düşünüyor…`;
   draw(container,
-    el('div', { class: 'status-line' }, el('strong', {}, status)),
+    el('div', { class: 'status-line two' }, el('strong', {}, status)),
     el('div', { class: 'c4-legend' },
       el('span', { class: 'c4-key' }, keyDot(PIECE.red), players[0]),
       el('span', { class: 'c4-key' }, keyDot(PIECE.yellow), players[1]),

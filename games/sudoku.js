@@ -215,7 +215,8 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     return null;
   }
 
-  if (!starts.has(key)) starts.set(key, Date.now());
+  const firstDraw = !starts.has(key);
+  if (firstDraw) starts.set(key, Date.now());
   const startedAt = starts.get(key);
   const timerBox = el('div');
   let timer = null;
@@ -244,7 +245,9 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     pad,
     giveUp,
   );
-  keysIntoView(pad); // a short phone: the number pad below the grid stays on screen
+  // a short phone: the number pad below the grid comes on screen when the puzzle opens; a redraw
+  // (the other phone's entry, your own) leaves the page where the player scrolled it
+  if (firstDraw) keysIntoView(pad);
   return () => { if (timer) timer.stop(); };
 }
 

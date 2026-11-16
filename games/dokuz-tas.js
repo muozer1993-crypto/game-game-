@@ -209,7 +209,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
 
   const legend = (p) => el('span', { class: `nm-key p${p}` }, `${players[p]}: tahtada ${count(state.points, p)}${state.hand[p] ? `, elde ${state.hand[p]}` : ''}`);
   draw(container,
-    el('div', { class: 'status-line' }, el('strong', {}, status)),
+    el('div', { class: 'status-line two' }, el('strong', {}, status)),
     el('div', { class: 'c4-legend' }, legend(0), legend(1)),
     boardBox,
   );

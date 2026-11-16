@@ -64,6 +64,18 @@ export function scrollKeeper(container) {
  * A short phone: once the screen is laid out, scroll just enough that the whole box (a keypad, GİR
  * included) is on screen. Nothing happens when it already is.
  */
+const viewKeys = new WeakMap(); // owner -> the key keysIntoViewOnce last scrolled for
+
+/**
+ * keysIntoView, only when `key` differs from the last one for `owner` (a new turn, a new word): a redraw
+ * of the same screen leaves the page where the player scrolled it, instead of pulling it back down.
+ */
+export function keysIntoViewOnce(box, owner, key) {
+  if (!owner || viewKeys.get(owner) === key) return;
+  viewKeys.set(owner, key);
+  keysIntoView(box);
+}
+
 export function keysIntoView(box) {
   if (typeof requestAnimationFrame !== 'function' || typeof innerHeight !== 'number') return;
   requestAnimationFrame(() => {
@@ -93,14 +105,16 @@ export function render(container, ...children) {
 
 let toastTimer = null;
 /** Short non-blocking message at the bottom of the screen. */
-export function toast(message, { duration = 2200, kind = '' } = {}) {
+export function toast(message, { duration = 2200, kind = '', top = false } = {}) {
   let host = document.getElementById('toast');
   if (!host) {
     host = el('div', { id: 'toast', class: 'toast', role: 'status', 'aria-live': 'polite' });
     document.body.append(host);
   }
+  // top: at the top of the screen, clear of a keypad at the bottom (kept while it fades out)
+  const place = top ? ' top' : '';
   host.textContent = message;
-  host.className = `toast show ${kind}`.trim();
+  host.className = `toast show ${kind}${place}`.replace(/\s+/g, ' ').trim();
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => { host.className = 'toast'; }, duration);
+  toastTimer = setTimeout(() => { host.className = `toast${place}`; }, duration);
 }

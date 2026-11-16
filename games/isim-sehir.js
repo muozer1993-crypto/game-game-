@@ -186,7 +186,8 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const entry = state.entries[state.round];
   const cats = state.categories;
   if (draftsFor !== state.id) { drafts.clear(); starts.clear(); caps.clear(); draftsFor = state.id; }
-  const scoreLine = el('div', { class: 'c4-legend' }, el('span', {}, `${players[0]}: ${state.scores[0]}`), el('span', {}, `${players[1]}: ${state.scores[1]}`), el('span', { class: 'muted' }, `${Math.min(state.round + 1, state.rounds)}. tur / ${state.rounds}`));
+  // a long name is cut with an ellipsis (the score always shows): the line never runs off the screen
+  const scoreLine = el('div', { class: 'c4-legend kt-legend' }, el('span', { class: 'kt-who' }, el('span', { class: 'kt-name' }, players[0]), el('span', { class: 'kt-score' }, `: ${state.scores[0]}`)), el('span', { class: 'kt-who' }, el('span', { class: 'kt-name' }, players[1]), el('span', { class: 'kt-score' }, `: ${state.scores[1]}`)), el('span', { class: 'muted kt-bag' }, `${Math.min(state.round + 1, state.rounds)}. tur / ${state.rounds}`));
 
   if (state.phase === 'over') {
     const [a, b] = state.scores;

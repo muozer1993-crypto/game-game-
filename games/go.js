@@ -292,7 +292,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   }
   const who = state.turn === 0 ? '⚫' : '⚪';
   draw(container,
-    el('div', { class: 'status-line' }, el('strong', {}, mine ? `${who} ${players[state.turn]}, sıra sende${state.passes ? ' (rakip pas geçti)' : ''}` : `${who} ${players[state.turn]} düşünüyor…`)),
+    el('div', { class: 'status-line two' }, el('strong', {}, mine ? `${who} ${players[state.turn]}, sıra sende${state.passes ? ' (rakip pas geçti)' : ''}` : `${who} ${players[state.turn]} düşünüyor…`)),
     boardBox,
     mine ? el('button', { type: 'button', class: 'btn btn-secondary btn-block', onClick: () => sendMove({ type: 'pass' }) }, state.passes ? 'Pas (sayıma geç)' : 'Pas') : null,
     caps,

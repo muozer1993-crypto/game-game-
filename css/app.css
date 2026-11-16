@@ -249,6 +249,7 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 /* board games: the turn line keeps two lines' room, so a long name wrapping it does not move the board */
 .status-line.two { min-height: calc(2 * 1.4 * 1.15rem); display: flex; flex-direction: column; justify-content: center; } /* two lines of the 1.15rem strong */
 .hint.two-lines { min-height: calc(2 * 1.4em); } /* two lines of the hint's own text */
+.status-line .muted.two-lines { min-height: calc(2 * 1.4em); } /* the same for a status line's second line */
 .status-opp { font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .hint { text-align: center; color: var(--muted); font-size: 0.95rem; }
 
@@ -624,6 +625,8 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 .toast.error { background: var(--danger); color: #fff; }
+.toast.top { top: calc(12px + env(safe-area-inset-top)); bottom: auto; transform: translateX(-50%) translateY(-20px); }
+.toast.top.show { transform: translateX(-50%) translateY(0); }
 
 /* reveal */
 .reveal { text-align: center; margin: 10px 0; }

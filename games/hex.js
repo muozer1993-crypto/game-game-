@@ -153,7 +153,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   if (state.over) status = `${players[state.winner]} kenarlarını bağladı!`;
   else status = mine ? `Sıra sende, ${players[viewer]}: bir altıgene dokun` : `${players[state.turn]} düşünüyor…`;
   draw(container,
-    el('div', { class: 'status-line' }, el('strong', {}, status)),
+    el('div', { class: 'status-line two' }, el('strong', {}, status)),
     el('div', { class: 'c4-legend' },
       el('span', { class: 'hx-key', style: { color: COLOURS[vert] } }, `${players[vert]}: üst ↔ alt`),
       el('span', { class: 'hx-key', style: { color: COLOURS[horiz] } }, `${players[horiz]}: sol ↔ sağ`),

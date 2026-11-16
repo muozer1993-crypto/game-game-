@@ -272,8 +272,9 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       warned = word;
       warnNote.textContent = `${upperTR(word)} kelime listesinde yok. Yine de söylemek için tekrar ↵ bas: zincirde işaretli kalır, oyun bitince rakibin itiraz ederse kaybedersin.`;
       warnNote.hidden = false;
-      // the note sits below the keyboard (it must not move ↵), out of sight on a short phone: say it up top too
-      toast(`${upperTR(word)} listede yok: yine de söylemek için tekrar ↵`, { kind: 'error', duration: 3500 });
+      // the note sits below the keyboard (it must not move ↵), out of sight on a short phone: say it at the
+      // top of the screen too, clear of the keyboard
+      toast(`${upperTR(word)} listede yok: yine de söylemek için tekrar ↵`, { kind: 'error', duration: 3500, top: true });
       return;
     }
     sendMove({ type: 'word', word, known, at: Date.now() });

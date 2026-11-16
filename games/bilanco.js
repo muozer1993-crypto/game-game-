@@ -2,7 +2,7 @@
 // two transport squares, chance cards, tax and jail. Buy, collect rent, build up to three houses
 // on a full pair. The game ends after the chosen number of rounds (or on bankruptcy): the higher
 // net worth wins. Dice come from the shared seed, so both phones see the same rolls.
-import { el, render as draw, keysIntoView } from '../js/ui/dom.js';
+import { el, render as draw, keysIntoViewOnce } from '../js/ui/dom.js';
 import { diceOnce } from '../js/lib/sfx.js';
 import { createRng, shuffle } from '../js/lib/rng.js';
 import { nameSuffix } from '../js/lib/tr.js';
@@ -514,7 +514,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     } else if (state.phase === 'buy') {
       const buyout = state.owner[state.pos[p]] === 1 - p;
       actions.append(
-        buyout ? el('p', { class: 'hint bl-offer' }, `${GROUPS[sq.group].name} çiftin öbür şehri sende: ${accusative(sq)} ${nameSuffix(players[1 - p], 'de')}n iki katı fiyatına alıp çifti tamamlayabilirsin.`) : null,
+        ...(buyout ? [el('p', { class: 'hint bl-offer' }, `${GROUPS[sq.group].name} çiftin öbür şehri sende: ${accusative(sq)} ${nameSuffix(players[1 - p], 'de')}n iki katı fiyatına alıp çifti tamamlayabilirsin.`)] : []),
         el('button', { type: 'button', class: 'btn btn-primary', onClick: () => act({ type: 'buy' }) }, buyout ? `${accusative(sq)} satın al (₺${sq.price * BUYOUT_MULT})` : `${accusative(sq)} al (₺${sq.price})`),
         el('button', { type: 'button', class: 'btn btn-secondary', onClick: () => act({ type: 'pass' }) }, 'Alma'),
       );
@@ -543,7 +543,8 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   };
   const statusEl = el('div', { class: 'status-line' }, el('strong', {}, status), el('span', { class: 'muted' }, ` · ${roundInfo}`));
   draw(container, statusEl, money, board, actions, ownView(viewer), ownView(1 - viewer));
-  if (actions.childElementCount) keysIntoView(actions); // a short phone: "Zar at" below the board stays on screen
+  // a short phone: "Zar at" below the board stays on screen, once per step (a redraw leaves the page be)
+  if (actions.childElementCount) keysIntoViewOnce(actions, container, stepKey);
   if (!animating) return null;
 
   // ---- token replay

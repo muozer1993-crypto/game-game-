@@ -207,7 +207,8 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const opp = 1 - viewer;
   const puzzle = state.puzzles[state.round];
   if (draftsFor !== state.id) { drafts.clear(); starts.clear(); caps.clear(); draftsFor = state.id; }
-  const legend = el('div', { class: 'c4-legend' }, el('span', {}, `${players[0]}: ${state.scores[0]}`), el('span', {}, `${players[1]}: ${state.scores[1]}`), el('span', { class: 'muted' }, `${Math.min(state.round + 1, state.rounds)}. tur / ${state.rounds}`));
+  // a long name is cut with an ellipsis (the score always shows): the line never runs off the screen
+  const legend = el('div', { class: 'c4-legend kt-legend' }, el('span', { class: 'kt-who' }, el('span', { class: 'kt-name' }, players[0]), el('span', { class: 'kt-score' }, `: ${state.scores[0]}`)), el('span', { class: 'kt-who' }, el('span', { class: 'kt-name' }, players[1]), el('span', { class: 'kt-score' }, `: ${state.scores[1]}`)), el('span', { class: 'muted kt-bag' }, `${Math.min(state.round + 1, state.rounds)}. tur / ${state.rounds}`));
   const targetView = el('div', { class: 'hs-target' }, el('span', { class: 'muted' }, 'Hedef'), el('strong', {}, String(puzzle.target)));
 
   if (state.phase === 'over') {
@@ -267,6 +268,9 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const timerBox = el('div');
   let timer = null;
   if (deadline) timer = createTimer(timerBox, { deadline, total: online && oppDone ? GRACE_MS : state.seconds * 1000, start: capped ? caps.get(key) - GRACE_MS : starts.get(key), onExpire: submit });
+  // two phones, no time limit: the other player sending brings a countdown; its place is kept from
+  // the start, so the numbers do not jump down under the finger
+  else if (online) timerBox.append(el('div', { class: 'timer', style: { visibility: 'hidden' }, 'aria-hidden': 'true' }, el('span', { class: 'timer-text' }, '0:00'), el('div', { class: 'timer-bar' })));
   const poolBox = el('div', { class: 'hs-pool' });
   const opsBox = el('div', { class: 'hs-ops' });
   const stepsBox = el('div', { class: 'hs-steps' });

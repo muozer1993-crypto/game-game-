@@ -5,7 +5,7 @@
 // Secrets never leave the owner's device: the `setSecret` move carries the word in a
 // `secret` field that the session strips before sending; guesses are scored on the
 // owner's device by autoMove(), which sends only the result.
-import { el, render as draw, keysIntoView } from '../js/ui/dom.js';
+import { el, render as draw, keysIntoView, toast } from '../js/ui/dom.js';
 import { createKeyboard } from '../js/ui/keyboard.js';
 import { normalizeWord, isTurkishWord, upperTR, nameSuffix } from '../js/lib/tr.js';
 import { toggled, carried, checkObjection } from '../js/lib/objections.js';
@@ -380,6 +380,8 @@ export function createGame(cfg) {
         drafts.set(memo, word);
         note.textContent = text(word);
         note.hidden = false;
+        // the note sits below the keyboard, out of sight on a short phone: say it at the top too
+        toast(`${show(word)} listede yok: yine de denemek için tekrar ↵`, { kind: 'error', duration: 3500, top: true });
         return null;
       },
     };

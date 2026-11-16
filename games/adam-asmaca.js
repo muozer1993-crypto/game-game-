@@ -1,7 +1,7 @@
 // Adam Asmaca — hangman for two. One player holds a word, the other finds it letter by
 // letter; roles swap every word. The word stays on the setter's device: the guesser's
 // device only sees letter positions that the setter's device reports back.
-import { el, svg, render as draw, keysIntoView, armAfter } from '../js/ui/dom.js';
+import { el, svg, render as draw, keysIntoView, keysIntoViewOnce, armAfter } from '../js/ui/dom.js';
 import { nextButton } from '../js/ui/next.js';
 import { createKeyboard } from '../js/ui/keyboard.js';
 import { normalizeWord, isTurkishWord, upperTR, nameSuffix, LETTERS } from '../js/lib/tr.js';
@@ -262,10 +262,11 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   // by the 'next' move, which carries the objection as the presser saw it)
   const objectedNow = state.phase === 'result' && !!state.unlisted && !!state.objected;
   const shownScores = state.scores.map((x, p) => (objectedNow && p === guesser ? x + state.lives - state.points : x));
-  const head = el('div', { class: 'c4-legend' },
-    el('span', {}, `${players[0]}: ${shownScores[0]}`),
-    el('span', {}, `${players[1]}: ${shownScores[1]}`),
-    el('span', { class: 'muted' }, `${Math.min(state.round + 1, state.rounds)}. kelime / ${state.rounds}`),
+  // a long name is cut with an ellipsis (the score always shows): the line never runs off the screen
+  const head = el('div', { class: 'c4-legend kt-legend' },
+    el('span', { class: 'kt-who' }, el('span', { class: 'kt-name' }, players[0]), el('span', { class: 'kt-score' }, `: ${shownScores[0]}`)),
+    el('span', { class: 'kt-who' }, el('span', { class: 'kt-name' }, players[1]), el('span', { class: 'kt-score' }, `: ${shownScores[1]}`)),
+    el('span', { class: 'muted kt-bag' }, `${Math.min(state.round + 1, state.rounds)}. kelime / ${state.rounds}`),
   );
 
   if (state.phase === 'over') {
@@ -440,7 +441,8 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   );
   // a short phone (two phones add a bar above, an unlisted word a hint line): the keys and the
   // whole-word button stay on screen
-  if (modeRow && !pending) keysIntoView(modeRow);
+  // once per word (a guess redraws the screen: the page stays where the player scrolled it)
+  if (modeRow && !pending) keysIntoViewOnce(modeRow, container, `${state.id}:${state.round}:${viewer}`);
   return () => cleanups.forEach((fn) => fn());
 }
 

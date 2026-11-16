@@ -1,6 +1,6 @@
 // Tabu — one player describes the word on the card without saying the five forbidden
 // words, the other guesses aloud. Roles swap every round; "Bildi" +1, "Tabu" −1, "Pas" 0.
-import { el, render as draw } from '../js/ui/dom.js';
+import { el, render as draw, keysIntoViewOnce } from '../js/ui/dom.js';
 import { nextButton } from '../js/ui/next.js';
 import { createTimer } from '../js/ui/timer.js';
 import { createRng, shuffle } from '../js/lib/rng.js';
@@ -255,21 +255,25 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   if (!cardShown.has(container) || cardShown.get(container).key !== cardKey) cardShown.set(container, { key: cardKey, at: Date.now() });
   const shownAt = cardShown.get(container).at;
   const mark = (result) => { if (Date.now() - shownAt >= STEP_GUARD_MS) sendMove({ type: 'card', card: cardIdx, result }); };
+  const actionRow = el('div', { class: 'tb-actions' },
+    el('button', { type: 'button', class: 'btn btn-secondary btn-big', onClick: () => mark('pass') }, 'Pas'),
+    el('button', { type: 'button', class: 'btn btn-primary btn-big', onClick: () => mark('ok') }, 'Bildi ✓'),
+    el('button', { type: 'button', class: 'btn btn-danger btn-big', onClick: () => mark('taboo') }, mime ? 'Konuştu ✗' : 'Tabu ✗'),
+  );
   draw(container,
     timerBox,
     el('div', { class: 'status-line' }, el('strong', {}, `${mime ? 'Canlandır' : 'Anlat'}, ${players[viewer]}!`)),
     counts,
     card ? cardView(card, mime) : el('p', { class: 'hint' }, 'Kart yüklenemedi.'),
-    el('div', { class: 'tb-actions' },
-      el('button', { type: 'button', class: 'btn btn-secondary btn-big', onClick: () => mark('pass') }, 'Pas'),
-      el('button', { type: 'button', class: 'btn btn-primary btn-big', onClick: () => mark('ok') }, 'Bildi ✓'),
-      el('button', { type: 'button', class: 'btn btn-danger btn-big', onClick: () => mark('taboo') }, mime ? 'Konuştu ✗' : 'Tabu ✗'),
-    ),
+    actionRow,
     el('div', { class: 'row', style: { justifyContent: 'center', marginTop: '10px' } },
       el('button', { type: 'button', class: 'btn btn-small', onClick: () => { if (confirm('Süre dolmadan tur bitirilsin mi?')) end(); } }, 'Turu bitir'),
     ),
     score,
   );
+  // a short phone (two phones add the emoji bar, a long card adds lines): Pas / Bildi / Tabu stay on
+  // screen; once per card, so a redraw (the guesser's phone, the clock) never moves them
+  keysIntoViewOnce(actionRow, container, cardKey);
   return () => cleanups.forEach((fn) => fn());
 }
 
