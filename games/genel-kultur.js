@@ -2,7 +2,7 @@
 // ties go to the faster player.
 import { el, render as draw } from '../js/ui/dom.js';
 import { createTimer } from '../js/ui/timer.js';
-import { createRng, shuffle } from '../js/lib/rng.js';
+import { createRng, shuffle, freshFirst } from '../js/lib/rng.js';
 
 export const meta = {
   group: 'tanisma',
@@ -34,8 +34,14 @@ function clean(q) {
   return { id: String(q.id || ''), category: q.category || '', difficulty: Number(q.difficulty) || 2, text: String(q.text), options: q.options.map(String), answer };
 }
 
-/** Pick `count` questions, spreading categories, deterministic from the seed. */
-export function pickQuestions(pool, count, level, seed) {
+/** The key a question is remembered by across games (js/app.js history). */
+export const questionKey = (q) => q.id || q.text;
+
+/**
+ * Pick `count` questions, spreading categories, deterministic from the seed. Questions whose key is
+ * in `recent` (seen in earlier games, oldest first) come only after the unseen ones.
+ */
+export function pickQuestions(pool, count, level, seed, recent = []) {
   const rng = createRng(seed);
   let all = (pool || []).map(clean).filter(Boolean);
   if (level === 'easy' || level === 'hard') {
@@ -45,18 +51,26 @@ export function pickQuestions(pool, count, level, seed) {
     all = strict.length >= count * 2 ? strict : all.filter((q) => (level === 'easy' ? q.difficulty <= 2 : q.difficulty >= 2));
   }
   if (!all.length) fail('Soru havuzu boş');
-  const shuffled = shuffle(rng, all);
+  const shuffled = freshFirst(rng, all, questionKey, recent);
+  const seenKeys = new Set((Array.isArray(recent) ? recent : []).map(String));
+  const fresh = shuffled.filter((q) => !seenKeys.has(String(questionKey(q))));
   const cats = new Set(shuffled.map((q) => q.category));
   const perCat = Math.ceil(count / Math.max(1, cats.size)) + 1;
   const used = {};
   const picked = [];
-  for (const q of shuffled) {
-    if (picked.length >= count) break;
-    if ((used[q.category] || 0) >= perCat) continue;
-    used[q.category] = (used[q.category] || 0) + 1;
-    picked.push(q);
-  }
-  for (const q of shuffled) { if (picked.length >= count) break; if (!picked.includes(q)) picked.push(q); }
+  // unseen questions first (spread over the categories, then any), only then the seen ones
+  const take = (list, spread) => {
+    for (const q of list) {
+      if (picked.length >= count) return;
+      if (picked.includes(q) || (spread && (used[q.category] || 0) >= perCat)) continue;
+      used[q.category] = (used[q.category] || 0) + 1;
+      picked.push(q);
+    }
+  };
+  take(fresh, true);
+  take(fresh, false);
+  take(shuffled, true);
+  take(shuffled, false);
   while (picked.length < count) picked.push(shuffled[picked.length % shuffled.length]);
   return picked;
 }
@@ -65,7 +79,9 @@ export function setup(options = {}, ctx = {}) {
   const count = [5, 10, 15].includes(Number(options.count)) ? Number(options.count) : 10;
   const timeLimit = [0, 10, 20, 30].includes(Number(options.timeLimit)) ? Number(options.timeLimit) : 20;
   const pool = ctx.trivia && Array.isArray(ctx.trivia.questions) ? ctx.trivia.questions : (Array.isArray(ctx.trivia) ? ctx.trivia : []);
-  const questions = pickQuestions(pool, count, options.level || 'mixed', Number(options.seed) || 1);
+  // the phone that sets the game up picks; online the other phone gets this state as it is
+  const recent = ctx.triviaHistory && typeof ctx.triviaHistory.get === 'function' ? ctx.triviaHistory.get() : [];
+  const questions = pickQuestions(pool, count, options.level || 'mixed', Number(options.seed) || 1, recent);
   return {
     count,
     timeLimit,
@@ -126,6 +142,11 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const categories = (ctx.trivia && ctx.trivia.categories) || {};
   const opp = 1 - viewer;
   const total = state.count;
+  // remember the questions shown so far, so that the next games start with ones not seen yet
+  if (ctx.triviaHistory && typeof ctx.triviaHistory.add === 'function') {
+    const upto = state.phase === 'play' ? Math.min(total, Math.max(state.answers[0].length, state.answers[1].length) + 1) : total;
+    ctx.triviaHistory.add(state.questions.slice(0, upto).map(questionKey).filter(Boolean));
+  }
 
   if (state.phase === 'play') {
     const mineDone = state.answers[viewer].length;

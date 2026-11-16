@@ -6,7 +6,7 @@
 // Answers travel in the `secret` field of the answer move, so in online mode the other
 // device never holds them until the owner's device reveals them for the comparison.
 import { el, render as draw } from '../js/ui/dom.js';
-import { createRng, shuffle } from '../js/lib/rng.js';
+import { createRng, shuffle, freshFirst } from '../js/lib/rng.js';
 import { nameSuffix } from '../js/lib/tr.js';
 
 export const meta = {
@@ -60,10 +60,13 @@ function cleanQuestion(q, i) {
   return base;
 }
 
-/** Pick `count` questions deterministically from the seed. Exported for tests. */
-export function pickQuestions(pool, custom, count, customMode, seed) {
+/**
+ * Pick `count` questions deterministically from the seed. Ready-made questions whose id is in `recent`
+ * (seen in earlier games, oldest first) come after the unseen ones. Exported for tests.
+ */
+export function pickQuestions(pool, custom, count, customMode, seed, recent = []) {
   const rng = createRng(seed);
-  const base = shuffle(rng, (pool || []).map(cleanQuestion).filter(Boolean));
+  const base = freshFirst(rng, (pool || []).map(cleanQuestion).filter(Boolean), (q) => q.id, recent);
   const own = customMode === 'none' ? [] : shuffle(rng, (custom || []).map(cleanQuestion).filter(Boolean));
   if (!own.length && !base.length) fail('Soru havuzu boş');
   let order = customMode === 'mix' ? shuffle(rng, own.concat(base)) : own.concat(base);
@@ -76,7 +79,9 @@ export function setup(options = {}, ctx = {}) {
   const count = [5, 10, 15].includes(Number(options.count)) ? Number(options.count) : 10;
   const pool = ctx.questions && Array.isArray(ctx.questions.questions) ? ctx.questions.questions : (Array.isArray(ctx.questions) ? ctx.questions : []);
   const custom = Array.isArray(ctx.customQuestions) ? ctx.customQuestions : [];
-  const questions = pickQuestions(pool, custom, count, options.customMode || 'first', Number(options.seed) || 1);
+  // the phone that sets the game up picks; online the other phone gets this state as it is
+  const recent = ctx.questionsHistory && typeof ctx.questionsHistory.get === 'function' ? ctx.questionsHistory.get() : [];
+  const questions = pickQuestions(pool, custom, count, options.customMode || 'first', Number(options.seed) || 1, recent);
   const empty = () => [new Array(count).fill(null), new Array(count).fill(null)];
   return {
     id: String(options.seed ?? ''), // new every game: typed drafts are kept per game
@@ -265,6 +270,11 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const online = ctx.mode === 'online';
   const total = state.count;
   const opp = 1 - viewer;
+  // remember the questions shown so far, so that the next games start with ones not seen yet
+  if (ctx.questionsHistory && typeof ctx.questionsHistory.add === 'function') {
+    const upto = state.phase === 'play' ? Math.min(total, Math.max(state.answered[0], state.answered[1]) + 1) : total;
+    ctx.questionsHistory.add(state.questions.slice(0, upto).map((q) => q.id).filter(Boolean));
+  }
 
   if (state.phase === 'play') {
     if (state.finished[viewer]) {

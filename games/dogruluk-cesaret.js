@@ -2,7 +2,7 @@
 // other player judges whether you did it. A dare scores 2, a truth 1, a pass nothing. Nothing is
 // hidden, so the phone is simply shown around; online the other phone shows the judge buttons.
 import { el, render as draw } from '../js/ui/dom.js';
-import { createRng, shuffle } from '../js/lib/rng.js';
+import { createRng, shuffle, freshFirst } from '../js/lib/rng.js';
 import { nameSuffix } from '../js/lib/tr.js';
 
 export const meta = {
@@ -34,10 +34,14 @@ export function setup(options = {}, ctx = {}) {
   const nT = Array.isArray(pool.truths) ? pool.truths.length : 0;
   const nD = Array.isArray(pool.dares) ? pool.dares.length : 0;
   const rng = createRng(seed);
+  // cards seen in earlier games come last (the phone that sets the game up decides; online the other
+  // phone gets this state as it is)
+  const recent = ctx.dogrulukHistory && typeof ctx.dogrulukHistory.get === 'function' ? ctx.dogrulukHistory.get() : [];
+  const indexes = (n) => Array.from({ length: n }, (_, i) => i);
   return {
     id: String(options.seed ?? ''),
     rounds,
-    order: { truth: shuffle(rng, Array.from({ length: nT }, (_, i) => i)), dare: shuffle(rng, Array.from({ length: nD }, (_, i) => i)) },
+    order: { truth: freshFirst(rng, indexes(nT), (i) => cardKey('truth', i), recent), dare: freshFirst(rng, indexes(nD), (i) => cardKey('dare', i), recent) },
     used: { truth: 0, dare: 0 },
     turn: 0,
     played: [0, 0],
@@ -46,6 +50,14 @@ export function setup(options = {}, ctx = {}) {
     current: null,     // { kind, index, swapped }
     history: [],       // { player, kind, index, done }
   };
+}
+
+/** The key a card is remembered by across games (js/app.js history). */
+export const cardKey = (kind, index) => `${kind === 'truth' ? 't' : 'd'}${index}`;
+
+/** Cards drawn so far in this game (including swapped-away ones), as history keys. */
+export function drawnKeys(state) {
+  return ['truth', 'dare'].flatMap((kind) => state.order[kind].slice(0, Math.min(state.used[kind], state.order[kind].length)).map((i) => cardKey(kind, i)));
 }
 
 function nextIndex(state, kind) {
@@ -124,6 +136,8 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const online = ctx.mode === 'online';
   const pool = ctx.dogruluk || { truths: [], dares: [] };
   const textOf = (kind, index) => (kind === 'truth' ? pool.truths : pool.dares)[index] || '…';
+  // remember the cards drawn, so that the next games start with ones not seen yet
+  if (ctx.dogrulukHistory && typeof ctx.dogrulukHistory.add === 'function') ctx.dogrulukHistory.add(drawnKeys(state));
   const legend = el('div', { class: 'c4-legend' }, el('span', {}, `${players[0]}: ${state.scores[0]}`), el('span', {}, `${players[1]}: ${state.scores[1]}`), el('span', { class: 'muted' }, `tur ${Math.min(state.played[0], state.rounds) + (state.turn === 0 && state.played[0] < state.rounds ? 1 : 0)}/${state.rounds}`));
   const historyView = state.history.length ? el('div', { class: 'dc-history' }, state.history.slice().reverse().slice(0, 6).map((h) =>
     el('div', { class: `dc-item ${h.done ? 'ok' : 'miss'}` }, `${h.kind === 'dare' ? '🔥' : '💬'} ${players[h.player]}: ${textOf(h.kind, h.index)} — ${h.done ? `+${SCORE[h.kind]}` : 'pas'}`))) : null;

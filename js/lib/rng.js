@@ -35,3 +35,21 @@ export function shuffle(rng, arr) {
   }
   return out;
 }
+
+/**
+ * Play order that avoids repeats across games: the items whose key is not in `recent` come first
+ * (shuffled), then the ones seen before, the longest-unseen first (shuffled within groups of
+ * `bucket`). `recent` lists keys, oldest first (see the histories in js/app.js). With no history
+ * this is the same as shuffle(rng, items).
+ */
+export function freshFirst(rng, items, keyOf, recent, bucket = 40) {
+  const rank = new Map();
+  (Array.isArray(recent) ? recent : []).forEach((k, i) => rank.set(String(k), i));
+  const fresh = [];
+  const seen = [];
+  items.forEach((it) => (rank.has(String(keyOf(it))) ? seen : fresh).push(it));
+  seen.sort((a, b) => rank.get(String(keyOf(a))) - rank.get(String(keyOf(b))));
+  const out = shuffle(rng, fresh);
+  for (let k = 0; k < seen.length; k += bucket) out.push(...shuffle(rng, seen.slice(k, k + bucket)));
+  return out;
+}

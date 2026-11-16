@@ -1,5 +1,5 @@
 import { test, assert } from './runner.js';
-import game, { SCORE } from '../games/dogruluk-cesaret.js';
+import game, { SCORE, drawnKeys } from '../games/dogruluk-cesaret.js';
 
 const ctx = { dogruluk: { truths: ['t0', 't1', 't2'], dares: ['d0', 'd1'] } };
 
@@ -69,4 +69,16 @@ test('doğruluk mu cesaret mi: iki telefonda "Başka kart" ile hakemin kararı �
   assert.equal(normal.used.dare, swapped.used.dare);
   // a verdict for some other card is refused
   assert.throws(() => game.applyMove(swapped, 1 - p, { type: 'resolve', done: true, card: 99 }, on), 'Kart değişti');
+});
+
+test('doğruluk mu cesaret mi: önceki oyunlarda çekilen kartlar sona kalır, çekilenler kaydedilir', () => {
+  const big = { dogruluk: { truths: ['t0', 't1', 't2', 't3'], dares: ['d0', 'd1', 'd2'] } };
+  const history = { get: () => ['t2', 'd0', 't0', 'd2'], add: () => {} };
+  const s = game.setup({ rounds: 3, seed: 4 }, { ...big, dogrulukHistory: history });
+  assert.deepEqual(s.order.truth.slice(0, 2).sort(), [1, 3], 'unseen truths first');
+  assert.deepEqual(s.order.truth.slice(2).sort(), [0, 2], 'then the seen ones');
+  assert.equal(s.order.dare[0], 1, 'the unseen dare first');
+  let t = game.applyMove(s, 0, { type: 'pick', kind: 'truth' });
+  t = game.applyMove(t, 0, { type: 'swap' });
+  assert.deepEqual(drawnKeys(t), [`t${s.order.truth[0]}`, `t${s.order.truth[1]}`], 'the swapped-away card counts as drawn');
 });

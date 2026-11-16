@@ -45,3 +45,22 @@ test('genel kültür: cevaplama, süre sınırı, sonuç ve hız beraberliği', 
   for (let p of [0, 1]) for (let i = 0; i < 5; i++) d = game.applyMove(d, p, { type: 'answer', index: i, choice: 0, ms: 700 });
   assert.deepEqual(game.getResult(d), { draw: true });
 });
+
+test('genel kültür: önceki oyunlarda görülen sorular, görülmemişler bitmeden gelmez; görülenler kaydedilir', () => {
+  const seenIds = pool.slice(0, 30).map((q) => q.id); // 10 left unseen
+  const picked = pickQuestions(pool, 10, 'mixed', 7, seenIds);
+  assert.deepEqual(picked.map((q) => q.id).sort(), pool.slice(30).map((q) => q.id).sort(), 'the ten unseen ones');
+  const oneCat = pool.filter((q) => q.category !== 'spor').map((q) => q.id); // only 'spor' unseen
+  assert.ok(pickQuestions(pool, 8, 'mixed', 3, oneCat).every((q) => q.category === 'spor'), 'unseen before a spread of categories');
+  const more = pickQuestions(pool, 12, 'mixed', 7, seenIds);
+  assert.ok(more.slice(10).every((q) => seenIds.slice(0, 15).includes(q.id)), 'then the longest-unseen');
+  // setup asks the history; render records what was shown
+  const recorded = [];
+  const history = { get: () => seenIds, add: (keys) => recorded.splice(0, recorded.length, ...keys) };
+  const s = game.setup({ count: 5, seed: 7 }, { ...ctx, triviaHistory: history });
+  assert.ok(s.questions.every((q) => !seenIds.includes(q.id)));
+  if (typeof document !== 'undefined') {
+    game.render(s, 0, document.createElement('div'), () => {}, { ...ctx, triviaHistory: history, players: ['A', 'B'] });
+    assert.deepEqual(recorded, [s.questions[0].id], 'only the question on screen so far');
+  }
+});

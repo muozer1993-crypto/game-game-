@@ -55,44 +55,55 @@ function loadJson(url) {
 }
 const loadQuestions = () => loadJson(QUESTIONS_URL);
 
-// Tabu cards this phone has shown, as [word, when shown] oldest first. A new game deals the cards not
-// seen yet first, then the longest-unseen ones (games/tabu.js buildDeck). Online, the phone that sets the
-// game up also counts the other phone's list (sent with its greeting); the times say which sighting is
-// more recent, however long either list is.
-const TABU_HISTORY_MAX = 600;
-let tabuMemory = null; // read from storage once, then kept in memory (storage may be off or full)
+// What this phone has shown in earlier games (Tabu cards, quiz questions, truth-or-dare cards), as
+// [key, when shown] oldest first. A new game deals the ones not seen yet first, then the longest-unseen
+// ones (games/tabu.js buildDeck, js/lib/rng.js freshFirst). Online, the phone that sets the game up also
+// counts the other phone's list (sent with its greeting); the times say which sighting is more recent,
+// however long either list is.
 const seenEntries = (list) => (Array.isArray(list) ? list.filter((e) => Array.isArray(e) && typeof e[0] === 'string' && Number.isFinite(e[1])) : []);
-const tabuHistory = {
-  /** This phone's list. */
-  own() {
-    if (!tabuMemory) tabuMemory = seenEntries(load('tabu-seen', null)).slice(-TABU_HISTORY_MAX);
-    return tabuMemory.slice();
-  },
-  /** Words a new game should deal last, oldest first: hosting online, the other phone's sightings count too. */
-  get() {
-    const last = new Map();
-    const put = (list) => list.forEach(([w, t]) => { if (!(last.get(w) >= t)) last.set(w, t); });
-    put(tabuHistory.own());
-    if (online.transport && online.role === 'host' && online.peerTabuSeen) put(online.peerTabuSeen);
-    return [...last.keys()].sort((a, b) => last.get(a) - last.get(b));
-  },
-  /** `words`: the cards shown so far in the game on screen, in the order they were shown. */
-  add(words) {
-    if (!words.length) return;
-    const old = tabuHistory.own();
-    const tail = old.slice(-words.length);
-    if (tail.length === words.length && tail.every(([w], i) => w === words[i])) return; // nothing new
-    const shown = new Set(words);
-    const t0 = Math.max(Date.now(), old.length ? old[old.length - 1][1] + 1 : 0);
-    tabuMemory = old.filter(([w]) => !shown.has(w)).concat(words.map((w, i) => [w, t0 + i])).slice(-TABU_HISTORY_MAX);
-    save('tabu-seen', tabuMemory);
-  },
-  /** The other phone's list from its greeting, moved onto this phone's clock (`sentAt`: its clock then). */
-  fromPeer(list, sentAt) {
-    if (!Array.isArray(list)) return null;
-    const shift = Number.isFinite(sentAt) ? Date.now() - sentAt : 0;
-    return seenEntries(list).slice(-TABU_HISTORY_MAX).map(([w, t]) => [w, t + shift]);
-  },
+function seenHistory(storeKey, peerKey, max) {
+  let memory = null; // read from storage once, then kept in memory (storage may be off or full)
+  const h = {
+    /** This phone's list. */
+    own() {
+      if (!memory) memory = seenEntries(load(storeKey, null)).slice(-max);
+      return memory.slice();
+    },
+    /** Keys a new game should deal last, oldest first: hosting online, the other phone's sightings count too. */
+    get() {
+      const last = new Map();
+      const put = (list) => list.forEach(([w, t]) => { if (!(last.get(w) >= t)) last.set(w, t); });
+      put(h.own());
+      const peer = online.peerSeen && online.peerSeen[peerKey];
+      if (online.transport && online.role === 'host' && peer) put(peer);
+      return [...last.keys()].sort((a, b) => last.get(a) - last.get(b));
+    },
+    /** `keys`: what the game on screen has shown so far, in the order it was shown. */
+    add(keys) {
+      if (!keys.length) return;
+      const old = h.own();
+      const tail = old.slice(-keys.length);
+      if (tail.length === keys.length && tail.every(([w], i) => w === keys[i])) return; // nothing new
+      const shown = new Set(keys);
+      const t0 = Math.max(Date.now(), old.length ? old[old.length - 1][1] + 1 : 0);
+      memory = old.filter(([w]) => !shown.has(w)).concat(keys.map((w, i) => [w, t0 + i])).slice(-max);
+      save(storeKey, memory);
+    },
+    /** The other phone's list from its greeting, moved onto this phone's clock (`sentAt`: its clock then). */
+    fromPeer(list, sentAt) {
+      if (!Array.isArray(list)) return null;
+      const shift = Number.isFinite(sentAt) ? Date.now() - sentAt : 0;
+      return seenEntries(list).slice(-max).map(([w, t]) => [w, t + shift]);
+    },
+  };
+  return h;
+}
+const tabuHistory = seenHistory('tabu-seen', 'tabu', 600);
+// the other kinds travel in the greeting's `seen` (Tabu's list keeps its own field for older phones)
+const histories = {
+  trivia: seenHistory('trivia-seen', 'trivia', 500),
+  dogruluk: seenHistory('dogruluk-seen', 'dogruluk', 300),
+  questions: seenHistory('questions-seen', 'questions', 300),
 };
 
 /** Load whatever data the game declares in meta.data and return the ctx for the session. */
@@ -104,13 +115,20 @@ async function loadGameData(game) {
   if (needs.includes('questions')) {
     ctx.questions = await loadQuestions();
     ctx.customQuestions = load('custom-questions', []);
+    ctx.questionsHistory = histories.questions;
   }
-  if (needs.includes('trivia')) ctx.trivia = await loadJson(TRIVIA_URL);
+  if (needs.includes('trivia')) {
+    ctx.trivia = await loadJson(TRIVIA_URL);
+    ctx.triviaHistory = histories.trivia;
+  }
   if (needs.includes('tabu')) {
     ctx.tabu = await loadJson(TABU_URL);
     ctx.tabuHistory = tabuHistory;
   }
-  if (needs.includes('dogruluk')) ctx.dogruluk = await loadJson(DOGRULUK_URL);
+  if (needs.includes('dogruluk')) {
+    ctx.dogruluk = await loadJson(DOGRULUK_URL);
+    ctx.dogrulukHistory = histories.dogruluk;
+  }
   if (needs.includes('songs')) ctx.songs = await loadJson(SONGS_URL);
   return ctx;
 }
@@ -808,11 +826,14 @@ const online = {
   round: 0,         // bumped on every 'start'/'lobby' so stale loads and moves are dropped
   ctxCache: {},
   tournament: null, // guest side: { index, total, wins } carried by the host's 'start'
-  peerTabuSeen: null, // the other phone's Tabu history, from its 'hello'
+  peerSeen: null,   // the other phone's histories ({ tabu, trivia, dogruluk, questions }), from its 'hello'
 };
 
-/** The greeting: name, build, and the Tabu cards this phone has shown, with its clock to line the times up. */
-const helloMsg = () => ({ t: 'hello', name: online.myName, v: APP_VERSION, tabuSeen: tabuHistory.own(), clock: Date.now() });
+/** The greeting: name, build, and what this phone has shown in earlier games, with its clock to line the times up. */
+const helloMsg = () => ({
+  t: 'hello', name: online.myName, v: APP_VERSION, tabuSeen: tabuHistory.own(),
+  seen: Object.fromEntries(Object.entries(histories).map(([k, h]) => [k, h.own()])), clock: Date.now(),
+});
 
 function leaveOnline({ silent = false } = {}) {
   if (online.transport) {
@@ -825,7 +846,7 @@ function leaveOnline({ silent = false } = {}) {
   online.code = null;
   online.resuming = false;
   online.players = null;
-  online.peerTabuSeen = null;
+  online.peerSeen = null;
   online.session = null;
   online.queue = [];
   online.busy = false;
@@ -1173,8 +1194,10 @@ async function handleOnlineMessage(msg) {
   switch (msg.t) {
     case 'hello': {
       const other = String(msg.name || 'Oyuncu').slice(0, 20);
-      // the Tabu cards the other phone has already shown: a game this phone sets up avoids them too
-      online.peerTabuSeen = tabuHistory.fromPeer(msg.tabuSeen, msg.clock);
+      // what the other phone has already shown: a game this phone sets up avoids it too
+      const seen = msg.seen && typeof msg.seen === 'object' ? msg.seen : {};
+      online.peerSeen = { tabu: tabuHistory.fromPeer(msg.tabuSeen, msg.clock) };
+      for (const [k, h] of Object.entries(histories)) online.peerSeen[k] = h.fromPeer(seen[k], msg.clock);
       online.players = online.role === 'host' ? [online.myName, other] : [other, online.myName];
       // a stale cached build on one phone would desync the games: say so before anything starts
       if (msg.v && msg.v !== APP_VERSION) versionMismatch(String(msg.v).slice(0, 12), other);

@@ -132,3 +132,13 @@ test('beni tanı: kendi sorusunda aynı seçenek iki kez sayılmaz', () => {
   const qs = pickQuestions([{ id: 'b1', type: 'open', text: 'Soru?' }], [{ id: 'c1', type: 'choice', text: 'Hangisi?', options: ['Elma', 'elma'] }], 1, 'first', 1);
   assert.equal(qs[0].id, 'b1');
 });
+
+test('beni tanı: önceki oyunlarda görülen hazır sorular sona kalır', () => {
+  const ids = pool.map((q) => q.id);
+  const seen = ids.slice(0, ids.length - 4);
+  const picked = pickQuestions(pool, [], 4, 'first', 11, seen);
+  assert.deepEqual(picked.map((q) => q.id).sort(), ids.slice(-4).sort());
+  assert.deepEqual(pickQuestions(pool, [], 4, 'first', 11).map((q) => q.id), pickQuestions(pool, [], 4, 'first', 11, []).map((q) => q.id), 'no history: as before');
+  const s = game.setup({ count: 5, seed: 11 }, { ...ctx, questionsHistory: { get: () => ids.slice(0, ids.length - 5), add: () => {} } });
+  assert.deepEqual(s.questions.map((q) => q.id).sort(), ids.slice(-5).sort(), 'setup asks the history');
+});
