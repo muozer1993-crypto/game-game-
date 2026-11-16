@@ -374,14 +374,17 @@ function turkishSong(data, t) {
 export function songOptions(data, song, seed, n = 4) {
   const rng = createRng(seed);
   const all = allTracks(data);
-  const same = shuffle(rng, [...new Set(all.filter((t) => normKey(t.a) === normKey(song.a) && normKey(t.t) !== normKey(song.t)).map((t) => t.t))]);
+  // a name that reads as the right one ("Mariana's Trench" for "Marianas Trench") is no wrong option:
+  // picking it would score as wrong although typing it scores as right
+  const sameTitle = (t) => normKey(t.t) === normKey(song.t) || normalizeAnswer(t.t) === normalizeAnswer(song.t);
+  const same = shuffle(rng, [...new Set(all.filter((t) => normKey(t.a) === normKey(song.a) && !sameTitle(t)).map((t) => t.t))]);
   let picked = same.slice(0, n - 1);
   if (picked.length < n - 1) {
     // a band with few songs: the other names come from bands of the same language first, so a
     // Turkish title among English ones does not give the answer away
     const turkish = (t) => turkishSong(data, t);
     const mine = turkish(song);
-    const others = all.filter((t) => normKey(t.a) !== normKey(song.a) && normKey(t.t) !== normKey(song.t));
+    const others = all.filter((t) => normKey(t.a) !== normKey(song.a) && !sameTitle(t));
     const titles = (list) => [...new Set(list.map((t) => t.t))];
     const near = shuffle(rng, titles(others.filter((t) => turkish(t) === mine)));
     const far = shuffle(rng, titles(others.filter((t) => turkish(t) !== mine)));

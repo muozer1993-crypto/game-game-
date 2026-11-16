@@ -2,6 +2,7 @@
 // button, with a progress bar. Spotify preview urls are stable; Deezer previews are fetched by
 // track id when the clip is first played (the stored urls expire after a day).
 import { el, toast } from './dom.js';
+import { clockPause } from './timer.js';
 
 const previewCache = new Map(); // deezer track id -> Promise<string|null>
 
@@ -117,6 +118,7 @@ export function createClipPlayer(song, opts) {
   }, () => { if (!destroyed) setFailed('Ses yüklenemedi (bağlantı yok mu?).'); }); // Deezer out of reach
   const tick = () => {
     if (!audio || !playing) return;
+    if (clockPause.active()) { stop(false); return; } // a play that began just as "Bağlantı koptu" came up
     const pos = audio.currentTime;
     if (pos > lastPos) heard += pos - lastPos; // only forward motion counts as listening
     lastPos = pos;
@@ -136,6 +138,8 @@ export function createClipPlayer(song, opts) {
     btn.textContent = ended ? '↻ Tekrar çal' : (opts.pausable ? '▶ Devam et' : label);
     if (opts.onTick) opts.onTick(heard, false);
   };
+  // "Bağlantı koptu": nobody can press anything, so the music stops with the clocks (and is not heard)
+  const offPause = clockPause.onBegin(() => { if (playing) stop(false); });
   btn.addEventListener('click', async () => {
     if (failed) return;
     if (playing) { if (opts.pausable) stop(false); return; }
@@ -163,6 +167,6 @@ export function createClipPlayer(song, opts) {
     root,
     heard: () => heard,
     position: () => startAt || (audio ? audio.currentTime : 0),
-    destroy: () => { destroyed = true; stop(false); if (audio) { audio.removeAttribute('src'); audio.load(); audio = null; } },
+    destroy: () => { destroyed = true; offPause(); stop(false); if (audio) { audio.removeAttribute('src'); audio.load(); audio = null; } },
   };
 }

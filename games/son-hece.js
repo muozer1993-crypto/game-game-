@@ -1,5 +1,5 @@
 // Son Hece — each word must start with the last syllable of the previous word.
-import { el, render as draw } from '../js/ui/dom.js';
+import { el, render as draw, keysIntoView } from '../js/ui/dom.js';
 import { createKeyboard } from '../js/ui/keyboard.js';
 import { createTimer } from '../js/ui/timer.js';
 import { syllabify, lastSyllable } from '../js/lib/syllabify.js';
@@ -303,6 +303,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       el('button', { type: 'button', class: 'btn btn-secondary btn-small', onClick: () => { if (confirm('Pes ediyor musun? Bu turu kaybedersin.')) sendMove({ type: 'giveup', at: Date.now() }); } }, 'Pes'),
     ) : null,
   );
+  if (mine) keysIntoView(kbBox); // the chain grows above the keyboard: keep its last row (↵) on screen
 
   return () => cleanups.forEach((fn) => fn());
 }

@@ -157,7 +157,7 @@
     "beyaz",
     "kış",
     "soğuk",
-    "kardan adam",
+    "kayak",
     "yağmak"
    ]
   },
@@ -575,7 +575,7 @@
    "word": "Hastane",
    "taboo": [
     "doktor",
-    "hasta",
+    "acil",
     "ambulans",
     "ameliyat",
     "hemşire"
@@ -777,7 +777,7 @@
     "kilit",
     "kapı",
     "açmak",
-    "anahtarlık",
+    "cep",
     "kaybetmek"
    ]
   },
@@ -814,7 +814,7 @@
   {
    "word": "Gözlük",
    "taboo": [
-    "göz",
+    "numara",
     "görmek",
     "cam",
     "çerçeve",
@@ -824,7 +824,7 @@
   {
    "word": "Ayakkabı",
    "taboo": [
-    "ayak",
+    "numara",
     "giymek",
     "bağcık",
     "topuk",
@@ -947,7 +947,7 @@
     "sebze",
     "meyve",
     "tezgah",
-    "pazarlık",
+    "file",
     "alışveriş"
    ]
   },
@@ -964,7 +964,7 @@
   {
    "word": "Hayvanat bahçesi",
    "taboo": [
-    "hayvan",
+    "zürafa",
     "kafes",
     "gezmek",
     "aslan",
@@ -1315,7 +1315,7 @@
    "word": "Kumsal",
    "taboo": [
     "deniz",
-    "kum",
+    "şemsiye",
     "güneşlenmek",
     "plaj",
     "tatil"
@@ -1464,7 +1464,7 @@
   {
    "word": "Diş fırçası",
    "taboo": [
-    "diş",
+    "ağız",
     "macun",
     "sabah",
     "temizlemek",
@@ -1514,7 +1514,7 @@
   {
    "word": "Yapıştırıcı",
    "taboo": [
-    "yapıştırmak",
+    "Japon",
     "kağıt",
     "tutkal",
     "bant",
@@ -1606,7 +1606,7 @@
    "taboo": [
     "taç",
     "saray",
-    "kraliçe",
+    "hükümdar",
     "yönetmek",
     "taht"
    ]
@@ -1748,7 +1748,7 @@
     "ödül",
     "soru",
     "birinci",
-    "yarışmacı"
+    "sunucu"
    ]
   },
   {
@@ -1994,7 +1994,7 @@
   {
    "word": "Limonata",
    "taboo": [
-    "limon",
+    "ekşi",
     "yaz",
     "soğuk",
     "şeker",
@@ -2148,7 +2148,7 @@
     "bilge",
     "uçmak",
     "gözler",
-    "kuş"
+    "ötmek"
    ]
   },
   {

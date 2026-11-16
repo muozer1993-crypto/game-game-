@@ -139,7 +139,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   // remember the cards drawn, so that the next games start with ones not seen yet
   if (ctx.dogrulukHistory && typeof ctx.dogrulukHistory.add === 'function') ctx.dogrulukHistory.add(drawnKeys(state));
   const legend = el('div', { class: 'c4-legend' }, el('span', {}, `${players[0]}: ${state.scores[0]}`), el('span', {}, `${players[1]}: ${state.scores[1]}`), el('span', { class: 'muted' }, `tur ${Math.min(state.played[0], state.rounds) + (state.turn === 0 && state.played[0] < state.rounds ? 1 : 0)}/${state.rounds}`));
-  const historyView = state.history.length ? el('div', { class: 'dc-history' }, state.history.slice().reverse().slice(0, 6).map((h) =>
+  const historyView = state.history.length ? el('div', { class: 'dc-history' }, state.history.slice().reverse().slice(0, state.phase === 'over' ? undefined : 6).map((h) =>
     el('div', { class: `dc-item ${h.done ? 'ok' : 'miss'}` }, `${h.kind === 'dare' ? '🔥' : '💬'} ${players[h.player]}: ${textOf(h.kind, h.index)} — ${h.done ? `+${SCORE[h.kind]}` : 'pas'}`))) : null;
 
   if (state.phase === 'over') {

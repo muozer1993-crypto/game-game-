@@ -240,11 +240,15 @@ function questionCard(q, no, total, categories, intro) {
 // Half-typed open answers survive the re-render caused by the opponent's moves (online).
 const drafts = new Map(); // `${viewer}:${step}:${index}` -> text
 let draftsFor = null;     // state.id the drafts belong to
+// taps ignored this long after a question comes up: its buttons sit where the last ones were, so
+// a double tap must not also answer a question the player has not seen
+const STEP_GUARD_MS = 350;
+const stepShown = new WeakMap(); // container -> { key, at }
 
-function answerInput(q, onSubmit, draftKey) {
+function answerInput(q, onSubmit, draftKey, settled = () => true) {
   if (q.type === 'choice') {
     return el('div', { class: 'options' }, q.options.map((o) =>
-      el('button', { type: 'button', class: 'btn btn-secondary', onClick: () => onSubmit(o) }, o)));
+      el('button', { type: 'button', class: 'btn btn-secondary', onClick: () => { if (settled()) onSubmit(o); } }, o)));
   }
   const input = el('input', { type: 'text', class: 'input', maxlength: 80, autocomplete: 'off', placeholder: 'Cevabın…', 'aria-label': 'Cevap', 'data-draft': draftKey || '' });
   if (draftKey && drafts.has(draftKey)) input.value = drafts.get(draftKey);
@@ -253,7 +257,7 @@ function answerInput(q, onSubmit, draftKey) {
   const caret = draftKey && old && old.tagName === 'INPUT' && old.getAttribute('data-draft') === draftKey && typeof old.selectionStart === 'number'
     ? [old.selectionStart, old.selectionEnd] : null;
   input.addEventListener('input', () => { if (draftKey) drafts.set(draftKey, input.value); });
-  const form = el('form', { onSubmit: (e) => { e.preventDefault(); if (draftKey) drafts.delete(draftKey); onSubmit(input.value); } },
+  const form = el('form', { onSubmit: (e) => { e.preventDefault(); if (!settled()) return; if (draftKey) drafts.delete(draftKey); onSubmit(input.value); } },
     el('div', { class: 'field' }, input),
     el('button', { type: 'submit', class: 'btn btn-primary btn-block' }, 'Kaydet'),
   );
@@ -280,6 +284,10 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   }
 
   if (state.phase === 'play') {
+    const stepKey = `${state.id}:${viewer}:${state.answered[viewer]}:${state.guessed[viewer]}`;
+    if (!stepShown.has(container) || stepShown.get(container).key !== stepKey) stepShown.set(container, { key: stepKey, at: Date.now() });
+    const shownAt = stepShown.get(container).at;
+    const settled = () => Date.now() - shownAt >= STEP_GUARD_MS;
     if (state.finished[viewer]) {
       draw(container,
         el('div', { class: 'status-line' }, el('strong', {}, 'Bitirdin!')),
@@ -294,7 +302,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
         el('div', { class: 'status-line' }, el('strong', {}, `${players[viewer]}, kendin hakkında cevapla`)),
         el('p', { class: 'hint' }, `1. adım: kendi cevapların (${i + 1}/${total}) · 2. adım: ${nameSuffix(players[opp], 'in')} cevaplarını tahmin et`),
         questionCard(state.questions[i], i + 1, total, categories, null),
-        answerInput(state.questions[i], (value) => sendMove({ type: 'answer', index: i, secret: { value } }), `${viewer}:answer:${i}`),
+        answerInput(state.questions[i], (value) => sendMove({ type: 'answer', index: i, secret: { value } }), `${viewer}:answer:${i}`, settled),
       );
       return null;
     }
@@ -303,7 +311,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       el('div', { class: 'status-line' }, el('strong', {}, `${players[viewer]}, ${nameSuffix(players[opp], 'in')} cevabını tahmin et`)),
       el('p', { class: 'hint' }, `2. adım: tahminler (${i + 1}/${total})`),
       questionCard(state.questions[i], i + 1, total, categories, `${nameSuffix(players[opp], 'e')} de bu soru soruldu — sence ne cevap verdi?`),
-      answerInput(state.questions[i], (value) => sendMove({ type: 'guess', index: i, value }), `${viewer}:guess:${i}`),
+      answerInput(state.questions[i], (value) => sendMove({ type: 'guess', index: i, value }), `${viewer}:guess:${i}`, settled),
     );
     return null;
   }

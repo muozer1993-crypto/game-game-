@@ -1,7 +1,7 @@
 // Adam Asmaca — hangman for two. One player holds a word, the other finds it letter by
 // letter; roles swap every word. The word stays on the setter's device: the guesser's
 // device only sees letter positions that the setter's device reports back.
-import { el, svg, render as draw } from '../js/ui/dom.js';
+import { el, svg, render as draw, keysIntoView, armAfter } from '../js/ui/dom.js';
 import { nextButton } from '../js/ui/next.js';
 import { createKeyboard } from '../js/ui/keyboard.js';
 import { normalizeWord, isTurkishWord, upperTR, nameSuffix, LETTERS } from '../js/lib/tr.js';
@@ -391,10 +391,16 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
         drawTyped();
         drawStatus();
         modeButton.textContent = modeLabel();
+        keysIntoView(modeRow); // the typed row above pushes the keys down: they stay under the finger
+        // where the page cannot scroll (a tall phone) the keys still move: a double tap must not type;
+        // where it scrolls, the button comes back under the finger: a double tap must not switch back
+        armAfter(kbBox);
+        armAfter(modeButton);
       },
     }, modeLabel())
     : null;
 
+  const modeRow = modeButton ? el('div', { class: 'row', style: { marginTop: '10px', justifyContent: 'center' } }, modeButton) : null;
   const shown = result && state.word ? [...state.word] : state.revealed;
   // the word is out and the list does not have it: the guesser may object (full points for this word)
   const objectionBox = () => el('div', { class: 'card objections' },
@@ -430,8 +436,11 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       : null,
     typedBox,
     result ? null : kbBox,
-    modeButton ? el('div', { class: 'row', style: { marginTop: '10px', justifyContent: 'center' } }, modeButton) : null,
+    modeRow,
   );
+  // a short phone (two phones add a bar above, an unlisted word a hint line): the keys and the
+  // whole-word button stay on screen
+  if (modeRow && !pending) keysIntoView(modeRow);
   return () => cleanups.forEach((fn) => fn());
 }
 

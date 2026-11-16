@@ -136,6 +136,9 @@ export function getResult(state) {
 // When the question was first shown on this device (the opponent's moves re-render the screen
 // but must not restart the clock).
 const shownAt = new WeakMap(); // container -> { viewer, index, at }
+// taps ignored this long after a question comes up: its options sit where the last ones were, so
+// a double tap must not also answer a question the player has not seen
+const STEP_GUARD_MS = 350;
 
 export function render(state, viewer, container, sendMove, ctx = {}) {
   const players = ctx.players || ['Oyuncu 1', 'Oyuncu 2'];
@@ -192,7 +195,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
         el('div', { class: 'question-text' }, q.text),
       ),
       el('div', { class: 'options' }, q.options.map((o, k) =>
-        el('button', { type: 'button', class: 'btn btn-secondary', onClick: () => send(k) }, `${'ABCD'[k]}) ${o}`))),
+        el('button', { type: 'button', class: 'btn btn-secondary', onClick: () => { if (Date.now() - startedAt >= STEP_GUARD_MS) send(k); } }, `${'ABCD'[k]}) ${o}`))),
     );
     return () => { if (timer) timer.stop(); };
   }

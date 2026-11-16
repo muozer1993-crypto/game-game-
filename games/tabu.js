@@ -12,7 +12,7 @@ export const meta = {
   icon: '🤐',
   description: 'Karttaki kelimeyi yasaklı beş kelimeyi söylemeden anlat (ya da sessiz sinema: hiç konuşmadan canlandır); eşin tahmin etsin.',
   rules: [
-    'Anlatan karttaki kelimeyi, altındaki beş yasaklı kelimeyi (ve türevlerini) söylemeden anlatır; tahmin eden yüksek sesle tahmin eder.',
+    'Anlatan karttaki kelimeyi (bir parçasını da) ve altındaki beş yasaklı kelimeyi (türevleriyle) söylemeden anlatır; tahmin eden yüksek sesle tahmin eder.',
     'Bilinen kart +1, pas 0, yasaklı kelime kaçarsa anlatan "Tabu" der ve −1. Süre dolunca tur biter, roller değişir; o an ekrandaki kart (⌛) bir kenara konur, yeni anlatana yeni kart gelir.',
     'Kartlar oyundan oyuna tekrar etmez: telefon gösterdiği kartları hatırlar (iki telefonda ikisininki birlikte sayılır), yeni oyunda önce hiç görülmemiş kartlar gelir; hepsi bitince en uzun süredir görülmeyenler döner.',
     'Tek telefonda kartı yalnızca anlatan görür; iki telefonda tahmin edenin ekranında kart görünmez. Yasaklı kelime denetimi anlatanın dürüstlüğüne kalır.',
@@ -155,6 +155,10 @@ export function roundScore(entries) {
 
 // ------------------------------------------------------------------ rendering
 const starts = new Map(); // `${id}:${round}` -> Date.now() when this device saw the round begin
+// taps ignored this long after a card comes up: the buttons stay where they were, so a double tap
+// must not also mark a card the describer has not seen
+const STEP_GUARD_MS = 350;
+const cardShown = new WeakMap(); // container -> { key, at }
 const MARK = { ok: '✓', pass: '→', taboo: '✗', time: '⌛' };
 const LABEL = { ok: 'Bildi', pass: 'Pas', taboo: 'Tabu' };
 
@@ -247,7 +251,10 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   }
   const card = cardAt(state, ctx);
   const cardIdx = state.deck[state.cursor % state.deck.length];
-  const mark = (result) => sendMove({ type: 'card', card: cardIdx, result });
+  const cardKey = `${state.id}:${state.cursor}`;
+  if (!cardShown.has(container) || cardShown.get(container).key !== cardKey) cardShown.set(container, { key: cardKey, at: Date.now() });
+  const shownAt = cardShown.get(container).at;
+  const mark = (result) => { if (Date.now() - shownAt >= STEP_GUARD_MS) sendMove({ type: 'card', card: cardIdx, result }); };
   draw(container,
     timerBox,
     el('div', { class: 'status-line' }, el('strong', {}, `${mime ? 'Canlandır' : 'Anlat'}, ${players[viewer]}!`)),

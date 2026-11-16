@@ -361,31 +361,34 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       if (pv.error) info.push(el('p', { class: 'hint rejected-note' }, pv.error));
       else {
         info.push(el('p', { class: `hint ${pv.missing.length ? 'rejected-note' : 'notice'}` }, `${pv.words.map((w) => `${upperTR(w.word)} ${w.points}`).join(' + ')} = ${pv.total} puan${pv.missing.length ? ` · listede yok: ${pv.missing.join(', ')}` : ''}`));
-        if (pv.missing.length) info.push(el('p', { class: 'hint' }, 'Yine de oynayabilirsin: kelime işaretli kalır, oyun bitince rakibin itiraz ederse bu hamlenin puanı silinir.'));
       }
     } else if (mine) info.push(el('p', { class: 'hint' }, draft.selected != null ? 'Şimdi tahtada bir kareye dokun.' : (firstMove ? 'Raftan bir harf seç; ilk kelime ★ kareden geçmeli.' : 'Raftan bir harf seç, tahtaya koy.')));
     infoBox.replaceChildren(...info);
     btnPlay.disabled = !mine || !pv || !!pv.error || !!draft.exchange;
-    btnPlay.textContent = pv && !pv.error && pv.missing.length ? 'Yine de oyna' : 'Oyna';
+    playLabel.textContent = pv && !pv.error && pv.missing.length ? 'Yine de oyna' : 'Oyna';
     btnClear.disabled = !draft.tiles.length && !draft.exchange;
-    btnSwap.textContent = draft.exchange ? `Değiştir (${draft.exchange.size})` : 'Harf değiştir';
+    swapLabel.textContent = draft.exchange ? `Değiştir (${draft.exchange.size})` : 'Harf değiştir';
     btnSwap.disabled = !mine || state.bag.length < RACK || (draft.exchange && !draft.exchange.size);
     btnPass.disabled = !mine;
   };
-  const btnPlay = el('button', { type: 'button', class: 'btn btn-primary', onClick: () => {
+  // the buttons keep one width whatever they say ("Oyna"/"Yine de oyna", "Harf değiştir"/"Değiştir (3)"):
+  // a row that reflows would put another button under the finger that taps again
+  const playLabel = el('span', {}, 'Oyna');
+  const swapLabel = el('span', {}, 'Harf değiştir');
+  const btnPlay = el('button', { type: 'button', class: 'btn btn-primary btn-stack', onClick: () => {
     const tiles = draft.tiles.map((t) => ({ cell: t.cell, letter: t.letter }));
     const pv = preview();
     const unlisted = pv && !pv.error ? pv.missingRaw : [];
     if (unlisted.length && !confirm(`${unlisted.map(upperTR).join(', ')} kelime listesinde yok. Yine de oynansın mı? Oyun bitince rakibin itiraz ederse bu hamlenin puanı silinir.`)) return;
     sendMove(unlisted.length ? { type: 'play', tiles, unlisted } : { type: 'play', tiles });
-  } }, 'Oyna');
+  } }, playLabel, el('span', { 'aria-hidden': 'true', class: 'btn-stack-sizer' }, 'Yine de oyna'));
   const btnClear = el('button', { type: 'button', class: 'btn btn-secondary btn-small', onClick: () => { draft.tiles = []; draft.selected = null; draft.exchange = null; redraw(); } }, 'Geri al');
-  const btnSwap = el('button', { type: 'button', class: 'btn btn-secondary btn-small', onClick: () => {
+  const btnSwap = el('button', { type: 'button', class: 'btn btn-secondary btn-small btn-stack', onClick: () => {
     if (!draft.exchange) { draft.exchange = new Set(); draft.tiles = []; draft.selected = null; redraw(); return; }
     const letters = [...draft.exchange].map((k) => rack[k]);
     draft.exchange = null;
     sendMove({ type: 'exchange', letters });
-  } }, 'Harf değiştir');
+  } }, swapLabel, el('span', { 'aria-hidden': 'true', class: 'btn-stack-sizer' }, 'Harf değiştir'));
   const btnPass = el('button', { type: 'button', class: 'btn btn-secondary btn-small', onClick: () => { if (confirm('Pas geçilsin mi?')) sendMove({ type: 'pass' }); } }, 'Pas');
 
   const fmt = (x) => (x < 0 ? `−${-x}` : String(x)); // a real minus sign, so '3 – −9' stays readable

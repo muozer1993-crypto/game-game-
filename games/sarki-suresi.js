@@ -96,6 +96,7 @@ export function setup(options = {}, ctx = {}) {
     picks: [null, null],                     // bands each player picked (when that source is on)
     songs: [],                               // one per round: { a, t, s, p?, dz? }
     reserve: [],                             // hard mode: swapped in when a song's sound will not load
+    revealed: [],                            // hard mode: rounds whose title both phones show (a phone could not play it)
     guesses: [],                             // guesses[round][player] in seconds
     index: 0,                                // current round
     phase: needsPick(sources) ? 'pick' : 'guess', // pick | guess | reveal | over
@@ -167,7 +168,17 @@ export function applyMove(state, player, move, ctx = {}) {
     const reserve = state.reserve.slice();
     songs[state.index] = reserve.shift();
     const guesses = state.guesses.map((x, k) => (k === state.index ? [null, null] : x.slice()));
-    return { ...state, songs, reserve, guesses };
+    // a reveal of the old song (crossing this swap) is for a song that is gone
+    const revealed = (state.revealed || []).filter((k) => k !== state.index);
+    return { ...state, songs, reserve, guesses, revealed };
+  }
+  if (move.type === 'reveal') { // hard mode: a phone cannot play this song, so both phones show its title
+    if (state.mode !== 'hard' || state.phase !== 'guess') fail('Şarkının adı açılamaz');
+    if (Number(move.round) !== state.index) fail('Bu şarkının sırası geçti');
+    if (move.song != null && move.song !== songKeyOf(state.songs[state.index])) fail('Bu şarkı zaten değişti');
+    const revealed = state.revealed || [];
+    if (revealed.includes(state.index)) return state;
+    return { ...state, revealed: [...revealed, state.index].sort((a, b) => a - b) };
   }
   if (move.type === 'guess') {
     if (state.phase !== 'guess') fail('Şu an tahmin sırası değil');
@@ -314,31 +325,45 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       container.replaceChildren(...old.nodes);
       back();
       old.setStatus(statusText);
+      old.showTitle((state.revealed || []).includes(i));
       return () => release(container, old);
     }
 
     let clip = null;
     let card;
+    let showTitle = () => {}; // hard mode: shows or hides the song's title (see below)
     if (state.mode === 'hard') {
-      // a song whose sound will not load is swapped for a reserve song before anyone guesses it
-      if (!mem.swapping && state.reserve.length) {
+      // the song's title, shown when a phone cannot play it: its room is kept from the start, so the
+      // keypad does not move when it appears
+      const fallback = el('div', { class: 'ss-fallback', style: { visibility: 'hidden' }, 'aria-hidden': 'true' },
+        el('div', { class: 'ss-artist' }, song.a), el('div', { class: 'ss-title' }, song.t));
+      showTitle = (on) => { fallback.style.visibility = on ? '' : 'hidden'; fallback.setAttribute('aria-hidden', on ? 'false' : 'true'); };
+      showTitle((state.revealed || []).includes(i));
+      // this phone cannot play the song: both phones show its title (a phone alone with it would know more)
+      const reveal = () => {
+        const now = mem.state;
+        if (entry.dead || roundMem.get(container) !== mem || !now || now.phase !== 'guess' || now.index !== i || (now.revealed || []).includes(i)) return;
+        sendMove({ type: 'reveal', round: i, song: songKeyOf(song) });
+      };
+      // a song whose sound will not load is swapped for a reserve song before anyone guesses it; on two
+      // phones only the host decides (a guest whose own network fails would use up every reserve song)
+      if (!mem.swapping) {
         clipReady(song).then((ok) => {
           const now = mem.state;
           // entry.dead: this guess screen is gone (the guess went in and the phone was handed over)
           if (ok || entry.dead || mem.swapping || roundMem.get(container) !== mem || !now || now.phase !== 'guess' || now.index !== i) return;
           const gg = now.guesses[i];
-          if (gg[0] != null || gg[1] != null) return; // a guess is in: this phone keeps the song (the clip shows its title)
+          // a guess is in, the reserve is used up, or this is the guest: the title is shown instead
+          if (gg[0] != null || gg[1] != null || !now.reserve.length || !ctx.isHost) { reveal(); return; }
           mem.swapping = true;
           sendMove({ type: 'swap', round: i, song: songKeyOf(song) });
         });
       }
       if (state.songs[i + 1]) clipReady(state.songs[i + 1]).catch(() => {});
-      const fallback = el('div', { class: 'ss-fallback', hidden: true },
-        el('div', { class: 'ss-artist' }, song.a), el('div', { class: 'ss-title' }, song.t));
       clip = createClipPlayer(song, {
         seconds: state.clipSec,
         note: 'Dinle, süresini tahmin et. İstersen tekrar çalabilirsin.',
-        onFail: () => { fallback.hidden = false; keysIntoView(kbBox); }, // the title grows the card
+        onFail: () => { showTitle(true); reveal(); },
       });
       card = el('div', { class: 'card ss-card ss-hard' }, el('div', { class: 'ss-secret' }, '🎧 Gizli şarkı'), clip.root, fallback);
     } else {
@@ -377,6 +402,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       key: skey,
       nodes: [...container.childNodes],
       setStatus: (text) => { const m = statusBox.querySelector('.muted'); if (m) m.textContent = text; },
+      showTitle: (on) => showTitle(on),
       destroy: () => { kb.destroy(); if (clip) clip.destroy(); },
       dropping: false,
       dead: false,

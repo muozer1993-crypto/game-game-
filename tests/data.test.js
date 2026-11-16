@@ -36,6 +36,10 @@ test('veri: Tabu kartları benzersiz, her kartta beş farklı yasak kelime var',
     assert.ok(Array.isArray(c.taboo) && c.taboo.length === 5, `${c.word}: five taboo words`);
     assert.deepEqual(dupes(c.taboo.map(key)), [], `${c.word}: taboo words differ`);
     assert.ok(!c.taboo.some((t) => key(t) === key(c.word)), `${c.word}: the word itself is not a taboo word`);
+    // the word and its parts are off limits anyway: a taboo word built on them wastes the slot
+    const parts = key(c.word).split(' ').filter((p) => p.length >= 3);
+    const wasted = c.taboo.filter((t) => parts.some((p) => key(t).includes(p)) || (key(t).length >= 3 && key(c.word).includes(key(t))));
+    assert.deepEqual(wasted, [], `${c.word}: taboo words built on the card's word`);
   }
 });
 

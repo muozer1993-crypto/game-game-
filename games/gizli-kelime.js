@@ -529,7 +529,8 @@ export function createGame(cfg) {
     const drawCurrent = () => {
       drafts.set(draftKey, typed);
       if (mine && !myPending) draw(currentRow, tileRow(typed, null, state.length));
-      else draw(currentRow);
+      // not this player's turn: the row keeps its room, so the keyboard does not drop when the turn comes back
+      else draw(currentRow, el('div', { style: { visibility: 'hidden' }, 'aria-hidden': 'true' }, tileRow('', null, state.length)));
     };
     drawCurrent();
 

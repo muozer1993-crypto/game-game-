@@ -1130,7 +1130,9 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 @media (max-height: 760px) {
   .ss-hard { padding: 10px 12px; }
   .ss-hard .ss-clip { margin-top: 6px; }
-  .ss-hard .ss-note:not(.clip-why) { display: none; } /* the instruction, not why the sound failed */
+  /* the instruction, and why the sound failed too: the button already says "Ses çalınamadı" and the title
+     shows in the room kept for it, so nothing grows under the keypad */
+  .ss-hard .ss-note { display: none; }
   .ss-hard .ss-bar { margin-top: 8px; }
   .ss-hard ~ .ss-time { font-size: 2.4rem; line-height: 1.2; margin: 0; }
 }

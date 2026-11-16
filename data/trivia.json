@@ -4153,8 +4153,8 @@
       "options": [
         "Mimar Kemaleddin",
         "Mimar Sinan",
-        "Sedefkâr Mehmed Ağa",
-        "Davud Ağa"
+        "Sedefkâr Mehmet Ağa",
+        "Davut Ağa"
       ],
       "answer": 1
     },
@@ -5583,7 +5583,7 @@
       "options": [
         "Itrî",
         "Dede Efendi",
-        "Ahmed Adnan Saygun",
+        "Ahmet Adnan Saygun",
         "Münir Nurettin Selçuk"
       ],
       "answer": 2
@@ -5657,14 +5657,14 @@
       "id": "spor-033",
       "category": "spor",
       "difficulty": 1,
-      "text": "Yağlı güreşin ünlü Kırkpınar turnuvası hangi ilde düzenlenir?",
+      "text": "Satrançta oyuna ilk hamleyi hangi renk taşlar yapar?",
       "options": [
-        "Bursa",
-        "Kırklareli",
-        "Edirne",
-        "Tekirdağ"
+        "Siyah",
+        "Beyaz",
+        "Kura ile belirlenir",
+        "Sırayla değişir"
       ],
-      "answer": 2
+      "answer": 1
     },
     {
       "id": "spor-034",
@@ -6073,14 +6073,14 @@
       "id": "gunluk-034",
       "category": "gunluk",
       "difficulty": 1,
-      "text": "İskender kebabın doğduğu şehir hangisidir?",
+      "text": "Mantı en çok hangi ilimizle özdeşleşmiştir?",
       "options": [
-        "Adana",
-        "Bursa",
-        "Gaziantep",
-        "Kayseri"
+        "Konya",
+        "Sivas",
+        "Kayseri",
+        "Malatya"
       ],
-      "answer": 1
+      "answer": 2
     },
     {
       "id": "gunluk-035",

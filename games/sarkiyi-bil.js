@@ -7,7 +7,7 @@
 // Each player has their own answer slot (answering[p]), so on two phones both may press at the same
 // moment and every answer move still commutes; buzz and swap name the song they are about, and only
 // the host ends a round (its timeout says whose answers it had) or swaps a song (the guest asks).
-import { el, render as draw, toast } from '../js/ui/dom.js';
+import { el, render as draw, toast, armAfter, keysIntoView } from '../js/ui/dom.js';
 import { nextButton } from '../js/ui/next.js';
 import { createTimer, activeSince } from '../js/ui/timer.js';
 import { createClipPlayer, clipReady } from '../js/ui/clip.js';
@@ -417,17 +417,28 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       }, done ? `${players[p]} cevapladı` : `${players[p]} · Tahmin et`);
     });
     const waiting = online && round[1 - viewer] == null && round[viewer] != null ? el('p', { class: 'hint' }, `${players[1 - viewer]} bekleniyor…`) : null;
+    // back from an answer step (one phone: the other player listens on): the play button and the
+    // buzzers come up where the names were, so the second tap of a double tap must not press them
+    const fromAnswer = mem.lastView === 'answer';
+    const firstListen = mem.lastView !== 'listen';
+    mem.lastView = 'listen';
+    const guard = fromAnswer ? (node) => armAfter(node, STEP_GUARD_MS) : (node) => node;
+    const buzzRow = guard(el('div', { class: 'row sb-buzzers' }, buzzers));
     draw(container,
       status(`Şarkı ${i + 1}/${n}`),
       timerBox,
-      el('div', { class: 'card ss-card' }, el('div', { class: 'ss-secret' }, `🎧 ${i + 1}. şarkı`), clip.root, preview, skipBtn),
-      el('div', { class: 'row sb-buzzers' }, buzzers),
+      guard(el('div', { class: 'card ss-card' }, el('div', { class: 'ss-secret' }, `🎧 ${i + 1}. şarkı`), clip.root, preview, skipBtn)),
+      buzzRow,
       waiting,
     );
+    // a short phone (two phones add the emoji bar): "Tahmin et" stays on screen; only when the screen
+    // comes up, so a redraw while listening never moves the buttons under a finger
+    if (firstListen) keysIntoView(buzzRow);
     return () => { mem.pos = clip.position(); clip.destroy(); stopTimer(); };
   }
 
   // ---- the answering player's screens (band, then song typed or from four names)
+  mem.lastView = 'answer';
   if (!online && mem.covered) { // the other player must not watch the typing
     draw(container,
       status(`Şarkı ${i + 1}/${n}`),
@@ -446,7 +457,8 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   // a step's buttons come up where the last step's were: a double tap on Devam (or on Hazırım)
   // must not also answer the next step empty
   const stepKey = `${key}:${who}:${slot.step}`;
-  if (mem.stepKey !== stepKey) { mem.stepKey = stepKey; mem.stepAt = Date.now(); }
+  const freshStep = mem.stepKey !== stepKey;
+  if (freshStep) { mem.stepKey = stepKey; mem.stepAt = Date.now(); }
   const settled = () => Date.now() - mem.stepAt >= STEP_GUARD_MS;
   // the same step drawn again (two phones: the other player's answer arriving) keeps the drawn
   // nodes, so what this player has typed, the focus and the caret stay
@@ -510,6 +522,9 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     el('div', { class: 'options' }, songOptions(ctx.songs, song, state.seed + i * 7 + 2).map((title) =>
       el('button', { type: 'button', class: 'btn btn-secondary', onClick: () => { if (chosen || !settled()) return; chosen = true; mem.covered = true; sendMove({ type: 'choose2', title }); } }, title))),
   );
+  // the four names can take a while (a band with few songs: the whole list is searched), and a tap
+  // queued meanwhile is handled only now: the guard starts once the names are on screen
+  if (freshStep) mem.stepAt = Date.now();
   keep();
   return stopTimer;
 }

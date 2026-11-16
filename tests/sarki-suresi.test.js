@@ -213,6 +213,28 @@ test('şarkı süresi (iki telefon): sessiz şarkının değişimi, onu görmede
   assert.throws(() => game.applyMove(swapped, 1, { type: 'guess', round: 0, seconds: 222, song: silent }, on), 'Şarkı değişti');
 });
 
+test('şarkı süresi (zor, iki telefon): çalamayan telefonun "adı aç"ı iki telefonda geçer; değişimle çaprazlanınca da aynı sonuç', () => {
+  const data = { weights: {}, tracks: Array.from({ length: 30 }, (_, i) => ({ a: `G${i}`, t: `Ş${i}`, s: 150 + i, dz: 100 + i })) };
+  const on = { songs: data, mode: 'online' };
+  const s = game.setup({ rounds: 5, mode: 'hard', seed: 8 }, on);
+  assert.deepEqual(s.revealed, []);
+  const key = songKeyOf(s.songs[0]);
+  const shown = game.applyMove(s, 1, { type: 'reveal', round: 0, song: key }, on);
+  assert.deepEqual(shown.revealed, [0], 'the title is shown for this round');
+  assert.equal(game.applyMove(shown, 0, { type: 'reveal', round: 0, song: key }, on), shown, 'a second reveal changes nothing');
+  // the guest's reveal and the host's swap cross: each phone applies its own first
+  const host = (() => { let t = game.applyMove(s, 0, { type: 'swap', round: 0, song: key }, on); try { t = game.applyMove(t, 1, { type: 'reveal', round: 0, song: key }, on); } catch { /* refused */ } return t; })();
+  const guest = game.applyMove(game.applyMove(s, 1, { type: 'reveal', round: 0, song: key }, on), 0, { type: 'swap', round: 0, song: key }, on);
+  assert.deepEqual(host, guest, 'same state on both phones');
+  assert.deepEqual(host.revealed, [], 'the new song is hidden again');
+  // a guess and a reveal commute
+  const a = game.applyMove(game.applyMove(s, 1, { type: 'guess', round: 0, seconds: 200, song: key }, on), 0, { type: 'reveal', round: 0, song: key }, on);
+  const b = game.applyMove(game.applyMove(s, 0, { type: 'reveal', round: 0, song: key }, on), 1, { type: 'guess', round: 0, seconds: 200, song: key }, on);
+  assert.deepEqual(a, b);
+  const normal = game.setup({ rounds: 5, mode: 'normal', seed: 8 }, on);
+  assert.throws(() => game.applyMove(normal, 0, { type: 'reveal', round: 0, song: songKeyOf(normal.songs[0]) }, on), 'açılamaz');
+});
+
 /** Two online sessions of the game, back to back, with an in-memory ordered link. */
 function phones(options, data) {
   const inbox = [[], []];

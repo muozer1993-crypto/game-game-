@@ -1,6 +1,6 @@
 // Harf Avı — word hunt on a shared letter grid. Both players get the same grid and the
 // same time; each player's words stay on their own device until both have finished.
-import { el, render as draw } from '../js/ui/dom.js';
+import { el, render as draw, keysIntoView } from '../js/ui/dom.js';
 import { createTimer } from '../js/ui/timer.js';
 import { createRng } from '../js/lib/rng.js';
 import { upperTR, normalizeWord, isTurkishWord, VOWELS, nameSuffix } from '../js/lib/tr.js';
@@ -342,7 +342,8 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   }
 
   // ---- playing
-  if (!starts.has(key)) starts.set(key, Date.now());
+  const firstDraw = !starts.has(key);
+  if (firstDraw) starts.set(key, Date.now());
   const deadline = starts.get(key) + state.seconds * 1000;
   let path = paths.get(key) || [];
   const wordOf = (p) => p.map((i) => state.cells[i]).join('');
@@ -410,6 +411,11 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   update();
   if (warned !== null) warn(warned); // put the warning back after a redraw
   const provisional = mine.reduce((s, w) => s + points(w), 0);
+  const actionRow = el('div', { class: 'row', style: { justifyContent: 'center', gap: '8px', marginTop: '8px' } },
+    el('button', { type: 'button', class: 'btn btn-secondary', onClick: () => { path = []; update(); } }, 'Temizle'),
+    submitBtn,
+    el('button', { type: 'button', class: 'btn btn-secondary', onClick: () => { if (confirm('Süren bitmeden bitirilsin mi?')) finish(); } }, 'Bitir'),
+  );
   draw(container,
     timerBox,
     el('div', { class: 'status-line' }, el('strong', {}, `${players[viewer]}: ${mine.length} kelime, ${provisional} puan`),
@@ -417,15 +423,14 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       online ? el('div', { class: 'muted status-opp' }, state.started[opp] ? `${players[opp]}: ${state.counts[opp]} kelime` : `${players[opp]} henüz başlamadı`) : null),
     wordBox,
     gridBox,
-    el('div', { class: 'row', style: { justifyContent: 'center', gap: '8px', marginTop: '8px' } },
-      el('button', { type: 'button', class: 'btn btn-secondary', onClick: () => { path = []; update(); } }, 'Temizle'),
-      submitBtn,
-      el('button', { type: 'button', class: 'btn btn-secondary', onClick: () => { if (confirm('Süren bitmeden bitirilsin mi?')) finish(); } }, 'Bitir'),
-    ),
+    actionRow,
     warnNote, // below the buttons: showing it must not move "Yine de ekle" away from the finger
     el('div', { class: 'col-title', style: { marginTop: '10px' } }, 'Bulduğun kelimeler'),
     wordList(mine.slice().reverse(), { unlisted: myUnlisted }),
   );
+  // a short phone (two phones add the emoji bar): the whole grid and Gönder stay on screen; only when
+  // the clock starts, so a later redraw never moves the grid under a finger
+  if (firstDraw) keysIntoView(actionRow);
   return () => cleanups.forEach((fn) => fn());
 }
 

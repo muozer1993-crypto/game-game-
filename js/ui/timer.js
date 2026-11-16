@@ -5,12 +5,18 @@ import { el } from './dom.js';
 // Two phones: while the "Bağlantı koptu" overlay is up nobody can play, so every clock stands still.
 // The app marks the overlay's time here; a countdown adds the part of it that fell after its start.
 const pauses = []; // [from, to (null while it lasts)], oldest first
+const onBegin = new Set(); // called when a standstill starts (a playing clip stops)
 export const clockPause = {
   begin() {
     const last = pauses[pauses.length - 1];
-    if (!last || last[1] != null) pauses.push([Date.now(), null]);
+    if (!last || last[1] != null) {
+      pauses.push([Date.now(), null]);
+      for (const fn of [...onBegin]) { try { fn(); } catch (e) { console.warn(e); } }
+    }
     if (pauses.length > 50) pauses.shift();
   },
+  /** fn() runs whenever a standstill begins; returns the unsubscribe. */
+  onBegin(fn) { onBegin.add(fn); return () => onBegin.delete(fn); },
   end() {
     const last = pauses[pauses.length - 1];
     if (last && last[1] == null) last[1] = Date.now();
