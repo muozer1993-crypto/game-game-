@@ -327,7 +327,10 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     const guesser = 1 - owner;
     const verdict = state.judgments[owner][i];
     const q = state.questions[i];
-    const badge = verdict ? el('span', { class: `badge ${verdict}` }, VERDICT_LABEL[verdict]) : null;
+    // an open answer waiting for its verdict keeps the badge's room (all badges are one width), so the
+    // verdict does not wrap the line and push the buttons below down under the finger
+    const badge = verdict ? el('span', { class: `badge ${verdict}` }, VERDICT_LABEL[verdict])
+      : (q.type === 'open' && state.phase === 'compare' ? el('span', { class: 'badge', style: { visibility: 'hidden' }, 'aria-hidden': 'true' }, VERDICT_LABEL.miss) : null);
     const buttons = q.type === 'open' && canJudge(owner)
       ? el('div', { class: 'judge-buttons' }, ['match', 'close', 'miss'].map((v) =>
         el('button', { type: 'button', class: `btn ${verdict === v ? 'btn-primary' : 'btn-secondary'}`, onClick: () => sendMove({ type: 'judge', owner, index: i, verdict: v }) }, VERDICT_LABEL[v])))
@@ -351,7 +354,8 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const mineDone = online && doneOf(state)[viewer];
   draw(container,
     summary,
-    state.phase === 'compare' && !done ? el('p', { class: 'hint' }, 'Açık uçlu cevaplara Tuttu / Yakın / Tutmadı diyerek karar verin.') : null,
+    // the line stays (two lines' room) when the last verdict is given, so the list does not jump up
+    state.phase === 'compare' ? el('p', { class: 'hint two-lines' }, done ? 'Hepsine karar verildi: aşağıdan "Sonucu gör".' : 'Açık uçlu cevaplara Tuttu / Yakın / Tutmadı diyerek karar verin.') : null,
     el('div', { class: 'compare-list' }, items),
     state.phase === 'compare' ? el('div', { class: 'section' },
       mineDone

@@ -584,7 +584,7 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .btn-stack > * { grid-area: 1 / 1; }
 .btn-stack-sizer { visibility: hidden; }
 .badge { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 0.85rem; font-weight: 700; }
-.compare-item .badge { margin-top: 4px; }
+.compare-item .badge { margin-top: 4px; min-width: 5.6em; text-align: center; } /* one width for every verdict: the line wraps the same before and after */
 .badge.match { background: var(--correct); color: #fff; }
 .badge.close { background: var(--present); color: #fff; }
 .badge.miss { background: var(--absent); color: #fff; }
