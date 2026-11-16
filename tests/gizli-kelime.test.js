@@ -59,7 +59,7 @@ function playReady(options = {}) {
   let s = game.setup({ length: 5, feedback: 'wordle', secretMode: 'manual', maxGuesses: 6, ...options });
   s = game.applyMove(s, 0, { type: 'setSecret', secret: { word: 'kalem' } }, ctx); // player 1 must find "kalem"
   assert.equal(s.phase, 'secret');
-  assert.deepEqual(game.getTurn(s), { player: 1, private: true });
+  assert.deepEqual(game.getTurn(s), { player: 1, private: true, simultaneous: true });
   s = game.applyMove(s, 1, { type: 'setSecret', secret: { word: 'tahta' } }, ctx); // player 0 must find "tahta"
   assert.equal(s.phase, 'play');
   return s;
@@ -145,7 +145,7 @@ test('gizli kelime: ortak kelime modu — tek kelime, ev sahibi puanlar', () => 
 test('gizli kelime: varsayılan mod herkes kendi seçer', () => {
   const s = game.setup({});
   assert.equal(s.secretMode, 'manual');
-  assert.deepEqual(game.getTurn(s), { player: 0, private: true });
+  assert.deepEqual(game.getTurn(s), { player: 0, private: true, simultaneous: true });
   assert.equal(sayi.setup({}).secretMode, 'manual');
 });
 

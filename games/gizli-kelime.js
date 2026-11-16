@@ -302,7 +302,10 @@ export function createGame(cfg) {
   function getTurn(state) {
     if (state.phase === 'secret') {
       const p = state.ready[0] ? (state.ready[1] ? null : 1) : 0;
-      return p == null ? null : { player: p, private: state.secretMode === 'manual' };
+      // typed secrets: on two phones both type at once, so the host locking in first is no turn
+      // passing to the guest (no buzz, no tap guard mid-word); one phone still hands over (private)
+      const manual = state.secretMode === 'manual';
+      return p == null ? null : { player: p, private: manual, simultaneous: manual };
     }
     if (state.phase === 'play') return { player: whoseTurn(state), private: false };
     return null;

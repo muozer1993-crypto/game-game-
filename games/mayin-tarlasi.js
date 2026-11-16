@@ -267,8 +267,10 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   }, flagMode.get(key) ? '🚩 Bayrak modu açık' : '🚩 Bayrak modu');
   draw(container,
     timerBox,
-    el('div', { class: 'status-line' }, el('strong', {}, `${players[viewer]}: ${b.revealed.length}/${total} · mayın ${state.mines.length}, bayrak ${b.flags.length}`)),
-    ctx.mode === 'online' ? el('p', { class: 'hint' }, `${players[opp]}: ${statusText(opp)}`) : null,
+    // two lines' room: the counts change with every tap, and a line that wraps on some of them moved the field a row
+    el('div', { class: 'status-line two' }, el('strong', {}, `${players[viewer]}: ${b.revealed.length}/${total} · mayın ${state.mines.length}, bayrak ${b.flags.length}`)),
+    // two phones: the other player's progress changes with each of their taps; its two lines' room keeps the field still
+    ctx.mode === 'online' ? el('p', { class: 'hint two-lines' }, `${players[opp]}: ${statusText(opp)}`) : null,
     el('div', { class: 'row', style: { justifyContent: 'center', marginBottom: '6px', gap: '8px' } }, flagBtn,
       el('button', { type: 'button', class: 'btn btn-small', onClick: () => { if (confirm('Tarlayı bırakıp bitirilsin mi? Açtığın güvenli kareler puanın olur.')) sendMove({ type: 'finish', reason: 'quit', ms: activeSince(startedAt) }); } }, 'Bitir')),
     grid(viewer, { interactive: true }),

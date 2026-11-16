@@ -333,12 +333,18 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     let clip = null;
     let card;
     let showTitle = () => {}; // hard mode: shows or hides the song's title (see below)
+    const kbBox = el('div');
     if (state.mode === 'hard') {
       // the song's title, shown when a phone cannot play it: its room is kept from the start, so the
       // keypad does not move when it appears
       const fallback = el('div', { class: 'ss-fallback', style: { visibility: 'hidden' }, 'aria-hidden': 'true' },
         el('div', { class: 'ss-artist' }, song.a), el('div', { class: 'ss-title' }, song.t));
-      showTitle = (on) => { fallback.style.visibility = on ? '' : 'hidden'; fallback.setAttribute('aria-hidden', on ? 'false' : 'true'); };
+      showTitle = (on) => {
+        const appears = on && fallback.style.visibility === 'hidden';
+        fallback.style.visibility = on ? '' : 'hidden';
+        fallback.setAttribute('aria-hidden', on ? 'false' : 'true');
+        if (appears) keysIntoView(kbBox); // a short phone: the title grows the card, GİR stays on screen
+      };
       showTitle((state.revealed || []).includes(i));
       // this phone cannot play the song: both phones show its title (a phone alone with it would know more)
       const reveal = () => {
@@ -374,7 +380,6 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     let sent = false;
     const display = el('div', { class: 'ss-time empty' }, clockFromDigits(''));
     const update = () => { display.textContent = clockFromDigits(typed); display.classList.toggle('empty', !typed); };
-    const kbBox = el('div');
     const kb = createKeyboard(kbBox, {
       layout: 'digits',
       onKey: (k) => { if (!sent && typed.length < 4) { typed += k; update(); } },

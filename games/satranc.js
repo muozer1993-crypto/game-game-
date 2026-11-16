@@ -1,6 +1,6 @@
 // Satranç — full chess: castling, en passant, promotion, check/checkmate, stalemate,
 // insufficient material, fifty-move rule and threefold repetition.
-import { el, render as draw, keysIntoView } from '../js/ui/dom.js';
+import { el, render as draw } from '../js/ui/dom.js';
 import { nameSuffix } from '../js/lib/tr.js';
 
 export const meta = {
@@ -406,7 +406,6 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
         [['q', 'Vezir'], ['r', 'Kale'], ['b', 'Fil'], ['n', 'At']].map(([promo, label]) =>
           el('button', { type: 'button', class: 'btn btn-secondary', onClick: () => { pendingPromo = null; selected = null; sendMove({ type: 'move', from, to, promo }); } },
             pieceImg(`${state.turn}${promo}`, 'ch-mini'), ` ${label}`)))));
-    keysIntoView(promoBox); // a short phone: the choice opens below the board, bring it on screen
   };
   boardBox.append(drawBoard());
   drawPromo();
@@ -418,11 +417,11 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   } else if (mine) status = `${state.check ? 'Şah! ' : ''}Sıra sende, ${players[viewer]} (${colourName(myColour)})${selected != null ? ': nereye?' : ''}`;
   else status = `${state.check ? 'Şah! ' : ''}${players[playerOf(state, state.turn)]} (${colourName(state.turn)}) düşünüyor…`;
   const material = (c) => state.captured[c].reduce((s, t) => s + PIECE_VALUE[t], 0);
-  const capLine = (c) => el('span', { class: 'ch-cap' }, `${players[playerOf(state, c)]} aldı: `, state.captured[c].length ? state.captured[c].map((t) => pieceImg(`${other(c)}${t}`, 'ch-mini')) : '—', material(c) > material(other(c)) ? ` (+${material(c) - material(other(c))})` : '');
+  const capLine = (c) => el('span', { class: 'ch-cap' }, el('span', { class: 'ch-cap-name' }, players[playerOf(state, c)]), '\u00a0aldı:\u00a0', state.captured[c].length ? state.captured[c].map((t) => pieceImg(`${other(c)}${t}`, 'ch-mini')) : '—', material(c) > material(other(c)) ? ` (+${material(c) - material(other(c))})` : '');
   const tag = (c) => el('div', { class: `ch-side ${c}` }, pieceImg(`${c}k`, 'ch-mini'), ` ${colourName(c)}: ${players[playerOf(state, c)]}${!state.over && state.turn === c ? ' · sırada' : ''}`);
   const topColour = flip ? 'w' : 'b';
   draw(container,
-    el('div', { class: 'status-line' }, el('strong', {}, status)),
+    el('div', { class: 'status-line two' }, el('strong', {}, status)),
     el('div', { class: 'c4-legend ch-legend' }, capLine('w'), capLine('b')),
     tag(topColour),
     boardBox,

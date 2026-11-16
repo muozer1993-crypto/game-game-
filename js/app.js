@@ -833,7 +833,7 @@ function showRulesOverlay(game) {
   const close = () => {
     overlay.remove();
     window.removeEventListener('keydown', onKey, true);
-    if (opener && opener.focus) opener.focus();
+    if (opener && opener.focus) opener.focus({ preventScroll: true }); // the "?" may sit half off screen: no scroll on close
   };
   const onKey = (e) => {
     // Swallow keys while the dialog is open (the game keyboard listens on window too).
