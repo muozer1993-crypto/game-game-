@@ -20,3 +20,21 @@ export function boundedHello(base, lists, max = HELLO_MAX_BYTES) {
   }
   return msg(cur);
 }
+
+/**
+ * What a phone sends when it connects: the greeting (boundedHello) and, for every list the greeting
+ * had to cut, that list again in a message of its own, { t: 'seen', k, list, clock }, which drops
+ * oldest sightings only if the one list still does not fit. The other phone then counts every
+ * sighting; older builds ignore 'seen' and keep what the greeting carried.
+ */
+export function helloMessages(base, lists, max = HELLO_MAX_BYTES) {
+  const hello = boundedHello(base, lists, max);
+  const sent = (k) => (k === 'tabu' ? hello.tabuSeen : hello.seen[k]);
+  const more = Object.keys(lists).filter((k) => sent(k).length < lists[k].length).map((k) => {
+    const one = (list) => ({ t: 'seen', k, list, clock: base.clock });
+    let list = lists[k];
+    for (let size = jsonBytes(one(list)); size > max; size = jsonBytes(one(list))) list = list.slice(list.length - Math.floor(list.length * (max / size)));
+    return one(list);
+  });
+  return [hello, ...more];
+}

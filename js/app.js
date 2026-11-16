@@ -12,7 +12,7 @@ import { nameSuffix, capitalizeTR } from './lib/tr.js';
 import { generateRoomCode, createHost, joinRoom, normalizeRoomCode, getIceServers } from './net/peer.js';
 import { gatherCandidates, checkSignalling, verdictFor } from './net/icetest.js';
 import { setSoundEnabled, playEnd } from './lib/sfx.js';
-import { boundedHello } from './lib/hello.js';
+import { helloMessages } from './lib/hello.js';
 
 const app = document.getElementById('app');
 const DEFAULT_PLAYERS = ['Oyuncu 1', 'Oyuncu 2'];
@@ -870,11 +870,11 @@ const online = {
   peerSeen: null,   // the other phone's histories ({ tabu, trivia, dogruluk, questions }), from its 'hello'
 };
 
-/** The greeting: name, build, and what this phone has shown in earlier games (bounded, see js/lib/hello.js), with its clock to line the times up. */
-const helloMsg = () => boundedHello(
+/** The greeting: name, build, and what this phone has shown in earlier games, with its clock to line the times up (lists too long for it follow in 'seen' messages, see js/lib/hello.js). */
+const sendHello = (t) => helloMessages(
   { t: 'hello', name: online.myName, v: APP_VERSION, clock: Date.now() },
   { tabu: tabuHistory.own(), ...Object.fromEntries(Object.entries(histories).map(([k, h]) => [k, h.own()])) },
-);
+).forEach((m) => t.send(m));
 
 function leaveOnline({ silent = false } = {}) {
   if (online.transport) {
@@ -1096,7 +1096,7 @@ function wireTransport(myName, { resume = false } = {}) {
     // A finished game whose screen the host left (tournament result, a new tournament's setup) is
     // still the game the guest shows: resume it (nothing moves); a greeting would send both to the lobby.
     if (online.session && (!online.session.destroyed || online.session.ended)) t.send({ t: 'resume', received: online.session.received, name: online.myName, gameNo: online.gameNo || 0 });
-    else t.send(helloMsg());
+    else sendHello(t);
   });
 }
 
@@ -1278,11 +1278,16 @@ async function handleOnlineMessage(msg) {
         closeReconnect();
         if (activeSession) { activeSession.destroy(); activeSession = null; }
         online.session = null;
-        online.transport.send(helloMsg()); // it never got our greeting
+        sendHello(online.transport); // it never got our greeting
         // with a game running the other side evidently started over; from the lobby it is just the link coming back
         toast(hadGame ? 'Rakip yeniden başladı; oyun baştan kurulacak' : 'Bağlantı yeniden kuruldu', { duration: hadGame ? 4000 : 2500 });
       }
       showOnlineLobby();
+      return;
+    }
+    case 'seen': { // a history the greeting before it had to cut, sent whole (js/lib/hello.js)
+      const h = msg.k === 'tabu' ? tabuHistory : Object.hasOwn(histories, msg.k) ? histories[msg.k] : null;
+      if (h && online.peerSeen) online.peerSeen[msg.k] = h.fromPeer(msg.list, msg.clock);
       return;
     }
     case 'resume': {
@@ -1291,7 +1296,7 @@ async function handleOnlineMessage(msg) {
         // we have no game to resume (fresh page): treat it as a greeting
         const other = String(msg.name || 'Oyuncu').slice(0, 20);
         online.players = online.role === 'host' ? [online.myName, other] : [other, online.myName];
-        online.transport.send(helloMsg());
+        sendHello(online.transport);
         showOnlineLobby();
         return;
       }

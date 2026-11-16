@@ -376,7 +376,10 @@ export function songOptions(data, song, seed, n = 4) {
   const all = allTracks(data);
   // a name that reads as the right one ("Mariana's Trench" for "Marianas Trench") is no wrong option:
   // picking it would score as wrong although typing it scores as right
-  const sameTitle = (t) => normKey(t.t) === normKey(song.t) || normalizeAnswer(t.t) === normalizeAnswer(song.t);
+  // (spaces and Roman numerals aside, as titleMatches reads them: "İşte Öyle Bir Şey" is "İşte Öyle Birşey")
+  const flat = (s) => norm(s).replace(/ /g, '');
+  const right = flat(song.t);
+  const sameTitle = (t) => normKey(t.t) === normKey(song.t) || flat(t.t) === right;
   const same = shuffle(rng, [...new Set(all.filter((t) => normKey(t.a) === normKey(song.a) && !sameTitle(t)).map((t) => t.t))]);
   let picked = same.slice(0, n - 1);
   if (picked.length < n - 1) {

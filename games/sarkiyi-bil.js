@@ -358,6 +358,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const who = online ? (answering[viewer] ? viewer : -1) : busy;
   if (who < 0) {
     if (online && busy >= 0) { // the other player is answering; the music stops here too
+      mem.lastView = 'waiting'; // the listen screen after it counts as new: "Tahmin et" comes back into view
       draw(container, status(`Şarkı ${i + 1}/${n}`), timerBox, el('p', { class: 'hint' }, `${players[busy]} cevaplıyor… (${Math.round(answering[busy].heard)} sn dinleyip bastı)`), el('div', { class: 'spinner', 'aria-hidden': 'true' }));
       return stopTimer;
     }

@@ -1,5 +1,5 @@
 import { test, assert } from './runner.js';
-import { boundedHello, HELLO_MAX_BYTES } from '../js/lib/hello.js';
+import { boundedHello, helloMessages, HELLO_MAX_BYTES } from '../js/lib/hello.js';
 
 const bytes = (o) => new TextEncoder().encode(JSON.stringify(o)).byteLength;
 const list = (prefix, n) => Array.from({ length: n }, (_, i) => [`${prefix}-${String(i).padStart(3, '0')}-uzun bir anahtar`, 1794800000000 + i]);
@@ -19,4 +19,24 @@ test('selamlaşma: geçmişler JSON kanalının sınırını aşmaz, en yeni gö
   const none = boundedHello(base, { tabu: [] });
   assert.deepEqual(none.tabuSeen, []);
   assert.deepEqual(none.seen, {});
+});
+
+test('selamlaşma: selama sığmayan geçmişler ayrı mesajlarla bütün gider', () => {
+  const base = { t: 'hello', name: 'Gülşen Nur Yıldırımm', v: 'v121', clock: 7 };
+  const word = (prefix, n) => Array.from({ length: n }, (_, i) => [`${prefix}-${String(i).padStart(3, '0')}`, 1794800000000 + i]); // card-sized keys
+  const lists = { tabu: word('kelime', 374), trivia: word('tarih', 494), dogruluk: word('d', 217), questions: word('yemek', 172) };
+  const [hello, ...more] = helloMessages(base, lists);
+  assert.equal(hello.t, 'hello');
+  assert.ok(hello.tabuSeen.length < 374, 'the greeting itself is cut');
+  for (const m of [hello, ...more]) assert.ok(bytes(m) <= HELLO_MAX_BYTES, `fits: ${bytes(m)} bytes`);
+  const got = Object.fromEntries(more.map((m) => [m.k, m]));
+  for (const k of Object.keys(lists)) {
+    assert.equal(got[k].t, 'seen');
+    assert.equal(got[k].clock, 7);
+    assert.deepEqual(got[k].list, lists[k], `${k} goes out whole`);
+  }
+  assert.deepEqual(helloMessages(base, { tabu: list('t', 3), trivia: list('q', 2) }).slice(1), [], 'nothing more when the greeting holds it all');
+  const huge = helloMessages(base, { tabu: list('t', 1200) });
+  assert.ok(huge.every((m) => bytes(m) <= HELLO_MAX_BYTES), 'a list too big alone is cut too');
+  assert.equal(huge[1].list[huge[1].list.length - 1][0], 't-1199-uzun bir anahtar', 'keeping its newest');
 });
