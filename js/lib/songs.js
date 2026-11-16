@@ -311,15 +311,21 @@ export function artistOptions(pool, song, seed, n = 4, data = null) {
 const trCache = new WeakMap(); // data -> { bands: Set of Turkish bands (normKey), titles: Map title key -> bool }
 // common Turkish words: a title with one of them is Turkish even without ğ, ı or ş
 // (only words other languages hardly use: no "her", "son", "de", "mi", "once", "gun", "ask")
-const TR_WORDS = new Set(('bir ben sen biz siz bu şu gibi için icin değil degil yok mı mü beni seni bana sana aşk gönül gonul '
+const TR_WORDS = new Set(('bir sen biz siz bu şu gibi için icin değil degil yok beni seni bana sana aşk gönül gonul '
   + 'yarim olmaz olsun oldu kadar gece gün dünya dunya hayat sevda canım canim kalp yalan zaman neden hep hiç hic çok cok '
   + 'sonra önce şimdi simdi benim senin bizim yine artık artik güzel guzel yalnız yalniz ağla agla ölüm ölmeden olmeden '
   + 'gönlümü verdim sevgilim seviyorum sevdim gitme kal kimse hadi vur merhaba gurbet').split(' '));
 /** Turkish verb and plural endings on a word of five letters or more ("Bilmez", "Gidiyorum", "Yolları"). */
 const TR_SUFFIX = /[a-zçğıöşü]{2,}(?:iyor|ıyor|uyor|üyor|iyorum|ıyorum|uyorum|üyorum|mez|maz|ları|leri|ların|lerin|lerim|larım)(?![a-zçğıöşü])/;
 /** Letter groups and words Turkish does not use: an English, German, Nordic or Portuguese title. */
-const FOREIGN = /th|w|x|q|ä|å|ø|æ|ß|ñ|ã|õ|é|è|à|á|í|ó|ú|sch|ll|ck|uo|ei|ou|ea|ee|oo/i;
-const EN_WORD = /(^|[^a-z])(the|you|your|my|me|love|of|and|to|in|is|it|on|all|not|we|be|for|with|this|that|i|a|an)(?![a-z])/i;
+// (not "ll", "tt" or "ee": Turkish has "Telli", "Gitti", "Teessüf")
+const FOREIGN = /th|w|x|q|ä|å|ø|æ|ß|ñ|ã|õ|é|è|à|á|í|ó|ú|sch|ch|ck|ff|ph|uo|ei|ou|ea|oo|oe|ae|au|ung(?!\p{L})|heit|keit|heten(?!\p{L})/iu;
+// (word edges are any letter, Turkish ones too: "Paramparça" has no English "a" in it)
+const EN_WORD = /(^|[^\p{L}])(the|you|your|my|me|love|of|and|to|in|is|it|on|all|not|we|be|for|with|this|that|i|a|an)(?!\p{L})/iu;
+const EN_LONG = /(^|[^\p{L}])(the|you|your|love|and|all|not|for|with|this|that)(?!\p{L})/iu;
+// common Swedish, Norwegian and German words: "Försök till Förstörelse" has ö but is not Turkish
+const NORDIC_WORD = /(^|[^\p{L}])(till|och|att|det|som|med|för|är|på|og|av|af|und|der|die|das|ein|eine|mit|von|zu|ist|nicht|auf|aus|für|über|im)(?!\p{L})/iu;
+const STRONG_FOREIGN = /th|w|x|q|ä|å|ø|æ|ß|ñ|ã|õ|é|è|à|á|í|ó|ú/i;
 const clearlyTurkish = (title) => /[ğışĞİŞ]/.test(title)
   || String(title).toLocaleLowerCase('tr-TR').split(/[^a-zçğıöşüâîû]+/).some((w) => TR_WORDS.has(w));
 
@@ -336,7 +342,8 @@ function turkishSong(data, t) {
   if (!c) {
     // a Turkish band: the Turkish catalog, ğ ı ş İ in its name (not ö/ü/ç: "Örnatorpet"), or at least
     // half of its titles clearly Turkish (one Romanian "şi" does not make Rotting Christ Turkish)
-    const bands = new Set(((data.catalogTR) || []).map(normKey));
+    const catalog = new Set(((data.catalogTR) || []).map(normKey));
+    const bands = new Set(catalog);
     const tally = new Map(); // band -> [clearly Turkish titles, titles]
     for (const x of allTracks(data)) {
       const k = normKey(x.a);
@@ -347,7 +354,7 @@ function turkishSong(data, t) {
       tally.set(k, n);
     }
     for (const [k, [tr, all]] of tally) if (tr * 2 >= all) bands.add(k);
-    c = { bands, titles: new Map() };
+    c = { catalog, bands, titles: new Map() };
     trCache.set(data, c);
   }
   const key = `${normKey(t.a)}|${t.t}`;
@@ -355,7 +362,9 @@ function turkishSong(data, t) {
   if (hit === undefined) {
     const title = String(t.t || '');
     if (clearlyTurkish(title)) hit = true;
-    else if (FOREIGN.test(title) || EN_WORD.test(title) || !/[a-zçöü]/i.test(title)) hit = false; // (Greek, Cyrillic…: not Turkish)
+    // a band of the Turkish catalog: its plain titles are Turkish ("Of", "Vay Be", "Yolla")
+    else if (c.catalog.has(normKey(t.a)) && !STRONG_FOREIGN.test(title) && !EN_LONG.test(title)) hit = true;
+    else if (FOREIGN.test(title) || EN_WORD.test(title) || NORDIC_WORD.test(title) || !/[a-zçöü]/i.test(title)) hit = false; // (Greek, Cyrillic…: not Turkish)
     else hit = /[çöüÇÖÜ]/.test(title) || TR_SUFFIX.test(title.toLocaleLowerCase('tr-TR')) || c.bands.has(normKey(t.a));
     c.titles.set(key, hit);
   }
@@ -503,6 +512,11 @@ const plainNumbers = (x) => {
   const last = w.length > 1 && ROMAN.test(w[w.length - 1]) ? w[w.length - 1] : '';
   return `${(x.match(/\d+/g) || []).map(Number).join(',')}|${last}`;
 };
+/** The Roman words of a name, as norm() reads them: two letters or more anywhere, one at the end. */
+const romanWords = (x) => {
+  const w = x.split(' ');
+  return w.filter((t, k) => t && ROMAN.test(t) && (t.length >= 2 || (k === w.length - 1 && w.length > 1))).join(',');
+};
 /**
  * A title with a track number in front ("II - Bloodbirds"): a numeral typed in front that is not the
  * title's own first word must be that number ("III Bloodbirds" is another track; "I Fly Among the
@@ -523,7 +537,14 @@ function plainMatch(typed, answer) {
   if (dash) {
     if (sameLead(typed, dash[1], dash[2]) && plainMatch(typed, dash[2])) return true;
   }
+  // a track number with "." or ":" ("v. Sverddans"): a numeral typed in front must be the same one
+  const dotted = String(answer || '').match(/^\s*([ivx]+|\d+)\s*[.:]\s+(.+)$/i);
+  if (dotted && !sameLead(typed, dotted[1], dotted[2])) return false;
   if (plainNumbers(a) !== plainNumbers(b)) return false;
+  // an answer with Roman numbers of its own ("VI Coactus", "Libera, Pt. Ii") takes no other ones here:
+  // only a title without them forgives a slip that happens to make one ("İi Yabancı")
+  const rb = romanWords(b);
+  if (rb && romanWords(a) !== rb) return false;
   const tol = b.length < 5 ? 0 : b.length < 9 ? 1 : b.length < 13 ? 2 : 3;
   if (editDistance(a, b) <= tol) return true;
   if (b.length >= 4 && ` ${a} `.includes(` ${b} `)) return true;

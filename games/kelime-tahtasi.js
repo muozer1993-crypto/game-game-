@@ -305,7 +305,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   if (draft.selected != null && draft.selected >= rack.length) draft.selected = null; // the rack shrank (bag empty)
   const boardBox = el('div');
   const rackBox = el('div');
-  const infoBox = el('div');
+  const infoBox = el('div', { class: 'kt-info' }); // two lines kept: picking a tile shortens the hint
   const firstMove = state.board.every((c) => c === null);
 
   const preview = () => {
@@ -426,7 +426,10 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   redraw(); // the board and rack first: the page has its full height when draw() restores the scroll
   draw(container,
     el('div', { class: 'status-line' }, el('strong', {}, status)),
-    el('div', { class: 'c4-legend' }, el('span', {}, `${players[0]}: ${fmt(shownScores[0])}`), el('span', {}, `${players[1]}: ${fmt(shownScores[1])}`), el('span', { class: 'muted' }, `torba ${state.bag.length}`)),
+    // one line whatever the names and scores (an objection changes a score: nothing below may move)
+    el('div', { class: 'c4-legend kt-legend' },
+      [0, 1].map((p) => el('span', { class: 'kt-who' }, el('span', { class: 'kt-name' }, players[p]), el('span', { class: 'kt-score' }, `: ${fmt(shownScores[p])}`))),
+      el('span', { class: 'muted kt-bag' }, `torba ${state.bag.length}`)),
     lastLine,
     reviewing ? disputeBox : null,
     boardBox,

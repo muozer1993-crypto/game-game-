@@ -166,10 +166,9 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     });
     const prev = i > 0 ? state.answers[viewer][i - 1] : null;
     const prevQ = i > 0 ? state.questions[i - 1] : null;
-    const feedback = prev
-      ? el('p', { class: `hint ${prev.value === prevQ.answer ? 'notice' : 'rejected-note'}` },
-        prev.value === prevQ.answer ? 'Önceki soru: doğru!' : `Önceki soru: ${prev.value == null ? 'süre doldu' : 'yanlış'} — ${prevQ.text} = ${prevQ.answer}`)
-      : null;
+    // the line is there from the first question (empty), so the keyboard stays put when it fills
+    const feedback = el('p', { class: `hint hs-feedback ${prev ? (prev.value === prevQ.answer ? 'notice' : 'rejected-note') : ''}` },
+      !prev ? '' : prev.value === prevQ.answer ? 'Önceki soru: doğru!' : `Önceki soru: ${prev.value == null ? 'süre doldu' : 'yanlış'} — ${prevQ.text} = ${prevQ.answer}`);
     draw(container,
       el('div', { class: 'status-line' }, el('strong', {}, `${players[viewer]} — Soru ${i + 1}/${total}`)),
       feedback,

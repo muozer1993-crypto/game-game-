@@ -81,13 +81,16 @@ test('şarkı havuzu: seçim tohumla aynı, ses gerekince sessizler elenir, şı
     { a: 'Kall', t: 'Försök till Förstörelse', s: 200 },
     { a: 'Gökhan Kırdar', t: 'Pleasure', s: 200 },
     { a: 'Hüseyin Altın', t: 'Merhaba Gurbet', s: 200 },
+    { a: 'Wolfgang Muthspiel', t: 'Hüttengriffe', s: 200 },
   ] };
-  const english = (o) => ['Sweet Home', 'The River', 'Night Owl', 'Pleasure', 'Försök till Förstörelse'].includes(o); // not Turkish
+  const english = (o) => ['Sweet Home', 'The River', 'Night Owl', 'Pleasure', 'Försök till Förstörelse', 'Hüttengriffe'].includes(o); // not Turkish
   for (let seed = 1; seed <= 6; seed++) {
     const kall = songOptions(langs, { a: 'Kall', t: 'Försök till Förstörelse' }, seed).filter((o) => o !== 'Försök till Förstörelse');
     assert.ok(kall.every(english), `Swedish with ö is not Turkish: ${kall}`);
     const pleasure = songOptions(langs, { a: 'Gökhan Kırdar', t: 'Pleasure' }, seed).filter((o) => o !== 'Pleasure');
     assert.ok(pleasure.every(english), `an English title by a band with ı: ${pleasure}`);
+    const hutten = songOptions(langs, { a: 'Wolfgang Muthspiel', t: 'Hüttengriffe' }, seed).filter((o) => o !== 'Hüttengriffe');
+    assert.ok(hutten.every(english), `German with ü is not Turkish: ${hutten}`);
     const gurbet = songOptions(langs, { a: 'Hüseyin Altın', t: 'Merhaba Gurbet' }, seed).filter((o) => o !== 'Merhaba Gurbet');
     assert.ok(gurbet.every((o) => !english(o)), `a plain Turkish title: ${gurbet}`);
   }
@@ -261,6 +264,14 @@ test('yazılı cevap: aynı grubun başka şarkısı, başka numara, kelime içi
   assert.equal(answerMatches('Revolt II', 'Revolt III'), false);
   assert.equal(answerMatches('2-Bloodbirds', 'II - Bloodbirds'), true);
   assert.equal(answerMatches('I Fly Amomg the Stars', 'II - I Fly Among the Stars'), true, "the title's own I is not a track number");
+  assert.equal(answerMatches('vii. Keilohesten', 'vi. Keilohesten'), false, 'another Roman track number');
+  assert.equal(answerMatches('VII Keilohesten', 'vi. Keilohesten'), false);
+  assert.equal(answerMatches('VII Coactus', 'VI Coactus'), false);
+  assert.equal(answerMatches('VI Sverddans', 'v. Sverddans'), false, 'a one-letter track number is a number too');
+  assert.equal(answerMatches('V Sverddans', 'v. Sverddans'), true);
+  assert.equal(answerMatches('Sverddans', 'v. Sverddans'), true);
+  assert.equal(answerMatches('iii. Belus Doed', 'ii. Belus Doed'), false);
+  assert.equal(answerMatches('Libera Pt. III Ascent', 'Libera, Pt. Ii: Ascent'), false);
   // a title that is all brackets, letters that drop out of the plain alphabet
   assert.equal(normalizeAnswer('(A)'), 'a');
   assert.equal(answerMatches('A', '(A)'), true);

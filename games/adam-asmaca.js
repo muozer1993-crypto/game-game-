@@ -346,7 +346,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const statusText = () => {
     if (result && objectedNow) return el('strong', {}, `${players[guesser]} itiraz etti: +${state.lives} puan`);
     if (result) return el('strong', {}, state.solved ? `${players[guesser]} kelimeyi buldu! +${state.points} puan` : `Adam asıldı! ${players[guesser]} bulamadı.`);
-    if (pending) return el('span', { class: 'muted' }, 'Değerlendiriliyor…');
+    if (pending) return el('strong', { class: 'muted' }, 'Değerlendiriliyor…'); // (as tall as the other lines: nothing moves)
     if (mine) return el('strong', {}, `Sıra sende, ${players[viewer]}: ${wordMode ? 'kelimeyi yaz' : 'bir harf seç'}`);
     return el('span', { class: 'muted' }, `${players[guesser]} tahmin ediyor…`);
   };
@@ -379,9 +379,11 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
 
   // switching between letter and whole-word guessing keeps the board; nothing is sent
   const modeLabel = () => (wordMode ? 'Harf tahminine dön' : 'Kelimeyi bütün olarak tahmin et');
-  const modeButton = mine && !pending
+  // (while a guess waits for its score the button only hides: its row keeps the page's height, so the
+  // keyboard does not move under the finger on two phones)
+  const modeButton = mine
     ? el('button', {
-      type: 'button', class: 'btn btn-secondary btn-small',
+      type: 'button', class: 'btn btn-secondary btn-small', disabled: pending, style: pending ? { visibility: 'hidden' } : null,
       onClick: () => {
         wordMode = !wordMode;
         if (wordMode) drafts.set(modeKey, true); else drafts.delete(modeKey);

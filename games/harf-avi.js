@@ -262,7 +262,8 @@ export function wordList(words, { shared = [], unlisted = [], objected = [], own
     const out = owner != null && objected.includes(`${owner}:${w}`);
     const title = dup ? 'İkiniz de buldunuz' : out ? 'İtiraz edildi: puan yok' : flagged ? 'Kelime listesinde yok: itiraz edilebilir' : null;
     return el('span', { class: `wh-chip ${dup ? 'shared' : ''} ${flagged ? 'unlisted' : ''} ${out ? 'objected' : ''}`, title },
-      `${upperTR(w)} ${dup || out ? '0' : `+${points(w)}`}`, flagged ? unlistedMark() : null);
+      // an objected word keeps its "+n" (struck through): the chip keeps its width, nothing reflows
+      `${upperTR(w)} ${dup ? '0' : `+${points(w)}`}`, flagged ? unlistedMark() : null);
   }));
 }
 

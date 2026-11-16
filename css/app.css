@@ -229,8 +229,9 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
    and the request is a badge on the button's top edge, out of the layout */
 .row > .end-pair, .row > .end-pair + .btn { flex: 1 1 0; min-width: 0; }
 .rematch-btn { position: relative; overflow: visible; }
+.rematch-who { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .rematch-tag {
-  position: absolute; top: -9px; right: 8px; max-width: calc(100% - 16px);
+  display: flex; position: absolute; top: -9px; right: 8px; max-width: calc(100% - 16px);
   padding: 1px 7px; border-radius: 9px; background: var(--correct); color: #fff;
   font-size: 0.72rem; font-weight: 700; line-height: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none;
 }
@@ -322,7 +323,7 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .chain-word .syl { opacity: 0.75; }
 .chain-word .syl-last { font-weight: 800; opacity: 1; text-decoration: underline; }
 .required { font-size: 1.6rem; font-weight: 800; letter-spacing: 0.05em; text-align: center; }
-.typed { font-size: 1.6rem; text-align: center; min-height: 2.2em; letter-spacing: 0.08em; font-weight: 700; margin: 6px 0; word-break: break-all; }
+.typed { font-size: 1.6rem; text-align: center; min-height: 2.6em; line-height: 1.3; letter-spacing: 0.08em; font-weight: 700; margin: 6px 0; word-break: break-all; }
 .typed .prefix { color: var(--primary); }
 .typed .caret { display: inline-block; width: 2px; height: 1em; background: var(--fg); vertical-align: -0.15em; animation: blink 1s steps(2) infinite; }
 @keyframes blink { to { visibility: hidden; } }
@@ -357,6 +358,12 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .c4-cell.win { background: #fff; }
 .c4-cell.win .disc { box-shadow: 0 0 0 4px var(--fg); }
 .c4-legend { display: flex; justify-content: center; gap: 16px; margin: 4px 0; font-size: 0.95rem; }
+.kt-legend { gap: 12px; white-space: nowrap; }
+.kt-who { display: flex; min-width: 0; }
+.kt-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.kt-score, .kt-bag { flex: none; font-variant-numeric: tabular-nums; }
+.kt-info { min-height: 2.9em; }
+.hs-feedback { min-height: 2.7em; line-height: 1.35; margin: 4px 0; }
 .sea { display: grid; gap: 2px; max-width: 420px; margin: 4px auto; user-select: none; -webkit-user-select: none; }
 .sea-small { max-width: 240px; }
 .sea-head, .sea-corner { font-size: 0.7rem; color: var(--muted); display: flex; align-items: center; justify-content: center; min-width: 14px; }

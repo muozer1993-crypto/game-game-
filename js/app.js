@@ -700,7 +700,7 @@ export function showPlay(p) {
         again = el('button', { type: 'button', class: `btn btn-primary btn-big end-pair${isOnline && p.self === 0 ? ' rematch-btn' : ''}` }, el('span', { class: 'next-label' }, 'Yeni tur'));
         if (isOnline && p.self !== 0) {
           again.textContent = 'Yeni tur iste';
-          again.addEventListener('click', () => { online.transport.send({ t: 'rematch' }); again.disabled = true; again.textContent = 'İstek gönderildi'; });
+          again.addEventListener('click', () => { online.transport.send({ t: 'rematch' }); again.disabled = true; again.textContent = 'İstendi ✓'; }); // (one line: nothing moves)
         } else {
           again.addEventListener('click', () => {
             const options = { ...p.options, seed: randomSeed() };
@@ -1272,7 +1272,7 @@ async function handleOnlineMessage(msg) {
       if (btn && !btn.classList.contains('next-ready')) {
         btn.classList.add('next-ready');
         // a small badge on the button's edge: the button keeps its size, nothing on the panel moves
-        const tag = el('span', { class: 'rematch-tag' }, `${who} istiyor`);
+        const tag = el('span', { class: 'rematch-tag' }, el('span', { class: 'rematch-who' }, who), el('span', {}, '\u00a0istiyor')); // a long name is cut, "istiyor" stays
         btn.append(tag);
         const r = tag.getBoundingClientRect();
         shown = r.height > 0 && r.top >= 0 && r.bottom <= innerHeight;
