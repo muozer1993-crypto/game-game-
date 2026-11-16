@@ -86,7 +86,7 @@ export default {
 - Online: PeerJS üzerinden doğrudan bağlantı; sıra numaralı hamleler, kopunca yeniden bağlanma ve
   kaldığı yerden sürme, sürüm farkı uyarısı, sıra gelince titreşim.
 - Kurulum ekranındaki ayarlar oyun başına saklanır; turnuva bu ayarlarla başlar.
-- Testler: `node tests/node.mjs` (saf mantık, 140+ test) ve `tests/index.html` (aynı testler
+- Testler: `node tests/node.mjs` (saf mantık ve veri dosyaları, 270+ test) ve `tests/index.html` (aynı testler
   tarayıcıda). Tarayıcı akış testleri geliştirme sırasında Playwright ile koşuldu (depoda değil).
 
 ## Oyunlar (48)

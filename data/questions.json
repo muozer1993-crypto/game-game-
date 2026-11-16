@@ -1255,6 +1255,606 @@
       "category": "hangisi",
       "type": "open",
       "text": "Bir yıl başka bir ülkede yaşasan hangi ülkeyi seçerdin?"
+    },
+    {
+      "id": "yemek-24",
+      "category": "yemek",
+      "type": "choice",
+      "text": "Makarnayı hangi sosla seversin?",
+      "options": [
+        "Domates soslu",
+        "Kremalı",
+        "Yoğurtlu",
+        "Sade, bol peynirli"
+      ]
+    },
+    {
+      "id": "yemek-25",
+      "category": "yemek",
+      "type": "choice",
+      "text": "Döneri en çok nasıl yersin?",
+      "options": [
+        "Dürüm",
+        "Ekmek arası",
+        "Porsiyon",
+        "İskender"
+      ]
+    },
+    {
+      "id": "yemek-26",
+      "category": "yemek",
+      "type": "choice",
+      "text": "Türk kahvesi dışında hangi kahveyi içersin?",
+      "options": [
+        "Filtre kahve",
+        "Sütlü kahve",
+        "Hazır kahve",
+        "Başka kahve içmem"
+      ]
+    },
+    {
+      "id": "yemek-27",
+      "category": "yemek",
+      "type": "choice",
+      "text": "Hangi meyveyi en çok seversin?",
+      "options": [
+        "Çilek",
+        "Karpuz",
+        "Muz",
+        "Kiraz"
+      ]
+    },
+    {
+      "id": "yemek-28",
+      "category": "yemek",
+      "type": "choice",
+      "text": "Yemekten sonra ilk ne istersin?",
+      "options": [
+        "Çay",
+        "Türk kahvesi",
+        "Tatlı",
+        "Meyve"
+      ]
+    },
+    {
+      "id": "yemek-29",
+      "category": "yemek",
+      "type": "choice",
+      "text": "Hangi kuruyemiş elinden düşmez?",
+      "options": [
+        "Çekirdek",
+        "Fındık",
+        "Fıstık",
+        "Leblebi"
+      ]
+    },
+    {
+      "id": "yemek-30",
+      "category": "yemek",
+      "type": "choice",
+      "text": "Pidecide ilk tercihin hangisi?",
+      "options": [
+        "Kıymalı",
+        "Kaşarlı",
+        "Kuşbaşılı",
+        "Karışık"
+      ]
+    },
+    {
+      "id": "yemek-31",
+      "category": "yemek",
+      "type": "choice",
+      "text": "Balığı nasıl seversin?",
+      "options": [
+        "Izgara",
+        "Tava",
+        "Buğulama",
+        "Balık sevmem"
+      ]
+    },
+    {
+      "id": "yemek-32",
+      "category": "yemek",
+      "type": "choice",
+      "text": "Canın sıkkınken ilk neye saldırırsın?",
+      "options": [
+        "Çikolata",
+        "Cips",
+        "Hamur işi",
+        "Hiçbir şey yiyemem"
+      ]
+    },
+    {
+      "id": "yemek-33",
+      "category": "yemek",
+      "type": "open",
+      "text": "Aile sofrasından en çok özlediğin yemek hangisi?"
+    },
+    {
+      "id": "yemek-34",
+      "category": "yemek",
+      "type": "open",
+      "text": "Hiç denemediğin ama çok merak ettiğin yemek ne?"
+    },
+    {
+      "id": "yemek-35",
+      "category": "yemek",
+      "type": "open",
+      "text": "Sırf yemekleri için gideceğin şehir neresi?"
+    },
+    {
+      "id": "aliskanlik-24",
+      "category": "aliskanlik",
+      "type": "choice",
+      "text": "Uyurken genelde nasıl yatarsın?",
+      "options": [
+        "Sırtüstü",
+        "Yana dönük",
+        "Yüzüstü",
+        "Bütün gece dönüp dururum"
+      ]
+    },
+    {
+      "id": "aliskanlik-25",
+      "category": "aliskanlik",
+      "type": "choice",
+      "text": "Valizini ne zaman hazırlarsın?",
+      "options": [
+        "Günler önce",
+        "Bir gün önce",
+        "Çıkmadan birkaç saat önce",
+        "Son dakikada"
+      ]
+    },
+    {
+      "id": "aliskanlik-26",
+      "category": "aliskanlik",
+      "type": "choice",
+      "text": "Sinirlenince ne yaparsın?",
+      "options": [
+        "Susarım",
+        "Hemen söylerim",
+        "Dışarı çıkarım",
+        "Uyuyup unuturum"
+      ]
+    },
+    {
+      "id": "aliskanlik-27",
+      "category": "aliskanlik",
+      "type": "choice",
+      "text": "Günde kaç bardak çay ya da kahve içersin?",
+      "options": [
+        "Hiç içmem",
+        "1-2",
+        "3-5",
+        "Saymayı bıraktım"
+      ]
+    },
+    {
+      "id": "aliskanlik-28",
+      "category": "aliskanlik",
+      "type": "choice",
+      "text": "Şifrelerini nasıl hatırlarsın?",
+      "options": [
+        "Hepsi aynı",
+        "Bir yere not ederim",
+        "Telefonum hatırlar",
+        "Her seferinde sıfırlarım"
+      ]
+    },
+    {
+      "id": "aliskanlik-29",
+      "category": "aliskanlik",
+      "type": "choice",
+      "text": "Anahtarını ya da telefonunu evde ne sıklıkla ararsın?",
+      "options": [
+        "Neredeyse hiç",
+        "Ayda bir",
+        "Haftada birkaç kez",
+        "Her gün"
+      ]
+    },
+    {
+      "id": "aliskanlik-30",
+      "category": "aliskanlik",
+      "type": "choice",
+      "text": "Çıkardığın kıyafetler genelde nereye gider?",
+      "options": [
+        "Dolaba ya da askıya",
+        "Kirli sepetine",
+        "Sandalyenin üstüne",
+        "Nerede çıkardıysam oraya"
+      ]
+    },
+    {
+      "id": "aliskanlik-31",
+      "category": "aliskanlik",
+      "type": "choice",
+      "text": "Kitap okuma düzenin nasıl?",
+      "options": [
+        "Her gün",
+        "Haftada birkaç kez",
+        "Sadece tatilde",
+        "Pek okumam"
+      ]
+    },
+    {
+      "id": "aliskanlik-32",
+      "category": "aliskanlik",
+      "type": "choice",
+      "text": "Dizi izlerken telefona ne kadar bakarsın?",
+      "options": [
+        "Hiç bakmam",
+        "Arada bir",
+        "Sık sık",
+        "Dizi arka planda kalır"
+      ]
+    },
+    {
+      "id": "aliskanlik-33",
+      "category": "aliskanlik",
+      "type": "open",
+      "text": "Telefon, anahtar ve cüzdan dışında yanından ayırmadığın şey ne?"
+    },
+    {
+      "id": "aliskanlik-34",
+      "category": "aliskanlik",
+      "type": "open",
+      "text": "Ağzından en sık çıkan söz ya da kelime ne?"
+    },
+    {
+      "id": "aliskanlik-35",
+      "category": "aliskanlik",
+      "type": "open",
+      "text": "Duşta en çok hangi şarkıyı söylersin?"
+    },
+    {
+      "id": "cocukluk-24",
+      "category": "cocukluk",
+      "type": "choice",
+      "text": "Çocukken bayramlarda en çok neyi beklerdin?",
+      "options": [
+        "Harçlık",
+        "Şeker ve çikolata",
+        "Yeni kıyafet",
+        "Akrabaları görmek"
+      ]
+    },
+    {
+      "id": "cocukluk-25",
+      "category": "cocukluk",
+      "type": "choice",
+      "text": "İlk cep telefonun olduğunda kaç yaşındaydın?",
+      "options": [
+        "10'dan önce",
+        "10-14 arası",
+        "15-18 arası",
+        "18'den sonra"
+      ]
+    },
+    {
+      "id": "cocukluk-26",
+      "category": "cocukluk",
+      "type": "choice",
+      "text": "Çocukken hangi evcil hayvanın vardı?",
+      "options": [
+        "Kedi",
+        "Köpek",
+        "Kuş ya da balık",
+        "Hiç olmadı"
+      ]
+    },
+    {
+      "id": "cocukluk-27",
+      "category": "cocukluk",
+      "type": "choice",
+      "text": "Okulda en çok zorlandığın ders hangisiydi?",
+      "options": [
+        "Matematik",
+        "Fen bilgisi",
+        "Yabancı dil",
+        "Sosyal bilgiler"
+      ]
+    },
+    {
+      "id": "cocukluk-28",
+      "category": "cocukluk",
+      "type": "choice",
+      "text": "Çocukken doğum günlerin nasıl geçerdi?",
+      "options": [
+        "Evde pastayla",
+        "Okulda arkadaşlarla",
+        "Büyük bir partiyle",
+        "Pek kutlanmazdı"
+      ]
+    },
+    {
+      "id": "cocukluk-29",
+      "category": "cocukluk",
+      "type": "choice",
+      "text": "Çocukken en çok neyi biriktirirdin?",
+      "options": [
+        "Çıkartma",
+        "Misket",
+        "Oyun kartları",
+        "Hiçbir şey"
+      ]
+    },
+    {
+      "id": "cocukluk-30",
+      "category": "cocukluk",
+      "type": "choice",
+      "text": "Okula gitmemek için hasta numarası yapar mıydın?",
+      "options": [
+        "Asla",
+        "Bazen",
+        "Sık sık",
+        "Tam bir ustaydım"
+      ]
+    },
+    {
+      "id": "cocukluk-31",
+      "category": "cocukluk",
+      "type": "choice",
+      "text": "Bisiklete binmeyi kaç yaşında öğrendin?",
+      "options": [
+        "6'dan önce",
+        "6-10 arası",
+        "10'dan sonra",
+        "Hâlâ öğrenemedim"
+      ]
+    },
+    {
+      "id": "cocukluk-32",
+      "category": "cocukluk",
+      "type": "open",
+      "text": "Çocukken en yakın arkadaşının adı neydi?"
+    },
+    {
+      "id": "cocukluk-33",
+      "category": "cocukluk",
+      "type": "open",
+      "text": "Çocukluğunun geçtiği şehir ya da mahalle neresi?"
+    },
+    {
+      "id": "cocukluk-34",
+      "category": "cocukluk",
+      "type": "open",
+      "text": "Çocukken çok isteyip bir türlü sahip olamadığın oyuncak neydi?"
+    },
+    {
+      "id": "tercih-24",
+      "category": "tercih",
+      "type": "choice",
+      "text": "Evde en sevdiğin köşe hangisi?",
+      "options": [
+        "Koltuk",
+        "Yatak",
+        "Mutfak",
+        "Balkon"
+      ]
+    },
+    {
+      "id": "tercih-25",
+      "category": "tercih",
+      "type": "choice",
+      "text": "Romantik bir akşam için hangisini seçersin?",
+      "options": [
+        "Evde yemek",
+        "Şık bir restoran",
+        "Sahilde yürüyüş",
+        "Battaniye ve film"
+      ]
+    },
+    {
+      "id": "tercih-26",
+      "category": "tercih",
+      "type": "choice",
+      "text": "Hangi tür hikâyeler seni en çok çeker?",
+      "options": [
+        "Polisiye",
+        "Fantastik",
+        "Romantik",
+        "Gerçek olaylar"
+      ]
+    },
+    {
+      "id": "tercih-27",
+      "category": "tercih",
+      "type": "choice",
+      "text": "Fotoğraflarda nasıl poz verirsin?",
+      "options": [
+        "Hep aynı gülümseme",
+        "Komik surat",
+        "Havalı bakış",
+        "Fotoğraftan kaçarım"
+      ]
+    },
+    {
+      "id": "tercih-28",
+      "category": "tercih",
+      "type": "choice",
+      "text": "Uyurken senin için olmazsa olmaz hangisi?",
+      "options": [
+        "Zifiri karanlık",
+        "Hafif bir ışık",
+        "Aralık pencere",
+        "Televizyon ya da müzik sesi"
+      ]
+    },
+    {
+      "id": "tercih-29",
+      "category": "tercih",
+      "type": "choice",
+      "text": "Hayalindeki ev hangisi?",
+      "options": [
+        "Bahçeli müstakil ev",
+        "Manzaralı daire",
+        "Ahşap dağ evi",
+        "Deniz kenarında taş ev"
+      ]
+    },
+    {
+      "id": "tercih-30",
+      "category": "tercih",
+      "type": "choice",
+      "text": "Hangi koku seni en çok mutlu eder?",
+      "options": [
+        "Taze ekmek",
+        "Yağmur sonrası toprak",
+        "Kahve",
+        "Temiz çamaşır"
+      ]
+    },
+    {
+      "id": "tercih-31",
+      "category": "tercih",
+      "type": "choice",
+      "text": "Bir filmin nasıl bitmesini seversin?",
+      "options": [
+        "Mutlu son",
+        "Şaşırtıcı son",
+        "Açık uçlu son",
+        "Hüzünlü son"
+      ]
+    },
+    {
+      "id": "tercih-32",
+      "category": "tercih",
+      "type": "choice",
+      "text": "Dolabında en çok hangi renkler var?",
+      "options": [
+        "Siyah",
+        "Beyaz ve bej",
+        "Mavi tonları",
+        "Rengârenk"
+      ]
+    },
+    {
+      "id": "tercih-33",
+      "category": "tercih",
+      "type": "open",
+      "text": "En sevdiğin çiçek hangisi?"
+    },
+    {
+      "id": "tercih-34",
+      "category": "tercih",
+      "type": "open",
+      "text": "En sevdiğin şarkıcı ya da grup kim?"
+    },
+    {
+      "id": "tercih-35",
+      "category": "tercih",
+      "type": "open",
+      "text": "Bir dili hemen öğrenebilsen hangisini seçerdin?"
+    },
+    {
+      "id": "hangisi-24",
+      "category": "hangisi",
+      "type": "choice",
+      "text": "Yağmurda yürümek mi, camdan izlemek mi?",
+      "options": [
+        "Yağmurda yürümek",
+        "Camdan izlemek",
+        "İkisi de güzel",
+        "Yağmuru hiç sevmem"
+      ]
+    },
+    {
+      "id": "hangisi-25",
+      "category": "hangisi",
+      "type": "choice",
+      "text": "Ayran mı kola mı?",
+      "options": [
+        "Ayran",
+        "Kola",
+        "Şalgam",
+        "Sadece su"
+      ]
+    },
+    {
+      "id": "hangisi-26",
+      "category": "hangisi",
+      "type": "choice",
+      "text": "Kumsal mı havuz mu?",
+      "options": [
+        "Kumsal",
+        "Havuz",
+        "Göl kenarı",
+        "Suya girmem"
+      ]
+    },
+    {
+      "id": "hangisi-27",
+      "category": "hangisi",
+      "type": "choice",
+      "text": "Kalın yorgan mı ince pike mi?",
+      "options": [
+        "Kalın yorgan",
+        "İnce pike",
+        "Battaniye",
+        "Üstüme hiçbir şey örtmem"
+      ]
+    },
+    {
+      "id": "hangisi-28",
+      "category": "hangisi",
+      "type": "choice",
+      "text": "Ev yemeği mi dışarıda yemek mi?",
+      "options": [
+        "Ev yemeği",
+        "Dışarıda yemek",
+        "Paket sipariş",
+        "Fark etmez"
+      ]
+    },
+    {
+      "id": "hangisi-29",
+      "category": "hangisi",
+      "type": "choice",
+      "text": "Bir gün hiç konuşmamak mı, hiç susmamak mı?",
+      "options": [
+        "Hiç konuşmamak",
+        "Hiç susmamak",
+        "İkisi de imkânsız",
+        "Fark etmez"
+      ]
+    },
+    {
+      "id": "hangisi-30",
+      "category": "hangisi",
+      "type": "choice",
+      "text": "Sürpriz mi, her şeyi önceden bilmek mi?",
+      "options": [
+        "Sürpriz olsun",
+        "Önceden bileyim",
+        "Biraz ipucu yeter",
+        "Fark etmez"
+      ]
+    },
+    {
+      "id": "hangisi-31",
+      "category": "hangisi",
+      "type": "choice",
+      "text": "Kış akşamı salep mi sıcak çikolata mı?",
+      "options": [
+        "Salep",
+        "Sıcak çikolata",
+        "Ihlamur",
+        "Boza"
+      ]
+    },
+    {
+      "id": "hangisi-32",
+      "category": "hangisi",
+      "type": "open",
+      "text": "Bir günlüğüne herhangi bir mesleği yapabilsen hangisini seçerdin?"
+    },
+    {
+      "id": "hangisi-33",
+      "category": "hangisi",
+      "type": "open",
+      "text": "Hayvanlarla konuşabilsen ilk hangisiyle sohbet ederdin?"
     }
   ]
 }
