@@ -147,6 +147,7 @@ a { color: var(--primary); }
 .btn:active { transform: translateY(1px); }
 .btn:disabled { opacity: 0.55; cursor: default; transform: none; }
 .btn-primary { background: var(--primary); color: var(--primary-fg); border-color: transparent; }
+.btn-primary .muted { color: inherit; } /* a hint inside the blue button (Doğruluk mu Cesaret mi "2 puan") */
 .btn-secondary { background: var(--secondary); color: var(--secondary-fg); }
 .btn-danger { background: var(--danger); color: #fff; border-color: transparent; }
 .btn-big { min-height: 56px; font-size: 1.1rem; }
@@ -246,8 +247,8 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .status-line { text-align: center; margin: 8px 0; min-height: 1.4em; }
 .status-line strong { font-size: 1.15rem; }
 /* board games: the turn line keeps two lines' room, so a long name wrapping it does not move the board */
-.status-line.two { min-height: 2.9em; display: flex; flex-direction: column; justify-content: center; }
-.hint.two-lines { min-height: 2.7em; }
+.status-line.two { min-height: calc(2 * 1.4 * 1.15rem); display: flex; flex-direction: column; justify-content: center; } /* two lines of the 1.15rem strong */
+.hint.two-lines { min-height: calc(2 * 1.4em); } /* two lines of the hint's own text */
 .status-opp { font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .hint { text-align: center; color: var(--muted); font-size: 0.95rem; }
 
@@ -439,10 +440,10 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .tv-off-count { font-size: 0.9rem; }
 .tv-off-count.p0 { color: #fafafa; }
 .tv-off-count.p1 { color: #b0bec5; }
-.tv-dice { text-align: center; font-size: 2rem; line-height: 1; margin: 4px 0; }
+.tv-dice { text-align: center; font-size: 2rem; line-height: 1; margin: 4px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } /* one line: the board below stays put (a long name is what gets cut) */
 .tv-die { margin: 0 4px; }
 .tv-dice-note { font-size: 0.95rem; vertical-align: middle; }
-.tv-key { white-space: nowrap; }
+.tv-key { min-width: 0; } /* the legend's two halves wrap inside, the page never scrolls sideways */
 .ptable { text-align: center; margin: 10px 0; }
 .phand { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin: 6px 0; }
 .pcard {

@@ -4,7 +4,7 @@
 // both have finished; the compare screen lets the opponent veto made-up answers.
 import { el, render as draw } from '../js/ui/dom.js';
 import { nextButton } from '../js/ui/next.js';
-import { createTimer } from '../js/ui/timer.js';
+import { createTimer, pausedBetween } from '../js/ui/timer.js';
 import { createRng, shuffle } from '../js/lib/rng.js';
 import { upperTR, lowerTR, nameSuffix } from '../js/lib/tr.js';
 
@@ -243,9 +243,14 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const key = `${state.id}:${viewer}:${state.round}`;
   if (!starts.has(key)) starts.set(key, Date.now());
   let deadline = state.seconds ? starts.get(key) + state.seconds * 1000 : 0;
+  let capped = false;
   if (online && entry.answers[opp]) {
     if (!caps.has(key)) caps.set(key, Date.now() + GRACE_MS);
-    deadline = deadline ? Math.min(deadline, caps.get(key)) : caps.get(key);
+    const cap = caps.get(key);
+    // a reconnect pause moves each end on by the part that fell after its own start (the round's or
+    // the cap's): the earlier end is decided with those added
+    capped = !deadline || cap + pausedBetween(cap - GRACE_MS) <= deadline + pausedBetween(starts.get(key));
+    if (capped) deadline = cap;
   }
   const draft = drafts.get(key) || { answers: cats.map(() => ''), focus: null };
   drafts.set(key, draft);
@@ -253,8 +258,6 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const finish = () => { if (done) return; done = true; sendMove({ type: 'finish', answers: draft.answers.slice() }); };
   const timerBox = el('div');
   let timer = null;
-  // a reconnect pause moves the deadline on by the part that fell after its own start (the round's, or the cap's)
-  const capped = caps.has(key) && deadline === caps.get(key);
   if (deadline) timer = createTimer(timerBox, { deadline, total: online && entry.answers[opp] ? GRACE_MS : state.seconds * 1000, start: capped ? caps.get(key) - GRACE_MS : starts.get(key), onExpire: finish });
   // two phones, no time limit: the other player finishing brings a countdown; its place is kept from
   // the start, so the fields do not jump down under the finger
@@ -279,7 +282,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     el('div', { class: 'status-line' }, el('strong', {}, `${players[viewer]}, harf:`)),
     el('div', { class: 'is-letter' }, upperTR(letter)),
     // (two phones: the line is there from the start, empty until the other player finishes)
-    online ? el('p', { class: 'hint rejected-note is-grace' }, entry.answers[opp] ? `${players[opp]} bitirdi! Süren kısaldı (en çok ${GRACE_MS / 1000} sn).` : '') : null,
+    online ? el('p', { class: 'hint rejected-note is-grace' }, entry.answers[opp] ? `Son ${GRACE_MS / 1000} saniye: ${players[opp]} bitirdi.` : '') : null,
     el('div', { class: 'is-form' }, cats.map((name, c) => el('div', { class: 'is-row' }, el('label', { for: `is-in-${c}` }, name), inputs[c]))),
     el('p', { class: 'hint' }, `Her cevap ${upperTR(letter)} ile başlamalı; boş bırakılan 0 puan.${online ? '' : entry.answers[opp] ? ' Bitirince karşılaştırma ekranı ikinize gelir.' : ` Bitirince telefon ${nameSuffix(players[opp], 'e')} geçer.`}`),
     el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block', style: { marginTop: '8px' }, onClick: finish }, 'Bitir'),

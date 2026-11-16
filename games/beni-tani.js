@@ -69,7 +69,11 @@ export function pickQuestions(pool, custom, count, customMode, seed, recent = []
   const base = freshFirst(rng, (pool || []).map(cleanQuestion).filter(Boolean), (q) => q.id, recent);
   const own = customMode === 'none' ? [] : shuffle(rng, (custom || []).map(cleanQuestion).filter(Boolean));
   if (!own.length && !base.length) fail('Soru havuzu boş');
-  let order = customMode === 'mix' ? shuffle(rng, own.concat(base)) : own.concat(base);
+  // mix: each own question goes to a random place among the ready-made ones, which keep their
+  // unseen-first order (shuffling both together would deal seen questions as often as unseen ones)
+  const order = base.slice();
+  if (customMode === 'mix') own.forEach((q) => order.splice(Math.floor(rng() * (order.length + 1)), 0, q));
+  else order.unshift(...own);
   const picked = [];
   for (let i = 0; picked.length < count; i++) picked.push(order[i % order.length]);
   return picked;

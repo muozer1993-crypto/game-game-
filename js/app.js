@@ -1,8 +1,8 @@
 // Screen flow: menu -> setup -> play (-> result -> new round) ; menu -> online -> setup/play.
 import { games, groups, findGame } from '../games/index.js';
 import { APP_VERSION } from './version.js';
-import { Session } from './session.js';
-import { el, render, clear, toast } from './ui/dom.js';
+import { Session, ADVANCE_GUARD_MS } from './session.js';
+import { el, render, clear, toast, armAfter } from './ui/dom.js';
 import { clockPause } from './ui/timer.js';
 import { createScoreboard } from './ui/scoreboard.js';
 import { load, save, remove, keys } from './lib/storage.js';
@@ -158,12 +158,23 @@ function setScreen(name, cleanupFn) {
 }
 let ignorePop = false; // a popstate we caused ourselves (history.back() from setScreen)
 
+/**
+ * Asked before leaving the play screen: a game under way, or a tournament with games still to play
+ * (once left it cannot be picked up again). Null when nothing would be lost.
+ */
+function leavePlayQuestion() {
+  const t = tournament;
+  if (t && t.index < t.ids.length) return `Turnuva bitsin mi? ${t.index}/${t.ids.length} oyun oynandı; turnuvaya geri dönülemez.`;
+  return activeSession && !activeSession.ended ? 'Oyundan çıkılsın mı?' : null;
+}
+
 window.addEventListener('popstate', () => {
   // Browser / Android back button.
   if (ignorePop) { ignorePop = false; return; }
   if (currentScreen === 'menu') return;
   if (currentScreen === 'play') {
-    if (activeSession && !activeSession.ended && !confirm('Oyundan çıkılsın mı?')) {
+    const question = leavePlayQuestion();
+    if (question && !confirm(question)) {
       history.pushState({ app: true }, '', '#play');
       return;
     }
@@ -351,7 +362,7 @@ async function startTournamentGame() {
   try {
     const ctx = await loadGameData(game);
     if (tournament !== t) return; // the user left meanwhile
-    const info = { index: t.index, total: t.ids.length, wins: t.wins.slice() };
+    const info = { index: t.index, total: t.ids.length, wins: t.wins.slice(), results: t.results.slice() };
     if (t.onlineHost) {
       if (!online.transport || online.resuming) { // the link dropped while the data loaded: keep the room
         if (online.resuming || reconnectOverlay) toast('Bağlantı yok; yeniden bağlanınca "Sonraki oyun"a tekrar bas', { kind: 'error', duration: 4000 });
@@ -368,23 +379,29 @@ async function startTournamentGame() {
   }
 }
 
-function showTournamentResult() {
-  const t = tournament;
-  if (!t) { showMenu(); return; }
-  setScreen('tournament-result');
-  const [a, b] = t.wins;
-  const line = a === b ? `Berabere: ${a}–${b}` : `${t.players[a > b ? 0 : 1]} turnuvayı kazandı: ${Math.max(a, b)}–${Math.min(a, b)}`;
-  const onlineHost = t.onlineHost;
-  const results = t.results.slice();
-  const players = t.players;
-  render(app,
-    header('Turnuva sonucu', { onBack: () => (onlineHost ? showOnlineLobby({ notify: true }) : showMenu()) }),
+/** "Ayşe turnuvayı kazandı: 2–1" and the game-by-game list: the host's result screen, and the guest's last game panel. */
+function tournamentSummary(wins, results, players) {
+  const [a, b] = wins;
+  const line = a === b ? `Berabere: ${a}–${b}` : `${players[a > b ? 0 : 1]} turnuvayı kazandı: ${Math.max(a, b)}–${Math.min(a, b)}`;
+  const draws = results.filter((r) => r.winner == null).length;
+  return [
     el('div', { class: 'result-banner' }, line),
-    el('p', { class: 'muted', style: { textAlign: 'center' } }, `${results.length} oyun${t.draws ? `, ${t.draws} berabere` : ''}`),
+    el('p', { class: 'muted', style: { textAlign: 'center' } }, `${results.length} oyun${draws ? `, ${draws} berabere` : ''}`),
     el('section', { class: 'section card' }, el('div', { class: 'records-list' }, results.map((r, i) => {
       const game = findGame(r.id);
       return el('div', { class: 'records-row' }, el('span', {}, `${i + 1}. ${game ? `${game.meta.icon || ''} ${game.meta.name}` : r.id}`), el('span', { class: 'records-score' }, r.winner == null ? 'berabere' : players[r.winner]));
     }))),
+  ];
+}
+
+function showTournamentResult() {
+  const t = tournament;
+  if (!t) { showMenu(); return; }
+  setScreen('tournament-result');
+  const onlineHost = t.onlineHost;
+  render(app,
+    header('Turnuva sonucu', { onBack: () => (onlineHost ? showOnlineLobby({ notify: true }) : showMenu()) }),
+    tournamentSummary(t.wins, t.results.slice(), t.players),
     el('div', { class: 'row', style: { justifyContent: 'center', gap: '8px', marginTop: '12px' } },
       el('button', { type: 'button', class: 'btn btn-primary btn-big', onClick: () => showTournamentSetup({ onlineHost }) }, 'Yeni turnuva'),
       el('button', { type: 'button', class: 'btn btn-secondary btn-big', onClick: () => (onlineHost ? showOnlineLobby({ notify: true }) : showMenu()) }, onlineHost ? 'Lobiye dön' : 'Ana menü'),
@@ -529,7 +546,7 @@ export function showSetup(game, { onlineHost = false } = {}) {
         el('label', { for: `name-${i}` }, `${i + 1}. oyuncu`),
         el('input', {
           type: 'text', class: 'input', id: `name-${i}`, maxlength: 20, autocomplete: 'off',
-          value: names[i], onInput: (e) => { names[i] = e.target.value; },
+          value: names[i], onInput: (e) => { names[i] = e.target.value; showRecord(); },
         }),
       )),
     );
@@ -538,7 +555,10 @@ export function showSetup(game, { onlineHost = false } = {}) {
   if (game.setupExtra) {
     try { game.setupExtra(extra, { load, save }); } catch (err) { console.warn(err); }
   }
-  const record = onlineHost ? recordView(game, online.players) : recordView(game, names.map((n, i) => n.trim() || DEFAULT_PLAYERS[i]));
+  // the record line follows the names in the fields, so that "Sıfırla" resets the pair shown there
+  const record = el('div');
+  function showRecord() { render(record, recordView(game, onlineHost ? online.players : names.map((n, i) => n.trim() || DEFAULT_PLAYERS[i]))); }
+  showRecord();
 
   const startBtn = el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block' }, 'Başla');
   startBtn.addEventListener('click', async () => {
@@ -642,7 +662,8 @@ export function showPlay(p) {
   const actions = el('div', { class: 'play-actions' });
 
   const exit = () => {
-    if (activeSession && !activeSession.ended && !confirm('Oyundan çıkılsın mı?')) return;
+    const question = leavePlayQuestion();
+    if (question && !confirm(question)) return;
     if (isOnline) { showOnlineLobby({ notify: true }); } else showMenu();
   };
 
@@ -684,6 +705,7 @@ export function showPlay(p) {
       // tournament bookkeeping: the host (or the single phone) keeps the tally; the guest shows what the host sent
       const t = tournament && (!isOnline || p.self === 0) ? tournament : null;
       let tally = null;
+      let guestResults = null; // the guest's last game: the host's list of the earlier games plus this one
       if (t) {
         if (result.draw) t.draws += 1; else t.wins[result.winner] += 1;
         t.results.push({ id: p.game.id, winner: result.draw ? null : result.winner });
@@ -694,6 +716,10 @@ export function showPlay(p) {
         const wins = Array.isArray(info.wins) ? info.wins.slice() : [0, 0];
         if (!result.draw) wins[result.winner] += 1;
         tally = { index: Number(info.index) + 1, total: Number(info.total), wins };
+        if (tally.index >= tally.total && Array.isArray(info.results) && info.results.length === tally.index - 1) {
+          guestResults = info.results.map((r) => ({ id: String(r && r.id), winner: r && (r.winner === 0 || r.winner === 1) ? r.winner : null }))
+            .concat({ id: p.game.id, winner: result.draw ? null : result.winner });
+        }
       }
       const tallyLine = tally ? el('div', { class: 'muted' }, `Turnuva ${tally.index}/${tally.total}: ${p.players[0]} ${tally.wins[0]} – ${tally.wins[1]} ${p.players[1]}`) : null;
       let again;
@@ -739,6 +765,7 @@ export function showPlay(p) {
         : null;
       render(actions,
         el('div', { class: 'result-banner' }, text, tallyLine),
+        guestResults ? tournamentSummary(tally.wins, guestResults, p.players) : null,
         el('div', { class: 'row' }, again, el('button', { type: 'button', class: 'btn btn-secondary btn-big', onClick: exit }, isOnline ? 'Lobiye dön' : 'Ana menü')),
         shareBtn ? el('div', { class: 'row', style: { justifyContent: 'center', marginTop: '6px' } }, shareBtn) : null,
       );
@@ -810,7 +837,7 @@ function showRulesOverlay(game) {
   );
   window.addEventListener('keydown', onKey, true);
   document.body.append(overlay);
-  okBtn.focus();
+  okBtn.focus({ preventScroll: true }); // the button sits below long rules: focusing it must not scroll the title away
 }
 
 // ---------------------------------------------------------------- online
@@ -1059,17 +1086,34 @@ function wireTransport(myName, { resume = false } = {}) {
 /** Overlay shown when the connection drops mid-game; both sides re-establish the same room. */
 let reconnectOverlay = null;
 let reconnectRetry = null; // restarts the attempt loop while the overlay is open
+let reconnectFocus = null; // the field the player was typing in when the overlay came up
+// keys outside the overlay reach no game (a keypad also listens to a hardware keyboard on window)
+const reconnectKeys = (e) => { if (!(reconnectOverlay && reconnectOverlay.contains(e.target))) e.stopPropagation(); };
 function showReconnect() {
   if (reconnectOverlay) return;
   clockPause.begin(); // nobody can play meanwhile: the game clocks stand still
+  // ... and that holds for the keyboard too: the screen behind takes no focus and no typing
+  const active = document.activeElement;
+  reconnectFocus = active && active !== document.body && app.contains(active) ? active : null;
+  if (reconnectFocus && reconnectFocus.blur) reconnectFocus.blur();
+  app.inert = true;
+  window.addEventListener('keydown', reconnectKeys, true);
   const status = el('p', { class: 'muted', style: { minHeight: '1.4em' } }, 'Bağlantı koptu.');
   const retryBtn = el('button', { type: 'button', class: 'btn btn-primary btn-block' }, 'Yeniden bağlan');
-  const exitBtn = el('button', { type: 'button', class: 'btn btn-secondary btn-block', onClick: () => { closeReconnect(); leaveOnline({ silent: true }); showMenu(); } }, 'Çık');
+  const exitBtn = el('button', {
+    type: 'button', class: 'btn btn-secondary btn-block',
+    onClick: () => {
+      if (!confirm('Odadan çıkılsın mı? Oyun kaldığı yerden sürdürülemez.')) return;
+      reconnectFocus = null; closeReconnect(); leaveOnline({ silent: true }); showMenu();
+    },
+  }, 'Çık');
+  // the window comes up whenever the link drops, under a finger that may be on its way to the board:
+  // its buttons ignore taps for a moment (the backdrop still catches them), so that tap is not "Çık"
   reconnectOverlay = el('div', { class: 'overlay' },
-    el('div', { class: 'card overlay-card', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Bağlantı koptu' },
+    armAfter(el('div', { class: 'card overlay-card', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Bağlantı koptu' },
       el('h2', {}, 'Bağlantı koptu'),
       el('p', {}, `Oda kodu ${online.code}. İkiniz de "Yeniden bağlan" deyince oyun kaldığı yerden sürer.`),
-      status, retryBtn, el('div', { style: { height: '8px' } }), exitBtn));
+      status, retryBtn, el('div', { style: { height: '8px' } }), exitBtn), ADVANCE_GUARD_MS));
   document.body.append(reconnectOverlay);
   let attempting = false;
   const myOverlay = reconnectOverlay;
@@ -1108,7 +1152,15 @@ function showReconnect() {
 }
 function closeReconnect() {
   clockPause.end();
-  if (reconnectOverlay) { reconnectOverlay.remove(); reconnectOverlay = null; }
+  app.inert = false;
+  window.removeEventListener('keydown', reconnectKeys, true);
+  if (reconnectOverlay) {
+    reconnectOverlay.remove(); reconnectOverlay = null;
+    // back to the field being typed in, if the screen still shows it (a replayed move may have redrawn it)
+    const back = reconnectFocus && (reconnectFocus.isConnected ? reconnectFocus : reconnectFocus.id && document.getElementById(reconnectFocus.id));
+    if (back && back.focus) back.focus({ preventScroll: true });
+  }
+  reconnectFocus = null;
   reconnectRetry = null;
   online.resuming = false;
 }
@@ -1326,9 +1378,13 @@ async function handleOnlineMessage(msg) {
       // a finished tournament's summary stays on the host's screen until the host leaves it
       const tournamentDone = currentScreen === 'tournament-result' || (tournament && tournament.index >= tournament.ids.length);
       if (currentScreen !== 'online-lobby' && !tournamentDone) {
-        toast('Rakip oyundan ayrıldı', { duration: 3000 });
+        // after a finished game the other phone quit nothing: it went back to pick the next one
+        const finished = currentScreen === 'play' && activeSession && activeSession.ended;
+        toast(finished ? 'Rakip lobiye döndü' : 'Rakip oyundan ayrıldı', { duration: 3000 });
         // answer with our own 'lobby' so that a guest whose message crossed our 'start' comes back too
         showOnlineLobby({ notify: true });
+        // the lobby's game cards come up where the board was: a tap already on its way must not open a game
+        armAfter(app, ADVANCE_GUARD_MS);
       } else if (tournamentDone && currentScreen !== 'online-lobby') toast('Rakip lobiye döndü', { duration: 3000 });
       return;
     }

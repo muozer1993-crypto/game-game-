@@ -399,13 +399,14 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     const r = getResult(state);
     status = state.gaveUp != null ? `${players[state.gaveUp]} pes etti.` : (r.draw ? 'İkiniz de aynı turda bitirdiniz: berabere!' : `${players[r.winner]} bütün gemileri batırdı!`);
   } else if (myPending) status = 'Atış değerlendiriliyor…';
-  else if (mine) status = `Sıra sende, ${players[viewer]}: ${nameSuffix(players[opp], 'in')} denizinde bir kare seç`;
+  // the other player sank everything: this is the last shot (said in the status line, which has two
+  // lines' room, so the seas below do not move on the shot that decides the game)
+  else if (mine && state.sunk[opp] >= state.ships.length) status = `Son atışın, ${players[viewer]}: son gemiyi batırırsan berabere`;
+  else if (mine) status = `Sıra sende, ${players[viewer]}: bir kare seç`; // the target sea has its own title
   else status = `${players[turn]} ateş ediyor…`;
   const notes = [];
   if (lastShot && lastShot.result) notes.push(`Son atışın ${cellName(lastShot.idx)}: ${RESULT_TEXT[lastShot.result]}`);
   if (lastOppShot && lastOppShot.result) notes.push(`${nameSuffix(players[opp], 'in')} son atışı ${cellName(lastOppShot.idx)}: ${RESULT_TEXT[lastOppShot.result]}`);
-  const oppSolved = state.sunk[opp] >= state.ships.length;
-  if (state.phase === 'play' && oppSolved && mine) notes.push(`${players[opp]} bütün gemilerini batırdı. Bu son atışın: sen de bitirirsen berabere.`);
 
   draw(container,
     el('div', { class: 'status-line two' }, el('strong', {}, status)),

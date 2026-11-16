@@ -139,6 +139,13 @@ test('beni tanı: önceki oyunlarda görülen hazır sorular sona kalır', () =>
   const picked = pickQuestions(pool, [], 4, 'first', 11, seen);
   assert.deepEqual(picked.map((q) => q.id).sort(), ids.slice(-4).sort());
   assert.deepEqual(pickQuestions(pool, [], 4, 'first', 11).map((q) => q.id), pickQuestions(pool, [], 4, 'first', 11, []).map((q) => q.id), 'no history: as before');
+  for (let seed = 1; seed <= 20; seed++) {
+    const mixed = pickQuestions(pool, [], 4, 'mix', seed, seen);
+    assert.deepEqual(mixed.map((q) => q.id).sort(), ids.slice(-4).sort(), 'mix keeps the unseen ones first');
+  }
+  const own = [{ id: 'own-1', type: 'open', text: 'Kendi sorum?' }];
+  const withOwn = pickQuestions(pool, own, ids.length + 1, 'mix', 5, seen);
+  assert.ok(withOwn.some((q) => q.id === 'own-1'), 'own questions still mixed in');
   const s = game.setup({ count: 5, seed: 11 }, { ...ctx, questionsHistory: { get: () => ids.slice(0, ids.length - 5), add: () => {} } });
   assert.deepEqual(s.questions.map((q) => q.id).sort(), ids.slice(-5).sort(), 'setup asks the history');
 });

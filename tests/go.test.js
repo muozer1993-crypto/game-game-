@@ -139,4 +139,25 @@ test('go iki telefonda: sayımda çaprazlanan onay, ölü taş ve "Oyuna dön" i
   assert.equal(g.phase, 'over');
   assert.deepEqual(h.result, g.result);
   assert.throws(() => game.applyMove(s, 1, { type: 'finish' }), 'ev sahibi');
+  // the guest marks and unmarks a stone while the host's agreement is on the wire: the marking is
+  // the same again, but the agreement was for the first one, so it counts on neither phone
+  s = start();
+  [h, g] = both(s, [{ type: 'agree', dead: [], marks: 0 }], [{ type: 'dead', cell: 40 }, { type: 'dead', cell: 40 }]);
+  assert.deepEqual(h, g, 'mark + unmark crossing an agreement');
+  assert.deepEqual(h.agree, [false, false]);
+  // a mark crossing "Oyuna dön" is refused on the phone that went back to play: the marking counter
+  // must not differ afterwards, or every later agreement would be ignored on one phone
+  [h, g] = both(start(), [{ type: 'dead', cell: 80 }], [{ type: 'resume' }]);
+  assert.deepEqual(h, g, 'mark crossing "Oyuna dön": same state on both phones');
+  // the guest goes back to play and places a stone while the host's phone ends the count: the
+  // host's board stands on both phones
+  s = game.setup({ size: 9, seed: 3 });
+  for (const m of [{ type: 'place', cell: 40 }, { type: 'place', cell: 80 }, { type: 'place', cell: 10 }, { type: 'pass' }, { type: 'pass' }]) s = game.applyMove(s, s.turn, m);
+  assert.equal(s.turn, 1, 'white plays after "Oyuna dön"');
+  s = game.applyMove(s, 1, { type: 'agree', dead: [], marks: 0 });
+  [h, g] = both(s, [{ type: 'agree', dead: [], marks: 0 }], [{ type: 'resume' }, { type: 'place', cell: 41 }]);
+  assert.equal(h.phase, 'over');
+  assert.equal(g.phase, 'over');
+  assert.deepEqual(g.board, h.board, 'same final board');
+  assert.deepEqual(g.result, h.result);
 });

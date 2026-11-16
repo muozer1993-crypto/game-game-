@@ -1,7 +1,7 @@
 // Tavla — backgammon with Turkish rules (no doubling cube; mars = 2 points).
 // Player 0 moves from point 24 down to 1 (indexes 23 → 0, home 0..5),
 // player 1 moves from 1 up to 24 (indexes 0 → 23, home 18..23).
-import { el, render as draw, toast, armAfter } from '../js/ui/dom.js';
+import { el, render as draw, toast, armAfter, keysIntoView } from '../js/ui/dom.js';
 import { diceOnce } from '../js/lib/sfx.js';
 import { randomSeed } from '../js/lib/rng.js';
 import { nameSuffix } from '../js/lib/tr.js';
@@ -243,7 +243,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   let selected = null; // board index or -1 (bar)
 
   const boardBox = el('div', { class: 'tv-board' });
-  const info = el('div', { class: 'status-line' });
+  const info = el('div', { class: 'status-line two' }); // "Sıra sende, <long name>: zar at" may wrap: the board stays put
 
   const drawBoard = () => {
     const targets = new Map(); // board index|'off' -> step for the selected source
@@ -308,7 +308,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
 
   let dice;
   if (state.dice.length) dice = el('div', { class: 'tv-dice' }, state.rolled.map((d) => el('span', { class: 'tv-die' }, DIE[d])), el('span', { class: 'muted tv-dice-note' }, ` kalan: ${state.dice.join(' ')}`));
-  else if (state.skipped) dice = el('div', { class: 'tv-dice' }, state.skipped.dice.map((d) => el('span', { class: 'tv-die' }, DIE[d])), el('span', { class: 'muted', style: { fontSize: '0.95rem' } }, ` ${players[state.skipped.player]} attı: oynanacak hamle yok, sıra geçti`));
+  else if (state.skipped) dice = el('div', { class: 'tv-dice' }, state.skipped.dice.map((d) => el('span', { class: 'tv-die' }, DIE[d])), el('span', { class: 'muted tv-dice-note' }, ` hamle yok, sıra geçti (${players[state.skipped.player]})`));
   else dice = el('div', { class: 'tv-dice muted' }, el('span', { class: 'tv-dice-note' }, 'Zar atılmadı'));
 
   let status;
@@ -327,6 +327,9 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   }
   if (mine) actions.push(el('button', { type: 'button', class: 'btn btn-secondary btn-small', onClick: () => { if (confirm('Pes ediyor musun?')) sendMove({ type: 'giveup' }); } }, 'Pes'));
 
+  // right after "Zar at" (or "Geri al" back to the start) "Pes" moves to where the tapped button was:
+  // a double tap must not ask to resign; after a checker step the row stays as it is and live
+  const actionRow = actions.length ? (state.dice.length && !state.moves.length ? armAfter : (x) => x)(el('div', { class: 'row', style: { marginTop: '10px' } }, actions)) : null;
   draw(container,
     info,
     el('div', { class: 'c4-legend' },
@@ -336,9 +339,9 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     dice,
     boardBox,
     el('p', { class: 'hint' }, flip ? 'Pulların sağ alttaki eve doğru ilerler.' : `${players[0]} sağ alttaki eve, ${players[1]} sağ üstteki eve doğru ilerler.`),
-    // after "Zar at" the row holds "Pes" where the dice button was: a double tap must not ask to resign
-    actions.length ? armAfter(el('div', { class: 'row', style: { marginTop: '10px' } }, actions)) : null,
+    actionRow,
   );
+  if (actionRow) keysIntoView(actionRow); // a short phone: "Zar at" below the board stays on screen
   return null;
 }
 

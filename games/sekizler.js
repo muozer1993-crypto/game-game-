@@ -1,7 +1,7 @@
 // Sekizler — Crazy Eights for two: match the top card's suit or rank, or play an eight and
 // name the suit. Can't play? Draw one card (play it if it fits), otherwise pass. The first to
 // empty their hand scores the cards left in the opponent's hand; rounds until the target.
-import { el, render as draw } from '../js/ui/dom.js';
+import { el, render as draw, keysIntoView } from '../js/ui/dom.js';
 import { nextButton } from '../js/ui/next.js';
 import { createRng, shuffle } from '../js/lib/rng.js';
 import { nameSuffix } from '../js/lib/tr.js';
@@ -212,6 +212,10 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   }, s))) : null;
   const hint = pending != null ? 'Sekizi atmak için rengi seç.' : anyPlayable ? 'Uyan bir karta dokun.' : state.drew ? 'Çektiğin kart da uymuyor: pas geç.' : stockEmpty ? 'Deste bitti: pas geç.' : 'Uyan kartın yok: desteden çek.';
   const rerender = () => render(state, viewer, container, sendMove, ctx);
+  const actionRow = el('div', { class: 'row', style: { justifyContent: 'center', gap: '8px' } },
+    el('button', { type: 'button', class: 'btn btn-primary', disabled: state.drew || stockEmpty, onClick: () => sendMove({ type: 'draw' }) }, 'Kart çek'),
+    el('button', { type: 'button', class: 'btn btn-secondary', disabled: !(state.drew || stockEmpty), onClick: () => sendMove({ type: 'pass' }) }, 'Pas'),
+  );
   draw(container,
     el('div', { class: 'status-line' }, el('strong', {}, `${players[viewer]}, sıra sende`)),
     table, oppRow,
@@ -219,12 +223,10 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     handEl,
     suitPick,
     el('p', { class: 'hint' }, hint),
-    el('div', { class: 'row', style: { justifyContent: 'center', gap: '8px' } },
-      el('button', { type: 'button', class: 'btn btn-primary', disabled: state.drew || stockEmpty, onClick: () => sendMove({ type: 'draw' }) }, 'Kart çek'),
-      el('button', { type: 'button', class: 'btn btn-secondary', disabled: !(state.drew || stockEmpty), onClick: () => sendMove({ type: 'pass' }) }, 'Pas'),
-    ),
+    actionRow,
     legend,
   );
+  keysIntoView(actionRow); // a short phone: "Kart çek" and "Pas" below the hand stay on screen
   return null;
 }
 

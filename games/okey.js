@@ -273,7 +273,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const byId = new Map(hand.map((t) => [t.id, t]));
   const rackBox = el('div', { class: 'ok-rack' });
   const actionBox = el('div', { class: 'ok-actions' });
-  const hintBox = el('p', { class: 'hint' });
+  const hintBox = el('p', { class: 'hint two-lines' }); // one or two lines: the buttons below stay put
   const canFinish = () => draft.sel != null && state.phase === 'discard' && mine && isWinning(hand.filter((t) => t.id !== draft.sel), okey);
   const redraw = () => {
     rackBox.replaceChildren(...draft.order.map((id) => tileEl(byId.get(id), okey, {
@@ -313,7 +313,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     actionBox.replaceChildren(
       el('div', { class: 'row', style: { justifyContent: 'center', gap: '8px' } },
         el('button', { type: 'button', class: 'btn btn-secondary', disabled: draft.sel == null, onClick: () => sendMove({ type: 'discard', tile: draft.sel }) }, 'Seçili taşı at'),
-        el('button', { type: 'button', class: `btn ${fin ? 'btn-primary' : 'btn-secondary'}`, disabled: !fin, onClick: () => sendMove({ type: 'finish', tile: draft.sel }) }, fin ? `Bitir! (${byId.get(draft.sel) && isOkey(byId.get(draft.sel), okey) ? 'okey atarak, ×2' : fin === 'pairs' ? 'çifte, ×2' : 'per/seri'})` : 'Bitir'),
+        el('button', { type: 'button', class: `btn ${fin ? 'btn-primary' : 'btn-secondary'}`, disabled: !fin, onClick: () => sendMove({ type: 'finish', tile: draft.sel }) }, fin ? `Bitir! (${byId.get(draft.sel) && isOkey(byId.get(draft.sel), okey) ? 'okey, ×2' : fin === 'pairs' ? 'çifte, ×2' : 'per/seri'})` : 'Bitir'),
       ), sortBtns);
     hintBox.textContent = draft.sel == null ? 'Atacağın taşa dokun (iki taşa dokununca yer değiştirir).' : fin ? 'Kalan 14 taş bitiyor: Bitir!' : 'Seçili taşı at ya da başka bir taşa dokunarak yer değiştir.';
   };

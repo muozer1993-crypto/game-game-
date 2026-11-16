@@ -40,6 +40,7 @@ export function setup(options = {}) {
     phase: 'play',       // play | count | over
     dead: [],            // indexes of stones marked dead during counting
     agree: [false, false],
+    marks: 0,            // taps on groups in this count: an agreement is for the marking after that many
     result: null,
   };
 }
@@ -103,11 +104,13 @@ export function applyMove(state, player, move) {
         const dead = new Set(state.dead);
         const marking = !dead.has(i);
         g.forEach((s) => { if (marking) dead.add(s); else dead.delete(s); });
-        return { ...state, dead: [...dead].sort((a, b) => a - b), agree: [false, false] };
+        return { ...state, dead: [...dead].sort((a, b) => a - b), agree: [false, false], marks: (state.marks || 0) + 1 };
       }
       case 'agree': {
         // an agreement is for the marking its player saw: one that crossed a change of the dead
-        // stones counts for nothing (two phones: the mark reset both agreements anyway)
+        // stones (even one undone again) counts for nothing (two phones: the mark reset both
+        // agreements anyway)
+        if (Number.isInteger(move.marks) && move.marks !== (state.marks || 0)) return state;
         if (Array.isArray(move.dead) && !sameCells(move.dead, state.dead)) return state;
         const agree = state.agree.slice();
         agree[player] = true;
@@ -123,17 +126,23 @@ export function applyMove(state, player, move) {
       }
       case 'resume':
         // back to play with the player whose turn it was after the passes (not whoever asked to resume)
-        return { ...state, phase: 'play', passes: 0, dead: [], agree: [false, false] };
+        // the counter starts again with every count: a mark that crossed "Oyuna dön" is refused on the
+        // phone that went back to play, so a running count would differ between the phones for good
+        return { ...state, phase: 'play', passes: 0, dead: [], agree: [false, false], marks: 0 };
       default:
         fail('Sayım sırasında taş konmaz');
     }
   }
   // the host ended the count while this phone had gone back to play ("Oyuna dön" crossed it): the
-  // host's end stands, with the marking and the result it settled on
+  // host's end stands, with the board, marking and result it settled on (stones played here after
+  // "Oyuna dön" never reached the host's game)
   if (move.type === 'finish') {
     if (player !== 0) fail('Sayımı ev sahibi bitirir');
     const dead = Array.isArray(move.dead) ? move.dead.map(Number) : [];
-    return { ...state, dead, phase: 'over', result: move.result && typeof move.result === 'object' ? move.result : score({ ...state, dead }) };
+    const board = Array.isArray(move.board) && move.board.length === state.size * state.size ? move.board.map((v) => (v === 0 || v === 1 ? v : null)) : state.board;
+    const captures = Array.isArray(move.captures) && move.captures.length === 2 ? move.captures.map(Number) : state.captures;
+    const settled = { ...state, board, captures, dead, ko: null };
+    return { ...settled, phase: 'over', result: move.result && typeof move.result === 'object' ? move.result : score(settled) };
   }
   if (player !== state.turn) fail('Sıra sende değil');
   switch (move.type) {
@@ -149,7 +158,7 @@ export function applyMove(state, player, move) {
     }
     case 'pass': {
       const passes = state.passes + 1;
-      if (passes >= 2) return { ...state, passes, ko: null, last: null, turn: opp, phase: 'count', dead: [], agree: [false, false] };
+      if (passes >= 2) return { ...state, passes, ko: null, last: null, turn: opp, phase: 'count', dead: [], agree: [false, false], marks: 0 };
       return { ...state, passes, ko: null, last: null, turn: opp };
     }
     default:
@@ -192,7 +201,7 @@ const sameCells = (a, b) => a.length === b.length && a.map(Number).sort((x, y) =
 
 /** Both agreed on the same marking: the host's phone (on one phone, the phone) ends the count. */
 export function autoMove(state, player) {
-  if (player === 0 && state.phase === 'count' && state.agree[0] && state.agree[1]) return { type: 'finish', dead: state.dead, result: score(state) };
+  if (player === 0 && state.phase === 'count' && state.agree[0] && state.agree[1]) return { type: 'finish', dead: state.dead, board: state.board, captures: state.captures, result: score(state) };
   return null;
 }
 
@@ -273,7 +282,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       el('p', { class: 'hint' }, `Şu an: siyah ${num(est.total[0])} – beyaz ${num(est.total[1])} (komi dahil). ${state.agree[0] ? `${players[0]} onayladı. ` : ''}${state.agree[1] ? `${players[1]} onayladı. ` : ''}`),
       boardBox,
       el('div', { class: 'row', style: { justifyContent: 'center', gap: '8px' } },
-        el('button', { type: 'button', class: 'btn btn-primary', disabled: online && state.agree[viewer], onClick: () => sendMove({ type: 'agree', dead: state.dead }) }, online ? (state.agree[viewer] ? 'Onayladın' : 'Onayla') : `Onayla (${players[state.agree[0] ? 1 : 0]})`),
+        el('button', { type: 'button', class: 'btn btn-primary', disabled: online && state.agree[viewer], onClick: () => sendMove({ type: 'agree', dead: state.dead, marks: state.marks || 0 }) }, online ? (state.agree[viewer] ? 'Onayladın' : 'Onayla') : `Onayla (${players[state.agree[0] ? 1 : 0]})`),
         el('button', { type: 'button', class: 'btn btn-secondary', onClick: () => sendMove({ type: 'resume' }) }, 'Oyuna dön'),
       ),
       caps,

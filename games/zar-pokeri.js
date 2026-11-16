@@ -198,6 +198,11 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     ? el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block', onClick: () => { if (rolled && held.every(Boolean)) return; sendMove({ type: 'roll', held: held.slice() }); } },
       rolled ? `Tekrar at (${state.rollsLeft} hak)` : 'Zar at')
     : null;
+  // after the last roll the button keeps its place (disabled), so the score sheet does not move up
+  // under the finger that rolled
+  const spentBtn = mine && rolled && state.rollsLeft === 0
+    ? el('button', { type: 'button', class: 'btn btn-secondary btn-big btn-block', disabled: true }, 'Atış hakkın bitti')
+    : null;
   const syncRoll = () => { // holding all five leaves nothing to roll: say so instead of a dead button
     if (!rollBtn) return;
     const all = rolled && held.every(Boolean);
@@ -206,14 +211,15 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   };
   syncRoll();
   draw(container,
-    el('div', { class: 'status-line' }, el('strong', {}, mine ? (rolled ? (state.rollsLeft > 0 ? `${players[p]}: zarları tut, tekrar at ya da bir hane seç` : `${players[p]}: bir hane seç`) : `${players[p]}, zar at`) : `${players[p]} oynuyor…`)),
+    el('div', { class: 'status-line two' }, el('strong', {}, mine ? (rolled ? (state.rollsLeft > 0 ? `${players[p]}: zarları tut, tekrar at ya da bir hane seç` : `${players[p]}: bir hane seç`) : `${players[p]}, zar at`) : `${players[p]} oynuyor…`)),
     el('div', { class: 'zp-dice' }, dieBtns),
     // the hint's place is kept before the first roll too, so "Tekrar at" comes up where "Zar at" was;
     // it ignores taps for a moment after a roll, so a double tap does not spend two rolls
-    mine && state.rollsLeft > 0 ? el('p', { class: 'hint', style: rolled ? null : { visibility: 'hidden' } }, 'Tutmak istediğin zara dokun.') : null,
-    rollBtn && rolled ? armAfter(rollBtn) : rollBtn,
+    mine ? el('p', { class: 'hint', style: rolled && state.rollsLeft > 0 ? null : { visibility: 'hidden' } }, 'Tutmak istediğin zara dokun.') : null,
+    rollBtn && rolled ? armAfter(rollBtn) : rollBtn || spentBtn,
     el('p', { class: 'hint' }, `${filled[p] + 1}. el / ${CATS.length}`),
-    sheet(),
+    // the sheet, too, ignores a tap that comes right after a roll
+    mine && rolled ? armAfter(sheet()) : sheet(),
   );
   return null;
 }
