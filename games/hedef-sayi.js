@@ -12,9 +12,9 @@ export const meta = {
   icon: '🎯',
   description: 'Altı sayı, dört işlem, üç basamaklı hedef: süre dolmadan en yakına ulaş.',
   rules: [
-    'İkinize de aynı altı sayı ve aynı hedef gelir. Bir sayıya, bir işleme, sonra başka bir sayıya dokun: sonuç yeni bir sayı olarak havuza girer, kullandıkların çıkar. Her sayı en çok bir kez kullanılır; çıkarma eksiye düşemez, bölme tam bölünmeli.',
+    'İkinize de aynı altı sayı ve aynı hedef gelir. Bir sayıya, bir işleme, sonra başka bir sayıya dokun: sonuç yeni bir sayı olarak havuza girer, kullandıkların çıkar. Her sayı en çok bir kez kullanılır; çıkarma eksiye ya da sıfıra düşemez, bölme tam bölünmeli.',
     'Süre dolunca ya da "Gönder" deyince havuzdaki hedefe en yakın sayı cevabındır. Puan: tam isabet 10, en çok 5 uzak 7, en çok 10 uzak 5. Tur sonunda bir çözüm de gösterilir.',
-    'Tek telefonda sırayla, iki telefonda aynı anda oynanır; turlar bitince toplam puan kazanır.',
+    'Tek telefonda sırayla, iki telefonda aynı anda oynanır (biri gönderince öbürünün en çok 15 saniyesi kalır); turlar bitince toplam puan kazanır.',
   ].join('\n'),
   data: [],
   handoffNote: 'Hedef ve sayılar ikinize de aynı; cevabın rakibin bitirene kadar gizli.',
@@ -241,7 +241,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   if (mineDone) {
     draw(container,
       el('div', { class: 'status-line' }, el('strong', {}, `Cevabın: ${mineDone.value} (${mineDone.diff === 0 ? 'tam isabet!' : `${mineDone.diff} uzak`})`)),
-      el('p', { class: 'hint' }, `${players[opp]} çözüyor…${online ? ` (${GRACE_MS / 1000} saniyesi kaldı)` : ''}`),
+      el('p', { class: 'hint' }, `${players[opp]} çözüyor…${online ? ` (en çok ${GRACE_MS / 1000} saniyesi kaldı)` : ''}`),
       el('div', { class: 'spinner', 'aria-hidden': 'true' }),
       targetView, legend,
     );
@@ -276,7 +276,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
         if (draft.sel == null || draft.op == null) { draft.sel = draft.sel === i ? null : i; draft.op = null; redraw(); return; }
         if (draft.sel === i) { draft.sel = null; draft.op = null; redraw(); return; }
         const r = calc(pool[draft.sel], draft.op, n);
-        if (r == null) { redraw(draft.op === '−' ? 'Sonuç eksi olamaz: büyükten küçüğü çıkar.' : 'Tam bölünmüyor.'); return; }
+        if (r == null) { redraw(draft.op === '−' ? (pool[draft.sel] === n ? 'Sonuç sıfır olur: başka bir sayı seç.' : 'Sonuç eksi olamaz: büyükten küçüğü çıkar.') : 'Tam bölünmüyor.'); return; }
         draft.steps.push({ a: pool[draft.sel], op: draft.op, b: n, r });
         draft.sel = null; draft.op = null;
         redraw();
@@ -294,7 +294,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   draw(container,
     timerBox,
     targetView,
-    online && oppDone ? el('p', { class: 'hint rejected-note' }, `${players[opp]} bitirdi! ${GRACE_MS / 1000} saniyen var.`) : null,
+    online && oppDone ? el('p', { class: 'hint rejected-note' }, `${players[opp]} bitirdi! Süren kısaldı (en çok ${GRACE_MS / 1000} sn): sayaca bak.`) : null,
     poolBox,
     opsBox,
     hintBox,

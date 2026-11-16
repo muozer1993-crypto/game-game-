@@ -201,6 +201,9 @@ const played = new Map(); // `${id}:${n}` -> { start } (replay timing survives r
 let playedFor = null;
 
 // ----------------------------------------------------------------- render
+const SKIP_GUARD_MS = 400;
+let skipGuardUntil = 0; // taps on the pits are ignored until then (see the replay below)
+
 export function render(state, viewer, container, sendMove, ctx = {}) {
   const players = ctx.players || ['Oyuncu 1', 'Oyuncu 2'];
   const opts = ctx.options || {};
@@ -221,7 +224,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       class: `mg-pit ${legal.has(i) ? 'legal' : ''} ${!animating && state.last && state.last.to === i ? 'last' : ''} ${!animating && state.last && state.last.from === i ? 'from' : ''}`,
       disabled: !legal.has(i),
       'aria-label': `${i < 6 ? players[0] : players[1]} kuyusu ${(i < 6 ? i : i - 7) + 1}: ${state.pits[i]} taş`,
-      onClick: () => sendMove({ type: 'sow', pit: i }),
+      onClick: () => { if (Date.now() >= skipGuardUntil) sendMove({ type: 'sow', pit: i }); }, // not the tap that skipped the replay
     }, el('span', { class: 'mg-count' }, String(state.pits[i])), el('span', { class: 'mg-stones' }, '●'.repeat(Math.min(state.pits[i], 12))));
     pitEls[i] = b;
     return b;
@@ -256,7 +259,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const lastText = state.last
     ? `${state.last.captured ? `${state.last.captured} taş alındı. ` : ''}${state.last.again && !state.over ? 'Son taş hazneye düştü: bir hamle daha. ' : ''}${endNote}`
     : `${players[0]} alt sıradaki kuyuları oynar, ${players[1]} üst sıradakileri.`;
-  const statusEl = el('div', { class: 'status-line' }, el('strong', {}, status));
+  const statusEl = el('div', { class: 'status-line two' }, el('strong', {}, status));
   const note = el('p', { class: 'hint' }, lastText);
   // the house rules stay visible all game (the guest never saw the host's settings form)
   const variantLine = variant.length ? el('p', { class: 'hint mg-variant' }, state.variant === 'bantumi' ? 'Oyun türü: Bantumi (Nokia).' : `Ev kuralı: ${variant.join(', ')}.`) : null;
@@ -306,7 +309,9 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
           : f.kind === 'collect' ? 'Kalan taşlar hazneye…' : note.textContent;
   };
   statusEl.replaceChildren(el('strong', {}, `${who} oynuyor…`), el('span', { class: 'muted mg-skip' }, ' (geçmek için dokun)'));
-  board.addEventListener('click', finish);
+  // a tap skips the replay; the pits it brings back ignore taps for a moment, so a quick second tap
+  // (or the same finger) does not sow a pit the player never chose
+  board.addEventListener('click', () => { skipGuardUntil = Date.now() + SKIP_GUARD_MS; finish(); });
   // frames already due (a re-render in the middle of the replay) are shown at once
   const elapsed = Date.now() - startAt;
   let due = Math.min(frames.length - 1, Math.max(0, Math.floor(elapsed / stepMs)));

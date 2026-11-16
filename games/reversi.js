@@ -130,13 +130,14 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   } else if (mine) status = `Sıra sende, ${players[viewer]} (${colourName(viewer)}): bir noktaya dokun`;
   else status = `${players[state.turn]} (${colourName(state.turn)}) düşünüyor…`;
   draw(container,
-    el('div', { class: 'status-line' }, el('strong', {}, status)),
-    state.passed != null && !state.over ? el('p', { class: 'hint notice' }, `${players[state.passed]} oynayamadı, sıra yine ${nameSuffix(players[state.turn], 'de')}.`) : null,
+    el('div', { class: 'status-line two' }, el('strong', {}, status)),
     el('div', { class: 'c4-legend' },
       el('span', { class: 'rv-key' }, keyDot(PIECE[colour(0)]), `${players[0]}: ${c0}`),
       el('span', { class: 'rv-key' }, keyDot(PIECE[colour(1)]), `${players[1]}: ${c1}`),
     ),
     board,
+    // under the board: the notice must not push the board down just as the same player plays again
+    state.passed != null && !state.over ? el('p', { class: 'hint notice' }, `${players[state.passed]} oynayamadı, sıra yine ${nameSuffix(players[state.turn], 'de')}.`) : null,
   );
   return null;
 }

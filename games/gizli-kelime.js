@@ -5,7 +5,7 @@
 // Secrets never leave the owner's device: the `setSecret` move carries the word in a
 // `secret` field that the session strips before sending; guesses are scored on the
 // owner's device by autoMove(), which sends only the result.
-import { el, render as draw } from '../js/ui/dom.js';
+import { el, render as draw, keysIntoView } from '../js/ui/dom.js';
 import { createKeyboard } from '../js/ui/keyboard.js';
 import { normalizeWord, isTurkishWord, upperTR, nameSuffix } from '../js/lib/tr.js';
 import { toggled, carried, checkObjection } from '../js/lib/objections.js';
@@ -595,6 +595,7 @@ export function createGame(cfg) {
         el('button', { type: 'button', class: 'btn btn-secondary btn-small', onClick: () => { if (confirm('Pes ediyor musun? Bu turu kaybedersin.')) sendMove({ type: 'giveup' }); } }, 'Pes'),
       ) : null,
     );
+    if (mine && !myPending) keysIntoView(kbBox); // the guess list grows above the keyboard: keep GİR on screen
     return () => cleanups.forEach((fn) => fn());
   }
 

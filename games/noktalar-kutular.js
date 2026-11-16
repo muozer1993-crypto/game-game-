@@ -142,7 +142,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   if (state.over) status = state.scores[0] === state.scores[1] ? 'Berabere.' : `${players[state.scores[0] > state.scores[1] ? 0 : 1]} daha çok kutu aldı!`;
   else status = mine ? `Sıra sende, ${players[viewer]}: bir çizgi çek` : `${players[state.turn]} düşünüyor…`;
   draw(container,
-    el('div', { class: 'status-line' }, el('strong', {}, status)),
+    el('div', { class: 'status-line two' }, el('strong', {}, status)),
     el('div', { class: 'c4-legend' },
       el('span', { class: 'dab-key', style: { color: COLORS[0] } }, `${players[0]}: ${state.scores[0]}`),
       el('span', { class: 'dab-key', style: { color: COLORS[1] } }, `${players[1]}: ${state.scores[1]}`),

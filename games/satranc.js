@@ -1,6 +1,6 @@
 // Satranç — full chess: castling, en passant, promotion, check/checkmate, stalemate,
 // insufficient material, fifty-move rule and threefold repetition.
-import { el, render as draw } from '../js/ui/dom.js';
+import { el, render as draw, keysIntoView } from '../js/ui/dom.js';
 import { nameSuffix } from '../js/lib/tr.js';
 
 export const meta = {
@@ -406,6 +406,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
         [['q', 'Vezir'], ['r', 'Kale'], ['b', 'Fil'], ['n', 'At']].map(([promo, label]) =>
           el('button', { type: 'button', class: 'btn btn-secondary', onClick: () => { pendingPromo = null; selected = null; sendMove({ type: 'move', from, to, promo }); } },
             pieceImg(`${state.turn}${promo}`, 'ch-mini'), ` ${label}`)))));
+    keysIntoView(promoBox); // a short phone: the choice opens below the board, bring it on screen
   };
   boardBox.append(drawBoard());
   drawPromo();

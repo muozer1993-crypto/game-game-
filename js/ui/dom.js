@@ -60,6 +60,28 @@ export function scrollKeeper(container) {
   return () => { if (scrollY !== y) scrollTo(0, y); };
 }
 
+/**
+ * A short phone: once the screen is laid out, scroll just enough that the whole box (a keypad, GİR
+ * included) is on screen. Nothing happens when it already is.
+ */
+export function keysIntoView(box) {
+  if (typeof requestAnimationFrame !== 'function' || typeof innerHeight !== 'number') return;
+  requestAnimationFrame(() => {
+    if (box.isConnected && box.getBoundingClientRect().bottom > innerHeight) box.scrollIntoView({ block: 'end' });
+  });
+}
+
+/**
+ * Buttons that come up where the finger just was (an amount row after "Yükselt", "Pes" after "Zar
+ * at"): they ignore taps for a moment, so a double tap does not press them.
+ */
+export function armAfter(node, ms = 350) {
+  if (!node || !node.style) return node;
+  node.style.pointerEvents = 'none';
+  setTimeout(() => { node.style.pointerEvents = ''; }, ms);
+  return node;
+}
+
 /** Replace the content of a container with the given children. */
 export function render(container, ...children) {
   const back = scrollKeeper(container);

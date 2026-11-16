@@ -1,6 +1,6 @@
 // Hesap Yarışı — both players get the same seeded arithmetic questions; most correct wins,
 // ties go to the faster player. One phone: one after the other; two phones: at once.
-import { el, render as draw } from '../js/ui/dom.js';
+import { el, render as draw, keysIntoView } from '../js/ui/dom.js';
 import { createTimer } from '../js/ui/timer.js';
 import { createKeyboard } from '../js/ui/keyboard.js';
 import { createRng } from '../js/lib/rng.js';
@@ -176,6 +176,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       el('div', { class: 'question-card card hy-card' }, el('div', { class: 'hy-expr' }, `${q.text} = ?`), answerBox),
       kbBox,
     );
+    keysIntoView(kbBox); // a short phone (two phones add a line above): GİR stays on screen
     return () => { if (timer) timer.stop(); kb.destroy(); };
   }
 

@@ -313,7 +313,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     actionBox.replaceChildren(
       el('div', { class: 'row', style: { justifyContent: 'center', gap: '8px' } },
         el('button', { type: 'button', class: 'btn btn-secondary', disabled: draft.sel == null, onClick: () => sendMove({ type: 'discard', tile: draft.sel }) }, 'Seçili taşı at'),
-        el('button', { type: 'button', class: `btn ${fin ? 'btn-primary' : 'btn-secondary'}`, disabled: !fin, onClick: () => sendMove({ type: 'finish', tile: draft.sel }) }, fin ? `Bitir! (${fin === 'pairs' ? 'çifte' : 'per/seri'})` : 'Bitir'),
+        el('button', { type: 'button', class: `btn ${fin ? 'btn-primary' : 'btn-secondary'}`, disabled: !fin, onClick: () => sendMove({ type: 'finish', tile: draft.sel }) }, fin ? `Bitir! (${byId.get(draft.sel) && isOkey(byId.get(draft.sel), okey) ? 'okey atarak, ×2' : fin === 'pairs' ? 'çifte, ×2' : 'per/seri'})` : 'Bitir'),
       ), sortBtns);
     hintBox.textContent = draft.sel == null ? 'Atacağın taşa dokun (iki taşa dokununca yer değiştirir).' : fin ? 'Kalan 14 taş bitiyor: Bitir!' : 'Seçili taşı at ya da başka bir taşa dokunarak yer değiştir.';
   };

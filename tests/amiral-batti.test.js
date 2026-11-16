@@ -21,7 +21,7 @@ test('amiral battı: filo doğrulama', () => {
 
 function ready() {
   let s = game.setup({ size: 8 });
-  assert.deepEqual(game.getTurn(s), { player: 0, private: true });
+  assert.deepEqual(game.getTurn(s), { player: 0, private: true, simultaneous: true });
   s = game.applyMove(s, 0, { type: 'place', secret: { fleet: fleetA } });
   s = game.applyMove(s, 1, { type: 'place', secret: { fleet: fleetB } });
   assert.equal(s.phase, 'play');

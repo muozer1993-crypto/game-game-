@@ -1,7 +1,7 @@
 // Zar Pokeri — Yatzy-style dice poker for two: up to three rolls per turn (hold any dice),
 // then write the result into one of 15 categories. Upper-section bonus at 63. No hidden
 // information, so the phone is simply passed; online the opponent watches every roll.
-import { el, render as draw } from '../js/ui/dom.js';
+import { el, render as draw, armAfter } from '../js/ui/dom.js';
 import { diceOnce } from '../js/lib/sfx.js';
 import { createRng } from '../js/lib/rng.js';
 
@@ -208,8 +208,10 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   draw(container,
     el('div', { class: 'status-line' }, el('strong', {}, mine ? (rolled ? (state.rollsLeft > 0 ? `${players[p]}: zarları tut, tekrar at ya da bir hane seç` : `${players[p]}: bir hane seç`) : `${players[p]}, zar at`) : `${players[p]} oynuyor…`)),
     el('div', { class: 'zp-dice' }, dieBtns),
-    rolled && mine && state.rollsLeft > 0 ? el('p', { class: 'hint' }, 'Tutmak istediğin zara dokun.') : null,
-    rollBtn,
+    // the hint's place is kept before the first roll too, so "Tekrar at" comes up where "Zar at" was;
+    // it ignores taps for a moment after a roll, so a double tap does not spend two rolls
+    mine && state.rollsLeft > 0 ? el('p', { class: 'hint', style: rolled ? null : { visibility: 'hidden' } }, 'Tutmak istediğin zara dokun.') : null,
+    rollBtn && rolled ? armAfter(rollBtn) : rollBtn,
     el('p', { class: 'hint' }, `${filled[p] + 1}. el / ${CATS.length}`),
     sheet(),
   );

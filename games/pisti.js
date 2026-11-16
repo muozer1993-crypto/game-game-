@@ -1,6 +1,6 @@
 // Pişti — the classic Turkish two-player card game. Match the top card (or play a Jack) to
 // take the pile; taking a single card with a match is "pişti". First to 151 points wins.
-import { el, render as draw } from '../js/ui/dom.js';
+import { el, render as draw, armAfter } from '../js/ui/dom.js';
 import { createRng, shuffle } from '../js/lib/rng.js';
 
 export const meta = {
@@ -201,7 +201,8 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     el('div', { class: 'col-title active' }, `Senin elin (aldığın ${state.captured[viewer].length} kart)`),
     acking ? null : handView,
     notes.length ? el('p', { class: 'hint' }, notes.join(' ')) : null,
-    acking ? el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block', onClick: () => sendMove({ type: 'ack' }) }, 'Tamam, telefonu ver') : null,
+    // it comes up where the played card was: a double tap must not skip what the player took
+    acking ? armAfter(el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block', onClick: () => sendMove({ type: 'ack' }) }, 'Tamam, telefonu ver')) : null,
   );
   return null;
 }

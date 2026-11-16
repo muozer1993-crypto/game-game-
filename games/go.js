@@ -106,10 +106,20 @@ export function applyMove(state, player, move) {
         return { ...state, dead: [...dead].sort((a, b) => a - b), agree: [false, false] };
       }
       case 'agree': {
+        // an agreement is for the marking its player saw: one that crossed a change of the dead
+        // stones counts for nothing (two phones: the mark reset both agreements anyway)
+        if (Array.isArray(move.dead) && !sameCells(move.dead, state.dead)) return state;
         const agree = state.agree.slice();
         agree[player] = true;
-        if (agree[0] && agree[1]) return { ...state, agree, phase: 'over', result: score(state) };
+        // both agree: the host's phone ends the count (autoMove 'finish'), so an agreement and an
+        // "Oyuna dön" crossing on the wire cannot end the game on one phone only
         return { ...state, agree };
+      }
+      case 'finish': {
+        if (player !== 0) fail('Sayımı ev sahibi bitirir');
+        const dead = Array.isArray(move.dead) ? move.dead.map(Number) : state.dead;
+        const settled = { ...state, dead };
+        return { ...settled, phase: 'over', result: move.result && typeof move.result === 'object' ? move.result : score(settled) };
       }
       case 'resume':
         // back to play with the player whose turn it was after the passes (not whoever asked to resume)
@@ -117,6 +127,13 @@ export function applyMove(state, player, move) {
       default:
         fail('Sayım sırasında taş konmaz');
     }
+  }
+  // the host ended the count while this phone had gone back to play ("Oyuna dön" crossed it): the
+  // host's end stands, with the marking and the result it settled on
+  if (move.type === 'finish') {
+    if (player !== 0) fail('Sayımı ev sahibi bitirir');
+    const dead = Array.isArray(move.dead) ? move.dead.map(Number) : [];
+    return { ...state, dead, phase: 'over', result: move.result && typeof move.result === 'object' ? move.result : score({ ...state, dead }) };
   }
   if (player !== state.turn) fail('Sıra sende değil');
   switch (move.type) {
@@ -168,6 +185,14 @@ export function score(state) {
 export function getTurn(state) {
   if (state.phase === 'play') return { player: state.turn, private: false };
   if (state.phase === 'count') return { player: state.agree[0] ? 1 : 0, private: false, simultaneous: true };
+  return null;
+}
+
+const sameCells = (a, b) => a.length === b.length && a.map(Number).sort((x, y) => x - y).every((v, k) => v === b[k]);
+
+/** Both agreed on the same marking: the host's phone (on one phone, the phone) ends the count. */
+export function autoMove(state, player) {
+  if (player === 0 && state.phase === 'count' && state.agree[0] && state.agree[1]) return { type: 'finish', dead: state.dead, result: score(state) };
   return null;
 }
 
@@ -248,7 +273,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       el('p', { class: 'hint' }, `Şu an: siyah ${num(est.total[0])} – beyaz ${num(est.total[1])} (komi dahil). ${state.agree[0] ? `${players[0]} onayladı. ` : ''}${state.agree[1] ? `${players[1]} onayladı. ` : ''}`),
       boardBox,
       el('div', { class: 'row', style: { justifyContent: 'center', gap: '8px' } },
-        el('button', { type: 'button', class: 'btn btn-primary', disabled: online && state.agree[viewer], onClick: () => sendMove({ type: 'agree' }) }, online ? (state.agree[viewer] ? 'Onayladın' : 'Onayla') : `Onayla (${players[state.agree[0] ? 1 : 0]})`),
+        el('button', { type: 'button', class: 'btn btn-primary', disabled: online && state.agree[viewer], onClick: () => sendMove({ type: 'agree', dead: state.dead }) }, online ? (state.agree[viewer] ? 'Onayladın' : 'Onayla') : `Onayla (${players[state.agree[0] ? 1 : 0]})`),
         el('button', { type: 'button', class: 'btn btn-secondary', onClick: () => sendMove({ type: 'resume' }) }, 'Oyuna dön'),
       ),
       caps,
@@ -265,4 +290,4 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   return null;
 }
 
-export default { id: 'go', meta, setup, applyMove, render, getTurn, getResult };
+export default { id: 'go', meta, setup, applyMove, render, getTurn, getResult, autoMove };

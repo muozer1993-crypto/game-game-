@@ -1,7 +1,7 @@
 // Mayın Tarlası — both players sweep the same seeded minefield on their own; the one who
 // clears it (or, failing that, uncovers more safe cells) wins. A zero region around a
 // seeded start cell is opened for both, so nobody dies on the first tap.
-import { el, render as draw } from '../js/ui/dom.js';
+import { el, render as draw, armAfter } from '../js/ui/dom.js';
 import { nameSuffix } from '../js/lib/tr.js';
 import { createTimer } from '../js/ui/timer.js';
 import { createRng, shuffle } from '../js/lib/rng.js';
@@ -202,8 +202,8 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     const x = state.boards[p];
     const revealed = new Set(x.revealed);
     const flags = new Set(x.flags);
-    // the 12×12 field bleeds into the page gutter and never shrinks a cell below 30px (scrolls sideways instead)
-    const box = el('div', { class: `ms-grid ${state.size === 12 ? 'dense' : ''}`, style: { gridTemplateColumns: `repeat(${state.size}, ${state.size === 12 ? 'minmax(30px, 1fr)' : '1fr'})` } });
+    // the 12×12 field bleeds into the page gutter; its columns shrink so all twelve fit a 360 px screen
+    const box = el('div', { class: `ms-grid ${state.size === 12 ? 'dense' : ''}`, style: { gridTemplateColumns: `repeat(${state.size}, minmax(0, 1fr))` } }); // all columns fit a 360 px screen
     for (let i = 0; i < state.size * state.size; i++) {
       const n = state.numbers[i];
       const open = revealed.has(i);
@@ -245,7 +245,8 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       el('div', { class: 'status-line' }, el('strong', {}, b.status === 'cleared' ? `Temizledin! ${(b.ms / 1000).toFixed(1).replace('.', ',')} sn` : b.status === 'dead' ? 'Mayına bastın!' : b.status === 'quit' ? 'Bıraktın.' : 'Süre doldu.')),
       ...(state.seen && !state.seen[viewer]
         ? [el('p', { class: 'hint' }, `${statusText(viewer)}. Şimdi sıra ${nameSuffix(players[opp], 'de')}.`),
-          el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block', onClick: () => sendMove({ type: 'seen' }) }, 'Tamam, telefonu ver')]
+          // it comes up where the last tapped cell may be: a double tap must not hand the phone over unseen
+          armAfter(el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block', onClick: () => sendMove({ type: 'seen' }) }, 'Tamam, telefonu ver'))]
         : [el('p', { class: 'hint' }, `${statusText(viewer)}. ${players[opp]} oynuyor… (${progress(state, opp)}/${total})`),
           el('div', { class: 'spinner', 'aria-hidden': 'true' })]),
       grid(viewer, { showMines: true }),

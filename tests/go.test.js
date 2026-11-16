@@ -79,6 +79,11 @@ test('go: pas, sayım, ölü taş, onay, alan puanı ve komi', () => {
   assert.deepEqual(t.dead, []);
   assert.deepEqual(t.agree, [false, false]);
   s = game.applyMove(s, 1, { type: 'agree' });
+  assert.equal(s.phase, 'count', 'both agreed: the host phone ends the count');
+  const fin = game.autoMove(s, 0);
+  assert.equal(fin.type, 'finish');
+  assert.equal(game.autoMove(s, 1), null);
+  s = game.applyMove(s, 0, fin);
   assert.equal(s.phase, 'over');
   assert.deepEqual(game.getResult(s), { winner: 0 });
   assert.deepEqual(s.result.total, [45, 27 + KOMI]);
@@ -89,4 +94,49 @@ test('go: pas, sayım, ölü taş, onay, alan puanı ve komi', () => {
   assert.equal(u.turn, 0, 'the player to move after the two passes, not whoever asked to resume');
   assert.equal(u.passes, 0);
   assert.throws(() => game.applyMove(u, 1, { type: 'place', cell: 0 }), 'Sıra sende değil');
+});
+
+test('go iki telefonda: sayımda çaprazlanan onay, ölü taş ve "Oyuna dön" iki telefonu ayrıştırmaz', () => {
+  const start = () => {
+    let s = game.setup({ size: 9, seed: 3 });
+    s = game.applyMove(s, s.turn, { type: 'place', cell: 40 });
+    s = game.applyMove(s, s.turn, { type: 'place', cell: 80 });
+    s = game.applyMove(s, s.turn, { type: 'pass' });
+    s = game.applyMove(s, s.turn, { type: 'pass' });
+    return s;
+  };
+  // each phone applies its own move first, the other's after (and runs the host's autoMove)
+  const both = (s0, host, guest) => {
+    const run = (own, theirs, me) => {
+      let st = s0;
+      const auto = () => { if (me === 0) { const m = game.autoMove(st, 0); if (m) { st = game.applyMove(st, 0, m); return m; } } return null; };
+      const sent = [];
+      for (const m of own) { st = game.applyMove(st, me, m); const a = auto(); if (a) sent.push(a); }
+      for (const m of theirs) { try { st = game.applyMove(st, 1 - me, m); } catch { /* refused, as Session drops it */ } const a = auto(); if (a) sent.push(a); }
+      return { st, sent };
+    };
+    const h = run(host, guest, 0);
+    const g = run(guest, [...host, ...h.sent], 1);
+    // the host's autoMoves reach the guest; the guest's moves were already applied on the host
+    return [h.st, g.st];
+  };
+  let s = start();
+  assert.equal(s.phase, 'count');
+  // the host agrees while the guest marks a stone dead
+  let [h, g] = both(s, [{ type: 'agree', dead: [] }], [{ type: 'dead', cell: 40 }]);
+  assert.deepEqual(h, g, 'same state on both phones');
+  assert.deepEqual(h.agree, [false, false]);
+  assert.deepEqual(h.dead, [40]);
+  // the host had agreed; the guest agrees while the host taps "Oyuna dön"
+  s = game.applyMove(start(), 0, { type: 'agree', dead: [] });
+  [h, g] = both(s, [{ type: 'resume' }], [{ type: 'agree', dead: [] }]);
+  assert.equal(h.phase, g.phase);
+  assert.equal(h.phase, 'play');
+  // both agree on the same marking: the game ends on both phones, with the host's result
+  s = start();
+  [h, g] = both(s, [{ type: 'agree', dead: [] }], [{ type: 'agree', dead: [] }]);
+  assert.equal(h.phase, 'over');
+  assert.equal(g.phase, 'over');
+  assert.deepEqual(h.result, g.result);
+  assert.throws(() => game.applyMove(s, 1, { type: 'finish' }), 'ev sahibi');
 });

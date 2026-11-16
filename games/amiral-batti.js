@@ -14,7 +14,7 @@ export const meta = {
     'Her oyuncu gemilerini kendi denizine yerleştirir (düz, birbirine değmeden). Rakip bunları görmez.',
     'Sırayla rakibin denizinde bir kareye ateş edilir: İska, Vurdu ya da Batırdı. Önce bütün gemileri batıran kazanır.',
     'İlk oyuncunun avantajı olmasın diye ikisi de aynı sayıda atış yapar; ikisi de aynı turda bitirirse berabere.',
-    'Tek telefonda: gemilerin "Gemilerimi göster" düğmesinin arkasında durur; sıra değişince telefonu vermeden önce gizle.',
+    'Tek telefonda: gemilerin gizli durur; "Gemilerimi göster" düğmesine basılı tuttukça görünür, bırakınca yine gizlenir.',
   ].join('\n'),
   data: [],
   handoffNote: 'Gemilerini rakibin görmemeli.',
@@ -230,7 +230,9 @@ export function autoMove(state, player) {
 export function getTurn(state) {
   if (state.phase === 'place') {
     const p = state.ready[0] ? (state.ready[1] ? null : 1) : 0;
-    return p == null ? null : { player: p, private: true };
+    // two phones place at the same time: the other's "Hazır" is no turn passing to this phone (no
+    // tap guard over the ship being placed); one phone still hands over between the two fleets
+    return p == null ? null : { player: p, private: true, simultaneous: true };
   }
   if (state.phase === 'play') return { player: whoseTurn(state), private: false };
   return null;
@@ -406,8 +408,9 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   if (state.phase === 'play' && oppSolved && mine) notes.push(`${players[opp]} bütün gemilerini batırdı. Bu son atışın: sen de bitirirsen berabere.`);
 
   draw(container,
-    el('div', { class: 'status-line' }, el('strong', {}, status)),
-    notes.length ? el('p', { class: 'hint' }, notes.join(' · ')) : null,
+    el('div', { class: 'status-line two' }, el('strong', {}, status)),
+    // the shot notes keep two lines' room from the first shot, so the seas below do not move
+    state.phase === 'play' || notes.length ? el('p', { class: 'hint two-lines' }, notes.join(' · ')) : null,
     el('div', { class: 'c4-legend' },
       el('span', {}, `Batırdığın: ${state.sunk[viewer]}/${state.ships.length}`),
       el('span', {}, `Batan gemin: ${state.sunk[opp]}/${state.ships.length}`),

@@ -193,10 +193,11 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   drafts.set(key, draft);
   const qLabel = el('strong', { class: 'yz-q' });
   const bidBtn = el('button', { type: 'button', class: 'btn btn-primary btn-big', onClick: () => { if (isRaise(state.bid, draft.q, draft.f, total, state.wild)) sendMove({ type: 'bid', q: draft.q, f: draft.f }); } });
-  const faceBtns = [1, 2, 3, 4, 5, 6].filter((f) => f >= lowFace(state.wild)).map((f) => el('button', { type: 'button', class: 'btn btn-secondary yz-face', 'aria-label': `yüz ${f}`, onClick: () => { draft.f = f; update(); } }, FACES[f]));
+  const faces = [1, 2, 3, 4, 5, 6].filter((f) => f >= lowFace(state.wild)); // from 2 when ones are wild, else from 1
+  const faceBtns = faces.map((f) => el('button', { type: 'button', class: 'btn btn-secondary yz-face', 'aria-label': `yüz ${f}`, onClick: () => { draft.f = f; update(); } }, FACES[f]));
   const update = () => {
     qLabel.textContent = String(draft.q);
-    faceBtns.forEach((b, i) => b.classList.toggle('selected', i + 2 === draft.f));
+    faceBtns.forEach((b, i) => b.classList.toggle('selected', faces[i] === draft.f));
     const ok = isRaise(state.bid, draft.q, draft.f, total, state.wild);
     bidBtn.disabled = !ok;
     bidBtn.textContent = min ? `Teklif: en az ${draft.q} × ${FACES[draft.f]}` : 'Teklif yükseltilemez';

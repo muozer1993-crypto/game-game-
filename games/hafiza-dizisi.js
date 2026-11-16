@@ -121,7 +121,6 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const status = el('div', { class: 'status-line' });
   const setStatus = (t) => draw(status, el('strong', {}, t));
   const enable = (on) => padEls.forEach((b) => { b.disabled = !on; });
-  const flash = (k, ms) => { padEls[k].classList.add('lit'); timers.push(setTimeout(() => padEls[k].classList.remove('lit'), ms)); };
 
   // The playback is scheduled relative to its start time (kept in `shown`), so a re-render in the
   // middle of it (the opponent's tap arriving online) resumes the remaining flashes instead of
@@ -130,10 +129,15 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     enable(false);
     setStatus(`${len} adımlık diziyi izle…`);
     const now = Date.now();
+    // every flash lights and goes out at its own absolute time: one in progress when the screen is
+    // redrawn only finishes its remaining part, so a pad repeated next still flashes twice
     for (let i = 0; i < len; i++) {
-      const at = startedAt + 400 + i * stepMs - now;
-      if (at + stepMs * 0.6 <= 0) continue; // already flashed
-      timers.push(setTimeout(() => flash(state.sequence[i], stepMs * 0.6), Math.max(0, at)));
+      const on = startedAt + 400 + i * stepMs - now;
+      const off = on + stepMs * 0.6;
+      if (off <= 0) continue; // already flashed
+      const pad = padEls[state.sequence[i]];
+      timers.push(setTimeout(() => pad.classList.add('lit'), Math.max(0, on)));
+      timers.push(setTimeout(() => pad.classList.remove('lit'), off));
     }
     timers.push(setTimeout(() => { setStatus(`Şimdi sen: ${len} adımı aynı sırayla dokun`); enable(true); }, Math.max(0, startedAt + 400 + len * stepMs - now)));
   };

@@ -234,7 +234,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   if (entry.answers[viewer]) {
     draw(container,
       el('div', { class: 'status-line' }, el('strong', {}, 'Cevapların alındı.')),
-      el('p', { class: 'hint' }, `${players[opp]} yazıyor…${online ? ` (${GRACE_MS / 1000} saniyesi kaldı)` : ''}`),
+      el('p', { class: 'hint' }, `${players[opp]} yazıyor…${online ? ` (en çok ${GRACE_MS / 1000} saniyesi kaldı)` : ''}`),
       el('div', { class: 'spinner', 'aria-hidden': 'true' }),
       scoreLine,
     );
@@ -277,7 +277,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     el('div', { class: 'status-line' }, el('strong', {}, `${players[viewer]}, harf:`)),
     el('div', { class: 'is-letter' }, upperTR(letter)),
     // (two phones: the line is there from the start, empty until the other player finishes)
-    online ? el('p', { class: 'hint rejected-note is-grace' }, entry.answers[opp] ? `${players[opp]} bitirdi! ${GRACE_MS / 1000} saniyen var.` : '') : null,
+    online ? el('p', { class: 'hint rejected-note is-grace' }, entry.answers[opp] ? `${players[opp]} bitirdi! Süren kısaldı (en çok ${GRACE_MS / 1000} sn).` : '') : null,
     el('div', { class: 'is-form' }, cats.map((name, c) => el('div', { class: 'is-row' }, el('label', { for: `is-in-${c}` }, name), inputs[c]))),
     el('p', { class: 'hint' }, `Her cevap ${upperTR(letter)} ile başlamalı; boş bırakılan 0 puan.${online ? '' : entry.answers[opp] ? ' Bitirince karşılaştırma ekranı ikinize gelir.' : ` Bitirince telefon ${nameSuffix(players[opp], 'e')} geçer.`}`),
     el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block', style: { marginTop: '8px' }, onClick: finish }, 'Bitir'),

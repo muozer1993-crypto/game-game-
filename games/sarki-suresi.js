@@ -2,7 +2,7 @@
 // the real length takes the round. Normal mode shows the title; hard mode hides it and plays a clip
 // instead. The songs come from the personal list (favourite bands weighted) or from the bands the
 // two players pick at the start (see js/lib/songs.js).
-import { el, render as draw, toast, scrollKeeper } from '../js/ui/dom.js';
+import { el, render as draw, toast, scrollKeeper, keysIntoView } from '../js/ui/dom.js';
 import { nextButton } from '../js/ui/next.js';
 import { createKeyboard } from '../js/ui/keyboard.js';
 import { createClipPlayer, clipReady } from '../js/ui/clip.js';
@@ -224,14 +224,6 @@ export function getResult(state) {
 const keptGuess = new WeakMap(); // container -> { key, nodes, setStatus, destroy, dropping, dead }
 const ortakTold = new Set(); // games (by seed) already told that no band was picked by both
 const roundMem = new WeakMap();  // container -> { key, state, swapping }: the newest state for the async sound check
-
-/** A short phone: once the screen is laid out, scroll so that the whole keypad (GİR too) is on screen. */
-function keysIntoView(box) {
-  if (typeof requestAnimationFrame !== 'function' || typeof innerHeight !== 'number') return;
-  requestAnimationFrame(() => {
-    if (box.isConnected && box.getBoundingClientRect().bottom > innerHeight) box.scrollIntoView({ block: 'end' });
-  });
-}
 
 function release(container, entry) {
   entry.dropping = true;

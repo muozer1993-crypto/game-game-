@@ -246,7 +246,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   else if (mine) status = moves.some((m) => m.captured.length) ? `Sıra sende, ${players[viewer]}: alma zorunlu!` : `Sıra sende, ${players[viewer]}: taşı seç`;
   else status = `${players[state.turn]} düşünüyor…`;
   draw(container,
-    el('div', { class: 'status-line' }, el('strong', {}, status)),
+    el('div', { class: 'status-line two' }, el('strong', {}, status)),
     el('div', { class: 'c4-legend' },
       el('span', { class: 'dama-key' }, keyDot(DAMA_COLOUR[0]), `${players[0]}: ${a.total}${a.kings ? ` (${a.kings} dama)` : ''}`),
       el('span', { class: 'dama-key' }, keyDot(DAMA_COLOUR[1]), `${players[1]}: ${b.total}${b.kings ? ` (${b.kings} dama)` : ''}`),

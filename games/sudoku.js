@@ -1,6 +1,6 @@
 // Sudoku Düellosu — both players solve the same seeded puzzle on their own; the faster
 // correct solution wins, otherwise the one with more conflict-free cells filled.
-import { el, render as draw } from '../js/ui/dom.js';
+import { el, render as draw, keysIntoView } from '../js/ui/dom.js';
 import { nameSuffix } from '../js/lib/tr.js';
 import { createTimer } from '../js/ui/timer.js';
 import { createRng, shuffle } from '../js/lib/rng.js';
@@ -244,6 +244,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     pad,
     giveUp,
   );
+  keysIntoView(pad); // a short phone: the number pad below the grid stays on screen
   return () => { if (timer) timer.stop(); };
 }
 

@@ -556,7 +556,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   let animating = false;
   let raf = null;
   let placingAt = null; // { x, y, ok } while the finger drags the cue ball
-  const info = el('div', { class: 'status-line' });
+  const info = el('div', { class: 'status-line two' });
 
   // ball in hand: this device keeps the chosen spot until the shot is sent
   const inHand = eight && mine && state.ballInHand;

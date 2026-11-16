@@ -57,6 +57,9 @@ export function freshScreen(prev, next, move, remote) {
   // the other phone's own 'Başla' (each plays a separate timed round) leaves this screen as it is
   if (move.type === 'start') return remote ? prev.phase !== next.phase : 'short';
   if (next.phase !== prev.phase && ROUND_END_PHASES.has(next.phase)) return true;
+  // this phone's own run just ended (Mayın Tarlası, Sudoku, …): its result screen comes up under the
+  // finger ("Tamam, telefonu ver"); not when the other phone's run ends, that screen stays as it is
+  if (!remote && Array.isArray(prev.finished) && Array.isArray(next.finished) && next.finished.some((f, k) => f && !prev.finished[k])) return true;
   return !!next.review && !prev.review; // objections to unlisted words (word games)
 }
 
@@ -374,7 +377,9 @@ export class Session {
           showHandoff(this.container, {
             name: this.players[turn.player],
             note: turn.note || this.game.meta.handoffNote || null, // a turn may carry its own note
-            onReady: () => this.render(),
+            // the hand appears where "Hazırım" was: a double tap must not also play a card the
+            // player has not seen yet
+            onReady: () => { this.blockTaps(SWITCH_GUARD_MS, true); this.render(); },
           });
           this.onChange(this.state);
           return;
