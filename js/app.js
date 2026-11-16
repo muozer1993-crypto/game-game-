@@ -1450,8 +1450,10 @@ const bootParams = new URLSearchParams(location.search);
 const invitedCode = bootParams.get('oda');
 const bootScreen = bootParams.get('ekran');
 const bootGame = findGame(bootParams.get('oyun') || '');
-// (a path of '//…' would be read as another host: the browser refuses it and the app would not start)
-if (invitedCode || bootScreen || bootParams.has('oyun')) history.replaceState(null, '', location.pathname.replace(/^\/+/, '/'));
+// (a path of '//…' would be read as another host: the browser refuses it, and links built from it fail)
+const cleanPath = location.pathname.replace(/^\/+/, '/');
+if (invitedCode || bootScreen || bootParams.has('oyun')) history.replaceState(null, '', cleanPath);
+else if (cleanPath !== location.pathname) history.replaceState(history.state, '', cleanPath + location.search + location.hash);
 if (invitedCode) showOnline({ code: invitedCode });
 else if (bootScreen === 'online') { showMenu(); showOnline(); }
 else if (bootScreen === 'rastgele') { showMenu(); showSetup(games[Math.floor(Math.random() * games.length)]); }

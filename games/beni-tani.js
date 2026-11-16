@@ -334,7 +334,9 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     const buttons = q.type === 'open' && canJudge(owner)
       ? el('div', { class: 'judge-buttons' }, ['match', 'close', 'miss'].map((v) =>
         el('button', { type: 'button', class: `btn ${verdict === v ? 'btn-primary' : 'btn-secondary'}`, onClick: () => sendMove({ type: 'judge', owner, index: i, verdict: v }) }, VERDICT_LABEL[v])))
-      : (q.type === 'open' && !verdict ? el('div', { class: 'muted', style: { fontSize: '0.9rem' } }, `${players[owner]} karar verecek…`) : null);
+      // the waiting line keeps its room once the other phone's verdict arrives, so this phone's own
+      // buttons below it do not move up under the finger
+      : (q.type === 'open' && state.phase === 'compare' ? el('div', { class: 'muted', style: { fontSize: '0.9rem', visibility: verdict ? 'hidden' : '' }, 'aria-hidden': verdict ? 'true' : null }, `${players[owner]} karar verecek…`) : null);
     return el('div', { class: 'pair' },
       el('div', { class: 'ans' }, el('span', { class: 'muted' }, `${players[owner]}: `), state.answers[owner][i] ?? '—',
         el('span', { class: 'muted' }, ` · ${nameSuffix(players[guesser], 'in')} tahmini: `), state.guesses[guesser][i] ?? '—', ' ', badge),
@@ -347,15 +349,16 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     pairRow(1, i),
   ));
   const summary = el('div', { class: 'status-line' },
-    el('div', {}, el('strong', {}, `${players[0]}, ${nameSuffix(players[1], 'i')} ${total} üzerinden ${formatPoints(pts[0])} tanıyor`)),
-    el('div', {}, el('strong', {}, `${players[1]}, ${nameSuffix(players[0], 'i')} ${total} üzerinden ${formatPoints(pts[1])} tanıyor`)),
+    // the points sit in a box of one width ("0" and "4,5" alike), so a half point does not wrap a long name's line
+    el('div', {}, el('strong', {}, `${players[0]}, ${nameSuffix(players[1], 'i')} ${total} üzerinden `, el('span', { class: 'bt-pts' }, formatPoints(pts[0])), ' tanıyor')),
+    el('div', {}, el('strong', {}, `${players[1]}, ${nameSuffix(players[0], 'i')} ${total} üzerinden `, el('span', { class: 'bt-pts' }, formatPoints(pts[1])), ' tanıyor')),
   );
   const done = allJudged(state);
   const mineDone = online && doneOf(state)[viewer];
   draw(container,
     summary,
     // the line stays (two lines' room) when the last verdict is given, so the list does not jump up
-    state.phase === 'compare' ? el('p', { class: 'hint two-lines' }, done ? 'Hepsine karar verildi: aşağıdan "Sonucu gör".' : 'Açık uçlu cevaplara Tuttu / Yakın / Tutmadı diyerek karar verin.') : null,
+    state.phase === 'compare' ? el('p', { class: 'hint two-lines' }, mineDone ? 'Sonucu onayladın.' : done ? 'Hepsine karar verildi: aşağıdaki "Sonucu gör"e bas.' : 'Açık uçlu cevaplara Tuttu / Yakın / Tutmadı diyerek karar verin.') : null,
     el('div', { class: 'compare-list' }, items),
     state.phase === 'compare' ? el('div', { class: 'section' },
       mineDone

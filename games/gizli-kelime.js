@@ -358,7 +358,8 @@ export function createGame(cfg) {
    * A word the list does not have: the first Enter shows `text(word)` and returns null, the second
    * (same word) returns true, so the word goes out marked; a listed word (or any number) returns false.
    */
-  function unlistedConfirm(ctx, length, text, key, typedNow) {
+  // verb: what the second ↵ does ('seçmek' for the secret, 'denemek' for a guess), for the warning up top
+  function unlistedConfirm(ctx, length, text, key, typedNow, verb = 'denemek') {
     const memo = `warn:${key}`; // kept in drafts: a redraw (the other phone's move) must not undo the warning
     let warned = drafts.get(memo) ?? null;
     const note = el('p', { class: 'hint rejected-note', hidden: true });
@@ -381,7 +382,7 @@ export function createGame(cfg) {
         note.textContent = text(word);
         note.hidden = false;
         // the note sits below the keyboard, out of sight on a short phone: say it at the top too
-        toast(`${show(word)} listede yok: yine de denemek için tekrar ↵`, { kind: 'error', duration: 3500, top: true });
+        toast(`${show(word)} listede yok: yine de ${verb} için tekrar ↵`, { kind: 'error', duration: 3500, top: true });
         return null;
       },
     };
@@ -434,7 +435,7 @@ export function createGame(cfg) {
       const rowBox = el('div', { class: 'tiles' });
       const drawRow = () => { drafts.set(draftKey, typed); draw(rowBox, tileRow(typed, null, state.length)); };
       drawRow();
-      const warn = unlistedConfirm(ctx, state.length, (w) => `${show(w)} kelime listesinde yok. Yine de seçmek için tekrar ↵ bas: işaretli kalır, oyun bitince ${players[opp]} itiraz ederse kaybedersin.`, draftKey, typed);
+      const warn = unlistedConfirm(ctx, state.length, (w) => `${show(w)} kelime listesinde yok. Yine de seçmek için tekrar ↵ bas: işaretli kalır, oyun bitince ${players[opp]} itiraz ederse kaybedersin.`, draftKey, typed, 'seçmek');
       const kbBox = el('div');
       const kb = createKeyboard(kbBox, {
         layout,

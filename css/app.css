@@ -247,6 +247,7 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .status-line { text-align: center; margin: 8px 0; min-height: 1.4em; }
 .status-line strong { font-size: 1.15rem; }
 /* board games: the turn line keeps two lines' room, so a long name wrapping it does not move the board */
+.status-line.two.three { min-height: calc(3 * 1.4 * 1.15rem); }
 .status-line.two { min-height: calc(2 * 1.4 * 1.15rem); display: flex; flex-direction: column; justify-content: center; } /* two lines of the 1.15rem strong */
 .hint.two-lines { min-height: calc(2 * 1.4em); } /* two lines of the hint's own text */
 .status-line .muted.two-lines { min-height: calc(2 * 1.4em); } /* the same for a status line's second line */
@@ -584,6 +585,7 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .btn-stack > * { grid-area: 1 / 1; }
 .btn-stack-sizer { visibility: hidden; }
 .badge { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 0.85rem; font-weight: 700; }
+.bt-pts { display: inline-block; min-width: 2.2em; text-align: center; font-variant-numeric: tabular-nums; } /* "0" and "4,5" take one width */
 .compare-item .badge { margin-top: 4px; min-width: 5.6em; text-align: center; } /* one width for every verdict: the line wraps the same before and after */
 .badge.match { background: var(--correct); color: #fff; }
 .badge.close { background: var(--present); color: #fff; }

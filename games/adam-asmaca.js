@@ -414,15 +414,16 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
         state.objected ? 'İtirazı geri al' : 'İtiraz et: kelime geçersiz')
       : null,
   );
+  const missesLine = el('div', { class: 'hm-misses muted' }, misses.length || state.wrongWords.length
+    ? `Yanlış: ${misses.map(upperTR).concat(state.wrongWords.map(upperTR)).join(' ')}`
+    : '');
   draw(container,
     statusBox,
     head,
     gallows(state.wrong, state.lives),
     el('div', { class: 'hint hm-lives' }, `Kalan can: ${livesLeft} / ${state.lives}`),
     wordRow(shown),
-    el('div', { class: 'hm-misses muted' }, misses.length || state.wrongWords.length
-      ? `Yanlış: ${misses.map(upperTR).concat(state.wrongWords.map(upperTR)).join(' ')}`
-      : ''),
+    missesLine,
     !mine && !result && state.secret ? el('p', { class: 'hint' }, `Tuttuğun kelime: ${upperTR(state.secret)}`) : null,
     state.unlisted && !result
       ? el('p', { class: 'hint' }, unlistedMark(), viewer === guesser || ctx.mode !== 'online'
@@ -441,8 +442,9 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   );
   // a short phone (two phones add a bar above, an unlisted word a hint line): the keys and the
   // whole-word button stay on screen
-  // once per word (a guess redraws the screen: the page stays where the player scrolled it)
-  if (modeRow && !pending) keysIntoViewOnce(modeRow, container, `${state.id}:${state.round}:${viewer}`);
+  // once per word (a guess redraws the screen: the page stays where the player scrolled it), and again
+  // when a long wrong word wraps the "Yanlış:" line: the page follows it, the keys stay under the finger
+  if (modeRow && !pending) keysIntoViewOnce(modeRow, container, `${state.id}:${state.round}:${viewer}:${missesLine.offsetHeight}`);
   return () => cleanups.forEach((fn) => fn());
 }
 
