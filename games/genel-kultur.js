@@ -1,7 +1,7 @@
 // Genel Kültür Düellosu — both players answer the same quiz questions; most correct wins,
 // ties go to the faster player.
 import { el, render as draw } from '../js/ui/dom.js';
-import { createTimer } from '../js/ui/timer.js';
+import { createTimer, activeSince } from '../js/ui/timer.js';
 import { createRng, shuffle, freshFirst } from '../js/lib/rng.js';
 
 export const meta = {
@@ -173,7 +173,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     const send = (choice) => {
       if (answered) return;
       answered = true;
-      sendMove({ type: 'answer', index: i, choice, ms: Date.now() - startedAt });
+      sendMove({ type: 'answer', index: i, choice, ms: activeSince(startedAt) });
     };
     const timerBox = el('div');
     let timer = null;

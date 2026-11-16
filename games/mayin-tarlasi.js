@@ -3,7 +3,7 @@
 // seeded start cell is opened for both, so nobody dies on the first tap.
 import { el, render as draw, armAfter } from '../js/ui/dom.js';
 import { nameSuffix } from '../js/lib/tr.js';
-import { createTimer } from '../js/ui/timer.js';
+import { createTimer, activeSince } from '../js/ui/timer.js';
 import { createRng, shuffle } from '../js/lib/rng.js';
 
 export const meta = {
@@ -218,7 +218,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
         disabled: !interactive || open,
         'aria-label': open ? (n > 0 ? `${n}` : 'boş') : (flags.has(i) ? 'bayrak' : 'kapalı'),
         onClick: () => {
-          const ms = Date.now() - (starts.get(key) || Date.now());
+          const ms = starts.has(key) ? activeSince(starts.get(key)) : 0;
           if (flagMode.get(key)) sendMove({ type: 'flag', cell: i });
           else if (!flags.has(i)) sendMove({ type: 'reveal', cell: i, ms });
         },
@@ -259,7 +259,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const timerBox = el('div');
   let timer = null;
   if (state.seconds) {
-    timer = createTimer(timerBox, { deadline: startedAt + state.seconds * 1000, total: state.seconds * 1000, onExpire: () => sendMove({ type: 'finish', ms: Math.min(state.seconds * 1000, Date.now() - startedAt) }) });
+    timer = createTimer(timerBox, { deadline: startedAt + state.seconds * 1000, total: state.seconds * 1000, onExpire: () => sendMove({ type: 'finish', ms: Math.min(state.seconds * 1000, activeSince(startedAt)) }) });
   }
   const flagBtn = el('button', {
     type: 'button', class: `btn btn-small ${flagMode.get(key) ? 'btn-primary' : 'btn-secondary'}`, 'aria-pressed': flagMode.get(key) ? 'true' : 'false',
@@ -270,7 +270,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     el('div', { class: 'status-line' }, el('strong', {}, `${players[viewer]}: ${b.revealed.length}/${total} · mayın ${state.mines.length}, bayrak ${b.flags.length}`)),
     ctx.mode === 'online' ? el('p', { class: 'hint' }, `${players[opp]}: ${statusText(opp)}`) : null,
     el('div', { class: 'row', style: { justifyContent: 'center', marginBottom: '6px', gap: '8px' } }, flagBtn,
-      el('button', { type: 'button', class: 'btn btn-small', onClick: () => { if (confirm('Tarlayı bırakıp bitirilsin mi? Açtığın güvenli kareler puanın olur.')) sendMove({ type: 'finish', reason: 'quit', ms: Date.now() - startedAt }); } }, 'Bitir')),
+      el('button', { type: 'button', class: 'btn btn-small', onClick: () => { if (confirm('Tarlayı bırakıp bitirilsin mi? Açtığın güvenli kareler puanın olur.')) sendMove({ type: 'finish', reason: 'quit', ms: activeSince(startedAt) }); } }, 'Bitir')),
     grid(viewer, { interactive: true }),
   );
   return () => { if (timer) timer.stop(); };

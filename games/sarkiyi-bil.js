@@ -9,7 +9,7 @@
 // the host ends a round (its timeout says whose answers it had) or swaps a song (the guest asks).
 import { el, render as draw, toast } from '../js/ui/dom.js';
 import { nextButton } from '../js/ui/next.js';
-import { createTimer } from '../js/ui/timer.js';
+import { createTimer, activeSince } from '../js/ui/timer.js';
 import { createClipPlayer, clipReady } from '../js/ui/clip.js';
 import { keepArtistPick } from '../js/ui/artist-pick.js';
 import { pickSongs, mixPool, topUp, pickGroups, songOptions, normKey, answerMatches, artistMatches, titleMatches, sourceSettings, sourcesFrom, needsPick, silentArtists, noSharedPick } from '../js/lib/songs.js';
@@ -322,9 +322,9 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     // two phones: the host's clock ends the round, the guest's is for show (it started a moment later)
     const onExpire = !online ? () => sendMove({ type: 'timeout', round: i })
       : ctx.isHost ? () => sendMove({ type: 'timeout', round: i, had: state.answers[i].map((a) => a != null) }) : undefined;
-    timer = createTimer(timerBox, { deadline: mem.runningSince + mem.leftMs, total, onExpire });
+    timer = createTimer(timerBox, { deadline: mem.runningSince + mem.leftMs, total, start: mem.runningSince, onExpire });
   } else if (state.phase !== 'reveal') {
-    if (mem.runningSince) { mem.leftMs = Math.max(0, mem.leftMs - (Date.now() - mem.runningSince)); mem.runningSince = null; }
+    if (mem.runningSince) { mem.leftMs = Math.max(0, mem.leftMs - activeSince(mem.runningSince)); mem.runningSince = null; }
     timer = createTimer(timerBox, { deadline: 0, total, paused: true, remaining: mem.leftMs });
   }
   const stopTimer = () => { if (timer) timer.stop(); };

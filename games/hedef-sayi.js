@@ -261,7 +261,9 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const submit = () => { if (done) return; done = true; sendMove({ type: 'submit', steps: draft.steps.map((s) => ({ a: s.a, op: s.op, b: s.b })) }); };
   const timerBox = el('div');
   let timer = null;
-  if (deadline) timer = createTimer(timerBox, { deadline, total: online && oppDone ? GRACE_MS : state.seconds * 1000, onExpire: submit });
+  // a reconnect pause moves the deadline on by the part that fell after its own start (the round's, or the cap's)
+  const capped = caps.has(key) && deadline === caps.get(key);
+  if (deadline) timer = createTimer(timerBox, { deadline, total: online && oppDone ? GRACE_MS : state.seconds * 1000, start: capped ? caps.get(key) - GRACE_MS : starts.get(key), onExpire: submit });
   const poolBox = el('div', { class: 'hs-pool' });
   const opsBox = el('div', { class: 'hs-ops' });
   const stepsBox = el('div', { class: 'hs-steps' });

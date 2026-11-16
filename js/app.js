@@ -3,6 +3,7 @@ import { games, groups, findGame } from '../games/index.js';
 import { APP_VERSION } from './version.js';
 import { Session } from './session.js';
 import { el, render, clear, toast } from './ui/dom.js';
+import { clockPause } from './ui/timer.js';
 import { createScoreboard } from './ui/scoreboard.js';
 import { load, save, remove, keys } from './lib/storage.js';
 import { loadDictionary, loadCommonWords } from './lib/words.js';
@@ -1060,6 +1061,7 @@ let reconnectOverlay = null;
 let reconnectRetry = null; // restarts the attempt loop while the overlay is open
 function showReconnect() {
   if (reconnectOverlay) return;
+  clockPause.begin(); // nobody can play meanwhile: the game clocks stand still
   const status = el('p', { class: 'muted', style: { minHeight: '1.4em' } }, 'Bağlantı koptu.');
   const retryBtn = el('button', { type: 'button', class: 'btn btn-primary btn-block' }, 'Yeniden bağlan');
   const exitBtn = el('button', { type: 'button', class: 'btn btn-secondary btn-block', onClick: () => { closeReconnect(); leaveOnline({ silent: true }); showMenu(); } }, 'Çık');
@@ -1105,6 +1107,7 @@ function showReconnect() {
   attempt();
 }
 function closeReconnect() {
+  clockPause.end();
   if (reconnectOverlay) { reconnectOverlay.remove(); reconnectOverlay = null; }
   reconnectRetry = null;
   online.resuming = false;

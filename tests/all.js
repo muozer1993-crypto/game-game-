@@ -54,3 +54,4 @@ import './sarkiyi-bil.test.js';
 import './icetest.test.js';
 import './turn.test.js';
 import './data.test.js';
+import './timer.test.js';

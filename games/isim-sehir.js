@@ -253,7 +253,9 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const finish = () => { if (done) return; done = true; sendMove({ type: 'finish', answers: draft.answers.slice() }); };
   const timerBox = el('div');
   let timer = null;
-  if (deadline) timer = createTimer(timerBox, { deadline, total: online && entry.answers[opp] ? GRACE_MS : state.seconds * 1000, onExpire: finish });
+  // a reconnect pause moves the deadline on by the part that fell after its own start (the round's, or the cap's)
+  const capped = caps.has(key) && deadline === caps.get(key);
+  if (deadline) timer = createTimer(timerBox, { deadline, total: online && entry.answers[opp] ? GRACE_MS : state.seconds * 1000, start: capped ? caps.get(key) - GRACE_MS : starts.get(key), onExpire: finish });
   // two phones, no time limit: the other player finishing brings a countdown; its place is kept from
   // the start, so the fields do not jump down under the finger
   else if (online) timerBox.append(el('div', { class: 'timer', style: { visibility: 'hidden' }, 'aria-hidden': 'true' }, el('span', { class: 'timer-text' }, '0:00'), el('div', { class: 'timer-bar' })));

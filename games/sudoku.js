@@ -2,7 +2,7 @@
 // correct solution wins, otherwise the one with more conflict-free cells filled.
 import { el, render as draw, keysIntoView } from '../js/ui/dom.js';
 import { nameSuffix } from '../js/lib/tr.js';
-import { createTimer } from '../js/ui/timer.js';
+import { createTimer, activeSince } from '../js/ui/timer.js';
 import { createRng, shuffle } from '../js/lib/rng.js';
 
 export const meta = {
@@ -221,20 +221,20 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   let timer = null;
   if (state.minutes) {
     const total = state.minutes * 60000;
-    timer = createTimer(timerBox, { deadline: startedAt + total, total, onExpire: () => sendMove({ type: 'finish', ms: Math.min(total, Date.now() - startedAt) }) });
+    timer = createTimer(timerBox, { deadline: startedAt + total, total, onExpire: () => sendMove({ type: 'finish', ms: Math.min(total, activeSince(startedAt)) }) });
   }
   const set = (v) => {
     const i = selected.get(key);
     if (i == null || state.givens[i]) return;
     if (grid[i] === v) return;
-    sendMove({ type: 'set', cell: i, value: v, ms: Date.now() - startedAt });
+    sendMove({ type: 'set', cell: i, value: v, ms: activeSince(startedAt) });
   };
   const pad = el('div', { class: 'sd-pad' },
     [1, 2, 3, 4, 5, 6, 7, 8, 9].map((v) => el('button', { type: 'button', class: 'btn btn-secondary sd-key', onClick: () => set(v) }, String(v))),
     el('button', { type: 'button', class: 'btn btn-secondary sd-key', onClick: () => set(0) }, 'Sil'),
   );
   const giveUp = el('div', { class: 'row', style: { justifyContent: 'center', marginTop: '6px' } },
-    el('button', { type: 'button', class: 'btn btn-small', onClick: () => { if (confirm('Çözmeden bitirilsin mi? Doğru dolu kare sayın puanın olur.')) sendMove({ type: 'finish', reason: 'quit', ms: Date.now() - startedAt }); } }, 'Bitir'));
+    el('button', { type: 'button', class: 'btn btn-small', onClick: () => { if (confirm('Çözmeden bitirilsin mi? Doğru dolu kare sayın puanın olur.')) sendMove({ type: 'finish', reason: 'quit', ms: activeSince(startedAt) }); } }, 'Bitir'));
   redraw();
   draw(container,
     timerBox,
