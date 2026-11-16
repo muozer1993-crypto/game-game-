@@ -696,7 +696,7 @@ export function showPlay(p) {
       } else if (isOnline && p.self === 1 && online.tournament) {
         again = el('span', { class: 'muted' }, tally && tally.index >= tally.total ? 'Turnuva bitti.' : 'Ev sahibi sonraki oyunu başlatacak…');
       } else {
-        again = el('button', { type: 'button', class: `btn btn-primary btn-big${isOnline && p.self === 0 ? ' rematch-btn' : ''}` }, 'Yeni tur');
+        again = el('button', { type: 'button', class: `btn btn-primary btn-big${isOnline && p.self === 0 ? ' rematch-btn' : ''}` }, el('span', { class: 'next-label' }, 'Yeni tur'));
         if (isOnline && p.self !== 0) {
           again.textContent = 'Yeni tur iste';
           again.addEventListener('click', () => { online.transport.send({ t: 'rematch' }); again.disabled = true; again.textContent = 'İstek gönderildi'; });
@@ -1158,8 +1158,10 @@ function versionMismatch(theirs, other) {
   if (num(theirs) > num(APP_VERSION)) {
     try { navigator.serviceWorker.getRegistration().then((r) => r && r.update()).catch(() => {}); } catch { /* no service worker */ }
     toast(`Uygulaman eski (${APP_VERSION}, ${nameSuffix(other, 'de')} ${theirs}): yeni sürüm iniyor, ana menüye dönünce sayfa yenilenecek (olmazsa uygulamayı kapatıp aç)`, { kind: 'error', duration: 9000 });
-  } else {
+  } else if (num(theirs) >= 110) { // from v110 on the older phone fetches the update itself (above)
     toast(`${other} eski sürümde (${theirs}, sende ${APP_VERSION}): ana menüye dönünce onun sayfası yenilenecek, sonra yeniden bağlanın`, { kind: 'error', duration: 9000 });
+  } else {
+    toast(`${other} eski sürümde (${theirs}, sende ${APP_VERSION}): uygulamayı kapatıp yeniden açsın (ya da sayfayı yenilesin), sonra yeniden bağlanın`, { kind: 'error', duration: 9000 });
   }
 }
 
@@ -1265,11 +1267,13 @@ async function handleOnlineMessage(msg) {
       if (btn && !btn.classList.contains('next-ready')) {
         btn.classList.add('next-ready');
         const tag = el('span', { class: 'next-ready-tag' }, ` · ${who} istiyor`);
-        btn.append(tag);
+        (btn.querySelector('.next-label') || btn).append(tag); // one line with the label, not a second column
         const r = tag.getBoundingClientRect();
         shown = r.height > 0 && r.top >= 0 && r.bottom <= innerHeight;
       } else shown = !!btn;
-      if (!shown) toast(`${who} yeni tur istiyor`, { duration: 3000 });
+      // no toast once the new round is running (the host's "Yeni tur" and this request crossed)
+      const running = online.session && !online.session.ended && !online.session.destroyed;
+      if (!shown && !running) toast(`${who} yeni tur istiyor`, { duration: 3000 });
       return;
     }
     case 'ask': { // the guest is ready for the next round; only the host moves the game on

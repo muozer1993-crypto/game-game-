@@ -423,6 +423,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
         : null,
     });
   }
+  redraw(); // the board and rack first: the page has its full height when draw() restores the scroll
   draw(container,
     el('div', { class: 'status-line' }, el('strong', {}, status)),
     el('div', { class: 'c4-legend' }, el('span', {}, `${players[0]}: ${fmt(shownScores[0])}`), el('span', {}, `${players[1]}: ${fmt(shownScores[1])}`), el('span', { class: 'muted' }, `torba ${state.bag.length}`)),
@@ -435,7 +436,6 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     state.over || reviewing ? null : el('div', { class: 'row', style: { justifyContent: 'center', gap: '8px', marginTop: '8px', flexWrap: 'wrap' } }, btnPlay, btnClear, btnSwap, btnPass),
     reviewing ? null : disputeBox,
   );
-  redraw();
   return null;
 }
 

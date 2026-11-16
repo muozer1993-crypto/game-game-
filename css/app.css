@@ -12,6 +12,7 @@
   --key: #d9dee8;
   --key-fg: #1b1d24;
   --correct: #2e7d32;
+  --correct-text: #2e7d32; /* green as small text on the page background (dark themes need a lighter one) */
   --present: #9a6700;
   --absent: #5f6470;
   --danger: #c62828;
@@ -36,6 +37,7 @@
     --key: #3a3f4b;
     --key-fg: #ecedf1;
     --correct: #2f8a35;
+    --correct-text: #5cb862;
     --present: #a8761a;
     --absent: #4a4f5a;
     --danger: #ff6b6b;
@@ -57,6 +59,7 @@
   --key: #3a3f4b;
   --key-fg: #ecedf1;
   --correct: #2f8a35;
+  --correct-text: #5cb862;
   --present: #a8761a;
   --absent: #4a4f5a;
   --danger: #ff6b6b;
@@ -116,7 +119,7 @@ a { color: var(--primary); }
 .update-ready .topbar::after {
   content: 'Yeni sürüm hazır · ana menüde yenilenecek';
   position: absolute; left: 0; right: 0; bottom: 0;
-  font-size: 0.68rem; line-height: 12px; font-weight: 600; text-align: center; color: var(--correct);
+  font-size: 0.68rem; line-height: 12px; font-weight: 600; text-align: center; color: var(--correct-text);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none;
 }
 .topbar .select { justify-self: end; }
@@ -222,6 +225,8 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 /* two phones: the guest says it is ready, the host's "next" button shows it (js/ui/next.js) */
 .next-btn.next-ready, .rematch-btn.next-ready { box-shadow: 0 0 0 3px var(--correct); animation: next-ready-pulse 1.6s ease-in-out infinite; }
 .next-ready-tag { font-weight: 600; }
+/* the mark must not widen "Yeni tur" and push "Lobiye dön" away from under a finger */
+.row > .rematch-btn, .row > .rematch-btn + .btn { flex: 1 1 0; min-width: 0; }
 @keyframes next-ready-pulse { 50% { box-shadow: 0 0 0 6px var(--correct); } }
 .next-ask { text-align: center; }
 .next-ask .next-ask-note { margin: 6px 0 0; }
@@ -1124,6 +1129,8 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 /* Şarkıyı Bil + band picking (shared by the song games) */
 .sb-preview { margin-top: 10px; font-weight: 600; font-variant-numeric: tabular-nums; }
 .sb-skip { margin-top: 10px; }
+/* the review's "what the objections give now" line: two lines kept, so an objection does not move the buttons */
+.review-now { min-height: 2.7em; line-height: 1.35; }
 .sb-actions { margin-top: 12px; }
 .sb-actions .btn { flex: 1 1 45%; white-space: normal; }
 .sb-answer .field { text-align: left; margin: 10px 0 0; }

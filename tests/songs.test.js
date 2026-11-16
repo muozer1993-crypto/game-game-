@@ -222,6 +222,14 @@ test('yazılı cevap: aynı grubun başka şarkısı, başka numara, kelime içi
   assert.equal(answerMatches('Devour Me Colossus Part 1', 'Devour Me, Colossus - Part I - Blackholes'), true, 'a numeral closing a middle part');
   assert.equal(answerMatches('Heaven Torn Lov I', 'Heaven Torn Low I (the passage)'), true);
   assert.equal(answerMatches('Devour Me Colossus Part 2', 'Devour Me, Colossus - Part I - Blackholes'), false);
+  assert.equal(answerMatches('Clutch of Oblivion I', 'Clutch of Oblivion (I)'), true, 'a numeral alone in brackets');
+  assert.equal(answerMatches('Clutch of Oblivion 1', 'Clutch of Oblivion (I)'), true);
+  assert.equal(answerMatches('Ruun II The Epitaph', 'Ruun II - The Epitaph'), true, 'a Roman numeral inside the typed title');
+  assert.equal(answerMatches('Ruun III The Epitaph', 'Ruun II - The Epitaph'), false);
+  assert.equal(answerMatches('Hello I Love You', 'Hello, I Love You'), true, 'the pronoun I stays a word');
+  assert.equal(answerMatches('II Bloodbirds', 'II - Bloodbirds'), true, 'the leading numeral typed too');
+  assert.equal(answerMatches('2 Bloodbirds', 'II - Bloodbirds'), true);
+  assert.equal(answerMatches('III Bloodbirds', 'II - Bloodbirds'), false);
   // a title that is all brackets, letters that drop out of the plain alphabet
   assert.equal(normalizeAnswer('(A)'), 'a');
   assert.equal(answerMatches('A', '(A)'), true);

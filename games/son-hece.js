@@ -211,13 +211,13 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     const firstOut = objectedNow.length ? state.words[Math.min(...objectedNow)] : null;
     draw(container,
       el('div', { class: 'status-line' }, el('strong', {}, `${ended}. Önce itirazlar:`),
-        el('div', { class: 'muted' }, firstOut
+        el('div', { class: 'muted review-now' }, firstOut
           ? `Şu anki itirazlarla ${upperTR(firstOut.word)} yüzünden ${players[firstOut.player]} kaybeder.`
           : `İtiraz olmazsa ${players[1 - state.loser]} kazanır.`)),
       chainView(state),
       objectionList({
         items: reviewItems(state), objected: state.objected, players, viewer, online, sendMove,
-        effect: `İtiraz yoksa ${players[1 - state.loser]} kazanır. İtiraz edilen ilk kelimeyi söyleyen kaybeder (zincir orada kopmuş sayılır).${online ? ' Sonra odayı kuran sonucu açar.' : ''}`,
+        effect: `İtiraz edilen ilk kelimeyi söyleyen kaybeder (zincir orada kopmuş sayılır).${online ? ' Sonra odayı kuran sonucu açar.' : ''}`,
       }),
       // two phones: the host's own words are the guest's to object to, so the host waits for "Hazırım" (or confirms)
       nextButton(ctx, sendMove, 'Sonucu gör', { move: () => ({ type: 'next', objected: state.objected }), waitForPeer: reviewItems(state).some((it) => it.owner === 0) }),

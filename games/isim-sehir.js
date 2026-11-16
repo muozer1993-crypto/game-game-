@@ -222,7 +222,8 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       ),
       el('p', { class: 'hint' }, online ? 'Rakibinin uydurma cevabına "Geçersiz" diyebilirsin.' : 'Uydurma bir cevaba "Geçersiz" deyin; puan tura geçerken yazılır.'),
       // the vetoes as the presser sees them travel with the move (see applyMove)
-      nextButton(ctx, sendMove, state.round + 1 >= state.rounds ? 'Sonucu gör' : 'Sonraki tur', { move: () => ({ type: 'next', vetoes: entry.vetoes }) }),
+      // two phones: the guest may still mark the host's answers invalid, so the host waits for "Hazırım" (or confirms)
+      nextButton(ctx, sendMove, state.round + 1 >= state.rounds ? 'Sonucu gör' : 'Sonraki tur', { move: () => ({ type: 'next', vetoes: entry.vetoes }), waitForPeer: true }),
     );
     return null;
   }
@@ -251,6 +252,10 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const timerBox = el('div');
   let timer = null;
   if (deadline) timer = createTimer(timerBox, { deadline, total: online && entry.answers[opp] ? GRACE_MS : state.seconds * 1000, onExpire: finish });
+  // where the caret was in the field being typed in, read before the redraw replaces it
+  const typing = typeof document !== 'undefined' ? document.activeElement : null;
+  const caret = typing && draft.focus != null && typing.id === `is-in-${draft.focus}` && typeof typing.selectionStart === 'number'
+    ? [typing.selectionStart, typing.selectionEnd] : null;
   const inputs = cats.map((name, c) => {
     const input = el('input', {
       type: 'text', class: 'input', value: draft.answers[c], maxlength: MAX_LEN, autocomplete: 'off', autocapitalize: 'words', enterkeyhint: c === cats.length - 1 ? 'done' : 'next',
@@ -276,9 +281,13 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   if (draft.focus != null && inputs[draft.focus] && !inputs[draft.focus].disabled) {
     const inp = inputs[draft.focus];
     inp.focus({ preventScroll: true });
-    try { inp.setSelectionRange(inp.value.length, inp.value.length); } catch { /* ignore */ }
+    const [from, to] = caret || [inp.value.length, inp.value.length]; // the caret stays where the player put it
+    try { inp.setSelectionRange(from, to); } catch { /* ignore */ }
   }
   return () => { if (timer) timer.stop(); };
 }
 
-export default { id: 'isim-sehir', meta, setup, applyMove, render, getTurn, getResult };
+/** The review choices a closing 'next' carries (see js/session.js): this round's vetoes. */
+export const reviewChoices = (state) => (state.entries[state.round] ? state.entries[state.round].vetoes : null);
+
+export default { id: 'isim-sehir', meta, setup, applyMove, render, getTurn, getResult, reviewChoices };

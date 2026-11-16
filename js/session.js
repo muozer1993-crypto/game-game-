@@ -22,11 +22,28 @@ const SWITCH_GUARD_MS = 350; // taps ignored this long after the turn passes to 
 export const ADVANCE_GUARD_MS = 800; // and this long after a new screen comes up (see freshScreen)
 /** Phases that end a round: their screen (result, buttons) comes up under a finger still playing. */
 export const ROUND_END_PHASES = new Set(['result', 'reveal', 'summary', 'compare', 'handOver', 'roundOver', 'review']);
-/** An objection this phone had made that the closing move left out (arrays of ids, or Adam Asmaca's flag). */
-const lostObjection = (had, closed) => {
-  if (Array.isArray(had) && Array.isArray(closed)) return had.some((id) => !closed.includes(id));
-  return had === true && closed === false;
-};
+/**
+ * The review choices a closing move carries (objections, or İsim Şehir's vetoes through the game's
+ * reviewChoices) against what this phone had: they differ when this phone's last change to the
+ * review had not reached the host. Ids compare as a set, nested lists by position, flags as flags.
+ */
+export function reviewDiffers(game, state, move) {
+  let had;
+  let closed;
+  if ('objected' in move) { had = state.objected; closed = move.objected; }
+  else if ('vetoes' in move && typeof game.reviewChoices === 'function') { had = game.reviewChoices(state); closed = move.vetoes; }
+  else return false;
+  if (Array.isArray(had) || Array.isArray(closed)) {
+    const a = Array.isArray(had) ? had : [];
+    const b = Array.isArray(closed) ? closed : [];
+    if (a.some(Array.isArray) || b.some(Array.isArray)) {
+      const flat = (l) => JSON.stringify(l.map((x) => (Array.isArray(x) ? x.map(Boolean) : x)));
+      return flat(a) !== flat(b);
+    }
+    return a.length !== b.length || a.some((id) => !b.includes(id));
+  }
+  return !!had !== !!closed;
+}
 /** Moves that change what a review screen will settle (objections, İsim Şehir's vetoes). */
 const REVIEW_MOVES = new Set(['object', 'veto']);
 
@@ -144,16 +161,19 @@ export class Session {
     const prev = this.state;
     this.state = next;
     if (move.type === 'next') Object.assign(this.ask, { asked: false, peerAsked: false, nexts: this.ask.nexts + 1 });
-    // two phones: the host closed the objections before the guest's last one reached it (the 'next'
-    // carries the host's view); the guest's own objection is gone, so say why
-    if (remote && move.type === 'next' && this.mode === 'online' && this.self !== 0 && lostObjection(prev.objected, move.objected)) {
-      say(`İtirazın ${this.players[0]} sonucu açmadan ulaşamadı; sonuç onun gördüğü itirazlarla açıldı.`, { kind: 'error', duration: 5000 });
+    // two phones: the host moved on before the guest's last objection (or veto, or its withdrawal)
+    // reached it; the 'next' carries the host's view, so the guest's change did not count: say so
+    if (remote && move.type === 'next' && this.mode === 'online' && this.self !== 0 && reviewDiffers(this.game, prev, move)) {
+      say(`${this.players[0]} geçmeden önce son itiraz değişikliğin ona ulaşmadı; sayılmadı.`, { kind: 'error', duration: 5000 });
     }
     // two phones: the guest changed an objection (or a veto) after saying "Hazırım": it is not ready
     // any more, so the host's button loses its mark (and asks to confirm) until it says so again
     if (this.mode === 'online' && REVIEW_MOVES.has(move.type)) {
       if (!remote && this.self !== 0) this.ask.asked = false;
-      if (remote && this.self === 0) this.ask.peerAsked = false;
+      if (remote && this.self === 0 && this.ask.peerAsked) {
+        this.ask.peerAsked = false;
+        say(`${this.players[1]} itirazını değiştirdi; hazır olunca yine haber verecek`, { duration: 2500 }); // replaces "… hazır"
+      }
     }
     const fresh = freshScreen(prev, next, move, remote);
     if (fresh) this.guardPending = fresh; // see renderNow
@@ -313,6 +333,7 @@ export class Session {
     const turn = this.currentTurn();
     // a new round or screen ('next' / 'start', from either phone): the tap that was still on its way
     // to the old button must not press what the new screen puts in its place
+    const freshScreenNow = !!this.guardPending;
     if (this.guardPending) {
       const short = this.guardPending === 'short';
       this.guardPending = false;
@@ -355,6 +376,9 @@ export class Session {
     this.lastViewer = viewer;
     const send = (move) => this.dispatch(viewer, move);
     const out = this.game.render(this.state, viewer, this.container, send, this.ctx);
+    // a new screen starts at the top (a redraw of the same screen keeps its scroll, see dom.js render)
+    // (not at the end of the game: the result panel scrolls itself into view)
+    if (freshScreenNow && !this.ended && typeof scrollY === 'number' && scrollY > 0 && typeof scrollTo === 'function') scrollTo(0, 0);
     if (typeof out === 'function') this.cleanup = out;
     this.onChange(this.state);
   }

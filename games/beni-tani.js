@@ -238,14 +238,21 @@ function answerInput(q, onSubmit, draftKey) {
     return el('div', { class: 'options' }, q.options.map((o) =>
       el('button', { type: 'button', class: 'btn btn-secondary', onClick: () => onSubmit(o) }, o)));
   }
-  const input = el('input', { type: 'text', class: 'input', maxlength: 80, autocomplete: 'off', placeholder: 'Cevabın…', 'aria-label': 'Cevap' });
+  const input = el('input', { type: 'text', class: 'input', maxlength: 80, autocomplete: 'off', placeholder: 'Cevabın…', 'aria-label': 'Cevap', 'data-draft': draftKey || '' });
   if (draftKey && drafts.has(draftKey)) input.value = drafts.get(draftKey);
+  // a redraw (the other phone's answer) replaces the box being typed in: the caret stays where it was
+  const old = typeof document !== 'undefined' ? document.activeElement : null;
+  const caret = draftKey && old && old.tagName === 'INPUT' && old.getAttribute('data-draft') === draftKey && typeof old.selectionStart === 'number'
+    ? [old.selectionStart, old.selectionEnd] : null;
   input.addEventListener('input', () => { if (draftKey) drafts.set(draftKey, input.value); });
   const form = el('form', { onSubmit: (e) => { e.preventDefault(); if (draftKey) drafts.delete(draftKey); onSubmit(input.value); } },
     el('div', { class: 'field' }, input),
     el('button', { type: 'submit', class: 'btn btn-primary btn-block' }, 'Kaydet'),
   );
-  queueMicrotask(() => { if (document.activeElement !== input && !(document.activeElement && document.activeElement.tagName === 'INPUT')) input.focus(); });
+  queueMicrotask(() => {
+    if (document.activeElement !== input && !(document.activeElement && document.activeElement.tagName === 'INPUT')) input.focus();
+    if (caret && document.activeElement === input) { try { input.setSelectionRange(caret[0], caret[1]); } catch { /* ignore */ } }
+  });
   return form;
 }
 

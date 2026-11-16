@@ -308,6 +308,23 @@ export function artistOptions(pool, song, seed, n = 4, data = null) {
 }
 
 /** Four song titles: the right one and others by the same band (filled up from other bands), shuffled. */
+const trBandsCache = new WeakMap(); // data -> Set of Turkish bands (normKey)
+/**
+ * Bands that sing in Turkish: the Turkish catalog, and any band whose name or titles use ğ, ı, ş or İ
+ * (ö, ü and ç alone do not tell: German, Swedish and Finnish have them too). Judged per band, so a
+ * Turkish band's song without those letters still counts.
+ */
+function turkishBands(data) {
+  if (!data || typeof data !== 'object') return new Set();
+  let set = trBandsCache.get(data);
+  if (!set) {
+    set = new Set(((data.catalogTR) || []).map(normKey));
+    for (const t of allTracks(data)) if (/[ğıışĞİŞ]/.test(`${t.a} ${t.t}`)) set.add(normKey(t.a));
+    trBandsCache.set(data, set);
+  }
+  return set;
+}
+
 export function songOptions(data, song, seed, n = 4) {
   const rng = createRng(seed);
   const all = allTracks(data);
@@ -316,8 +333,8 @@ export function songOptions(data, song, seed, n = 4) {
   if (picked.length < n - 1) {
     // a band with few songs: the other names come from bands of the same language first, so a
     // Turkish title among English ones does not give the answer away
-    const tr = new Set(((data && data.catalogTR) || []).map(normKey));
-    const turkish = (t) => tr.has(normKey(t.a)) || /[çğıöşüÇĞİÖŞÜ]/.test(t.t);
+    const tr = turkishBands(data);
+    const turkish = (t) => tr.has(normKey(t.a));
     const mine = turkish(song);
     const others = all.filter((t) => normKey(t.a) !== normKey(song.a) && normKey(t.t) !== normKey(song.t));
     const titles = (list) => [...new Set(list.map((t) => t.t))];
@@ -395,12 +412,21 @@ const norm = (s) => {
   let hit = numCache.get(n);
   if (hit === undefined) {
     if (numCache.size > 50000) numCache.clear();
-    hit = n.replace(/ ([ivx]+)$/, (m, r) => (ROMAN.test(r) ? ` ${romanValue(r)}` : m));
+    // a numeral of two letters or more anywhere ("Ruun II The Epitaph"), a single i/v/x only at the
+    // end (so the pronoun "I" inside a title stays a word)
+    hit = n.replace(/(^| )([ivx]{2,})(?= |$)/g, (m, sp, r) => (ROMAN.test(r) ? `${sp}${romanValue(r)}` : m))
+      .replace(/ ([ivx])$/, (m, r) => ` ${romanValue(r)}`);
     numCache.set(n, hit);
   }
   return hit;
 };
 const numbersOf = (x) => (x.match(/\d+/g) || []).map(Number);
+/** "II", "ii" or "2" as a number (other letters as written, lower case). */
+const numeralValue = (tok) => {
+  const t = String(tok).toLowerCase();
+  if (/^\d+$/.test(t)) return Number(t);
+  return ROMAN.test(t) && t ? romanValue(t) : t;
+};
 /**
  * A different number never matches: the answer's own numbers must be typed ("Unforgiven II" is not
  * "Unforgiven"), and a typed number must be in the full title, "(…)" and " - …" parts included
@@ -412,7 +438,12 @@ const numbersAgree = (a, b, answer) => {
   if (!typed.length) return true;
   // each part of the full title on its own, so that a numeral closing any part counts
   // ("Ruun II - The Epitaph", "Devour Me, Colossus - Part I - Blackholes")
-  const whole = [...numbersOf(b), ...String(answer || '').split(/\s+-\s+|[()[\]]/).flatMap((part) => numbersOf(norm(part)))];
+  const raw = String(answer || '');
+  const whole = [
+    ...numbersOf(b),
+    ...numbersOf(norm(raw.replace(/[()[\]]/g, ' ').replace(/\s+-\s+/g, ' '))), // the title flattened: "Clutch of Oblivion (I)"
+    ...raw.split(/\s+-\s+|[()[\]]/).flatMap((part) => numbersOf(norm(part))),
+  ];
   return typed.every((n) => whole.includes(n));
 };
 
@@ -427,8 +458,13 @@ export function answerMatches(typed, answer) {
   if (!a || !b) return false;
   if (a === b) return true;
   // "II - I Fly Among the Stars": the part after a leading numeral is the title people know
-  const dash = String(answer || '').match(/^\s*(?:[ivxlc]+|\d+)\s+-\s+(.+)$/i);
-  if (dash && answerMatches(typed, dash[1])) return true;
+  const dash = String(answer || '').match(/^\s*([ivxlc]+|\d+)\s+-\s+(.+)$/i);
+  if (dash) {
+    if (answerMatches(typed, dash[2])) return true;
+    // typed with its numeral too ("II Bloodbirds", "2 - Bloodbirds"): the same number, then the title
+    const lead = String(typed || '').match(/^\s*([ivxlc]+|\d+)\s*(?:-\s*)?\s(.+)$/i);
+    if (lead && numeralValue(lead[1]) === numeralValue(dash[1]) && answerMatches(lead[2], dash[2])) return true;
+  }
   if (!numbersAgree(a, b, answer)) return false;
   const tol = b.length < 5 ? 0 : b.length < 9 ? 1 : b.length < 13 ? 2 : 3;
   if (editDistance(a, b) <= tol) return true;

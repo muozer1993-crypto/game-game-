@@ -473,9 +473,13 @@ export function createGame(cfg) {
       const objected = state.objected || [];
       if (objected.length) {
         const faulty = [0, 1].filter((p) => objected.some((id) => ownerOfItem(id) === p));
-        if (state.review) lines.push(`Şu anki itirazlarla ${faulty.length === 2 ? 'berabere' : `${players[1 - faulty[0]]} kazanır`}.`); // before "Sonucu gör"
-        else lines.push(faulty.length === 2 ? 'İkinizin de kelimesine itiraz edildi: berabere.' : `${nameSuffix(players[faulty[0]], 'in')} kelimesine itiraz edildi: ${players[1 - faulty[0]]} kazandı.`);
+        if (!state.review) lines.push(faulty.length === 2 ? 'İkinizin de kelimesine itiraz edildi: berabere.' : `${nameSuffix(players[faulty[0]], 'in')} kelimesine itiraz edildi: ${players[1 - faulty[0]]} kazandı.`);
       }
+      const reviewNow = () => {
+        if (!objected.length) return 'Şu an itiraz yok.';
+        const faulty = [0, 1].filter((p) => objected.some((id) => ownerOfItem(id) === p));
+        return `Şu anki itirazlarla ${faulty.length === 2 ? 'berabere' : `${players[1 - faulty[0]]} kazanır`}.`;
+      };
       const objections = items.length ? [
         objectionList({
           items, objected, players, viewer, online, sendMove: state.review ? sendMove : null,
@@ -487,7 +491,9 @@ export function createGame(cfg) {
       ] : null;
       const sharedSecret = state.secrets[0] || state.revealed[0];
       draw(container,
-        el('div', { class: 'status-line' }, el('strong', {}, state.review ? `${lines.join(' ')} Önce itirazlar:` : lines.join(' '))),
+        el('div', { class: 'status-line' }, el('strong', {}, state.review ? `${lines.join(' ')} Önce itirazlar:` : lines.join(' ')),
+          // before "Sonucu gör": what the objections so far give, in a line that is there from the start
+          state.review ? el('div', { class: 'muted review-now' }, reviewNow()) : null),
         objections,
         state.shared
           ? el('div', { class: 'reveal' },

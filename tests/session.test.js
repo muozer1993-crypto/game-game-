@@ -1,5 +1,5 @@
 import { test, assert } from './runner.js';
-import { stripSecret } from '../js/session.js';
+import { stripSecret, reviewDiffers } from '../js/session.js';
 
 test('session: stripSecret gizli alanı siler, diğerlerini bırakır', () => {
   assert.deepEqual(stripSecret({ type: 'setSecret', secret: { word: 'kalem' } }), { type: 'setSecret' });
@@ -302,4 +302,19 @@ test('sonraki tur (iki telefon): bağlantı dönünce "hazırım" yeniden gönde
   assert.equal(sessions[0].receiveAsk(inbox[0].shift()), false, 'a second repeat changes nothing');
   sessions[0].resendAsk();
   assert.equal(inbox[1].length, 0, 'the host never sends one');
+});
+
+test('itiraz incelemesi: kapanış hamlesi konuğun son değişikliğini taşımıyorsa fark edilir (iki yön, bayrak, veto)', () => {
+  const g = {};
+  assert.equal(reviewDiffers(g, { objected: ['a', 'b'] }, { type: 'next', objected: ['b', 'a'] }), false, 'the same ids in another order');
+  assert.equal(reviewDiffers(g, { objected: ['a', 'b'] }, { type: 'next', objected: ['a'] }), true, 'an objection that did not arrive');
+  assert.equal(reviewDiffers(g, { objected: [] }, { type: 'next', objected: ['a'] }), true, 'a withdrawal that did not arrive');
+  assert.equal(reviewDiffers(g, {}, { type: 'next', objected: [] }), false);
+  assert.equal(reviewDiffers(g, { objected: true }, { type: 'next', objected: false }), true, "Adam Asmaca's flag");
+  assert.equal(reviewDiffers(g, { objected: false }, { type: 'next', objected: true }), true);
+  assert.equal(reviewDiffers(g, { objected: false }, { type: 'next', objected: false }), false);
+  const isim = { reviewChoices: (st) => st.v };
+  assert.equal(reviewDiffers(isim, { v: [[false, true], [false, false]] }, { type: 'next', vetoes: [[false, true], [false, false]] }), false);
+  assert.equal(reviewDiffers(isim, { v: [[false, true], [false, false]] }, { type: 'next', vetoes: [[false, false], [false, false]] }), true, 'a veto that did not arrive');
+  assert.equal(reviewDiffers(g, { objected: ['a'] }, { type: 'next' }), false, 'a plain next carries nothing');
 });

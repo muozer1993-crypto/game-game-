@@ -136,7 +136,7 @@ export function makeTransport(role, code, peer) {
   const onVisibility = () => {
     if (typeof document === 'undefined' || document.visibilityState !== 'visible' || !peer || peer.destroyed) return;
     try {
-      if (peer.disconnected) peer.reconnect();
+      if (peer.disconnected) { refreshSkipped = false; peer.reconnect(); } // reopened anyway
       else if (!conn && !closed) { refreshSkipped = false; peer.disconnect(); peer.reconnect(); }
       else if (!open && !closed) refreshSkipped = true;
     } catch (e) { console.warn(e); }
@@ -162,6 +162,7 @@ export function makeTransport(role, code, peer) {
     if (old && old !== c) {
       // a replacement connection (the other side reconnected): drop the old one quietly
       open = false;
+      refreshSkipped = false; // its offer came over the socket: the socket is alive, nothing to refresh
       try { old.close(); } catch { /* ignore */ }
     }
     const current = () => conn === c; // events from superseded connections are ignored
