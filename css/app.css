@@ -440,10 +440,10 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .tv-off-count { font-size: 0.9rem; }
 .tv-off-count.p0 { color: #fafafa; }
 .tv-off-count.p1 { color: #b0bec5; }
-.tv-dice { text-align: center; font-size: 2rem; line-height: 1; margin: 4px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } /* one line: the board below stays put (a long name is what gets cut) */
+.tv-dice { text-align: center; font-size: 2rem; line-height: 1; margin: 4px 0; white-space: nowrap; overflow: hidden; } /* one line: the board below stays put */
 .tv-die { margin: 0 4px; }
-.tv-dice-note { font-size: 0.95rem; vertical-align: middle; }
-.tv-key { min-width: 0; } /* the legend's two halves wrap inside, the page never scrolls sideways */
+.tv-dice-note { font-size: 0.95rem; vertical-align: middle; display: inline-block; max-width: calc(100% - 4.5rem); overflow: hidden; text-overflow: ellipsis; } /* a long name is what gets cut, with a small "…" */
+.tv-key { min-width: 0; font-variant-numeric: tabular-nums; } /* the legend's two halves wrap inside, the page never scrolls sideways; same-width digits keep the wrap fixed all game */
 .ptable { text-align: center; margin: 10px 0; }
 .phand { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin: 6px 0; }
 .pcard {

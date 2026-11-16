@@ -165,6 +165,13 @@ let ignorePop = false; // a popstate we caused ourselves (history.back() from se
 function leavePlayQuestion() {
   const t = tournament;
   if (t && t.index < t.ids.length) return `Turnuva bitsin mi? ${t.index}/${t.ids.length} oyun oynandı; turnuvaya geri dönülemez.`;
+  // the guest's tournament is the host's (what its 'start' carried): leaving it ends it on both phones
+  const g = online.role === 'guest' ? online.tournament : null;
+  if (g) {
+    const total = Number(g.total) || 0;
+    const played = (Number(g.index) || 0) + (activeSession && activeSession.ended ? 1 : 0);
+    if (played < total) return `Turnuva bitsin mi? ${played}/${total} oyun oynandı; turnuvaya geri dönülemez.`;
+  }
   return activeSession && !activeSession.ended ? 'Oyundan çıkılsın mı?' : null;
 }
 
@@ -172,6 +179,11 @@ window.addEventListener('popstate', () => {
   // Browser / Android back button.
   if (ignorePop) { ignorePop = false; return; }
   if (currentScreen === 'menu') return;
+  if (reconnectOverlay) {
+    // under "Bağlantı koptu" the back gesture is that window's "Çık": the same question, the same leave
+    if (!exitReconnect()) history.pushState({ app: true }, '', `#${currentScreen}`);
+    return;
+  }
   if (currentScreen === 'play') {
     const question = leavePlayQuestion();
     if (question && !confirm(question)) {
@@ -1078,7 +1090,9 @@ function wireTransport(myName, { resume = false } = {}) {
     // Decided when the channel opens, not when the handler was registered: the host keeps its
     // handlers across a replacement connection (the guest reconnecting after a drop the host never
     // noticed) and must then offer a resume, not a fresh greeting that would reset the guest.
-    if (online.session && !online.session.destroyed) t.send({ t: 'resume', received: online.session.received, name: online.myName, gameNo: online.gameNo || 0 });
+    // A finished game whose screen the host left (tournament result, a new tournament's setup) is
+    // still the game the guest shows: resume it (nothing moves); a greeting would send both to the lobby.
+    if (online.session && (!online.session.destroyed || online.session.ended)) t.send({ t: 'resume', received: online.session.received, name: online.myName, gameNo: online.gameNo || 0 });
     else t.send(helloMsg());
   });
 }
@@ -1100,13 +1114,7 @@ function showReconnect() {
   window.addEventListener('keydown', reconnectKeys, true);
   const status = el('p', { class: 'muted', style: { minHeight: '1.4em' } }, 'Bağlantı koptu.');
   const retryBtn = el('button', { type: 'button', class: 'btn btn-primary btn-block' }, 'Yeniden bağlan');
-  const exitBtn = el('button', {
-    type: 'button', class: 'btn btn-secondary btn-block',
-    onClick: () => {
-      if (!confirm('Odadan çıkılsın mı? Oyun kaldığı yerden sürdürülemez.')) return;
-      reconnectFocus = null; closeReconnect(); leaveOnline({ silent: true }); showMenu();
-    },
-  }, 'Çık');
+  const exitBtn = el('button', { type: 'button', class: 'btn btn-secondary btn-block', onClick: exitReconnect }, 'Çık');
   // the window comes up whenever the link drops, under a finger that may be on its way to the board:
   // its buttons ignore taps for a moment (the backdrop still catches them), so that tap is not "Çık"
   reconnectOverlay = el('div', { class: 'overlay' },
@@ -1149,6 +1157,12 @@ function showReconnect() {
   reconnectRetry = attempt;
   retryBtn.addEventListener('click', attempt);
   attempt();
+}
+/** "Çık" on that window, and the back gesture while it is up: asks, then leaves the room. False if the player stays. */
+function exitReconnect() {
+  if (!confirm('Odadan çıkılsın mı? Oyun kaldığı yerden sürdürülemez.')) return false;
+  reconnectFocus = null; closeReconnect(); leaveOnline({ silent: true }); showMenu();
+  return true;
 }
 function closeReconnect() {
   clockPause.end();
@@ -1377,10 +1391,14 @@ async function handleOnlineMessage(msg) {
       online.busy = false;
       // a finished tournament's summary stays on the host's screen until the host leaves it
       const tournamentDone = currentScreen === 'tournament-result' || (tournament && tournament.index >= tournament.ids.length);
-      if (currentScreen !== 'online-lobby' && !tournamentDone) {
-        // after a finished game the other phone quit nothing: it went back to pick the next one
-        const finished = currentScreen === 'play' && activeSession && activeSession.ended;
-        toast(finished ? 'Rakip lobiye döndü' : 'Rakip oyundan ayrıldı', { duration: 3000 });
+      // only a game screen is left: on the host's own setup screens ('setup-…', 'tournament') nothing
+      // has started, and the other phone's 'lobby' is only its answer to the host's own (or crossed it)
+      if (currentScreen === 'play' && !tournamentDone) {
+        // after a finished game the other phone quit nothing: it went back to pick the next one (or it
+        // ended the tournament between two games)
+        const finished = activeSession && activeSession.ended;
+        const tourCut = tournament && tournament.index < tournament.ids.length;
+        toast(tourCut ? 'Rakip turnuvayı bitirdi' : finished ? 'Rakip lobiye döndü' : 'Rakip oyundan ayrıldı', { duration: 3000 });
         // answer with our own 'lobby' so that a guest whose message crossed our 'start' comes back too
         showOnlineLobby({ notify: true });
         // the lobby's game cards come up where the board was: a tap already on its way must not open a game

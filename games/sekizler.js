@@ -155,7 +155,7 @@ function cardEl(c, opts = {}) {
   }, el('span', {}, RANK_TEXT[c.r] || String(c.r)), el('span', { class: 'suit' }, SUITS[c.s]));
 }
 
-export function render(state, viewer, container, sendMove, ctx = {}) {
+export function render(state, viewer, container, sendMove, ctx = {}, redraw = false) {
   const players = ctx.players || ['Oyuncu 1', 'Oyuncu 2'];
   const opp = 1 - viewer;
   if (draftsFor !== state.id) { drafts.clear(); draftsFor = state.id; }
@@ -211,7 +211,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     onClick: () => sendMove({ type: 'play', card: pending, suit: k }),
   }, s))) : null;
   const hint = pending != null ? 'Sekizi atmak için rengi seç.' : anyPlayable ? 'Uyan bir karta dokun.' : state.drew ? 'Çektiğin kart da uymuyor: pas geç.' : stockEmpty ? 'Deste bitti: pas geç.' : 'Uyan kartın yok: desteden çek.';
-  const rerender = () => render(state, viewer, container, sendMove, ctx);
+  const rerender = () => render(state, viewer, container, sendMove, ctx, true); // the eight's suit row shown or hidden
   const actionRow = el('div', { class: 'row', style: { justifyContent: 'center', gap: '8px' } },
     el('button', { type: 'button', class: 'btn btn-primary', disabled: state.drew || stockEmpty, onClick: () => sendMove({ type: 'draw' }) }, 'Kart çek'),
     el('button', { type: 'button', class: 'btn btn-secondary', disabled: !(state.drew || stockEmpty), onClick: () => sendMove({ type: 'pass' }) }, 'Pas'),
@@ -226,7 +226,9 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     actionRow,
     legend,
   );
-  keysIntoView(actionRow); // a short phone: "Kart çek" and "Pas" below the hand stay on screen
+  // a short phone: "Kart çek" and "Pas" below the hand stay on screen; not when the suit row comes or
+  // goes: the page would scroll the hand under the finger and a second tap would play another card
+  if (!redraw) keysIntoView(actionRow);
   return null;
 }
 

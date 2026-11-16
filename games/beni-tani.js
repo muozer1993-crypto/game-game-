@@ -18,7 +18,7 @@ export const meta = {
     'İkinize de aynı sorular gelir (varsayılan 10). Her oyuncu önce soruları kendisi hakkında cevaplar, sonra aynı soruları rakibi için tahmin eder.',
     'İkiniz de bitirince karşılaştırma ekranı kendiliğinden gelir. Çoktan seçmeli sorularda eşleşme otomatik sayılır; açık uçlu sorularda cevabın sahibi karar verir: Tuttu (1 puan), Yakın (yarım puan), Tutmadı.',
     'Rakibini daha iyi tanıyan kazanır.',
-    'Sorular hazır havuzdan gelir; kurulum ekranındaki "Kendi sorularınız" alanından kendi sorularınızı ekleyebilirsiniz, onlar önce sorulur.',
+    'Sorular hazır havuzdan gelir; kurulum ekranındaki "Kendi sorularınız" alanından kendi sorularınızı ekleyebilirsiniz; ayara göre önce ya da hazır soruların arasına karışık sorulur.',
   ].join('\n'),
   data: ['questions'],
   handoffNote: 'Cevaplar gizli: ekranı yalnızca sırası gelen görmeli.',
@@ -69,11 +69,10 @@ export function pickQuestions(pool, custom, count, customMode, seed, recent = []
   const base = freshFirst(rng, (pool || []).map(cleanQuestion).filter(Boolean), (q) => q.id, recent);
   const own = customMode === 'none' ? [] : shuffle(rng, (custom || []).map(cleanQuestion).filter(Boolean));
   if (!own.length && !base.length) fail('Soru havuzu boş');
-  // mix: each own question goes to a random place among the ready-made ones, which keep their
-  // unseen-first order (shuffling both together would deal seen questions as often as unseen ones)
-  const order = base.slice();
-  if (customMode === 'mix') own.forEach((q) => order.splice(Math.floor(rng() * (order.length + 1)), 0, q));
-  else order.unshift(...own);
+  const order = own.concat(base);
+  // mix: the own questions are still asked, shuffled in among the first ready-made ones (which keep
+  // their unseen-first order); spread over the whole pool they would rarely come up at all
+  if (customMode === 'mix') order.splice(0, count, ...shuffle(rng, order.slice(0, count)));
   const picked = [];
   for (let i = 0; picked.length < count; i++) picked.push(order[i % order.length]);
   return picked;
@@ -375,7 +374,7 @@ export function setupExtra(container, storage) {
       ? list.map((q, i) => el('div', { class: 'custom-q-item' },
         el('span', {}, `${q.text}${q.type === 'choice' ? ` (${q.options.join(' / ')})` : ' (açık uçlu)'}`),
         el('button', { type: 'button', class: 'btn btn-small', 'aria-label': 'Sil', onClick: () => { list = list.filter((_, k) => k !== i); storage.save(KEY, list); drawList(); } }, '✕')))
-      : el('p', { class: 'muted' }, 'Henüz kendi sorunuz yok. Aşağıdan ekleyin; eklediğiniz sorular havuzdakilerden önce sorulur.'));
+      : el('p', { class: 'muted' }, 'Henüz kendi sorunuz yok. Aşağıdan ekleyin; eklediğiniz sorular ayara göre önce ya da hazır soruların arasına karışık sorulur.'));
   };
   drawList();
 

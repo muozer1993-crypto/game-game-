@@ -45,6 +45,13 @@ test('beni tanı: özel sorular önce gelir / karışır / kullanılmaz', () => 
   const none = pickQuestions(pool, custom, 5, 'none', 3);
   assert.ok(!none.some((q) => q.id.startsWith('x')));
   assert.equal(pickQuestions(pool, custom, 5, 'mix', 3).length, 5);
+  const firstAt = new Set();
+  for (let seed = 1; seed <= 30; seed++) {
+    const mixed = pickQuestions(pool, custom, 5, 'mix', seed).map((q) => q.id);
+    assert.deepEqual(mixed.filter((id) => id.startsWith('x')).sort(), ['x1', 'x2'], 'mix still asks every own question');
+    firstAt.add(mixed.findIndex((id) => id.startsWith('x')));
+  }
+  assert.ok(firstAt.size > 1, 'mix scatters them');
   const bad = pickQuestions(pool, [{ type: 'choice', text: 'Tek seçenek', options: ['a'] }, { type: 'open', text: '' }], 5, 'first', 3);
   assert.ok(!bad.some((q) => q.text === 'Tek seçenek'));
   assert.equal(pickQuestions([{ id: 'a', type: 'open', text: 'A?' }], [], 5, 'first', 1).length, 5, 'small pools cycle');

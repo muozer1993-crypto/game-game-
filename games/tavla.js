@@ -333,8 +333,10 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   draw(container,
     info,
     el('div', { class: 'c4-legend' },
-      el('span', { class: 'tv-key' }, keyDot(CHECKER[0]), `${players[0]}: ${pipCount(state, 0)} pip, ${state.off[0]} toplandı`),
-      el('span', { class: 'tv-key' }, keyDot(CHECKER[1]), `${players[1]}: ${pipCount(state, 1)} pip, ${state.off[1]} toplandı`),
+      // the numbers keep one width all game (figure-space padded, same-width digits): the legend's line
+      // count, and so the board below, never changes mid-game
+      el('span', { class: 'tv-key' }, keyDot(CHECKER[0]), `${players[0]}: ${String(pipCount(state, 0)).padStart(3, '\u2007')} pip, ${String(state.off[0]).padStart(2, '\u2007')} toplandı`),
+      el('span', { class: 'tv-key' }, keyDot(CHECKER[1]), `${players[1]}: ${String(pipCount(state, 1)).padStart(3, '\u2007')} pip, ${String(state.off[1]).padStart(2, '\u2007')} toplandı`),
     ),
     dice,
     boardBox,

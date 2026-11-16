@@ -279,7 +279,8 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     const est = score(state);
     draw(container,
       el('div', { class: 'status-line' }, el('strong', {}, 'Sayım: ölü grupları işaretleyin')),
-      el('p', { class: 'hint' }, `Şu an: siyah ${num(est.total[0])} – beyaz ${num(est.total[1])} (komi dahil). ${state.agree[0] ? `${players[0]} onayladı. ` : ''}${state.agree[1] ? `${players[1]} onayladı. ` : ''}`),
+      // two lines' room from the start: an agreement appearing or reset never moves the board
+      el('p', { class: 'hint two-lines' }, `Şu an: siyah ${num(est.total[0])} – beyaz ${num(est.total[1])} (komi dahil). ${state.agree[0] ? `${players[0]} onayladı. ` : ''}${state.agree[1] ? `${players[1]} onayladı. ` : ''}`),
       boardBox,
       el('div', { class: 'row', style: { justifyContent: 'center', gap: '8px' } },
         el('button', { type: 'button', class: 'btn btn-primary', disabled: online && state.agree[viewer], onClick: () => sendMove({ type: 'agree', dead: state.dead, marks: state.marks || 0 }) }, online ? (state.agree[viewer] ? 'Onayladın' : 'Onayla') : `Onayla (${players[state.agree[0] ? 1 : 0]})`),
