@@ -12,6 +12,7 @@ import { nameSuffix, capitalizeTR } from './lib/tr.js';
 import { generateRoomCode, createHost, joinRoom, normalizeRoomCode, getIceServers } from './net/peer.js';
 import { gatherCandidates, checkSignalling, verdictFor } from './net/icetest.js';
 import { setSoundEnabled, playEnd } from './lib/sfx.js';
+import { boundedHello } from './lib/hello.js';
 
 const app = document.getElementById('app');
 const DEFAULT_PLAYERS = ['Oyuncu 1', 'Oyuncu 2'];
@@ -869,11 +870,11 @@ const online = {
   peerSeen: null,   // the other phone's histories ({ tabu, trivia, dogruluk, questions }), from its 'hello'
 };
 
-/** The greeting: name, build, and what this phone has shown in earlier games, with its clock to line the times up. */
-const helloMsg = () => ({
-  t: 'hello', name: online.myName, v: APP_VERSION, tabuSeen: tabuHistory.own(),
-  seen: Object.fromEntries(Object.entries(histories).map(([k, h]) => [k, h.own()])), clock: Date.now(),
-});
+/** The greeting: name, build, and what this phone has shown in earlier games (bounded, see js/lib/hello.js), with its clock to line the times up. */
+const helloMsg = () => boundedHello(
+  { t: 'hello', name: online.myName, v: APP_VERSION, clock: Date.now() },
+  { tabu: tabuHistory.own(), ...Object.fromEntries(Object.entries(histories).map(([k, h]) => [k, h.own()])) },
+);
 
 function leaveOnline({ silent = false } = {}) {
   if (online.transport) {
@@ -992,7 +993,8 @@ export function showOnline({ code: presetCode = '' } = {}) {
       online.transport = transport;
       online.role = 'host'; online.self = 0;
       wireTransport(myName);
-      showOnlineWaiting(online.transport.code);
+      if (online.transport !== transport) return; // it closed at once (its own handler has shown why)
+      showOnlineWaiting(transport.code);
     } catch (err) {
       if (ctrl.signal.aborted) return;
       pending = null;
@@ -1021,7 +1023,8 @@ export function showOnline({ code: presetCode = '' } = {}) {
       online.transport = transport;
       online.role = 'guest'; online.self = 1;
       wireTransport(myName);
-      showOnlineWaiting(online.transport.code);
+      if (online.transport !== transport) return; // it closed at once (its own handler has shown why)
+      showOnlineWaiting(transport.code);
     } catch (err) {
       if (ctrl.signal.aborted) return;
       pending = null;
