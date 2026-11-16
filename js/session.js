@@ -15,7 +15,7 @@
 // new screen comes up (a new game, a 'next', a shared 'start', a round's end or objections) taps
 // are ignored for a moment as well, on either phone and on one phone.
 import { showHandoff } from './ui/handoff.js';
-import { toast } from './ui/dom.js';
+import { toast, scrollKeeper } from './ui/dom.js';
 import { markNextReady } from './ui/next.js';
 
 const SWITCH_GUARD_MS = 350; // taps ignored this long after the turn passes to the other player (one phone) or to this phone (two phones)
@@ -164,7 +164,7 @@ export class Session {
     // two phones: the host moved on before the guest's last objection (or veto, or its withdrawal)
     // reached it; the 'next' carries the host's view, so the guest's change did not count: say so
     if (remote && move.type === 'next' && this.mode === 'online' && this.self !== 0 && reviewDiffers(this.game, prev, move)) {
-      say(`${this.players[0]} geçmeden önce son itiraz değişikliğin ona ulaşmadı; sayılmadı.`, { kind: 'error', duration: 5000 });
+      say(`${this.players[0]} geçmeden önce ${this.reviewWords().lost} ona ulaşmadı; sayılmadı.`, { kind: 'error', duration: 5000 });
     }
     // two phones: the guest changed an objection (or a veto) after saying "Hazırım": it is not ready
     // any more, so the host's button loses its mark (and asks to confirm) until it says so again
@@ -172,7 +172,7 @@ export class Session {
       if (!remote && this.self !== 0) this.ask.asked = false;
       if (remote && this.self === 0 && this.ask.peerAsked) {
         this.ask.peerAsked = false;
-        say(`${this.players[1]} itirazını değiştirdi; hazır olunca yine haber verecek`, { duration: 2500 }); // replaces "… hazır"
+        say(`${this.players[1]} ${this.reviewWords().changed}; hazır olunca yine haber verecek`, { duration: 2500 }); // replaces "… hazır"
       }
     }
     const fresh = freshScreen(prev, next, move, remote);
@@ -186,6 +186,12 @@ export class Session {
       this.log.push({ player, move: publicMove, own: false });
     }
     return true;
+  }
+
+  /** How the two-phone review notices name a change (a game may say "Geçersiz" marks instead of objections). */
+  reviewWords() {
+    const own = this.game.meta && this.game.meta.reviewChange;
+    return { lost: 'son itiraz değişikliğin', changed: 'itirazını değiştirdi', ...(own || {}) };
   }
 
   /** Apply a move for a player, then run automatic moves, check the result and re-render. */
@@ -326,6 +332,9 @@ export class Session {
   }
 
   renderNow() {
+    // the old screen's cleanup may take the focused key out of the page (a keyboard's destroy), and
+    // the browser then pulls the scroll back: a redraw of the same screen keeps it (see dom.js)
+    const keep = this.guardPending ? null : scrollKeeper(this.container);
     if (this.cleanup) {
       try { this.cleanup(); } catch (err) { console.warn(err); }
       this.cleanup = null;
@@ -379,6 +388,7 @@ export class Session {
     // a new screen starts at the top (a redraw of the same screen keeps its scroll, see dom.js render)
     // (not at the end of the game: the result panel scrolls itself into view)
     if (freshScreenNow && !this.ended && typeof scrollY === 'number' && scrollY > 0 && typeof scrollTo === 'function') scrollTo(0, 0);
+    else if (keep) keep();
     if (typeof out === 'function') this.cleanup = out;
     this.onChange(this.state);
   }

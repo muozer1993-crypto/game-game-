@@ -30,12 +30,14 @@ export function objectionList({ items, objected, players, viewer, online, sendMo
       return el('div', { class: `objection-row ${on ? 'objected' : ''}` },
         el('span', { class: 'objection-word' }, upperTR(it.word), unlistedMark()),
         el('span', { class: 'objection-who muted' }, `${players[it.owner]}${it.detail ? ` · ${it.detail}` : ''}`),
-        on ? el('span', { class: 'badge miss' }, 'itiraz edildi') : null,
+        // the badge keeps its place and the button its width either way: an objection moves nothing
+        el('span', { class: 'badge miss', style: on ? null : { visibility: 'hidden' }, 'aria-hidden': on ? null : 'true' }, 'itiraz edildi'),
         mayObject ? el('button', {
           type: 'button',
-          class: `btn btn-small objection-btn ${on ? 'btn-secondary' : 'btn-danger'}`,
+          class: `btn btn-small objection-btn btn-stack ${on ? 'btn-secondary' : 'btn-danger'}`,
           onClick: () => sendMove({ type: 'object', id: it.id, on: !on, by: 1 - it.owner }),
-        }, on ? 'İtirazı geri al' : (online ? 'İtiraz et' : `${players[1 - it.owner]}: itiraz et`)) : null,
+        }, el('span', {}, on ? 'İtirazı geri al' : (online ? 'İtiraz et' : `${players[1 - it.owner]}: itiraz et`)),
+        el('span', { class: 'btn-stack-sizer', 'aria-hidden': 'true' }, on ? (online ? 'İtiraz et' : `${players[1 - it.owner]}: itiraz et`) : 'İtirazı geri al')) : null,
       );
     })),
   );

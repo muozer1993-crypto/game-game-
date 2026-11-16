@@ -308,21 +308,58 @@ export function artistOptions(pool, song, seed, n = 4, data = null) {
 }
 
 /** Four song titles: the right one and others by the same band (filled up from other bands), shuffled. */
-const trBandsCache = new WeakMap(); // data -> Set of Turkish bands (normKey)
+const trCache = new WeakMap(); // data -> { bands: Set of Turkish bands (normKey), titles: Map title key -> bool }
+// common Turkish words: a title with one of them is Turkish even without ğ, ı or ş
+// (only words other languages hardly use: no "her", "son", "de", "mi", "once", "gun", "ask")
+const TR_WORDS = new Set(('bir ben sen biz siz bu şu gibi için icin değil degil yok mı mü beni seni bana sana aşk gönül gonul '
+  + 'yarim olmaz olsun oldu kadar gece gün dünya dunya hayat sevda canım canim kalp yalan zaman neden hep hiç hic çok cok '
+  + 'sonra önce şimdi simdi benim senin bizim yine artık artik güzel guzel yalnız yalniz ağla agla ölüm ölmeden olmeden '
+  + 'gönlümü verdim sevgilim seviyorum sevdim gitme kal kimse hadi vur merhaba gurbet').split(' '));
+/** Turkish verb and plural endings on a word of five letters or more ("Bilmez", "Gidiyorum", "Yolları"). */
+const TR_SUFFIX = /[a-zçğıöşü]{2,}(?:iyor|ıyor|uyor|üyor|iyorum|ıyorum|uyorum|üyorum|mez|maz|ları|leri|ların|lerin|lerim|larım)(?![a-zçğıöşü])/;
+/** Letter groups and words Turkish does not use: an English, German, Nordic or Portuguese title. */
+const FOREIGN = /th|w|x|q|ä|å|ø|æ|ß|ñ|ã|õ|é|è|à|á|í|ó|ú|sch|ll|ck|uo|ei|ou|ea|ee|oo/i;
+const EN_WORD = /(^|[^a-z])(the|you|your|my|me|love|of|and|to|in|is|it|on|all|not|we|be|for|with|this|that|i|a|an)(?![a-z])/i;
+const clearlyTurkish = (title) => /[ğışĞİŞ]/.test(title)
+  || String(title).toLocaleLowerCase('tr-TR').split(/[^a-zçğıöşüâîû]+/).some((w) => TR_WORDS.has(w));
+
 /**
- * Bands that sing in Turkish: the Turkish catalog, and any band whose name or titles use ğ, ı, ş or İ
- * (ö, ü and ç alone do not tell: German, Swedish and Finnish have them too). Judged per band, so a
- * Turkish band's song without those letters still counts.
+ * Is this song sung in Turkish? Its title uses ğ, ı, ş or İ, or a common Turkish word. Otherwise a
+ * title with a foreign mark (th, w, ou, ä, "the", "you"…) is not; a plain one is when it has ç, ö or
+ * ü, or when its band is Turkish (the Turkish catalog, another clearly Turkish title, or Turkish
+ * letters ğ ı ş İ in the band's name). So "Gökhan Kırdar — Pleasure" is English and "Hüseyin Altın —
+ * Merhaba Gurbet" Turkish, while "Kall — Försök till Förstörelse" is not.
  */
-function turkishBands(data) {
-  if (!data || typeof data !== 'object') return new Set();
-  let set = trBandsCache.get(data);
-  if (!set) {
-    set = new Set(((data.catalogTR) || []).map(normKey));
-    for (const t of allTracks(data)) if (/[ğıışĞİŞ]/.test(`${t.a} ${t.t}`)) set.add(normKey(t.a));
-    trBandsCache.set(data, set);
+function turkishSong(data, t) {
+  if (!data || typeof data !== 'object') return false;
+  let c = trCache.get(data);
+  if (!c) {
+    // a Turkish band: the Turkish catalog, ğ ı ş İ in its name (not ö/ü/ç: "Örnatorpet"), or at least
+    // half of its titles clearly Turkish (one Romanian "şi" does not make Rotting Christ Turkish)
+    const bands = new Set(((data.catalogTR) || []).map(normKey));
+    const tally = new Map(); // band -> [clearly Turkish titles, titles]
+    for (const x of allTracks(data)) {
+      const k = normKey(x.a);
+      if (/[ğışİĞŞ]/.test(x.a)) bands.add(k);
+      const n = tally.get(k) || [0, 0];
+      n[0] += clearlyTurkish(x.t) ? 1 : 0;
+      n[1] += 1;
+      tally.set(k, n);
+    }
+    for (const [k, [tr, all]] of tally) if (tr * 2 >= all) bands.add(k);
+    c = { bands, titles: new Map() };
+    trCache.set(data, c);
   }
-  return set;
+  const key = `${normKey(t.a)}|${t.t}`;
+  let hit = c.titles.get(key);
+  if (hit === undefined) {
+    const title = String(t.t || '');
+    if (clearlyTurkish(title)) hit = true;
+    else if (FOREIGN.test(title) || EN_WORD.test(title) || !/[a-zçöü]/i.test(title)) hit = false; // (Greek, Cyrillic…: not Turkish)
+    else hit = /[çöüÇÖÜ]/.test(title) || TR_SUFFIX.test(title.toLocaleLowerCase('tr-TR')) || c.bands.has(normKey(t.a));
+    c.titles.set(key, hit);
+  }
+  return hit;
 }
 
 export function songOptions(data, song, seed, n = 4) {
@@ -333,8 +370,7 @@ export function songOptions(data, song, seed, n = 4) {
   if (picked.length < n - 1) {
     // a band with few songs: the other names come from bands of the same language first, so a
     // Turkish title among English ones does not give the answer away
-    const tr = turkishBands(data);
-    const turkish = (t) => tr.has(normKey(t.a));
+    const turkish = (t) => turkishSong(data, t);
     const mine = turkish(song);
     const others = all.filter((t) => normKey(t.a) !== normKey(song.a) && normKey(t.t) !== normKey(song.t));
     const titles = (list) => [...new Set(list.map((t) => t.t))];
@@ -453,16 +489,63 @@ const numbersAgree = (a, b, answer) => {
  * and the start of a long title counts when it covers most of it. A different number never matches.
  */
 export function answerMatches(typed, answer) {
+  return numberedMatch(typed, answer) || plainMatch(typed, answer);
+}
+
+/**
+ * The comparison as it was before Roman numerals were read as numbers: a slip that happens to make a
+ * Roman word ("İi Yabancı", "Since I'v Been…", "Xi Xiu"), the band typed in front ("The xx Intro") or
+ * a short title with a closing numeral ("Revlot III") is still forgiven. A different number still
+ * never matches (the digits and a closing Roman word must be the same).
+ */
+const plainNumbers = (x) => {
+  const w = x.split(' ');
+  const last = w.length > 1 && ROMAN.test(w[w.length - 1]) ? w[w.length - 1] : '';
+  return `${(x.match(/\d+/g) || []).map(Number).join(',')}|${last}`;
+};
+/**
+ * A title with a track number in front ("II - Bloodbirds"): a numeral typed in front that is not the
+ * title's own first word must be that number ("III Bloodbirds" is another track; "I Fly Among the
+ * Stars" for "II - I Fly Among the Stars" keeps its "I").
+ */
+function sameLead(typed, numeral, title) {
+  const lead = String(typed || '').match(/^\s*([ivxlc]+|\d+)(?=[\s.:-])/i);
+  if (!lead || normalizeAnswer(lead[1]) === normalizeAnswer(title).split(' ')[0]) return true;
+  return numeralValue(lead[1]) === numeralValue(numeral);
+}
+
+function plainMatch(typed, answer) {
+  const a = normalizeAnswer(typed);
+  const b = normalizeAnswer(answer);
+  if (!a || !b) return false;
+  if (a === b) return true;
+  const dash = String(answer || '').match(/^\s*([ivxlc]+|\d+)\s+-\s+(.+)$/i);
+  if (dash) {
+    if (sameLead(typed, dash[1], dash[2]) && plainMatch(typed, dash[2])) return true;
+  }
+  if (plainNumbers(a) !== plainNumbers(b)) return false;
+  const tol = b.length < 5 ? 0 : b.length < 9 ? 1 : b.length < 13 ? 2 : 3;
+  if (editDistance(a, b) <= tol) return true;
+  if (b.length >= 4 && ` ${a} `.includes(` ${b} `)) return true;
+  if (a.length >= 4 && b.startsWith(a) && a.length >= Math.ceil(b.length * 0.6)) return true;
+  return false;
+}
+
+/** Roman numerals read as numbers: "Unforgiven 2" is "The Unforgiven II", "Ruun 2 The Epitaph" counts. */
+function numberedMatch(typed, answer) {
   const a = norm(typed);
   const b = norm(answer);
   if (!a || !b) return false;
   if (a === b) return true;
   // "II - I Fly Among the Stars": the part after a leading numeral is the title people know
-  const dash = String(answer || '').match(/^\s*([ivxlc]+|\d+)\s+-\s+(.+)$/i);
+  // a leading track number: "II - X", "ii. X", "IV: X" (the title people know is X)
+  // (with "." or ":" only i/v/x or digits, and a space after it: "C. F. Bundy", "L.A. Woman" stay as they are)
+  const dash = String(answer || '').match(/^\s*([ivxlc]+|\d+)\s+-\s+(.+)$/i)
+    || String(answer || '').match(/^\s*([ivx]+|\d+)\s*[.:]\s+(.+)$/i);
   if (dash) {
-    if (answerMatches(typed, dash[2])) return true;
+    if (sameLead(typed, dash[1], dash[2]) && answerMatches(typed, dash[2])) return true;
     // typed with its numeral too ("II Bloodbirds", "2 - Bloodbirds"): the same number, then the title
-    const lead = String(typed || '').match(/^\s*([ivxlc]+|\d+)\s*(?:-\s*)?\s(.+)$/i);
+    const lead = String(typed || '').match(/^\s*([ivxlc]+|\d+)\s*(?:[-.:]\s*|\s+)(.+)$/i);
     if (lead && numeralValue(lead[1]) === numeralValue(dash[1]) && answerMatches(lead[2], dash[2])) return true;
   }
   if (!numbersAgree(a, b, answer)) return false;

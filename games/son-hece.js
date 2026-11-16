@@ -212,7 +212,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     draw(container,
       el('div', { class: 'status-line' }, el('strong', {}, `${ended}. Önce itirazlar:`),
         el('div', { class: 'muted review-now' }, firstOut
-          ? `Şu anki itirazlarla ${upperTR(firstOut.word)} yüzünden ${players[firstOut.player]} kaybeder.`
+          ? `Şu anki itirazlarla ${players[firstOut.player]} kaybeder (${upperTR(firstOut.word)}).`
           : `İtiraz olmazsa ${players[1 - state.loser]} kazanır.`)),
       chainView(state),
       objectionList({

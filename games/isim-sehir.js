@@ -12,6 +12,8 @@ export const meta = {
   group: 'kelime',
   name: 'İsim Şehir',
   icon: '🏙️',
+  // the two-phone notices about a review change (js/session.js) speak of "Geçersiz" marks, not objections
+  reviewChange: { lost: 'son "Geçersiz" işaretin', changed: '"Geçersiz" işaretlerini değiştirdi' },
   description: 'Aynı harfle isim, şehir, hayvan, bitki, eşya yaz; farklı cevap 10, aynı cevap 5 puan.',
   rules: [
     'Her turda bir harf gelir. O harfle başlayan bir isim, şehir, hayvan, bitki ve eşya (geniş sette ülke, meslek ve yemek de) yazarsın; süre dolunca ya da "Bitir"e basınca cevapların kilitlenir.',
@@ -223,7 +225,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       el('p', { class: 'hint' }, online ? 'Rakibinin uydurma cevabına "Geçersiz" diyebilirsin.' : 'Uydurma bir cevaba "Geçersiz" deyin; puan tura geçerken yazılır.'),
       // the vetoes as the presser sees them travel with the move (see applyMove)
       // two phones: the guest may still mark the host's answers invalid, so the host waits for "Hazırım" (or confirms)
-      nextButton(ctx, sendMove, state.round + 1 >= state.rounds ? 'Sonucu gör' : 'Sonraki tur', { move: () => ({ type: 'next', vetoes: entry.vetoes }), waitForPeer: true }),
+      nextButton(ctx, sendMove, state.round + 1 >= state.rounds ? 'Sonucu gör' : 'Sonraki tur', { move: () => ({ type: 'next', vetoes: entry.vetoes }), waitForPeer: true, waitNote: 'cevaplara bakmayı bitirmemiş olabilir' }),
     );
     return null;
   }
@@ -252,6 +254,9 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const timerBox = el('div');
   let timer = null;
   if (deadline) timer = createTimer(timerBox, { deadline, total: online && entry.answers[opp] ? GRACE_MS : state.seconds * 1000, onExpire: finish });
+  // two phones, no time limit: the other player finishing brings a countdown; its place is kept from
+  // the start, so the fields do not jump down under the finger
+  else if (online) timerBox.append(el('div', { class: 'timer', style: { visibility: 'hidden' }, 'aria-hidden': 'true' }, el('span', { class: 'timer-text' }, '0:00'), el('div', { class: 'timer-bar' })));
   // where the caret was in the field being typed in, read before the redraw replaces it
   const typing = typeof document !== 'undefined' ? document.activeElement : null;
   const caret = typing && draft.focus != null && typing.id === `is-in-${draft.focus}` && typeof typing.selectionStart === 'number'
@@ -271,7 +276,8 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     timerBox,
     el('div', { class: 'status-line' }, el('strong', {}, `${players[viewer]}, harf:`)),
     el('div', { class: 'is-letter' }, upperTR(letter)),
-    online && entry.answers[opp] ? el('p', { class: 'hint rejected-note' }, `${players[opp]} bitirdi! ${GRACE_MS / 1000} saniyen var.`) : null,
+    // (two phones: the line is there from the start, empty until the other player finishes)
+    online ? el('p', { class: 'hint rejected-note is-grace' }, entry.answers[opp] ? `${players[opp]} bitirdi! ${GRACE_MS / 1000} saniyen var.` : '') : null,
     el('div', { class: 'is-form' }, cats.map((name, c) => el('div', { class: 'is-row' }, el('label', { for: `is-in-${c}` }, name), inputs[c]))),
     el('p', { class: 'hint' }, `Her cevap ${upperTR(letter)} ile başlamalı; boş bırakılan 0 puan.${online ? '' : entry.answers[opp] ? ' Bitirince karşılaştırma ekranı ikinize gelir.' : ` Bitirince telefon ${nameSuffix(players[opp], 'e')} geçer.`}`),
     el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block', style: { marginTop: '8px' }, onClick: finish }, 'Bitir'),

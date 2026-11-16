@@ -225,8 +225,15 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 /* two phones: the guest says it is ready, the host's "next" button shows it (js/ui/next.js) */
 .next-btn.next-ready, .rematch-btn.next-ready { box-shadow: 0 0 0 3px var(--correct); animation: next-ready-pulse 1.6s ease-in-out infinite; }
 .next-ready-tag { font-weight: 600; }
-/* the mark must not widen "Yeni tur" and push "Lobiye dön" away from under a finger */
-.row > .rematch-btn, .row > .rematch-btn + .btn { flex: 1 1 0; min-width: 0; }
+/* the mark must not widen "Yeni tur" and push "Lobiye dön" away from under a finger: equal widths,
+   and the request is a badge on the button's top edge, out of the layout */
+.row > .end-pair, .row > .end-pair + .btn { flex: 1 1 0; min-width: 0; }
+.rematch-btn { position: relative; overflow: visible; }
+.rematch-tag {
+  position: absolute; top: -9px; right: 8px; max-width: calc(100% - 16px);
+  padding: 1px 7px; border-radius: 9px; background: var(--correct); color: #fff;
+  font-size: 0.72rem; font-weight: 700; line-height: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none;
+}
 @keyframes next-ready-pulse { 50% { box-shadow: 0 0 0 6px var(--correct); } }
 .next-ask { text-align: center; }
 .next-ask .next-ask-note { margin: 6px 0 0; }
@@ -1130,7 +1137,8 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .sb-preview { margin-top: 10px; font-weight: 600; font-variant-numeric: tabular-nums; }
 .sb-skip { margin-top: 10px; }
 /* the review's "what the objections give now" line: two lines kept, so an objection does not move the buttons */
-.review-now { min-height: 2.7em; line-height: 1.35; }
+.is-grace { min-height: 1.4em; margin: 4px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.review-now { min-height: 2.7em; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .sb-actions { margin-top: 12px; }
 .sb-actions .btn { flex: 1 1 45%; white-space: normal; }
 .sb-answer .field { text-align: left; margin: 10px 0 0; }

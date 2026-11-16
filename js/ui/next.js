@@ -14,13 +14,14 @@ const readyTag = (name) => el('span', { class: 'next-ready-tag' }, ` · ${name} 
  * @param {object} [opts]
  * @param {object|(() => object)} [opts.move]  the move to send (a function is called at the tap,
  *   for moves that carry what the presser sees, like İsim Şehir's vetoes); default { type: 'next' }
+ * @param {string} [opts.waitNote]  what the guest may not have finished, for the host's confirm (default: its objections)
  * @param {boolean} [opts.waitForPeer]  two phones: the guest still has something to do on this
  *   screen (objections); the host is asked to confirm moving on before the guest says it is ready
  * @param {object} [opts.style]
  * @param {string} [opts.className]
  */
 export function nextButton(ctx, sendMove, label, opts = {}) {
-  const { move = { type: 'next' }, style = { marginTop: '12px' }, className = 'btn btn-primary btn-big btn-block', waitForPeer = false } = opts;
+  const { move = { type: 'next' }, style = { marginTop: '12px' }, className = 'btn btn-primary btn-big btn-block', waitForPeer = false, waitNote = 'itirazlarını bitirmemiş olabilir' } = opts;
   const players = (ctx && ctx.players) || ['Oyuncu 1', 'Oyuncu 2'];
   const ask = (ctx && ctx.ask) || {};
   const online = !!ctx && ctx.mode === 'online';
@@ -32,7 +33,7 @@ export function nextButton(ctx, sendMove, label, opts = {}) {
       style,
       onClick: () => {
         if (online && waitForPeer && !ask.peerAsked && typeof confirm === 'function'
-          && !confirm(`${players[1]} henüz "Hazırım" demedi; itirazlarını bitirmemiş olabilir. Yine de geçilsin mi?`)) return;
+          && !confirm(`${players[1]} henüz "Hazırım" demedi; ${waitNote}. Yine de geçilsin mi?`)) return;
         sendMove(typeof move === 'function' ? move() : move);
       },
     }, el('span', { class: 'next-label' }, label, ready ? readyTag(players[1]) : null));

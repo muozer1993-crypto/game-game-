@@ -74,6 +74,23 @@ test('şarkı havuzu: seçim tohumla aynı, ses gerekince sessizler elenir, şı
     assert.equal(opts.length, 4);
     assert.ok(opts.every((x) => !x.startsWith('Tool')), `same language first: ${opts}`);
   }
+  // language per song: a Swedish title with ö, an English title by a band with ı, a plain Turkish title
+  const langs = { catalogTR: [], tracks: [
+    ...['Senden Önce', 'Bir Gün', 'Gece Yarısı'].map((t) => ({ a: 'Türk Grup', t, s: 200 })),
+    ...['Sweet Home', 'The River', 'Night Owl'].map((t) => ({ a: 'Eng Band', t, s: 200 })),
+    { a: 'Kall', t: 'Försök till Förstörelse', s: 200 },
+    { a: 'Gökhan Kırdar', t: 'Pleasure', s: 200 },
+    { a: 'Hüseyin Altın', t: 'Merhaba Gurbet', s: 200 },
+  ] };
+  const english = (o) => ['Sweet Home', 'The River', 'Night Owl', 'Pleasure', 'Försök till Förstörelse'].includes(o); // not Turkish
+  for (let seed = 1; seed <= 6; seed++) {
+    const kall = songOptions(langs, { a: 'Kall', t: 'Försök till Förstörelse' }, seed).filter((o) => o !== 'Försök till Förstörelse');
+    assert.ok(kall.every(english), `Swedish with ö is not Turkish: ${kall}`);
+    const pleasure = songOptions(langs, { a: 'Gökhan Kırdar', t: 'Pleasure' }, seed).filter((o) => o !== 'Pleasure');
+    assert.ok(pleasure.every(english), `an English title by a band with ı: ${pleasure}`);
+    const gurbet = songOptions(langs, { a: 'Hüseyin Altın', t: 'Merhaba Gurbet' }, seed).filter((o) => o !== 'Merhaba Gurbet');
+    assert.ok(gurbet.every((o) => !english(o)), `a plain Turkish title: ${gurbet}`);
+  }
   const small = artistOptions({ tracks: [{ a: 'Only' }] }, { a: 'Only', t: 'x' }, 1);
   assert.deepEqual(small, ['Only'], 'a pool with one band and no data to fill from gives one option');
 });
@@ -230,6 +247,20 @@ test('yazılı cevap: aynı grubun başka şarkısı, başka numara, kelime içi
   assert.equal(answerMatches('II Bloodbirds', 'II - Bloodbirds'), true, 'the leading numeral typed too');
   assert.equal(answerMatches('2 Bloodbirds', 'II - Bloodbirds'), true);
   assert.equal(answerMatches('III Bloodbirds', 'II - Bloodbirds'), false);
+  assert.equal(answerMatches('Belus Doed', 'ii. Belus Doed'), true, 'a leading track number with a period');
+  assert.equal(answerMatches('Keilohesten', 'vi. Keilohesten'), true);
+  assert.equal(answerMatches('6. Keilohesten', 'vi. Keilohesten'), true);
+  assert.equal(answerMatches('5 Keilohesten', 'vi. Keilohesten'), false);
+  assert.equal(answerMatches('Incarnate', 'I: Incarnate'), true);
+  assert.equal(answerMatches('7 Keilohesten', 'vi. Keilohesten'), false);
+  // the comparison without numerals still forgives what it always did
+  assert.equal(answerMatches('İi Yabancı', 'İki Yabancı'), true, 'a slip that happens to make a Roman word');
+  assert.equal(answerMatches("Since I'v Been Loving You", "Since I've Been Loving You"), true);
+  assert.equal(answerMatches('The xx Intro', 'Intro'), true, 'a band with a numeral-looking name in front');
+  assert.equal(answerMatches('Revlot III', 'Revolt III'), true, 'a slip in a short title with a closing numeral');
+  assert.equal(answerMatches('Revolt II', 'Revolt III'), false);
+  assert.equal(answerMatches('2-Bloodbirds', 'II - Bloodbirds'), true);
+  assert.equal(answerMatches('I Fly Amomg the Stars', 'II - I Fly Among the Stars'), true, "the title's own I is not a track number");
   // a title that is all brackets, letters that drop out of the plain alphabet
   assert.equal(normalizeAnswer('(A)'), 'a');
   assert.equal(answerMatches('A', '(A)'), true);

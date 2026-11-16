@@ -696,7 +696,8 @@ export function showPlay(p) {
       } else if (isOnline && p.self === 1 && online.tournament) {
         again = el('span', { class: 'muted' }, tally && tally.index >= tally.total ? 'Turnuva bitti.' : 'Ev sahibi sonraki oyunu başlatacak…');
       } else {
-        again = el('button', { type: 'button', class: `btn btn-primary btn-big${isOnline && p.self === 0 ? ' rematch-btn' : ''}` }, el('span', { class: 'next-label' }, 'Yeni tur'));
+        // end-pair: "Yeni tur" and the button beside it keep equal widths, whatever the first one says
+        again = el('button', { type: 'button', class: `btn btn-primary btn-big end-pair${isOnline && p.self === 0 ? ' rematch-btn' : ''}` }, el('span', { class: 'next-label' }, 'Yeni tur'));
         if (isOnline && p.self !== 0) {
           again.textContent = 'Yeni tur iste';
           again.addEventListener('click', () => { online.transport.send({ t: 'rematch' }); again.disabled = true; again.textContent = 'İstek gönderildi'; });
@@ -725,7 +726,9 @@ export function showPlay(p) {
       // a game can end on a quick tap (Refleks): that tap must not also press a button that appears under the finger
       const shownAt = Date.now();
       actions.addEventListener('click', (e) => { if (Date.now() - shownAt < 600) { e.stopPropagation(); e.preventDefault(); } }, { capture: true });
-      actions.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      // after the game's last screen is drawn (the session renders it right after onEnd), so the
+      // target is where the panel really ends up below a taller final screen
+      requestAnimationFrame(() => { if (actions.isConnected) actions.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); });
     },
   });
   activeSession = session;
@@ -1224,7 +1227,9 @@ async function handleOnlineMessage(msg) {
       // no redraw here: every replayed move already drew its screen, and a redraw would stop a playing
       // clip and clear half-typed answers
       if (online.session) online.session.resendAsk(); // a "Hazırım" sent while the link was down never arrived
-      toast('Bağlantı yeniden kuruldu', { duration: 2500 });
+      // a message the replay itself raised ("… sayılmadı") stays on screen: it says more than this
+      const shown = typeof document !== 'undefined' && document.getElementById('toast');
+      if (!(shown && shown.classList.contains('show') && shown.classList.contains('error'))) toast('Bağlantı yeniden kuruldu', { duration: 2500 });
       return;
     }
     case 'start': {
@@ -1266,8 +1271,9 @@ async function handleOnlineMessage(msg) {
       let shown = false;
       if (btn && !btn.classList.contains('next-ready')) {
         btn.classList.add('next-ready');
-        const tag = el('span', { class: 'next-ready-tag' }, ` · ${who} istiyor`);
-        (btn.querySelector('.next-label') || btn).append(tag); // one line with the label, not a second column
+        // a small badge on the button's edge: the button keeps its size, nothing on the panel moves
+        const tag = el('span', { class: 'rematch-tag' }, `${who} istiyor`);
+        btn.append(tag);
         const r = tag.getBoundingClientRect();
         shown = r.height > 0 && r.top >= 0 && r.bottom <= innerHeight;
       } else shown = !!btn;

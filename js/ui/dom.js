@@ -52,9 +52,10 @@ export function clear(node) {
  * the scroll back once the new content is in (a redraw of a scrolled screen stays put).
  */
 export function scrollKeeper(container) {
-  if (typeof document === 'undefined' || typeof scrollY !== 'number' || typeof scrollTo !== 'function') return () => {};
+  if (typeof document === 'undefined' || typeof scrollTo !== 'function') return () => {};
   const a = document.activeElement;
   if (!a || a === document.body || !container || typeof container.contains !== 'function' || !container.contains(a)) return () => {};
+  if (typeof scrollY !== 'number') return () => {}; // (read only now: reading the scroll lays the page out)
   const y = scrollY;
   return () => { if (scrollY !== y) scrollTo(0, y); };
 }
