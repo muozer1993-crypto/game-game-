@@ -860,6 +860,7 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 
 .search-field { margin: 0 0 10px; }
 .game-card-wrap[hidden], section.section[hidden] { display: none; }
+[hidden] { display: none !important; } /* an element hidden on purpose stays hidden, whatever its class says (.btn is inline-flex) */
 
 /* ---- İsim Şehir */
 .is-letter { font-size: 3.2rem; font-weight: 800; text-align: center; line-height: 1.1; margin: 2px 0 10px; letter-spacing: 0.05em; }
