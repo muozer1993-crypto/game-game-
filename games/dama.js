@@ -193,7 +193,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const moves = mine ? legalMoves(state) : [];
   let selected = null;
   let partial = []; // chosen path squares so far (multi-capture)
-  const boardBox = el('div', { class: 'dama-board', role: 'grid', 'aria-label': 'Dama tahtası' });
+  const boardBox = el('div', { class: 'dama-board', role: 'group', 'aria-label': 'Dama tahtası' });
   const lastSet = new Set(state.last || []);
 
   const drawBoard = () => {
@@ -216,7 +216,8 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
         type: 'button',
         class: `dama-sq ${dark ? 'dark' : ''} ${sources.has(i) && selected === null ? 'source' : ''} ${selected === i ? 'selected' : ''} ${isNext ? 'target' : ''} ${lastSet.has(i) ? 'last' : ''}`,
         disabled: !mine || !(sources.has(i) || isNext || selected === i),
-        'aria-label': `${String.fromCharCode(97 + c)}${N - r}${piece ? `, ${players[piece.p]}${piece.k ? ' dama' : ''}` : ''}`,
+        'aria-label': `${String.fromCharCode(97 + c)}${N - r}${piece ? `, ${players[piece.p]}${piece.k ? ' dama' : ''}` : ''}${selected === i ? ', seçili' : ''}${isNext ? ', gidilebilir' : ''}`,
+        'aria-pressed': selected === i ? 'true' : null,
         onClick: () => {
           if (isNext) {
             const m = nextSquares.get(i);

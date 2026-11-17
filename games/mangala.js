@@ -1,7 +1,7 @@
 // Mangala — the Turkish mancala variant (official TAZOF/MEB rules by default), with house rules
 // and a Bantumi variant (the mancala of old Nokia phones). Every move records its full path so
 // the board can replay the sowing stone by stone on both phones.
-import { el, render as draw } from '../js/ui/dom.js';
+import { el, render as draw, reducedMotion } from '../js/ui/dom.js';
 import { nameSuffix } from '../js/lib/tr.js';
 
 export const meta = {
@@ -11,7 +11,7 @@ export const meta = {
   description: 'Türk mangalası ya da Nokia\'nın Bantumi\'si: taşları dağıt, yakala, hazneyi doldur.',
   rules: [
     'Her oyuncunun 6 kuyusu ve bir haznesi vardır; her kuyuda 4 taş. Ekranda 1. oyuncu alt sırayı oynar ve haznesi sağdadır; 2. oyuncu üst sırayı oynar ve haznesi soldadır. Taşlar alt sırada sağa, üst sırada sola doğru akar (saat yönünün tersine).',
-    'Sırası gelen kendi kuyularından birini seçer; resmî kurala göre ilk taşı aldığı kuyuya geri bırakır, kalanını saat yönünün tersine birer birer dağıtır (kendi haznesine de bırakır, rakibin haznesini atlar). Kuyuda tek taş varsa o taş bir sonraki kuyuya gider. Ayarlardan "Sonraki kuyuya bırakılır" seçilirse ilk taş aldığın kuyuya bırakılmaz, dağıtım bir sonraki kuyudan başlar (klasik ev kuralı); 13 ya da daha çok taşla tur dönerse o kuyuya da taş düşer.',
+    'Sırası gelen kendi kuyularından birini seçer; resmî kurala göre ilk taşı aldığı kuyuya geri bırakır, kalanını saat yönünün tersine birer birer dağıtır (kendi haznesine de bırakır, rakibin haznesini atlar). Kuyuda tek taş varsa o taş bir sonraki kuyuya gider. Ayarlardan ilk taş için "Sonraki kuyuya" seçilirse ilk taş aldığın kuyuya bırakılmaz, dağıtım bir sonraki kuyudan başlar (klasik ev kuralı); 13 ya da daha çok taşla tur dönerse o kuyuya da taş düşer.',
     'Son taş kendi haznene düşerse bir daha oynarsın. Son taş rakibin kuyusuna düşer ve oradaki taş sayısını çift yaparsa o kuyudaki taşların hepsini alırsın. Son taş kendi boş kuyuna düşerse ve karşısındaki rakip kuyusu doluysa oradakileri ve kendi taşını alırsın.',
     'Bir oyuncunun kuyuları boşalınca oyun biter. Resmî kurala göre kuyuları ilk boşalan oyuncu, rakibin kuyularında kalan bütün taşları kendi haznesine alır (ayarlardan "Herkes kendi tarafını alır" seçilebilir). Haznesinde çok taşı olan kazanır; eşitlikte berabere.',
     'Varsayılanlar Türkiye Akıl ve Zekâ Oyunları Federasyonu (TAZOF) ve MEB zekâ oyunları kurallarıdır.',
@@ -20,9 +20,9 @@ export const meta = {
   ].join('\n'),
   data: [],
   settings: [
-    { key: 'variant', label: 'Oyun türü', type: 'select', default: 'mangala', options: [{ value: 'mangala', label: 'Türk Mangalası (resmî kurallar)' }, { value: 'bantumi', label: 'Bantumi (Nokia klasiği)' }] },
-    { key: 'firstStone', label: 'İlk taş', type: 'select', default: 'back', help: 'Bantumi seçiliyse kullanılmaz.', options: [{ value: 'back', label: 'Aldığın kuyuya geri bırakılır (resmî)' }, { value: 'next', label: 'Sonraki kuyuya bırakılır (ev kuralı)' }] },
-    { key: 'leftovers', label: 'Oyun sonunda kalan taşlar', type: 'select', default: 'emptier', help: 'Bantumi seçiliyse kullanılmaz.', options: [{ value: 'emptier', label: 'Kuyuları ilk boşalan alır (resmî)' }, { value: 'owner', label: 'Herkes kendi tarafını alır (ev kuralı)' }] },
+    { key: 'variant', label: 'Oyun türü', type: 'select', default: 'mangala', options: [{ value: 'mangala', label: 'Türk Mangalası (resmî)' }, { value: 'bantumi', label: 'Bantumi (Nokia klasiği)' }] },
+    { key: 'firstStone', label: 'İlk taş', type: 'select', default: 'back', help: 'Bantumi seçiliyse kullanılmaz.', options: [{ value: 'back', label: 'Aldığın kuyuya (resmî)' }, { value: 'next', label: 'Sonraki kuyuya (ev kuralı)' }] },
+    { key: 'leftovers', label: 'Oyun sonunda kalan taşlar', type: 'select', default: 'emptier', help: 'Bantumi seçiliyse kullanılmaz.', options: [{ value: 'emptier', label: 'İlk boşalan alır (resmî)' }, { value: 'owner', label: 'Sahibi alır (ev kuralı)' }] },
     { key: 'anim', label: 'Taş animasyonu', type: 'select', default: 'normal', options: [{ value: 'normal', label: 'Normal' }, { value: 'slow', label: 'Yavaş' }, { value: 'fast', label: 'Hızlı' }, { value: 'off', label: 'Kapalı' }] },
   ],
 };
@@ -207,7 +207,8 @@ let skipGuardUntil = 0; // taps on the pits are ignored until then (see the repl
 export function render(state, viewer, container, sendMove, ctx = {}) {
   const players = ctx.players || ['Oyuncu 1', 'Oyuncu 2'];
   const opts = ctx.options || {};
-  const speed = STEP_MS[opts.anim] ? opts.anim : (opts.anim === 'off' ? 'off' : 'normal');
+  let speed = STEP_MS[opts.anim] ? opts.anim : (opts.anim === 'off' ? 'off' : 'normal');
+  if (speed === 'normal' && reducedMotion() && STEP_MS.fast) speed = 'fast'; // the phone asks for less motion
   if (playedFor !== state.id) { played.clear(); playedFor = state.id; }
   const key = `${state.id}:${state.n || 0}`;
   const frames = speed === 'off' || !state.last ? [] : replayFrames(state);

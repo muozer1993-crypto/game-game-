@@ -2,10 +2,10 @@
 :root {
   --bg: #f6f7fb;
   --fg: #1b1d24;
-  --muted: #6b7280;
+  --muted: #5f6673; /* 4.9:1 even on --secondary fills */
   --card: #ffffff;
   --border: #dfe3ec;
-  --primary: #3b6ef6;
+  --primary: #2f62e8; /* white text on it: 5.2:1 */
   --primary-fg: #ffffff;
   --secondary: #e9edf7;
   --secondary-fg: #1b1d24;
@@ -14,6 +14,11 @@
   --correct: #2e7d32;
   --correct-text: #2e7d32; /* green as small text on the page background (dark themes need a lighter one) */
   --present: #9a6700;
+  --present-fill: #9a6700; /* a fill under white text (dark themes need a darker one) */
+  --correct-fill: #2e7d32;
+  --p-red-text: #c62828; /* the red, blue and yellow players' colours as text on the page */
+  --p-blue-text: #2f62e8;
+  --p-yellow-text: #8a6500;
   --absent: #5f6470;
   --danger: #c62828;
   --danger-fg: #ffffff; /* text on a --danger fill */
@@ -42,6 +47,11 @@
     --correct: #2f8a35;
     --correct-text: #5cb862;
     --present: #a8761a;
+    --present-fill: #8f6414; /* white text on it: 5.2:1 */
+    --correct-fill: #2a7a30;
+    --p-red-text: #ff6b6b;
+    --p-blue-text: #7aa2ff;
+    --p-yellow-text: #e0b13a;
     --absent: #4a4f5a;
     --danger: #ff6b6b;
     --danger-fg: #0d1117; /* white on this light red is 2.8:1 */
@@ -67,6 +77,11 @@
   --correct: #2f8a35;
   --correct-text: #5cb862;
   --present: #a8761a;
+  --present-fill: #8f6414; /* white text on it: 5.2:1 */
+  --correct-fill: #2a7a30;
+  --p-red-text: #ff6b6b;
+  --p-blue-text: #7aa2ff;
+  --p-yellow-text: #e0b13a;
   --absent: #4a4f5a;
   --danger: #ff6b6b;
   --danger-fg: #0d1117;
@@ -204,8 +219,10 @@ a { color: var(--primary); }
   color: var(--fg);
   font: inherit;
 }
+.input::placeholder, textarea.input::placeholder { color: var(--muted); opacity: 1; }
 .input-code { text-transform: uppercase; letter-spacing: 0.3em; font-size: 1.4rem; text-align: center; font-weight: 700; }
 .names { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media (max-width: 359px) { .field .select { padding-left: 8px; padding-right: 4px; } } /* a 320-px phone: room for the chosen option's text */
 
 details.rules { margin: 10px 0; }
 .record { font-size: 0.9rem; margin-top: 4px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
@@ -242,7 +259,7 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .rematch-who { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .rematch-tag {
   display: flex; position: absolute; top: -9px; right: 8px; max-width: calc(100% - 16px);
-  padding: 1px 7px; border-radius: 9px; background: var(--correct); color: #fff;
+  padding: 1px 7px; border-radius: 9px; background: var(--correct-fill); color: #fff;
   font-size: 0.72rem; font-weight: 700; line-height: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none;
 }
 @keyframes next-ready-pulse { 50% { box-shadow: 0 0 0 6px var(--correct); } }
@@ -250,7 +267,10 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .next-ask .next-ask-note { margin: 6px 0 0; min-height: calc(2 * 1.4em); } /* the two notes (before and after "Hazırım") take the same room */
 @media (prefers-reduced-motion: reduce) {
   .game-box.screen-new > *, .next-btn.next-ready, .rematch-btn.next-ready { animation: none; }
+  .typed .caret { animation: none; }
 }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.status-line:focus, h1[tabindex="-1"]:focus { outline: none; } /* it takes the focus only to keep the keyboard's place after a move */
 .play-actions { margin-top: 16px; }
 .result-banner { font-size: 1.3rem; font-weight: 700; text-align: center; margin: 8px 0 12px; }
 .status-line { text-align: center; margin: 8px 0; min-height: 1.4em; }
@@ -300,8 +320,8 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
   touch-action: manipulation;
 }
 .key-wide { flex: 1.6 1 0; max-width: 72px; font-size: 0.85rem; }
-.key.correct { background: var(--correct); color: #fff; }
-.key.present { background: var(--present); color: #fff; }
+.key.correct { background: var(--correct-fill); color: #fff; }
+.key.present { background: var(--present-fill); color: #fff; }
 .key.absent { background: var(--key-absent); color: var(--key-absent-fg); }
 .keyboard.disabled .key { opacity: 0.5; pointer-events: none; }
 .keyboard-digits .key { max-width: 64px; height: 56px; font-size: 1.2rem; }
@@ -324,8 +344,8 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
   background: var(--card);
 }
 .tile.filled { border-color: var(--muted); }
-.tile.correct { background: var(--correct); border-color: var(--correct); color: #fff; }
-.tile.present { background: var(--present); border-color: var(--present); color: #fff; }
+.tile.correct { background: var(--correct-fill); border-color: var(--correct-fill); color: #fff; }
+.tile.present { background: var(--present-fill); border-color: var(--present-fill); color: #fff; }
 .tile.absent { background: var(--absent); border-color: var(--absent); color: #fff; }
 .tile.small { width: 32px; height: 32px; font-size: 1rem; border-width: 1px; }
 .tile-row.compact { gap: 4px; }
@@ -418,7 +438,7 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .sea-cell:disabled { cursor: default; }
 .sea-cell.ship { background: var(--absent); border-color: var(--absent); }
 .sea-cell.miss { background: var(--secondary); color: var(--muted); }
-.sea-cell.hit { background: var(--present); color: #fff; }
+.sea-cell.hit { background: var(--present-fill); color: #fff; }
 .sea-cell.sunk { background: var(--danger); color: var(--danger-fg); }
 .sea-cell.pending { background: var(--secondary); }
 .tv-board {
@@ -510,6 +530,7 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .dama-sq.last::after { box-shadow: inset 0 0 0 2px rgba(0, 0, 0, 0.25); }
 .dama-piece { position: relative; z-index: 2; width: 80%; height: 80%; border-radius: 50%; }
 .mg-board { display: grid; grid-template-columns: 56px minmax(0, 1fr) 56px; gap: 6px; align-items: stretch; margin: 10px 0; }
+@media (max-width: 300px) { .mg-board { grid-template-columns: 38px minmax(0, 1fr) 38px; gap: 4px; } .mg-row { gap: 2px; } } /* large text / zoom: the pits keep a usable width */
 .mg-rows { display: grid; gap: 6px; min-width: 0; }
 .mg-row { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 4px; }
 .mg-pit {
@@ -565,11 +586,16 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .pool-wrap { position: relative; max-width: min(300px, calc((100vh - 300px) / 2)); margin: 8px auto; }
 /* two phones: the reaction row (46px) sits above too, so the ball-in-hand button under the table stays on screen */
 .emoji-bar ~ .game-box .pool-wrap { max-width: min(300px, calc((100vh - 346px) / 2)); }
+/* a phone turned sideways: the formulas above would leave a 30px table (none at all under 300px);
+   keep it playable (the whole table fits the screen height) and let the page scroll */
+@media (orientation: landscape) { .pool-wrap { min-width: min(160px, calc((100vh - 16px) / 2)); } }
 .pool-hit { position: absolute; inset: -28px -16px; z-index: 1; touch-action: none; } /* grab a ball on a cushion from behind */
 .pool-canvas { width: 100%; height: auto; display: block; border-radius: 8px; touch-action: none; }
 .dab-wrap { position: relative; max-width: 420px; margin: 8px auto; }
 .dab-board { position: relative; width: 100%; height: auto; display: block; color: var(--fg); touch-action: manipulation; }
 .dab-hit { cursor: pointer; }
+.dab-hit:focus { outline: none; }
+.dab-hit:focus-visible { stroke: color-mix(in srgb, var(--primary) 45%, transparent); } /* keyboard: the line about to be drawn */
 .dab-key { font-weight: 700; }
 /* a box's initial on its 25% tint: the line colours alone are under 3:1 there (red in light, both in dark) */
 .dab-mark.p0 { fill: #b71c1c; }
@@ -577,7 +603,7 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) .dab-mark.p0 { fill: #ff8a80; } :root:not([data-theme="light"]) .dab-mark.p1 { fill: #8ab4ff; }
 }
-.xox-board { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; max-width: 320px; margin: 12px auto; }
+.xox-board { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; width: min(320px, 100%); margin: 12px auto; }
 .xox-cell {
   aspect-ratio: 1;
   font: inherit;
@@ -631,8 +657,8 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .bt-pts { display: inline-block; min-width: 2.2em; text-align: center; font-variant-numeric: tabular-nums; } /* "0" and "4,5" take one width */
 .compare-item .badge { margin-top: 4px; }
 .compare-item .pair .badge { min-width: 5.6em; text-align: center; } /* Beni Tanı's verdicts: one width, the line wraps the same before and after */
-.badge.match { background: var(--correct); color: #fff; }
-.badge.close { background: var(--present); color: #fff; }
+.badge.match { background: var(--correct-fill); color: #fff; }
+.badge.close { background: var(--present-fill); color: #fff; }
 .badge.miss { background: var(--absent); color: #fff; }
 .judge-buttons { display: flex; gap: 6px; margin-top: 6px; }
 .judge-buttons .btn { flex: 1; min-height: 44px; padding: 6px 8px; font-size: 0.95rem; }
@@ -753,7 +779,7 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .wh-chip { padding: 2px 10px; border-radius: 999px; background: var(--secondary); color: var(--secondary-fg); font-size: 0.9rem; font-weight: 600; }
 .wh-chip.shared { text-decoration: line-through; opacity: 0.6; }
 /* words the word list does not have: played anyway, open to an objection at the end (js/ui/disputes.js) */
-.unlisted-mark { display: inline-block; margin-left: 2px; padding: 0 5px; border-radius: 999px; background: var(--present); color: #fff; font-size: 0.7em; font-weight: 800; line-height: 1.5; vertical-align: super; }
+.unlisted-mark { display: inline-block; margin-left: 2px; padding: 0 5px; border-radius: 999px; background: var(--present-fill); color: #fff; font-size: 0.7em; font-weight: 800; line-height: 1.5; vertical-align: super; }
 .wh-chip.unlisted, .chain-word.unlisted { outline: 2px dashed var(--present); outline-offset: 1px; }
 .wh-chip.objected, .chain-word.objected { text-decoration: line-through; opacity: 0.6; }
 .objections { margin: 10px 0; }
@@ -781,7 +807,7 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .tb-count.taboo { color: var(--danger); font-weight: 700; }
 .tb-list { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin: 8px 0; }
 .tb-chip { padding: 2px 10px; border-radius: 999px; background: var(--secondary); color: var(--secondary-fg); font-size: 0.9rem; font-weight: 600; }
-.tb-chip.ok { background: var(--correct); color: #fff; }
+.tb-chip.ok { background: var(--correct-fill); color: #fff; }
 .tb-chip.taboo { background: var(--danger); color: var(--danger-fg); }
 .tb-chip.time { opacity: 0.75; font-weight: 500; } /* the card on screen when time ran out: put aside */
 .tb-rounds { display: grid; gap: 8px; margin-top: 8px; }
@@ -840,7 +866,7 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .dk-pair { position: relative; width: 78px; height: 78px; }
 .dk-pair .pcard:first-child { position: absolute; left: 0; top: 0; }
 .dk-pair .pcard:last-child { position: absolute; left: 32px; top: 14px; }
-.phand .pcard:disabled { opacity: 0.55; } /* faded, but the ranks stay readable for planning */
+.phand .pcard:disabled { opacity: 0.72; } /* faded, but the ranks stay readable for planning */
 .pcard.trump { border-color: var(--present); box-shadow: 0 0 0 1px var(--present); }
 .dk-info .pcard.small { width: 32px; height: 44px; font-size: 0.85rem; vertical-align: middle; }
 .dk-info .pcard.small .suit { font-size: 0.85rem; }
@@ -862,12 +888,14 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .ms-cell.open { background: var(--card); border: 1px solid var(--border); }
 .ms-cell.mine { background: var(--danger); color: var(--danger-fg); }
 .ms-cell.wrong { background: var(--present); }
-.ms-cell.n1 { color: #1e88e5; } .ms-cell.n2 { color: #43a047; } .ms-cell.n3 { color: #e53935; } .ms-cell.n4 { color: #5e35b1; }
+.ms-cell.n1 { color: #1565c0; } .ms-cell.n2 { color: #2e7d32; } .ms-cell.n3 { color: #e53935; } .ms-cell.n4 { color: #5e35b1; }
 .ms-cell.n5 { color: #8d6e63; } .ms-cell.n6 { color: #00838f; } .ms-cell.n7 { color: #111; } .ms-cell.n8 { color: #777; }
 /* dark open cells: the deep purple, brown, black and grey counts need lighter shades */
+:root[data-theme="dark"] .ms-cell.n1 { color: #64b5f6; } :root[data-theme="dark"] .ms-cell.n2 { color: #81c784; } :root[data-theme="dark"] .ms-cell.n3 { color: #ef9a9a; }
 :root[data-theme="dark"] .ms-cell.n4 { color: #b39ddb; } :root[data-theme="dark"] .ms-cell.n5 { color: #bcaaa4; }
 :root[data-theme="dark"] .ms-cell.n6 { color: #26c6da; } :root[data-theme="dark"] .ms-cell.n7 { color: #e0e0e0; } :root[data-theme="dark"] .ms-cell.n8 { color: #9e9e9e; }
 @media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .ms-cell.n1 { color: #64b5f6; } :root:not([data-theme="light"]) .ms-cell.n2 { color: #81c784; } :root:not([data-theme="light"]) .ms-cell.n3 { color: #ef9a9a; }
   :root:not([data-theme="light"]) .ms-cell.n4 { color: #b39ddb; } :root:not([data-theme="light"]) .ms-cell.n5 { color: #bcaaa4; }
   :root:not([data-theme="light"]) .ms-cell.n6 { color: #26c6da; } :root:not([data-theme="light"]) .ms-cell.n7 { color: #e0e0e0; } :root:not([data-theme="light"]) .ms-cell.n8 { color: #9e9e9e; }
 }
@@ -881,7 +909,7 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .sd-cell.hb { border-bottom: 2px solid var(--fg); }
 .sd-cell.same { background: #fff3cd; }
 .sd-cell.sel { background: #cfe0ff; outline: 2px solid var(--primary); outline-offset: -2px; }
-.sd-cell.bad { color: var(--danger); background: rgba(198, 40, 40, 0.15); }
+.sd-cell.bad { color: #a31515; background: rgba(198, 40, 40, 0.15); } /* 4.5:1 also on the selected and same-digit tints */
 :root[data-theme="dark"] .sd-cell.same { background: rgba(255, 213, 79, 0.25); }
 :root[data-theme="dark"] .sd-cell.sel { background: rgba(91, 140, 255, 0.35); }
 /* a wrong digit keeps its red tint and a lighter red on the highlights (as in light mode, where .bad wins) */
@@ -935,6 +963,8 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .hx-board { display: block; width: 100%; height: auto; touch-action: manipulation; }
 .hx-cell { fill: var(--key); stroke: var(--bg); stroke-width: 0.6; }
 .hx-cell.free { cursor: pointer; }
+.hx-cell:focus { outline: none; }
+.hx-cell:focus-visible { stroke: var(--primary); stroke-width: 4; }
 .hx-cell.p0 { fill: #e53935; }
 .hx-cell.p1 { fill: #3b6ef6; }
 .hx-cell.last { stroke: #fff; stroke-width: 1.4; }
@@ -994,7 +1024,9 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .yz-die { display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; }
 .yz-die.hidden { font-size: 1.6rem; opacity: 0.55; }
 .yz-die.hit { background: var(--secondary); border-radius: 10px; color: var(--correct); }
-.yz-bid { text-align: center; padding: 10px 12px; margin-bottom: 8px; font-size: 1.1rem; }
+.yz-bid { display: flex; justify-content: center; align-items: center; gap: 0.3em; padding: 10px 12px; margin-bottom: 8px; font-size: 1.1rem; min-height: calc(1.1rem * 1.6 + 22px); white-space: nowrap; }
+.yz-by { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.yz-bid strong { flex: none; }
 .yz-controls { display: flex; flex-direction: column; gap: 10px; align-items: center; margin-top: 6px; }
 .yz-qty { display: flex; align-items: center; gap: 12px; }
 .yz-qty .btn { min-width: 48px; font-size: 1.4rem; }
@@ -1007,7 +1039,7 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 
 /* ---- Zar Pokeri */
 .zp-dice { display: flex; gap: 8px; justify-content: center; margin: 6px 0 8px; }
-.zp-die { font: inherit; font-size: 2.4rem; line-height: 1; min-width: 56px; min-height: 60px; padding: 4px; border-radius: 12px; border: 2px solid var(--border); background: var(--card); color: var(--fg); cursor: pointer; }
+.zp-die { font: inherit; font-size: 2.4rem; line-height: 1; flex: 0 1 56px; min-width: 0; min-height: 60px; padding: 4px; border-radius: 12px; border: 2px solid var(--border); background: var(--card); color: var(--fg); cursor: pointer; }
 .zp-die:disabled { cursor: default; opacity: 0.85; }
 .zp-die.held { border-color: var(--primary); background: var(--secondary); box-shadow: inset 0 0 0 2px var(--primary); }
 .zp-die.held::after { content: 'tut'; display: block; font-size: 0.65rem; font-weight: 700; color: var(--primary); line-height: 1; margin-top: 2px; }
@@ -1023,6 +1055,11 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .zp-val { text-align: center; }
 .zp-val.can { color: var(--primary); font-weight: 700; }
 .zp-val.used { font-weight: 600; }
+/* a short phone: tighter rows, so more of the open categories sit on screen under the dice */
+@media (max-height: 700px) {
+  .zp-row { min-height: 31px; }
+  .zp-row.can { min-height: 38px; margin: 1px 0; }
+}
 
 .gm-board.dense { gap: 1px; margin-left: -12px; margin-right: -12px; max-width: none; } /* 15×15 needs the gutter */
 .gm-board.dense .gm-cell { border-radius: 2px; }
@@ -1038,7 +1075,7 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .ce-suits { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 4px 0 8px; flex-wrap: wrap; }
 .ce-suit { font-size: 1.6rem; min-width: 52px; line-height: 1; padding: 6px 8px; }
 .ce-suit.red { color: #d32f2f; }
-.ce-hand .pcard:disabled { opacity: 0.55; } /* cards that do not fit the pile (still readable) */
+.ce-hand .pcard:disabled { opacity: 0.72; } /* cards that do not fit the pile (still readable) */
 
 /* ---- Poker */
 .pk-table { padding: 10px 8px; text-align: center; margin: 6px 0; }
@@ -1094,7 +1131,7 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .ok-note { font-size: 0.72rem; color: var(--muted); }
 .ok-tile { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 38px; height: 52px; border-radius: 7px; background: #fbf4e3; color: #1b1d24; border: 1px solid #c9b995; box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.12); font: inherit; font-weight: 800; font-size: 1.15rem; padding: 0; cursor: pointer; touch-action: manipulation; }
 .ok-tile.small { width: 30px; height: 40px; font-size: 0.95rem; }
-.ok-tile.c0 { color: #c62828; } .ok-tile.c1 { color: #9a6b00; } .ok-tile.c2 { color: #1565c0; } .ok-tile.c3 { color: #1b1d24; }
+.ok-tile.c0 { color: #c62828; } .ok-tile.c1 { color: #8a5f00; } .ok-tile.c2 { color: #1565c0; } .ok-tile.c3 { color: #1b1d24; }
 .ok-tile.c4 { color: #6a1b9a; }
 .ok-tile.back { background: var(--primary); color: var(--primary-fg); border-color: transparent; }
 .ok-tile.empty { background: var(--secondary); color: var(--muted); border-style: dashed; }
@@ -1127,6 +1164,8 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .go-stones { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 .go-board { display: block; width: 100%; height: auto; touch-action: manipulation; }
 .go-cell.free { cursor: pointer; }
+.go-cell:focus { outline: none; }
+.go-cell:focus-visible { fill: color-mix(in srgb, var(--primary) 35%, transparent); stroke: var(--primary); stroke-width: 0.08; }
 
 /* ---- Altmışaltı */
 .ss-table { display: flex; justify-content: space-around; gap: 8px; padding: 8px 6px; margin: 6px 0; }

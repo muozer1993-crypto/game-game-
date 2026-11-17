@@ -367,7 +367,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
 
   const drawBoard = () => {
     const targets = new Set(selected == null ? [] : moves.filter((m) => m.from === selected).map((m) => m.to));
-    const board = el('div', { class: 'ch-board', role: 'grid', 'aria-label': 'Satranç tahtası' });
+    const board = el('div', { class: 'ch-board', role: 'group', 'aria-label': 'Satranç tahtası' });
     const kingInCheck = state.check ? kingSquare(state.cells, state.turn) : -1;
     for (let k = 0; k < 64; k++) {
       const i = flip ? 63 - k : k;
@@ -378,13 +378,14 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       board.append(el('button', {
         type: 'button',
         class: `ch-cell ${dark ? 'dark' : 'light'} ${isLast ? 'last' : ''} ${selected === i ? 'sel' : ''} ${targets.has(i) ? (p ? 'capture' : 'target') : ''} ${i === kingInCheck ? 'check' : ''} ${p ? p[0] : ''}`,
-        'aria-label': `${name(i)}${p ? `, ${pieceName(p)}` : ''}`,
+        'aria-label': `${name(i)}${p ? `, ${pieceName(p)}` : ''}${selected === i ? ', seçili' : ''}${targets.has(i) ? (p ? ', alınabilir' : ', gidilebilir') : ''}`,
+        'aria-pressed': selected === i ? 'true' : null,
         disabled: !mine || !(canPick || targets.has(i) || selected != null),
         onClick: () => {
           if (targets.has(i)) {
             const from = selected;
             const promo = moves.some((m) => m.from === from && m.to === i && m.promo);
-            if (promo) { pendingPromo = { from, to: i }; drawPromo(); return; }
+            if (promo) { pendingPromo = { from, to: i }; drawPromo(); drawStatus(); return; }
             selected = null;
             sendMove({ type: 'move', from, to: i });
             return;
@@ -418,7 +419,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     let status;
     if (state.over) {
       status = state.result.draw ? `Berabere (${REASON[state.reason]}).` : `${players[playerOf(state, state.result.winner)]} kazandı (${REASON[state.reason]})!`;
-    } else if (mine) status = `${state.check ? 'Şah! ' : ''}Sıra sende, ${players[viewer]} (${colourName(myColour)})${selected != null ? ': nereye?' : ''}`;
+    } else if (mine) status = `${state.check ? 'Şah! ' : ''}Sıra sende, ${players[viewer]} (${colourName(myColour)})${pendingPromo ? ': hangi taş?' : selected != null ? ': nereye?' : ''}`;
     else status = `${state.check ? 'Şah! ' : ''}${players[playerOf(state, state.turn)]} (${colourName(state.turn)}) düşünüyor…`;
     draw(statusLine, el('strong', {}, status));
   }

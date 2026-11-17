@@ -27,6 +27,8 @@ export const DIGIT_ROWS = [
  * @param {boolean} [opts.physical]   also listen to the physical keyboard (default true)
  * @returns {{ setKeyStates(states: Record<string,string>): void, setDisabled(d: boolean): void, destroy(): void }}
  */
+const STATE_WORDS = { correct: 'doğru', present: 'yeri yanlış', absent: 'yok' };
+
 export function createKeyboard(container, opts) {
   const layout = opts.layout === 'digits' ? DIGIT_ROWS : TR_ROWS;
   const root = el('div', { class: `keyboard ${opts.layout === 'digits' ? 'keyboard-digits' : ''}` });
@@ -59,12 +61,18 @@ export function createKeyboard(container, opts) {
   }
   clear(container).append(root);
 
-  const INTERACTIVE = new Set(['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON', 'A', 'SUMMARY']);
+  const TYPING = new Set(['INPUT', 'TEXTAREA', 'SELECT']);
+  const ACTIVATE = new Set(['BUTTON', 'A', 'SUMMARY']);
   const onKeydown = (e) => {
     if (e.ctrlKey || e.metaKey || e.altKey) return;
     const target = e.target;
-    // Let focused controls (buttons, links, inputs) handle their own keys.
-    if (target && INTERACTIVE.has(target.tagName)) return;
+    // a field types for itself
+    if (target && (TYPING.has(target.tagName) || target.isContentEditable)) return;
+    // a button or link left focused by a tap (an on-screen key, "Kelimeyi bütün olarak tahmin et")
+    // still lets letters and ⌫ through to the game; Enter and Space stay its own, except on one of
+    // this keyboard's keys, where Enter sends the entry instead of typing that key again
+    const ownKey = !!target && root.contains(target);
+    if (target && ACTIVATE.has(target.tagName) && !ownKey && (e.key === 'Enter' || e.key === ' ')) return;
     if (e.key === 'Enter') { e.preventDefault(); press('enter'); return; }
     if (e.key === 'Backspace') { e.preventDefault(); press('backspace'); return; }
     if (e.key.length !== 1) return;
@@ -80,6 +88,8 @@ export function createKeyboard(container, opts) {
         btn.classList.remove('correct', 'present', 'absent');
         const s = states && states[key];
         if (s) btn.classList.add(s);
+        // the colour said in words too, for screen readers ("E, yeri yanlış")
+        if (key !== 'enter' && key !== 'backspace') btn.setAttribute('aria-label', `${key.toLocaleUpperCase('tr-TR')}${STATE_WORDS[s] ? `, ${STATE_WORDS[s]}` : ''}`);
       }
     },
     setDisabled(d) {

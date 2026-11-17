@@ -26,8 +26,8 @@ export const meta = {
     {
       key: 'ghRule', label: 'ğ kuralı', type: 'select', default: 'skip',
       options: [
-        { value: 'skip', label: 'ğ atlanır (ka-ğıt → "ıt" ile başla)' },
-        { value: 'forbid', label: 'Son hecesi ğ ile başlarsa yasak' },
+        { value: 'skip', label: 'ğ atlanır (ka-ğıt → "ıt")' },
+        { value: 'forbid', label: 'Son hece ğ ile başlayamaz' },
       ],
     },
   ],

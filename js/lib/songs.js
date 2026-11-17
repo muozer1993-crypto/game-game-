@@ -29,8 +29,8 @@ export const SOURCES = [
   { key: 'srcSecim', label: 'Dinlediğimiz gruplar (oyun başında seçilir)', default: false },
 ];
 export const PICK_OPTIONS = [
-  { value: 'birlesim', label: 'İkimizin seçtikleri (yarı yarıya)' },
-  { value: 'ortak', label: 'Yalnız ikimizin de seçtiği gruplar' },
+  { value: 'birlesim', label: 'İkimizinkiler, yarı yarıya' },
+  { value: 'ortak', label: 'Yalnız ortak seçtiklerimiz' },
 ];
 /** Settings entries both games show for the sources. */
 export const sourceSettings = () => [
@@ -213,7 +213,7 @@ export function poolFor(data, { pool = 'liste', picks = [[], []], needAudio = fa
 }
 
 /**
- * 'Yalnız ikimizin de seçtiği gruplar' found no band both picked (with sound, when the game needs
+ * 'Yalnız ortak seçtiklerimiz' found no band both picked (with sound, when the game needs
  * it), so every picked band plays: the games say so when the first song comes up.
  */
 export function noSharedPick(data, picks = [[], []], needAudio = false) {

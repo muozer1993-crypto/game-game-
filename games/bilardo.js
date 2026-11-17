@@ -5,7 +5,7 @@
 // The physics are deterministic (fixed time step, no trigonometry), so applyMove can run
 // the whole shot on both devices and reach exactly the same final positions; render()
 // re-runs the same simulation to animate it.
-import { el, render as draw } from '../js/ui/dom.js';
+import { el, render as draw, reducedMotion } from '../js/ui/dom.js';
 import { playClick, playPocket } from '../js/lib/sfx.js';
 
 export const meta = {
@@ -377,6 +377,18 @@ export function getResult(state) {
 // ----------------------------------------------------------------- render
 const animated = new WeakSet(); // state.last objects whose animation already played on this device
 
+/**
+ * The shot that ends the game is still to be played out on this device: the end panel waits for the
+ * balls to stop (the replay advances two simulation steps per frame, at about 60 frames a second).
+ */
+const replayStep = () => (reducedMotion() ? 6 : 2); // simulation steps per frame: three times faster with less motion
+
+export function endDelay(state) {
+  if (!state.over || !state.last || animated.has(state.last)) return 0;
+  const frames = simulate(state.last.before, state.last.shot, true).frames.length;
+  return frames ? Math.ceil(frames / replayStep()) * (1000 / 60) + 300 : 0;
+}
+
 function drawBall(c, b) {
   const col = COLORS[b.id] || '#999';
   c.save();
@@ -609,6 +621,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       balls = state.last.before.map((b) => ({ ...b }));
       let k = 0;
       let ev = 0; // next sound event; frame k shows simulation step 2k
+      const step = replayStep();
       const tick = () => {
         const f = frames[Math.min(k, frames.length - 1)];
         balls = f.map(([id, x, y, p]) => ({ id, x, y, pocketed: !!p }));
@@ -621,7 +634,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
         }
         if (loud) playClick(loud);
         if (drop) playPocket();
-        k += 2;
+        k += step;
         if (k < frames.length) raf = requestAnimationFrame(tick);
         else { animating = false; balls = restBalls(); paint(); setStatus(); drawHandBar(); }
       };
@@ -779,4 +792,4 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   return () => { if (raf) cancelAnimationFrame(raf); };
 }
 
-export default { id: 'bilardo', meta, setup, applyMove, render, getTurn, getResult };
+export default { id: 'bilardo', meta, setup, applyMove, render, getTurn, getResult, endDelay };

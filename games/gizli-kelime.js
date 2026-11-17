@@ -430,7 +430,7 @@ export function createGame(cfg) {
         return null;
       }
       if (state.secretMode !== 'manual') {
-        draw(container, el('p', { class: 'hint' }, `${isNumber ? 'Rastgele sayı seçilemedi.' : 'Yaygın kelime listesi yüklenemediği için gizli kelime seçilemedi.'} Ayarlardan "Herkes rakibi için kendisi seçsin" seçeneğini dene.`));
+        draw(container, el('p', { class: 'hint' }, `${isNumber ? 'Rastgele sayı seçilemedi.' : 'Yaygın kelime listesi yüklenemediği için gizli kelime seçilemedi.'} Ayarlardan "Herkes rakibine seçsin" seçeneğini dene.`));
         return null;
       }
       const draftKey = `secret:${viewer}`;
@@ -641,8 +641,8 @@ export const meta = {
       key: 'secretMode', label: 'Gizli kelimeyi kim seçsin?', type: 'select', default: 'manual',
       help: 'Kendiniz seçerseniz her oyuncu rakibi için bir kelime yazar; rastgelede liste seçer. Ortakta ikiniz aynı kelimeyi ararsınız.',
       options: [
-        { value: 'manual', label: 'Herkes rakibi için kendisi seçsin' },
-        { value: 'random', label: 'Rastgele, herkese ayrı kelime' },
+        { value: 'manual', label: 'Herkes rakibine seçsin' },
+        { value: 'random', label: 'Rastgele, ayrı kelimeler' },
         { value: 'shared', label: 'Ortak rastgele kelime' },
       ],
     },

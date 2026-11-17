@@ -173,7 +173,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     const g = state.grids[p];
     const clash = conflicts(g);
     const sel = selected.get(key);
-    const box = el('div', { class: 'sd-grid', role: 'grid', 'aria-label': 'Sudoku' });
+    const box = el('div', { class: 'sd-grid', role: 'group', 'aria-label': 'Sudoku' });
     for (let i = 0; i < 81; i++) {
       const given = !!state.givens[i];
       const r = Math.floor(i / 9);
@@ -182,7 +182,8 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
         type: 'button',
         class: `sd-cell ${given ? 'given' : ''} ${clash.has(i) ? 'bad' : ''} ${interactive && sel === i ? 'sel' : ''} ${interactive && sel != null && g[sel] && g[i] === g[sel] ? 'same' : ''} ${c % 3 === 2 && c < 8 ? 'vb' : ''} ${r % 3 === 2 && r < 8 ? 'hb' : ''}`,
         disabled: !interactive || given,
-        'aria-label': `${r + 1}. satır ${c + 1}. sütun${g[i] ? `, ${g[i]}` : ''}`,
+        'aria-label': `${r + 1}. satır ${c + 1}. sütun${g[i] ? `, ${g[i]}` : ''}${clash.has(i) ? ', çakışıyor' : ''}${interactive && sel === i ? ', seçili' : ''}`,
+        'aria-pressed': interactive && sel === i ? 'true' : null,
         onClick: () => { selected.set(key, i); redraw(); },
       }, g[i] ? String(g[i]) : ''));
     }

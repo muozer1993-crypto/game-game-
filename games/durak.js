@@ -206,11 +206,12 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const undefendedIdx = state.table.findIndex((t) => !t.d);
   const hand = sortHand(state.hands[viewer], state.trump);
 
+  const longName = players.some((n) => [...String(n)].length > 9);
   let status;
   if (state.over) status = state.loser == null ? 'Berabere: ikinizin de kartı bitti.' : `${players[state.loser]} durak oldu! ${players[1 - state.loser]} kazandı.`;
-  else if (mine && state.phase === 'defend') status = `Savun, ${players[viewer]}: kıracak bir kart seç ya da "Kartları al"`;
-  else if (mine && state.taking) status = `${players[opp]} alıyor: istersen aynı değerde kart ekle, sonra "Bitti"`;
-  else if (mine) status = state.table.length ? `Saldırmaya devam et, ${players[viewer]} (aynı değerde kart) ya da "Bitti"` : `Saldır, ${players[viewer]}: bir kart at`;
+  else if (mine && state.phase === 'defend') status = `Savun, ${players[viewer]}: kıracak kart seç ya da "Kartları al"`;
+  else if (mine && state.taking) status = `${players[opp]} alıyor: aynı değerde kart ekle ya da "Bitti"`;
+  else if (mine) status = state.table.length ? `Devam et, ${players[viewer]}: aynı değerde kart at ya da "Bitti"` : `Saldır, ${players[viewer]}: bir kart at`;
   else status = `${players[turn]} ${state.phase === 'defend' ? 'savunuyor' : 'saldırıyor'}…`;
 
   const canPlay = (c) => {
@@ -240,7 +241,9 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const handBox = (mine && state.phase === 'attack' && !state.table.length ? armAfter : (x) => x)(
     el('div', { class: 'phand' }, hand.map((c) => cardEl(c, { button: true, trump: c.s === state.trump, disabled: !canPlay(c), onClick: () => play(c) }))));
   draw(container,
-    el('div', { class: 'status-line two' }, el('strong', {}, status)), // "Savun, <name>: …" wraps: two lines of room
+    // "Savun, <name>: …" wraps: two lines of room, three with a long name (the same for the whole
+    // game, so nothing below moves when the turn passes)
+    el('div', { class: `status-line two${longName ? ' three' : ''}` }, el('strong', {}, status)),
     info,
     el('div', { class: 'col-title' }, `Masa — ${players[attacker]} saldırıyor, ${players[defender]} savunuyor${state.taking ? ' (alıyor)' : ''}`),
     tableView,

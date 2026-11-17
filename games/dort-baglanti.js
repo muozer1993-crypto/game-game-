@@ -91,7 +91,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const players = ctx.players || ['Oyuncu 1', 'Oyuncu 2'];
   const mine = !state.over && viewer === state.turn;
   const lineSet = new Set(state.line || []);
-  const board = el('div', { class: 'c4-board', role: 'grid', 'aria-label': 'Dört Bağlantı tahtası', style: { gridTemplateColumns: `repeat(${state.cols}, 1fr)` } });
+  const board = el('div', { class: 'c4-board', role: 'group', 'aria-label': 'Dört Bağlantı tahtası', style: { gridTemplateColumns: `repeat(${state.cols}, 1fr)` } });
   for (let r = 0; r < state.rows; r++) {
     for (let c = 0; c < state.cols; c++) {
       const idx = r * state.cols + c;

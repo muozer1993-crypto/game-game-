@@ -33,6 +33,17 @@ export function svg(tag, attrs = {}, ...children) {
   return node;
 }
 
+/** The phone asks for less motion: long replays (sowing, a pawn's walk, rolling balls) play faster. */
+export const reducedMotion = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/**
+ * A board cell drawn in SVG (Go, Hex, Noktalar ve Kutular) as a button for the keyboard and screen
+ * readers: Tab reaches it, Enter or Space plays it.
+ */
+export function pressKeys(act) {
+  return { tabindex: '0', role: 'button', onKeydown: (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); act(); } } };
+}
+
 export function append(parent, children) {
   for (const child of children.flat(Infinity)) {
     if (child === null || child === undefined || child === false) continue;
@@ -126,13 +137,22 @@ function coversControls(host, spot) {
   return false;
 }
 
-/** Short non-blocking message at the bottom of the screen (or the top, see below). */
-export function toast(message, { duration = 2200, kind = '', top } = {}) {
+/**
+ * The toast's live region, made empty when the app starts: a screen reader announces text put into
+ * a region it already knows, not one that arrives with its text already in it.
+ */
+export function toastHost() {
   let host = document.getElementById('toast');
   if (!host) {
-    host = el('div', { id: 'toast', class: 'toast', role: 'status', 'aria-live': 'polite' });
+    host = el('div', { id: 'toast', class: 'toast', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' });
     document.body.append(host);
   }
+  return host;
+}
+
+/** Short non-blocking message at the bottom of the screen (or the top, see below). */
+export function toast(message, { duration = 2200, kind = '', top } = {}) {
+  const host = toastHost();
   let spot = document.getElementById('toast-spot');
   if (!spot) {
     spot = el('div', { id: 'toast-spot', class: 'toast-spot', 'aria-hidden': 'true' });
@@ -147,7 +167,8 @@ export function toast(message, { duration = 2200, kind = '', top } = {}) {
   let place = (auto ? coversControls(host, spot) : top) ? ' top' : '';
   host.className = `toast show ${kind}${place}`.replace(/\s+/g, ' ').trim();
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => { host.className = `toast${place}`; }, duration);
+  // it fades out where it is now (liftToast may have moved it to the top meanwhile)
+  toastTimer = setTimeout(() => { host.className = host.classList.contains('top') ? 'toast top' : 'toast'; }, duration);
   // a caller often shows the message and then draws the next screen ("Bağlantı koptu", then the
   // menu): before that screen is painted, look again at what it has at the bottom
   if (auto && typeof requestAnimationFrame === 'function') {
@@ -157,4 +178,13 @@ export function toast(message, { duration = 2200, kind = '', top } = {}) {
       if (now !== place) { place = now; host.classList.toggle('top', !!now); }
     });
   }
+}
+
+/**
+ * A game screen opens under a note kept at the bottom (the version note shown in the lobby): the
+ * game may put a keypad there a moment later, so the note moves to the top for the rest of its time.
+ */
+export function liftToast() {
+  const host = typeof document === 'undefined' ? null : document.getElementById('toast');
+  if (host && host.classList.contains('show')) host.classList.add('top');
 }

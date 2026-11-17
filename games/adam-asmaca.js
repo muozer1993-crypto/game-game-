@@ -28,7 +28,7 @@ export const meta = {
       key: 'secretMode', label: 'Kelimeyi kim seçsin?', type: 'select', default: 'manual',
       options: [
         { value: 'manual', label: 'Rakip için kendim yazarım' },
-        { value: 'random', label: 'Rastgele gelsin (yaygın kelimeler)' },
+        { value: 'random', label: 'Rastgele (yaygın kelimeler)' },
       ],
     },
     { key: 'rounds', label: 'Kelime sayısı', type: 'select', default: 4, options: [{ value: 2, label: '2 (birer kelime)' }, { value: 4, label: '4 (ikişer kelime)' }, { value: 6, label: '6 (üçer kelime)' }] },

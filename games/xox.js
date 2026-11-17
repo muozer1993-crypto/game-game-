@@ -54,7 +54,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const mark = (p) => (p === state.first ? 'X' : 'O');
   const mine = !state.over && viewer === state.turn;
   const lineSet = new Set(state.line || []);
-  const board = el('div', { class: 'xox-board', role: 'grid', 'aria-label': 'XOX tahtası' },
+  const board = el('div', { class: 'xox-board', role: 'group', 'aria-label': 'XOX tahtası' },
     state.cells.map((v, i) => el('button', {
       type: 'button',
       class: `xox-cell ${lineSet.has(i) ? 'win' : ''} ${v === null ? '' : `p${v}`}`,

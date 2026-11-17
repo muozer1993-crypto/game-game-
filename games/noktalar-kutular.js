@@ -1,6 +1,6 @@
 // Noktalar ve Kutular — draw lines between dots; closing a box scores it and grants
 // another move. Most boxes wins.
-import { el, svg, render as draw } from '../js/ui/dom.js';
+import { el, svg, render as draw, pressKeys } from '../js/ui/dom.js';
 import { backdrop } from '../js/ui/paint.js';
 
 export const meta = {
@@ -106,7 +106,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const S = 64;        // spacing between dots in SVG units
   const M = 20;        // margin
   const size = M * 2 + S * n;
-  const root = svg('svg', { viewBox: `0 0 ${size} ${size}`, class: 'dab-board', role: 'img', 'aria-label': 'Noktalar ve kutular tahtası' });
+  const root = svg('svg', { viewBox: `0 0 ${size} ${size}`, class: 'dab-board', role: 'group', 'aria-label': 'Noktalar ve kutular tahtası' });
 
   // boxes
   for (let r = 0; r < n; r++) {
@@ -118,7 +118,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     }
   }
   // lines (taken + free hit areas)
-  const line = (kind, index, x1, y1, x2, y2) => {
+  const line = (kind, index, x1, y1, x2, y2, label) => {
     const owner = state[kind][index];
     const isLast = state.last && state.last.kind === kind && state.last.index === index;
     if (owner !== null) {
@@ -126,15 +126,16 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     } else {
       root.append(svg('line', { x1, y1, x2, y2, stroke: 'currentColor', 'stroke-width': 2, 'stroke-dasharray': '2 6', opacity: 0.35, 'stroke-linecap': 'round' }));
       if (mine) {
+        const act = () => sendMove({ type: 'line', kind, index });
         root.append(svg('line', {
           x1, y1, x2, y2, stroke: 'transparent', 'stroke-width': S * 0.5, class: 'dab-hit', 'stroke-linecap': 'butt',
-          onClick: () => sendMove({ type: 'line', kind, index }),
+          onClick: act, 'aria-label': label, ...pressKeys(act), // the keyboard and screen readers reach the free lines too
         }));
       }
     }
   };
-  for (let r = 0; r <= n; r++) for (let c = 0; c < n; c++) line('h', hIdx(n, r, c), M + c * S + 8, M + r * S, M + (c + 1) * S - 8, M + r * S);
-  for (let r = 0; r < n; r++) for (let c = 0; c <= n; c++) line('v', vIdx(n, r, c), M + c * S, M + r * S + 8, M + c * S, M + (r + 1) * S - 8);
+  for (let r = 0; r <= n; r++) for (let c = 0; c < n; c++) line('h', hIdx(n, r, c), M + c * S + 8, M + r * S, M + (c + 1) * S - 8, M + r * S, `Yatay çizgi: ${r + 1}. sıra, ${c + 1}. aralık`);
+  for (let r = 0; r < n; r++) for (let c = 0; c <= n; c++) line('v', vIdx(n, r, c), M + c * S, M + r * S + 8, M + c * S, M + (r + 1) * S - 8, `Dikey çizgi: ${c + 1}. sütun, ${r + 1}. aralık`);
   // dots on top
   for (let r = 0; r <= n; r++) for (let c = 0; c <= n; c++) root.append(svg('circle', { cx: M + c * S, cy: M + r * S, r: 6, fill: 'currentColor' }));
 
@@ -144,8 +145,9 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   draw(container,
     el('div', { class: 'status-line two' }, el('strong', {}, status)),
     el('div', { class: 'c4-legend' },
-      el('span', { class: 'dab-key', style: { color: COLORS[0] } }, `${players[0]}: ${state.scores[0]}`),
-      el('span', { class: 'dab-key', style: { color: COLORS[1] } }, `${players[1]}: ${state.scores[1]}`),
+      // the players' colours as text: a shade that reads on the page in each theme (css/app.css)
+      el('span', { class: 'dab-key', style: { color: 'var(--p-red-text)' } }, `${players[0]}: ${state.scores[0]}`),
+      el('span', { class: 'dab-key', style: { color: 'var(--p-blue-text)' } }, `${players[1]}: ${state.scores[1]}`),
     ),
     el('div', { class: 'dab-wrap' }, backdrop(), root),
   );

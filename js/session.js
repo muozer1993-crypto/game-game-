@@ -15,6 +15,7 @@
 // new screen comes up (a new game, a 'next', a shared 'start', a round's end or objections) taps
 // are ignored for a moment as well, on either phone and on one phone.
 import { showHandoff } from './ui/handoff.js';
+import { announce, focusMark, restoreFocus } from './ui/a11y.js';
 import { toast, scrollKeeper } from './ui/dom.js';
 import { markNextReady } from './ui/next.js';
 
@@ -313,7 +314,13 @@ export class Session {
     if (result) {
       this.ended = true;
       this.result = result;
-      this.onEnd(result, this.state);
+      // a game whose last move still plays out on screen (Bilardo's balls rolling) asks for the end
+      // panel to wait until it is over, so the winner is not named while the balls still roll
+      const wait = typeof this.game.endDelay === 'function' ? Math.min(Number(this.game.endDelay(this.state)) || 0, 8000) : 0;
+      if (wait > 0) {
+        const state = this.state;
+        this.endTimer = setTimeout(() => { this.endTimer = null; if (!this.destroyed) this.onEnd(result, state); }, wait);
+      } else this.onEnd(result, this.state);
     }
   }
 
@@ -338,6 +345,7 @@ export class Session {
     // the old screen's cleanup may take the focused key out of the page (a keyboard's destroy), and
     // the browser then pulls the scroll back: a redraw of the same screen keeps it (see dom.js)
     const keep = this.guardPending ? null : scrollKeeper(this.container);
+    const mark = focusMark(this.container); // the keyboard focus comes back to the same cell or key
     if (this.cleanup) {
       try { this.cleanup(); } catch (err) { console.warn(err); }
       this.cleanup = null;
@@ -381,6 +389,8 @@ export class Session {
             // player has not seen yet
             onReady: () => { this.blockTaps(SWITCH_GUARD_MS, true); this.render(); },
           });
+          const title = typeof this.container.querySelector === 'function' ? this.container.querySelector('.handoff h2') : null;
+          if (title) announce(`${title.textContent}. Telefonu ona ver.`);
           this.onChange(this.state);
           return;
         }
@@ -395,10 +405,15 @@ export class Session {
     if (freshScreenNow && !this.ended && typeof scrollY === 'number' && scrollY > 0 && typeof scrollTo === 'function') scrollTo(0, 0);
     else if (keep) keep();
     if (typeof out === 'function') this.cleanup = out;
+    restoreFocus(this.container, mark);
+    // the turn line, said by screen readers when it changes (whose turn, the last move, the result)
+    const line = typeof this.container.querySelector === 'function' ? this.container.querySelector('.status-line') : null;
+    if (line) announce(line.textContent);
     this.onChange(this.state);
   }
 
   destroy() {
+    clearTimeout(this.endTimer);
     if (this.cleanup) {
       try { this.cleanup(); } catch { /* ignore */ }
       this.cleanup = null;

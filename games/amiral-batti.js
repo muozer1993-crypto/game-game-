@@ -14,7 +14,7 @@ export const meta = {
     'Her oyuncu gemilerini kendi denizine yerleştirir (düz, birbirine değmeden). Rakip bunları görmez.',
     'Sırayla rakibin denizinde bir kareye ateş edilir: Iska, Vurdu ya da Batırdı. Önce bütün gemileri batıran kazanır.',
     'İlk oyuncunun avantajı olmasın diye ikisi de aynı sayıda atış yapar; ikisi de aynı turda bitirirse berabere.',
-    'Tek telefonda: gemilerin gizli durur; "Gemilerimi göster" düğmesine basılı tuttukça görünür, bırakınca yine gizlenir.',
+    'Tek telefonda: gemilerin gizli durur; adının yazdığı "… gemilerini göster" düğmesine basılı tuttukça görünür, bırakınca yine gizlenir. Atıştan sonra ekran hemen rakibe geçer: düğme artık onun gemilerini gösterir.',
   ].join('\n'),
   data: [],
   handoffNote: 'Gemilerini rakibin görmemeli.',
@@ -266,7 +266,7 @@ let draftsFor = null;     // state.id the drafts belong to
 const RESULT_TEXT = { miss: 'Iska', hit: 'Vurdu!', sunk: 'Batırdı!' };
 
 function grid(size, cellFn, opts = {}) {
-  const board = el('div', { class: `sea ${opts.small ? 'sea-small' : ''}`, style: { gridTemplateColumns: `auto repeat(${size}, 1fr)` }, role: 'grid', 'aria-label': opts.label || 'Deniz' });
+  const board = el('div', { class: `sea ${opts.small ? 'sea-small' : ''}`, style: { gridTemplateColumns: `auto repeat(${size}, 1fr)` }, role: 'group', 'aria-label': opts.label || 'Deniz' });
   board.append(el('span', { class: 'sea-corner' }));
   for (let c = 0; c < size; c++) board.append(el('span', { class: 'sea-head' }, String(c + 1)));
   for (let r = 0; r < size; r++) {
@@ -441,14 +441,18 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     el('div', { class: 'col-title active' }, `${nameSuffix(players[opp], 'in')} denizi (hedef)`),
     targetGrid,
     el('div', { class: 'col-title', style: { marginTop: '10px' } }, 'Senin denizin'),
+    // one phone: a shot turns the screen to the other player at once (no handoff), so the button
+    // names whose ships it shows: the one who just fired must not take them for their own. One line
+    // (a long name is cut at the end): the page keeps its length when the turn changes
     !online && state.phase !== 'over'
       ? el('button', {
-        type: 'button', class: 'btn btn-small', style: { touchAction: 'none' },
+        type: 'button', class: 'btn btn-small', style: { touchAction: 'none', maxWidth: '100%' },
         onPointerdown: (e) => { e.preventDefault(); showShips = true; drawOwn(); },
         onPointerup: () => { showShips = false; drawOwn(); },
         onPointercancel: () => { showShips = false; drawOwn(); },
         onPointerleave: () => { if (showShips) { showShips = false; drawOwn(); } },
-      }, 'Gemilerimi göster (basılı tut)')
+      }, el('span', { style: { minWidth: '0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } },
+        `${nameSuffix(players[viewer], 'in')} gemilerini göster (basılı tut)`))
       : null,
     ownBox,
     // "Pes" stays in the layout (hidden) while it cannot be pressed: the page keeps its length, so a

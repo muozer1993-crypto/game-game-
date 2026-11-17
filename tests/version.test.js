@@ -20,7 +20,8 @@ test('çevrimdışı: uygulamanın her dosyası sw.js önbellek listesinde', asy
   const walk = (dir) => fs.readdirSync(path.join(root, dir), { withFileTypes: true })
     .flatMap((d) => (d.isDirectory() ? walk(`${dir}/${d.name}`) : [`${dir}/${d.name}`]));
   // a game, a word list or a picture missing from the list loads online but not offline
-  const files = ['js', 'games', 'css', 'img', 'icons', 'data', 'vendor'].filter((d) => fs.existsSync(path.join(root, d)))
+  // (the tests too: the "Testler" page from the menu runs offline)
+  const files = ['js', 'games', 'css', 'img', 'icons', 'data', 'vendor', 'tests'].filter((d) => fs.existsSync(path.join(root, d)))
     .flatMap(walk).filter((f) => !/(LICENSE|README)[^/]*$/i.test(f));
   const missing = files.filter((f) => !shell.has(f));
   assert.equal(missing.join(', '), '', 'add these to SHELL in sw.js');

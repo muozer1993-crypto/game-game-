@@ -1,6 +1,6 @@
 // Go — 9×9 (or 13×13) with area scoring. Captures, suicide forbidden, simple ko. Two passes
 // open the counting phase: tap groups to mark them dead, both confirm, komi 6.5 to white.
-import { el, svg, render as draw, armAfter, keysIntoView } from '../js/ui/dom.js';
+import { el, svg, render as draw, armAfter, keysIntoView, pressKeys } from '../js/ui/dom.js';
 import { nameSuffix } from '../js/lib/tr.js';
 import { drawDisc } from '../js/ui/paint.js';
 
@@ -229,7 +229,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const dead = new Set(state.dead);
   const pad = 0.6;
   const W = n - 1 + 2 * pad;
-  const board = svg('svg', { class: 'go-board', viewBox: `0 0 ${W} ${W}`, role: 'grid', 'aria-label': 'Go tahtası' });
+  const board = svg('svg', { class: 'go-board', viewBox: `0 0 ${W} ${W}`, role: 'group', 'aria-label': 'Go tahtası' });
   board.append(svg('rect', { x: 0, y: 0, width: W, height: W, rx: 0.2, fill: '#e8c88a' }));
   for (let k = 0; k < n; k++) {
     board.append(svg('line', { x1: pad, y1: pad + k, x2: pad + n - 1, y2: pad + k, stroke: '#5b4a2a', 'stroke-width': 0.04 }));
@@ -246,10 +246,12 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     const y = pad + r;
     if (v !== null) stones.push({ x, y, v, i });
     const clickable = counting ? (canMark && v !== null) : (mine && state.phase === 'play' && v === null);
+    const act = () => sendMove({ type: counting ? 'dead' : 'place', cell: i });
     board.append(svg('rect', {
       x: x - 0.5, y: y - 0.5, width: 1, height: 1, fill: 'transparent', class: `go-cell ${clickable ? 'free' : ''} ${v === null ? 'empty' : ''}`,
-      role: 'gridcell', 'aria-label': `${r + 1}. satır ${c + 1}. sütun${v == null ? '' : `, ${v === black ? 'siyah' : 'beyaz'}${dead.has(i) ? ' (ölü)' : ''}`}`,
-      onClick: clickable ? () => sendMove({ type: counting ? 'dead' : 'place', cell: i }) : null,
+      role: 'button', 'aria-disabled': clickable ? null : 'true', 'aria-label': `${r + 1}. satır ${c + 1}. sütun${v == null ? '' : `, ${v === black ? 'siyah' : 'beyaz'}${dead.has(i) ? ' (ölü)' : ''}`}`,
+      onClick: clickable ? act : null,
+      ...(clickable ? pressKeys(act) : {}), // the keyboard and screen readers reach the free points too
     }));
   }
   // stones live on a canvas laid over the lines (forced dark modes turned black SVG stones white);

@@ -2,7 +2,7 @@
 // two transport squares, chance cards, tax and jail. Buy, collect rent, build up to three houses
 // on a full pair. The game ends after the chosen number of rounds (or on bankruptcy): the higher
 // net worth wins. Dice come from the shared seed, so both phones see the same rolls.
-import { el, render as draw, keysIntoViewOnce } from '../js/ui/dom.js';
+import { el, render as draw, keysIntoViewOnce, reducedMotion } from '../js/ui/dom.js';
 import { diceOnce } from '../js/lib/sfx.js';
 import { createRng, shuffle } from '../js/lib/rng.js';
 import { nameSuffix } from '../js/lib/tr.js';
@@ -443,7 +443,8 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   if (state.rollCount) diceOnce(`bl:${state.id}:${state.rollCount}`);
   const players = ctx.players || PLAYERS;
   const online = ctx.mode === 'online';
-  const anim = (ctx.options && ctx.options.anim) || 'normal';
+  let anim = (ctx.options && ctx.options.anim) || 'normal';
+  if (anim === 'normal' && reducedMotion()) anim = 'fast'; // the phone asks for less motion
   if (replayedFor !== state.id) { replayed.clear(); replayedFor = state.id; }
   const p = state.turn;
   const mine = state.phase !== 'over' && (!online || viewer === p);

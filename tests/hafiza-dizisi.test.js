@@ -21,7 +21,7 @@ test('hafıza dizisi: dizi tohuma göre aynı; doğru dokunuşlar uzatır, yanl�
   assert.equal(s.done[0], true);
   assert.equal(s.reached[0], 4);
   assert.throws(() => game.applyMove(s, 0, { type: 'tap', pad: 0 }), 'turun bitti');
-  assert.deepEqual(game.getTurn(s), { player: 1, private: true, simultaneous: true });
+  assert.deepEqual(game.getTurn(s), { player: 1, private: true, simultaneous: true, note: 'İlk tur bitti: 4 adıma ulaşıldı. Şimdi sen dene!' }, 'one phone: the handoff says how far the first run got');
   // player 1 fails at once: 2 (rounds completed before the mistake = START_LEN - 1)
   const quick = game.applyMove(s, 1, { type: 'tap', pad: (seq[0] + 1) % 4 });
   assert.equal(quick.reached[1], 0, 'a mistake before completing any round credits nothing');

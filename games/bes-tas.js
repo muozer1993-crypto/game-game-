@@ -88,7 +88,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const mine = !state.over && viewer === state.turn;
   const colour = (p) => (p === state.black ? 'black' : 'white');
   const lineSet = new Set(state.line || []);
-  const board = el('div', { class: `gm-board ${state.size === 15 ? 'dense' : ''}`, role: 'grid', 'aria-label': 'Beş Taş tahtası', style: { gridTemplateColumns: `repeat(${state.size}, 1fr)` } });
+  const board = el('div', { class: `gm-board ${state.size === 15 ? 'dense' : ''}`, role: 'group', 'aria-label': 'Beş Taş tahtası', style: { gridTemplateColumns: `repeat(${state.size}, 1fr)` } });
   for (let i = 0; i < state.cells.length; i++) {
     const v = state.cells[i];
     board.append(el('button', {

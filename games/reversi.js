@@ -113,7 +113,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const legal = new Set(mine ? legalMoves(state.cells, viewer) : []);
   const flippedSet = new Set(state.flipped || []);
   const [c0, c1] = counts(state.cells);
-  const board = el('div', { class: 'rv-board', role: 'grid', 'aria-label': 'Reversi tahtası' });
+  const board = el('div', { class: 'rv-board', role: 'group', 'aria-label': 'Reversi tahtası' });
   for (let i = 0; i < N * N; i++) {
     const v = state.cells[i];
     board.append(el('button', {

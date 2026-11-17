@@ -2,8 +2,9 @@
 import { games, groups, findGame } from '../games/index.js';
 import { APP_VERSION } from './version.js';
 import { Session, ADVANCE_GUARD_MS } from './session.js';
-import { el, render, clear, toast, armAfter } from './ui/dom.js';
+import { el, render, clear, toast, toastHost, liftToast, armAfter } from './ui/dom.js';
 import { clockPause } from './ui/timer.js';
+import { announce } from './ui/a11y.js';
 import { createScoreboard } from './ui/scoreboard.js';
 import { load, save, remove, keys } from './lib/storage.js';
 import { loadDictionary, loadCommonWords } from './lib/words.js';
@@ -44,6 +45,9 @@ function applyTheme(theme) {
   if (meta) meta.setAttribute('content', dark ? '#15171c' : '#f6f7fb');
 }
 applyTheme(prefs.theme);
+// "Sistem": the status-bar colour follows a light/dark switch made while the app is open
+try { matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { if (prefs.theme === 'auto') applyTheme('auto'); }); } catch { /* old browser */ }
+toastHost(); // the live region exists (empty) before the first message, so that message is announced
 
 // ---------------------------------------------------------------- data
 const jsonCache = new Map();
@@ -157,7 +161,21 @@ function setScreen(name, cleanupFn) {
     else history.pushState({ app: true }, '', `#${name}`);
   }
   window.scrollTo(0, 0);
+  // the tab title says the screen, and the keyboard and screen readers start at its title (the old
+  // focus left with the old screen)
+  let title = SCREEN_TITLES[name] || '';
+  if (name.startsWith('setup-')) { const g = findGame(name.slice(6)); title = g ? `${g.meta.name}: ayarlar` : ''; }
+  document.title = title ? `${title} — Oyun Gecesi` : 'Oyun Gecesi';
+  if (typeof requestAnimationFrame === 'function') {
+    requestAnimationFrame(() => {
+      const a = document.activeElement;
+      if (currentScreen !== name || (a && a !== document.body)) return;
+      const h = app.querySelector('h1');
+      if (h) { h.setAttribute('tabindex', '-1'); h.focus({ preventScroll: true }); }
+    });
+  }
 }
+const SCREEN_TITLES = { records: 'Skor tablosu', tournament: 'Turnuva', 'tournament-result': 'Turnuva sonucu', online: 'İki telefon', 'online-wait': 'Oda', 'online-lobby': 'Oda' };
 let ignorePop = false; // a popstate we caused ourselves (history.back() from setScreen)
 let closeRules = null; // closes the open rules window ("?"), if any
 
@@ -328,16 +346,19 @@ export function showRecords() {
 export function showTournamentSetup({ onlineHost = false } = {}) {
   setScreen('tournament');
   const names = prefs.players.slice();
-  const chosen = new Set(games.map((g) => g.id));
-  let count = 5;
+  // the games and the count picked for the last tournament come back ("Yeni turnuva" keeps them)
+  const last = load('tour-choice', null);
+  const lastIds = last && Array.isArray(last.ids) ? last.ids.filter((id) => findGame(id)) : [];
+  const chosen = new Set(lastIds.length ? lastIds : games.map((g) => g.id));
+  let count = last && [0, 3, 5, 7].includes(last.count) ? last.count : 5;
   const nameFields = onlineHost
     ? el('div', { class: 'field' }, el('div', { class: 'muted' }, `Oyuncular: ${online.players[0]} (sen) ve ${online.players[1]}`))
     : el('div', { class: 'names' }, [0, 1].map((i) => el('div', { class: 'field' },
       el('label', { for: `name-${i}` }, `${i + 1}. oyuncu`),
-      el('input', { type: 'text', class: 'input', id: `name-${i}`, maxlength: 20, autocomplete: 'off', value: names[i], onInput: (e) => { names[i] = e.target.value; } }))));
+      el('input', { type: 'text', class: 'input', id: `name-${i}`, maxlength: 40, autocomplete: 'off', value: names[i], onInput: (e) => { names[i] = fitNameInput(e.target); } }))));
   const countSelect = el('select', { class: 'select', id: 'tour-count', onChange: (e) => { count = Number(e.target.value); } },
     [3, 5, 7].map((n) => el('option', { value: String(n) }, `${n} oyun`)), el('option', { value: '0' }, 'Seçilen oyunların hepsi'));
-  countSelect.value = '5';
+  countSelect.value = String(count);
   const boxes = [];
   const groupBox = (g) => {
     const list = games.filter((game) => game.meta.group === g.id);
@@ -345,7 +366,7 @@ export function showTournamentSetup({ onlineHost = false } = {}) {
       el('div', { class: 'col-title' }, g.title),
       el('div', { class: 'tour-games' }, list.map((game) => {
         const cb = el('input', { type: 'checkbox', id: `tour-${game.id}`, onChange: (e) => { if (e.target.checked) chosen.add(game.id); else chosen.delete(game.id); } });
-        cb.checked = true;
+        cb.checked = chosen.has(game.id);
         boxes.push(cb);
         return el('label', { class: 'tour-game', for: `tour-${game.id}` }, cb, ` ${game.meta.icon || ''} ${game.meta.name}`);
       })));
@@ -355,7 +376,9 @@ export function showTournamentSetup({ onlineHost = false } = {}) {
     const pool = games.filter((g) => chosen.has(g.id));
     if (!pool.length) { toast('En az bir oyun seç', { kind: 'error' }); return; }
     const players = onlineHost ? online.players : names.map((n, i) => n.trim() || DEFAULT_PLAYERS[i]);
+    if (!onlineHost && samePlayers(players)) { toast('İki oyuncunun adı farklı olmalı', { kind: 'error' }); return; }
     if (!onlineHost) { prefs.players = players; save('players', players); }
+    save('tour-choice', { ids: [...chosen], count });
     const order = shuffle(createRng(randomSeed()), pool).map((g) => g.id);
     const ids = count ? Array.from({ length: count }, (_, i) => order[i % order.length]) : order;
     tournament = { ids, index: 0, wins: [0, 0], draws: 0, results: [], players, onlineHost };
@@ -435,21 +458,28 @@ const foldTR = (x) => String(x).toLocaleLowerCase('tr-TR').replace(/[şçğıö�
 
 /** Filters the game cards below by name as you type (46 games are a long list). */
 function searchBox() {
+  // nothing matches: say so, instead of an empty gap that looks like a list that failed to load
+  const none = el('p', { class: 'muted search-none', role: 'status', hidden: true });
   const input = el('input', {
     type: 'search', class: 'input', id: 'game-search', placeholder: 'Oyun ara…', autocomplete: 'off', 'aria-label': 'Oyun ara',
     onInput: (e) => {
-      const q = foldTR(e.target.value.trim());
+      const raw = e.target.value.trim();
+      const q = foldTR(raw);
+      let shown = 0;
       document.querySelectorAll('.game-card-wrap').forEach((card) => {
         const name = (card.querySelector('.game-name') || {}).textContent || '';
         card.hidden = !!q && !foldTR(name).includes(q);
+        if (!card.hidden) shown += 1;
       });
       document.querySelectorAll('#app section.section').forEach((sec) => {
         const cards = sec.querySelectorAll('.game-card-wrap');
         if (cards.length) sec.hidden = ![...cards].some((c) => !c.hidden);
       });
+      none.hidden = !q || shown > 0;
+      none.textContent = none.hidden ? '' : `"${raw}" adında bir oyun yok.`;
     },
   });
-  return el('div', { class: 'field search-field' }, input);
+  return el('div', { class: 'field search-field' }, input, none);
 }
 
 /** Shortcuts above the list: the game played last and a random pick. */
@@ -566,8 +596,8 @@ export function showSetup(game, { onlineHost = false } = {}) {
       [0, 1].map((i) => el('div', { class: 'field' },
         el('label', { for: `name-${i}` }, `${i + 1}. oyuncu`),
         el('input', {
-          type: 'text', class: 'input', id: `name-${i}`, maxlength: 20, autocomplete: 'off',
-          value: names[i], onInput: (e) => { names[i] = e.target.value; showRecord(); },
+          type: 'text', class: 'input', id: `name-${i}`, maxlength: 40, autocomplete: 'off',
+          value: names[i], onInput: (e) => { names[i] = fitNameInput(e.target); showRecord(); },
         }),
       )),
     );
@@ -584,6 +614,8 @@ export function showSetup(game, { onlineHost = false } = {}) {
   const startBtn = el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block' }, 'Başla');
   startBtn.addEventListener('click', async () => {
     const players = onlineHost ? online.players : names.map((n, i) => n.trim() || DEFAULT_PLAYERS[i]);
+    // the scoreboard, the end panel and the records could not say who won
+    if (!onlineHost && samePlayers(players)) { toast('İki oyuncunun adı farklı olmalı', { kind: 'error' }); return; }
     if (!onlineHost) { prefs.players = players; save('players', players); }
     save(`settings:${game.id}`, values);
     save('last-game', game.id);
@@ -622,7 +654,30 @@ export function showSetup(game, { onlineHost = false } = {}) {
 }
 
 // ---------------------------------------------------------------- all-time record per game and player pair
+const NAME_MAX = 20; // UTF-16 units, as the fields' old maxlength
+/**
+ * A name cut to 20 units at a whole character: an emoji made of several (a family, a flag) is kept
+ * whole or left out, never cut in the middle into a different emoji (the fields allow more, so the
+ * browser does not cut it first).
+ */
+function fitName(v) {
+  const s = String(v);
+  if (s.length <= NAME_MAX) return s;
+  const parts = typeof Intl !== 'undefined' && Intl.Segmenter
+    ? [...new Intl.Segmenter('tr', { granularity: 'grapheme' }).segment(s)].map((x) => x.segment)
+    : Array.from(s);
+  let out = '';
+  for (const part of parts) { if (out.length + part.length > NAME_MAX) break; out += part; }
+  return out.replace(/\u200d+$/, '');
+}
+function fitNameInput(input) {
+  const v = fitName(input.value);
+  if (v !== input.value) input.value = v;
+  return v;
+}
 const recordName = (n) => String(n).trim().toLocaleLowerCase('tr-TR').replace(/[|:]/g, ' ');
+/** The two names would read the same on the scoreboard and in the records ("Ali" and "ali"). */
+const samePlayers = (players) => recordName(players[0]) === recordName(players[1]);
 // records are stored with the pair in alphabetical order so that both seat orders share one key
 const recordSwapped = (players) => recordName(players[0]) > recordName(players[1]);
 function recordKey(gameId, players) {
@@ -693,6 +748,8 @@ export function showPlay(p) {
   setScreen('play', () => {
     if (activeSession) { activeSession.destroy(); activeSession = null; }
   });
+  liftToast(); // a note still up from the lobby (the version note) must not lie over the game's keypad
+  document.title = `${p.game.meta.name} — Oyun Gecesi`;
 
   const updateScore = () => {
     const turn = activeSession ? activeSession.currentTurn() : null;
@@ -723,6 +780,7 @@ export function showPlay(p) {
         const gaveUp = result.gaveUp === 0 || result.gaveUp === 1 ? `${p.players[result.gaveUp]} pes etti: ` : '';
         text = `${gaveUp}${p.players[result.winner]} kazandı!${pts > 1 ? ` (+${pts} puan)` : ''}`;
       }
+      announce(text); // screen readers hear the result
       updateScore();
       // tournament bookkeeping: the host (or the single phone) keeps the tally; the guest shows what the host sent
       const t = tournament && (!isOnline || p.self === 0) ? tournament : null;
@@ -843,6 +901,7 @@ function showRulesOverlay(game) {
   const close = () => {
     if (closeRules === close) closeRules = null;
     overlay.remove();
+    if (!reconnectOverlay) app.inert = false;
     window.removeEventListener('keydown', onKey, true);
     if (opener && opener.focus) opener.focus({ preventScroll: true }); // the "?" may sit half off screen: no scroll on close
   };
@@ -860,6 +919,9 @@ function showRulesOverlay(game) {
     ),
   );
   window.addEventListener('keydown', onKey, true);
+  // the screen behind takes no focus and no clicks while the rules are open (Tab stays in the window;
+  // Enter must not play a move on a board behind it)
+  app.inert = true;
   document.body.append(overlay);
   closeRules = close;
   okBtn.focus({ preventScroll: true }); // the button sits below long rules: focusing it must not scroll the title away
@@ -936,8 +998,8 @@ export function showOnline({ code: presetCode = '' } = {}) {
   setScreen('online', () => { if (pending) { pending.abort(); pending = null; } });
   let name = prefs.onlineName;
   const nameInput = el('input', {
-    type: 'text', class: 'input', id: 'online-name', maxlength: 20, value: name, placeholder: 'Adın',
-    onInput: (e) => { name = e.target.value; },
+    type: 'text', class: 'input', id: 'online-name', maxlength: 40, value: name, placeholder: 'Adın',
+    onInput: (e) => { name = fitNameInput(e.target); },
   });
   const codeInput = el('input', {
     type: 'text', class: 'input input-code', id: 'room-code', maxlength: 5, autocapitalize: 'characters', autocomplete: 'off',
@@ -1184,7 +1246,8 @@ function exitReconnect() {
 const choosingScreen = () => currentScreen.startsWith('setup-') || currentScreen === 'tournament' || currentScreen === 'tournament-result';
 function closeReconnect() {
   clockPause.end();
-  app.inert = false;
+  app.inert = !!closeRules; // the rules window may still be open over the screen
+
   window.removeEventListener('keydown', reconnectKeys, true);
   if (reconnectOverlay) {
     reconnectOverlay.remove(); reconnectOverlay = null;

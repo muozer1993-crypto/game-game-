@@ -323,7 +323,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const redraw = () => {
     const pending = new Map(draft.tiles.map((t) => [t.cell, t]));
     const lastSet = new Set(state.last);
-    const board = el('div', { class: 'kb-board', role: 'grid', 'aria-label': 'Kelime tahtası' });
+    const board = el('div', { class: 'kb-board', role: 'group', 'aria-label': 'Kelime tahtası' });
     for (let i = 0; i < SIZE * SIZE; i++) {
       const letter = state.board[i] || (pending.get(i) ? pending.get(i).letter : null);
       const prem = PREMIUM[i];
@@ -446,10 +446,11 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     actionRow,
     reviewing ? null : disputeBox,
   );
-  // a short phone: once per game, when it opens (no finger is aiming at the board yet), scroll so the
-  // rack, the score preview and "Oyna" are on screen under the board; later turns leave the page
-  // where the player put it
-  if (actionRow) keysIntoViewOnce(actionRow, container, `kt:${state.id}`);
+  // a short phone: when a player's screen opens (no finger is aiming at the board yet), scroll so the
+  // rack, the score preview and "Oyna" are on screen under the board. Two phones: once per game, later
+  // turns leave the page where the player put it. One phone: every turn, as the handoff screen
+  // between turns has put the page back at the top (the viewer changes each turn there)
+  if (actionRow) keysIntoViewOnce(actionRow, container, `kt:${state.id}:${viewer}`);
   return null;
 }
 

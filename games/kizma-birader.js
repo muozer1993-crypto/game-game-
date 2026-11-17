@@ -212,8 +212,9 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   }
   const done = [0, 1].map((q) => state.pieces[q].filter((x) => x === HOME).length);
   const legend = el('div', { class: 'c4-legend' },
-    el('span', { style: { color: COLOURS[0] } }, `● ${players[0]}: ${done[0]}/${state.pieces[0].length} bitirdi`),
-    el('span', { style: { color: '#b8860b' } }, `● ${players[1]}: ${done[1]}/${state.pieces[1].length} bitirdi`));
+    // the players' colours as text: a shade that reads on the page in each theme (css/app.css)
+    el('span', { style: { color: 'var(--p-red-text)' } }, `● ${players[0]}: ${done[0]}/${state.pieces[0].length} bitirdi`),
+    el('span', { style: { color: 'var(--p-yellow-text)' } }, `● ${players[1]}: ${done[1]}/${state.pieces[1].length} bitirdi`));
   if (state.phase === 'over') {
     draw(container, el('div', { class: 'status-line' }, el('strong', {}, `${players[state.winner]} bütün taşlarını eve soktu!`)), legend, el('div', { class: 'ld-wrap' }, board));
     return null;

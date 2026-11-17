@@ -79,7 +79,11 @@ export function applyMove(state, player, move) {
 export function getTurn(state) {
   if (state.phase !== 'play') return null;
   const p = state.done[0] ? (state.done[1] ? null : 1) : 0;
-  return p == null ? null : { player: p, private: true, simultaneous: true };
+  if (p == null) return null;
+  // one phone: the first run has just ended (a wrong tap ends it at once): the handoff says how far it got
+  return p === 1
+    ? { player: p, private: true, simultaneous: true, note: `İlk tur bitti: ${state.reached[0]} adıma ulaşıldı. Şimdi sen dene!` }
+    : { player: p, private: true, simultaneous: true };
 }
 
 export function getResult(state) {

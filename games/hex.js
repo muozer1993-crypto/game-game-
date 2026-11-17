@@ -1,6 +1,6 @@
 // Hex — connect your two sides of a rhombus of hexagons before the opponent connects theirs.
 // Player 0 links top to bottom, player 1 links left to right; a draw is impossible.
-import { el, svg, render as draw } from '../js/ui/dom.js';
+import { el, svg, render as draw, pressKeys } from '../js/ui/dom.js';
 import { nameSuffix } from '../js/lib/tr.js';
 
 export const meta = {
@@ -97,6 +97,7 @@ export function getResult(state) {
 }
 
 const COLOURS = ['#e53935', '#3b6ef6'];
+const TEXT_COLOURS = ['var(--p-red-text)', 'var(--p-blue-text)'];
 
 // Board geometry (SVG units): pointy-top hexagons in a rhombus; row r is shifted half a cell to
 // the right of row r-1, which matches NB: (r-1,c) and (r-1,c+1) sit above (r,c).
@@ -123,7 +124,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const vert = state.vertical;
   const horiz = 1 - vert;
   const g = boardGeometry(n);
-  const board = svg('svg', { class: 'hx-board', viewBox: `0 0 ${g.width.toFixed(2)} ${g.height.toFixed(2)}`, role: 'grid', 'aria-label': 'Hex tahtası' });
+  const board = svg('svg', { class: 'hx-board', viewBox: `0 0 ${g.width.toFixed(2)} ${g.height.toFixed(2)}`, role: 'group', 'aria-label': 'Hex tahtası' });
   // the four edges: top/bottom belong to the vertical player, the slanted left/right to the other
   const edge = (x1, y1, x2, y2, colour) => svg('line', { x1: x1.toFixed(2), y1: y1.toFixed(2), x2: x2.toFixed(2), y2: y2.toFixed(2), stroke: colour, 'stroke-width': (S * 0.55).toFixed(2), 'stroke-linecap': 'round', class: 'hx-edge' });
   const off = S * 0.35;
@@ -139,12 +140,14 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       const i = r * n + c;
       const v = state.cells[i];
       const free = mine && v === null;
+      const act = () => { if (free) sendMove({ type: 'place', cell: i }); };
       row.append(svg('polygon', {
         points: hexPoints(g.cx(r, c), g.cy(r), S * 0.94),
         class: `hx-cell ${v === null ? '' : `p${v}`} ${free ? 'free' : ''} ${pathSet.has(i) ? 'win' : ''} ${state.last === i ? 'last' : ''}`,
-        role: 'gridcell',
+        role: 'button', 'aria-disabled': free ? null : 'true',
         'aria-label': `${r + 1}. satır ${c + 1}. sütun${v == null ? '' : `, ${players[v]}`}`,
-        onClick: () => { if (free) sendMove({ type: 'place', cell: i }); },
+        onClick: act,
+        ...(free ? pressKeys(act) : {}), // the keyboard and screen readers reach the free cells too
       }));
     }
     board.append(row);
@@ -155,8 +158,9 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   draw(container,
     el('div', { class: 'status-line two' }, el('strong', {}, status)),
     el('div', { class: 'c4-legend' },
-      el('span', { class: 'hx-key', style: { color: COLOURS[vert] } }, `${players[vert]}: üst ↔ alt`),
-      el('span', { class: 'hx-key', style: { color: COLOURS[horiz] } }, `${players[horiz]}: sol ↔ sağ`),
+      // the players' colours as text: a shade that reads on the page in each theme (css/app.css)
+      el('span', { class: 'hx-key', style: { color: TEXT_COLOURS[vert] } }, `${players[vert]}: üst ↔ alt`),
+      el('span', { class: 'hx-key', style: { color: TEXT_COLOURS[horiz] } }, `${players[horiz]}: sol ↔ sağ`),
     ),
     el('div', { class: `hx-wrap ${n >= 9 ? 'big' : ''}` }, board),
     el('p', { class: 'hint' }, `Üst ve alt kenar ${nameSuffix(players[vert], 'in')}, sol ve sağ kenar ${nameSuffix(players[horiz], 'in')}.`),

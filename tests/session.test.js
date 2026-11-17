@@ -322,3 +322,31 @@ test('itiraz incelemesi: kapanış hamlesi konuğun son değişikliğini taşım
   assert.equal(reviewDiffers(isim, { v: [[false, true], [false, false]] }, { type: 'next', vetoes: [[false, false], [false, false]] }), true, 'a veto that did not arrive');
   assert.equal(reviewDiffers(g, { objected: ['a'] }, { type: 'next' }), false, 'a plain next carries nothing');
 });
+
+test('oturum: oyun son hamlesini hâlâ gösteriyorsa (Bilardo topları) bitiş paneli bekler', async () => {
+  const once = {
+    meta: { name: 'Bekletici' },
+    setup: () => ({ over: false }),
+    applyMove: (s) => ({ ...s, over: true }),
+    render: () => null,
+    getTurn: (s) => (s.over ? null : { player: 0, private: false }),
+    getResult: (s) => (s.over ? { winner: 0 } : null),
+    endDelay: (s) => (s.over ? 60 : 0),
+  };
+  const ends = [];
+  const s = new Session({ game: once, options: {}, players: ['Ayşe', 'Ali'], container: fakeContainer(), mode: 'local', onEnd: (r) => ends.push(r) });
+  s.start();
+  s.dispatch(0, { type: 'go' });
+  assert.equal(ends.length, 0, 'not yet: the last move still plays out');
+  await new Promise((r) => setTimeout(r, 120));
+  assert.deepEqual(ends, [{ winner: 0 }]);
+  s.destroy();
+  // a session left meanwhile does not show the panel afterwards
+  const gone = [];
+  const t = new Session({ game: once, options: {}, players: ['Ayşe', 'Ali'], container: fakeContainer(), mode: 'local', onEnd: (r) => gone.push(r) });
+  t.start();
+  t.dispatch(0, { type: 'go' });
+  t.destroy();
+  await new Promise((r) => setTimeout(r, 120));
+  assert.equal(gone.length, 0);
+});

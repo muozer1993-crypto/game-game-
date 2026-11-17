@@ -17,8 +17,8 @@ export const meta = {
       key: 'secretMode', label: 'Gizli sayıyı kim seçsin?', type: 'select', default: 'manual',
       help: 'Ortakta ikiniz aynı rastgele sayıyı ararsınız.',
       options: [
-        { value: 'manual', label: 'Herkes rakibi için kendisi seçsin' },
-        { value: 'random', label: 'Rastgele, herkese ayrı sayı' },
+        { value: 'manual', label: 'Herkes rakibine seçsin' },
+        { value: 'random', label: 'Rastgele, ayrı sayılar' },
         { value: 'shared', label: 'Ortak rastgele sayı' },
       ],
     },

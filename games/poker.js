@@ -1,7 +1,7 @@
 // Poker (Texas Hold'em, heads-up). Each player gets two hidden cards, five community cards
 // come out over three betting rounds. Blinds, check/call/raise/fold, all-ins with the excess
 // returned, showdown with the best five of seven. The hand ends when one stack is empty.
-import { el, render as draw, armAfter } from '../js/ui/dom.js';
+import { el, render as draw, armAfter, keysIntoView } from '../js/ui/dom.js';
 import { nextButton } from '../js/ui/next.js';
 import { createRng, shuffle } from '../js/lib/rng.js';
 import { nameSuffix } from '../js/lib/tr.js';
@@ -307,13 +307,16 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       amounts.push(el('button', { type: 'button', class: 'btn btn-secondary', onClick: () => sendMove({ type: 'raise', to: v }) }, `${label} ${v}`));
     }
   }
+  const amountRow = draft.raising
+    ? armAfter(el('div', { class: 'pk-amounts' }, el('span', { class: 'muted' }, 'Ne kadar? '), amounts, el('button', { type: 'button', class: 'btn btn-small', onClick: () => { draft.raising = false; rerender(); } }, 'Vazgeç')))
+    : null;
   draw(container,
     el('div', { class: 'status-line' }, el('strong', {}, `${players[viewer]}, sıra sende — ${streetName}`)),
     tableView, myCards,
     el('p', { class: 'hint' }, canCheck ? 'Bahis yok: bekleyebilir ya da yükseltebilirsin.' : `Görmek için ${Math.min(toCall, state.stacks[viewer])} fiş${toCall >= state.stacks[viewer] ? ' (rest)' : ''}.`),
     // each row comes up where the other one was tapped: a double tap must not bet (or fold) by itself
     draft.raising
-      ? armAfter(el('div', { class: 'pk-amounts' }, el('span', { class: 'muted' }, 'Ne kadar? '), amounts, el('button', { type: 'button', class: 'btn btn-small', onClick: () => { draft.raising = false; rerender(); } }, 'Vazgeç')))
+      ? amountRow
       : armAfter(el('div', { class: 'pk-actions' },
         el('button', { type: 'button', class: 'btn btn-secondary', onClick: () => { if (canCheck || confirm('Eli bırakıyor musun?')) sendMove({ type: canCheck ? 'check' : 'fold' }); } }, canCheck ? 'Bekle' : 'Pas'),
         canCheck ? null : el('button', { type: 'button', class: 'btn btn-primary', onClick: () => sendMove({ type: 'call' }) }, `Gör ${Math.min(toCall, state.stacks[viewer])}`),
@@ -321,6 +324,8 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       )),
     stacksLine,
   );
+  // a short phone: the amounts row wraps and "Rest" / "Vazgeç" would sit below the screen
+  if (amountRow) keysIntoView(amountRow);
   return null;
 }
 

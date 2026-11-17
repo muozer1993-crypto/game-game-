@@ -1,7 +1,7 @@
 // İkili Okey — two-player okey. 106 tiles (1–13 in four colours twice, plus two fake jokers);
 // the indicator decides the okey (joker). Draw from the pile or take the opponent's last discard,
 // discard one; finish by showing 14 tiles in runs/sets (or seven pairs) and throwing the 15th.
-import { el, render as draw, armAfter } from '../js/ui/dom.js';
+import { el, render as draw, armAfter, keysIntoViewOnce } from '../js/ui/dom.js';
 import { nextButton } from '../js/ui/next.js';
 import { createRng, shuffle } from '../js/lib/rng.js';
 import { nameSuffix } from '../js/lib/tr.js';
@@ -221,6 +221,7 @@ export function tileEl(t, okey, opts = {}) {
     type: opts.button ? 'button' : null,
     class: `ok-tile c${t.c} ${opts.small ? 'small' : ''} ${opts.sel ? 'sel' : ''} ${joker ? 'joker' : ''}`,
     'aria-label': isFake(t) ? 'sahte okey' : `${COLOUR_NAMES[t.c]} ${t.n}${joker ? ' (okey)' : ''}`,
+    'aria-pressed': opts.button ? (opts.sel ? 'true' : 'false') : null, // the picked tile, for screen readers
     disabled: opts.button ? opts.disabled : null,
     onClick: opts.onClick,
   }, isFake(t) ? el('span', { class: 'ok-fake' }, '★') : String(t.n), joker ? el('span', { class: 'ok-badge' }, '★') : null);
@@ -333,6 +334,9 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     actionBox,
     legend,
   );
+  // a short phone: both draw buttons on screen when the draw step starts (once per draw; the
+  // second one wraps below the first at 320 px)
+  if (mine && state.phase === 'draw') keysIntoViewOnce(actionBox, container, `ok:${state.id}:${state.handNo}:${state.deck.length}:${viewer}`);
   return null;
 }
 

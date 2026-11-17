@@ -175,13 +175,20 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   }
 
   // ---- bidding
+  // a long name wraps the turn line: then both bidding screens keep two lines for it, so the bid and
+  // the dice do not move when the turn passes
+  const statusCls = players.some((n) => [...String(n)].length > 9) ? 'status-line two' : 'status-line';
   const mine = state.dice[viewer];
   const total = totalDice(state);
-  const current = state.bid ? el('div', { class: 'yz-bid card' }, el('span', { class: 'muted' }, `${players[state.bid.by]} dedi: `), el('strong', {}, `en az ${bidText(state.bid)}`)) : el('p', { class: 'hint' }, 'İlk teklif henüz verilmedi.');
+  // one line in a card of the same size before and after the first bid (a long name is cut, never
+  // the bid): the dice and the bid controls below stay put when the turn passes
+  const current = state.bid
+    ? el('div', { class: 'yz-bid card' }, el('span', { class: 'muted yz-by' }, `${players[state.bid.by]} dedi:`), ' ', el('strong', {}, `en az ${bidText(state.bid)}`))
+    : el('div', { class: 'yz-bid card' }, el('span', { class: 'muted yz-by' }, 'İlk teklif henüz verilmedi.'));
   const myDice = [el('div', { class: 'col-title' }, `Zarların (${mine.length})`), diceRow(mine), el('div', { class: 'col-title' }, `${players[opp]} — ${state.counts[opp]} zar`), diceRow(Array(state.counts[opp]).fill(0), { hidden: true })];
   if (state.turn !== viewer) {
     draw(container,
-      el('div', { class: 'status-line' }, el('strong', {}, `${players[opp]} düşünüyor…`)),
+      el('div', { class: statusCls }, el('strong', {}, `${players[opp]} düşünüyor…`)),
       // the spinner sits where the bid controls are on your turn: the bid and the dice keep their place
       current, ...myDice,
       el('div', { class: 'spinner', 'aria-hidden': 'true' }),
@@ -210,7 +217,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     state.bid ? el('button', { type: 'button', class: 'btn btn-danger btn-big', onClick: () => sendMove({ type: 'challenge' }) }, 'Yalan!') : null,
   );
   draw(container,
-    el('div', { class: 'status-line' }, el('strong', {}, `${players[viewer]}, sıra sende`)),
+    el('div', { class: statusCls }, el('strong', {}, `${players[viewer]}, sıra sende`)),
     current,
     ...myDice,
     el('p', { class: 'hint' }, min ? `Masada toplam ${total} zar var.${state.wild ? ' Birler joker.' : ''}${state.bid ? ' Teklifi yükselt ya da "Yalan!" de.' : ''}` : 'Teklif en üst düzeyde: tek seçenek "Yalan!" demek.'),
