@@ -1,6 +1,6 @@
 // Kelime Tahtası — a Scrabble-like word board for two: 11×11 board with premium squares,
 // Turkish tile set, seven-tile racks, dictionary-checked words, pass and exchange.
-import { el, render as draw } from '../js/ui/dom.js';
+import { el, render as draw, keysIntoViewOnce } from '../js/ui/dom.js';
 import { createRng, shuffle } from '../js/lib/rng.js';
 import { upperTR, nameSuffix } from '../js/lib/tr.js';
 import { toggled, carried, checkObjection } from '../js/lib/objections.js';
@@ -444,6 +444,9 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     state.over || reviewing ? null : el('div', { class: 'row', style: { justifyContent: 'center', gap: '8px', marginTop: '8px', flexWrap: 'wrap' } }, btnPlay, btnClear, btnSwap, btnPass),
     reviewing ? null : disputeBox,
   );
+  // a short phone: once per game, when it opens (no finger is aiming at the board yet), scroll so the
+  // rack is on screen under the board; later turns leave the page where the player put it
+  if (!state.over && !reviewing) keysIntoViewOnce(rackBox, container, `kt:${state.id}`);
   return null;
 }
 

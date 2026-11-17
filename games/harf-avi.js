@@ -335,8 +335,9 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     draw(container,
       el('div', { class: 'status-line' }, el('strong', {}, `${players[viewer]}, hazır olunca başla`)),
       el('p', { class: 'hint' }, `${state.size}×${state.size} tabloda ${state.seconds} saniyen var. Süre "Başla"ya basınca işler.${online ? '' : (state.finished[opp] ? ' Bitirince ikinizin de kelimeleri ve sonuç açıklanır.' : ` Sonra telefon ${nameSuffix(players[opp], 'e')} geçer.`)}`),
-      online && state.started[opp] ? el('p', { class: 'hint' }, `${players[opp]} başladı (${state.counts[opp]} kelime).`) : null,
       el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block', style: { marginTop: '12px' }, onClick: () => sendMove({ type: 'start' }) }, 'Başla'),
+      // below the button: the other player starting first must not move "Başla" under the finger
+      online && state.started[opp] ? el('p', { class: 'hint', style: { marginTop: '10px' } }, `${players[opp]} başladı (${state.counts[opp]} kelime).`) : null,
     );
     return null;
   }

@@ -882,8 +882,9 @@ const online = {
 };
 
 /** The greeting: name, build, and what this phone has shown in earlier games, with its clock to line the times up (lists too long for it follow in 'seen' messages, see js/lib/hello.js). */
-const sendHello = (t) => helloMessages(
-  { t: 'hello', name: online.myName, v: APP_VERSION, clock: Date.now() },
+// `reply`: the answer to the other phone's greeting, sent when that greeting closed our reconnect window
+const sendHello = (t, { reply = false } = {}) => helloMessages(
+  { t: 'hello', name: online.myName, v: APP_VERSION, clock: Date.now(), ...(reply ? { reply: true } : {}) },
   { tabu: tabuHistory.own(), ...Object.fromEntries(Object.entries(histories).map(([k, h]) => [k, h.own()])) },
 ).forEach((m) => t.send(m));
 
@@ -1279,6 +1280,7 @@ async function handleOnlineMessage(msg) {
   switch (msg.t) {
     case 'hello': {
       const other = String(msg.name || 'Oyuncu').slice(0, 20);
+      const before = online.players ? online.players[online.role === 'host' ? 1 : 0] : null; // the opponent so far
       // what the other phone has already shown: a game this phone sets up avoids it too
       const seen = msg.seen && typeof msg.seen === 'object' ? msg.seen : {};
       online.peerSeen = { tabu: tabuHistory.fromPeer(msg.tabuSeen, msg.clock) };
@@ -1291,13 +1293,17 @@ async function handleOnlineMessage(msg) {
         closeReconnect();
         if (activeSession) { activeSession.destroy(); activeSession = null; }
         online.session = null;
-        sendHello(online.transport); // it never got our greeting
+        if (!msg.reply) sendHello(online.transport, { reply: true }); // it may never have got our greeting
         // with a game running the other side evidently started over; from the lobby it is just the link coming back
         toast(hadGame ? 'Rakip yeniden başladı; oyun baştan kurulacak' : 'Bağlantı yeniden kuruldu', { duration: hadGame ? 4000 : 2500 });
+      } else if (msg.reply && before === other) {
+        // the other phone's answer to our greeting: this phone already acted on the link coming back
+        // (and may have started a game since; the answer must not send it to the lobby)
+        return;
       }
-      // the link came back while the host was choosing a game or a tournament (this greeting, or the
-      // other phone's answer to ours): the choices stay on screen; the guest waits in the lobby
-      if (online.role === 'host' && !hadGame && choosingScreen()) return;
+      // the link came back while the host was choosing a game or a tournament: the choices stay on
+      // screen (the guest waits in the lobby), unless someone else joined: the screen names the players
+      if (online.role === 'host' && !hadGame && choosingScreen() && (before == null || before === other)) return;
       showOnlineLobby();
       return;
     }

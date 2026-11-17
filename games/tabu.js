@@ -162,9 +162,15 @@ const cardShown = new WeakMap(); // container -> { key, at }
 const MARK = { ok: '✓', pass: '→', taboo: '✗', time: '⌛' };
 const LABEL = { ok: 'Bildi', pass: 'Pas', taboo: 'Tabu' };
 
+/** The card's word on one line of one height, smaller when long: every card leaves Pas / Bildi / Tabu where they were. */
+function tabuWord(word) {
+  const text = upperTR(word);
+  return el('div', { class: `tb-word${text.length > 13 ? ' xs' : text.length > 10 ? ' sm' : ''}` }, text);
+}
+
 function cardView(card, mime) {
   return el('div', { class: 'tb-card card' },
-    el('div', { class: 'tb-word' }, upperTR(card.word)),
+    tabuWord(card.word),
     mime ? el('p', { class: 'hint' }, 'Konuşmadan canlandır.') : el('div', { class: 'tb-taboo' }, card.taboo.map((t) => el('span', { class: 'tb-no' }, t))),
   );
 }

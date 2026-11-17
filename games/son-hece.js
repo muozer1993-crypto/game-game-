@@ -164,8 +164,13 @@ export function getResult(state) {
 }
 
 // ----------------------------------------------------------------- render
-function chainView(state) {
-  if (!state.words.length) return el('p', { class: 'hint' }, 'Henüz kelime söylenmedi.');
+function chainView(state, { fixed = false } = {}) {
+  // while playing the chain keeps one height (two rows, scrolled to its end): a word that wraps it
+  // to a new row must not push the keyboard down just as the turn comes back
+  if (!state.words.length) {
+    const hint = el('p', { class: 'hint' }, 'Henüz kelime söylenmedi.');
+    return fixed ? el('div', { class: 'chain chain-fixed' }, hint) : hint;
+  }
   const objected = new Set(state.objected || []);
   const items = state.words.map((w, i) => {
     const isLast = i === state.words.length - 1;
@@ -177,7 +182,7 @@ function chainView(state) {
     return el('span', { class: `chain-word p${w.player} ${w.unlisted ? 'unlisted' : ''} ${out ? 'objected' : ''}`, title: w.unlisted ? (out ? 'İtiraz edildi' : 'Kelime listesinde yok: oyun bitince itiraz edilebilir') : '' },
       joined, w.unlisted ? unlistedMark() : null);
   });
-  const box = el('div', { class: 'chain' }, items);
+  const box = el('div', { class: `chain${fixed ? ' chain-fixed' : ''}` }, items);
   queueMicrotask(() => { box.scrollTop = box.scrollHeight; });
   return box;
 }
@@ -297,14 +302,15 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   draw(container,
     el('div', { class: 'status-line' }, mine ? el('strong', {}, `Sıra sende, ${players[viewer]}!`) : el('span', { class: 'muted' }, `${players[state.turn]} düşünüyor…`)),
     timerBox,
-    chainView(state),
+    chainView(state, { fixed: true }),
     requiredText,
     typedView,
     kbBox,
     warnNote, // below the keyboard: showing it must not move ↵ away from the finger
-    mine ? el('div', { class: 'row', style: { marginTop: '10px' } },
-      el('button', { type: 'button', class: 'btn btn-secondary btn-small', onClick: () => { if (confirm('Pes ediyor musun? Bu turu kaybedersin.')) sendMove({ type: 'giveup', at: Date.now() }); } }, 'Pes'),
-    ) : null,
+    // hidden, not removed, while waiting: the page keeps its length (a page scrolled to the end does not move)
+    el('div', { class: 'row', style: { marginTop: '10px', visibility: mine ? '' : 'hidden' }, 'aria-hidden': mine ? null : 'true' },
+      el('button', { type: 'button', class: 'btn btn-secondary btn-small', disabled: !mine, onClick: () => { if (mine && confirm('Pes ediyor musun? Bu turu kaybedersin.')) sendMove({ type: 'giveup', at: Date.now() }); } }, 'Pes'),
+    ),
   );
   if (mine) keysIntoView(kbBox); // the chain grows above the keyboard: keep its last row (↵) on screen
 

@@ -558,19 +558,23 @@ export function createGame(cfg) {
     if (state.feedback === 'wordle') kb.setKeyStates(keyStates(state.shared ? myGuesses.concat(oppGuesses) : myGuesses));
     cleanups.push(() => kb.destroy());
 
-    let status;
-    if (myPending) status = el('span', { class: 'muted' }, 'Tahminin puanlanıyor…');
-    else if (mine) status = el('strong', {}, `Sıra sende, ${players[viewer]}: ${myGuesses.length + 1}. tahmin${left != null ? ` (${left} hak)` : ''}`);
-    else status = el('span', { class: 'muted' }, `${players[turn]} tahmin ediyor…`);
-
     // On a shared phone the previous player's scored row would otherwise vanish the moment
-    // the turn passes, so show the opponent's last guess (and the "solved" warning) up top.
+    // the turn passes, so show the opponent's last guess up top.
     const lastOpp = oppGuesses.length ? oppGuesses[oppGuesses.length - 1] : null;
     const oppSolved = state.solved[opp] != null;
     const mySolved = state.solved[viewer] != null;
+    const lastChance = oppSolved && !mySolved && mine;
+
+    // the "last guess" news goes in the status line (two lines of room) and below the keyboard:
+    // nothing new appears above the board, so the keys do not drop when that turn comes
+    let status;
+    if (myPending) status = el('span', { class: 'muted' }, 'Tahminin puanlanıyor…');
+    else if (lastChance) status = el('strong', {}, `Son tahminin, ${players[viewer]}!`);
+    else if (mine) status = el('strong', {}, `Sıra sende, ${players[viewer]}: ${myGuesses.length + 1}. tahmin${left != null ? ` (${left} hak)` : ''}`);
+    else if (mySolved) status = el('strong', {}, `Buldun! ${players[opp]} son tahminini yapıyor…`);
+    else status = el('span', { class: 'muted' }, `${players[turn]} tahmin ediyor…`);
+    const lastChanceNote = lastChance ? el('p', { class: 'hint notice' }, `${players[opp]} ${N.acc} buldu. Bu son tahminin: bulursan berabere, bulamazsan kaybedersin.`) : null;
     const notices = [];
-    if (oppSolved && !mySolved && mine) notices.push(el('p', { class: 'hint notice' }, `${players[opp]} ${N.acc} buldu. Bu son tahminin: bulursan berabere, bulamazsan kaybedersin.`));
-    if (mySolved && !mine) notices.push(el('p', { class: 'hint notice' }, `Buldun! ${players[opp]} son tahminini yapıyor…`));
     if (!state.shared && state.unlistedSecret && state.unlistedSecret[opp]) notices.push(el('p', { class: 'hint' }, unlistedMark(), ` ${nameSuffix(players[opp], 'in')} tuttuğu kelime listede yok: oyun bitince itiraz edebilirsin.`));
     if (!state.shared && state.unlistedSecret && state.unlistedSecret[viewer]) notices.push(el('p', { class: 'hint' }, unlistedMark(), ` Tuttuğun kelime listede yok: oyun bitince ${players[opp]} itiraz edebilir.`));
     const lastOppView = !online && lastOpp && lastOpp.result
@@ -579,7 +583,10 @@ export function createGame(cfg) {
         el('div', { class: 'tiles' }, tileRow(lastOpp.word, lastOpp.result, state.length, { small: true })))
       : null;
 
-    const oppDetails = el('details', { class: 'rules' },
+    // the list stays open across redraws (the other phone's guess arriving): closing by itself would
+    // shrink the page and move the keyboard just as the turn comes back
+    const openKey = `oppOpen:${viewer}`;
+    const oppDetails = el('details', { class: 'rules', open: !!drafts.get(openKey), onToggle: (e) => { if (e.target.open) drafts.set(openKey, true); else drafts.delete(openKey); } },
       el('summary', {}, `${players[opp]} — tahminleri (${oppGuesses.length})`),
       board(oppGuesses, state, { small: true }),
     );
@@ -599,6 +606,7 @@ export function createGame(cfg) {
       currentRow,
       kbBox,
       warn.note,
+      lastChanceNote,
       oppDetails,
       // hidden, not removed, while waiting: the page keeps its length, so a page scrolled to the end does not move
       el('div', { class: 'row', style: { marginTop: '10px', visibility: mine && !myPending ? '' : 'hidden' }, 'aria-hidden': mine && !myPending ? null : 'true' },
