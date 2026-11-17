@@ -25,13 +25,16 @@ export function liveRegion() {
 
 /**
  * Say a line once. A line that differs only in its numbers (a countdown, a score) is not said again,
- * so a clock in the turn line does not talk every second.
+ * so a clock in the turn line does not talk every second. The players' names are kept as they are:
+ * "Sıra sende, Oyuncu 1" and "Sıra sende, Oyuncu 2" are different lines.
  */
-export function announce(text) {
+export function announce(text, names = []) {
   const r = liveRegion();
   const line = String(text || '').replace(/\s+/g, ' ').trim();
   if (!r || !line) return;
-  const shape = line.replace(/\d+/g, '#');
+  let shape = line;
+  names.forEach((n, i) => { if (n) shape = shape.split(String(n)).join(i ? '\u2039B\u203a' : '\u2039A\u203a'); });
+  shape = shape.replace(/\d+/g, '#');
   if (shape === lastSaid) return;
   lastSaid = shape;
   r.textContent = line;
@@ -43,13 +46,18 @@ export function focusMark(container) {
   const a = document.activeElement;
   if (!a || a === document.body || !container.contains(a)) return null;
   if (a.matches('input, textarea, select')) return null; // a field keeps its own focus
+  const cls = a.classList[0] || '';
   return {
     tag: a.tagName,
-    cls: a.classList[0] || '',
+    cls,
     key: a.dataset ? a.dataset.key : undefined,
     name: nameOf(a),
+    idx: peers(container, a.tagName, cls).indexOf(a), // its place among the cells of its kind
+    count: peers(container, a.tagName, cls).length,
   };
 }
+
+const peers = (container, tag, cls) => [...container.querySelectorAll(tag.toLowerCase())].filter((n) => (n.classList[0] || '') === cls);
 
 // "e2, beyaz piyon, seçili" and "e2" are the same cell: the part before the first comma names it
 const nameOf = (node) => String(node.getAttribute('aria-label') || node.textContent || '').split(',')[0].trim();
@@ -65,11 +73,18 @@ export function restoreFocus(container, mark) {
   if (!mark || typeof document === 'undefined' || !container || typeof container.querySelectorAll !== 'function') return;
   const a = document.activeElement;
   if (a && a !== document.body) return; // the game (or the player) put it somewhere already
+  // the same cell: the one at the same place if it still has that name (several cells may share a
+  // name), else the first one with that name. If it can no longer be pressed (an opened cell), the
+  // nearest one that can: the keyboard stays where it was on the board
+  const list = peers(container, mark.tag, mark.cls);
+  const same = (node) => (mark.key !== undefined ? node.dataset.key === mark.key : nameOf(node) === mark.name);
+  let at = list[mark.idx] && same(list[mark.idx]) ? mark.idx : list.findIndex(same);
+  if (at < 0 && mark.key === undefined && list.length && list.length === mark.count) at = mark.idx; // same board, the cell's name changed
   let target = null;
-  for (const node of container.querySelectorAll(mark.tag.toLowerCase())) {
-    if ((node.classList[0] || '') !== mark.cls) continue;
-    if (mark.key !== undefined ? node.dataset.key !== mark.key : nameOf(node) !== mark.name) continue;
-    if (usable(node)) { target = node; break; }
+  if (at >= 0) {
+    for (let d = 0; d < list.length && !target; d++) {
+      for (const k of d ? [at + d, at - d] : [at]) { if (list[k] && usable(list[k])) { target = list[k]; break; } }
+    }
   }
   if (!target) {
     target = container.querySelector('.status-line');

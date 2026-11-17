@@ -2,6 +2,7 @@
 // letter; roles swap every word. The word stays on the setter's device: the guesser's
 // device only sees letter positions that the setter's device reports back.
 import { el, svg, render as draw, keysIntoView, keysIntoViewOnce, armAfter } from '../js/ui/dom.js';
+import { announce } from '../js/ui/a11y.js';
 import { nextButton } from '../js/ui/next.js';
 import { createKeyboard } from '../js/ui/keyboard.js';
 import { normalizeWord, isTurkishWord, upperTR, nameSuffix, LETTERS } from '../js/lib/tr.js';
@@ -397,6 +398,11 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
         // where it scrolls, the button comes back under the finger: a double tap must not switch back
         armAfter(kbBox);
         armAfter(modeButton);
+        // a hardware keyboard: the word is typed next, and Enter must send it, not press this button
+        // again (which would switch back); screen readers hear the new prompt
+        modeButton.blur();
+        const line = container.querySelector('.status-line');
+        if (line) announce(line.textContent, players);
       },
     }, modeLabel())
     : null;

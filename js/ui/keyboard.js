@@ -65,6 +65,8 @@ export function createKeyboard(container, opts) {
   const ACTIVATE = new Set(['BUTTON', 'A', 'SUMMARY']);
   const onKeydown = (e) => {
     if (e.ctrlKey || e.metaKey || e.altKey) return;
+    // a window is open over the game (the rules, "Bağlantı koptu"): the screen behind takes no typing
+    if (!root.isConnected || root.closest('[inert]')) return;
     const target = e.target;
     // a field types for itself
     if (target && (TYPING.has(target.tagName) || target.isContentEditable)) return;

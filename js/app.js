@@ -4,7 +4,7 @@ import { APP_VERSION } from './version.js';
 import { Session, ADVANCE_GUARD_MS } from './session.js';
 import { el, render, clear, toast, toastHost, liftToast, armAfter } from './ui/dom.js';
 import { clockPause } from './ui/timer.js';
-import { announce } from './ui/a11y.js';
+import { announce, liveRegion } from './ui/a11y.js';
 import { createScoreboard } from './ui/scoreboard.js';
 import { load, save, remove, keys } from './lib/storage.js';
 import { loadDictionary, loadCommonWords } from './lib/words.js';
@@ -47,7 +47,8 @@ function applyTheme(theme) {
 applyTheme(prefs.theme);
 // "Sistem": the status-bar colour follows a light/dark switch made while the app is open
 try { matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { if (prefs.theme === 'auto') applyTheme('auto'); }); } catch { /* old browser */ }
-toastHost(); // the live region exists (empty) before the first message, so that message is announced
+toastHost(); // the live regions exist (empty) before the first message, so that message is announced
+liveRegion();
 
 // ---------------------------------------------------------------- data
 const jsonCache = new Map();
@@ -355,7 +356,7 @@ export function showTournamentSetup({ onlineHost = false } = {}) {
     ? el('div', { class: 'field' }, el('div', { class: 'muted' }, `Oyuncular: ${online.players[0]} (sen) ve ${online.players[1]}`))
     : el('div', { class: 'names' }, [0, 1].map((i) => el('div', { class: 'field' },
       el('label', { for: `name-${i}` }, `${i + 1}. oyuncu`),
-      el('input', { type: 'text', class: 'input', id: `name-${i}`, maxlength: 40, autocomplete: 'off', value: names[i], onInput: (e) => { names[i] = fitNameInput(e.target); } }))));
+      el('input', { type: 'text', class: 'input', id: `name-${i}`, maxlength: 40, autocomplete: 'off', value: names[i], onBeforeinput: guardName, onInput: (e) => { names[i] = fitNameInput(e.target); } }))));
   const countSelect = el('select', { class: 'select', id: 'tour-count', onChange: (e) => { count = Number(e.target.value); } },
     [3, 5, 7].map((n) => el('option', { value: String(n) }, `${n} oyun`)), el('option', { value: '0' }, 'Seçilen oyunların hepsi'));
   countSelect.value = String(count);
@@ -597,7 +598,7 @@ export function showSetup(game, { onlineHost = false } = {}) {
         el('label', { for: `name-${i}` }, `${i + 1}. oyuncu`),
         el('input', {
           type: 'text', class: 'input', id: `name-${i}`, maxlength: 40, autocomplete: 'off',
-          value: names[i], onInput: (e) => { names[i] = fitNameInput(e.target); showRecord(); },
+          value: names[i], onBeforeinput: guardName, onInput: (e) => { names[i] = fitNameInput(e.target); showRecord(); },
         }),
       )),
     );
@@ -672,8 +673,19 @@ function fitName(v) {
 }
 function fitNameInput(input) {
   const v = fitName(input.value);
-  if (v !== input.value) input.value = v;
+  if (v !== input.value) { // (a paste, or an input method the guard below cannot stop): cut, the caret stays
+    const at = Math.min(typeof input.selectionStart === 'number' ? input.selectionStart : v.length, v.length);
+    input.value = v;
+    try { input.setSelectionRange(at, at); } catch { /* not a text field */ }
+  }
   return v;
+}
+/** Typed text that does not fit a full name is not put in at all (as maxlength did): the rest of the name and the caret stay as they are. */
+function guardName(e) {
+  if (e.inputType !== 'insertText' || !e.data || e.isComposing) return;
+  const input = e.target;
+  const room = NAME_MAX - (input.value.length - (input.selectionEnd - input.selectionStart));
+  if (e.data.length > room) e.preventDefault();
 }
 const recordName = (n) => String(n).trim().toLocaleLowerCase('tr-TR').replace(/[|:]/g, ' ');
 /** The two names would read the same on the scoreboard and in the records ("Ali" and "ali"). */
@@ -769,8 +781,10 @@ export function showPlay(p) {
     tag: isOnline ? (online.gameNo || 0) : null, // a guest's "ready" from an earlier game must not count here
     ctx: { ...p.ctx, vibrate: prefs.vibrate },
     onChange: updateScore,
+    // the record is written as soon as the game is decided: leaving while the last shot still plays
+    // out (Bilardo's end panel waits for the balls) must not lose it
+    onResult: (result) => bumpRecord(p.game.id, p.players, result),
     onEnd: (result) => {
-      bumpRecord(p.game.id, p.players, result);
       playEnd(!!result.draw);
       let text;
       if (result.draw) text = 'Berabere!';
@@ -780,7 +794,7 @@ export function showPlay(p) {
         const gaveUp = result.gaveUp === 0 || result.gaveUp === 1 ? `${p.players[result.gaveUp]} pes etti: ` : '';
         text = `${gaveUp}${p.players[result.winner]} kazandı!${pts > 1 ? ` (+${pts} puan)` : ''}`;
       }
-      announce(text); // screen readers hear the result
+      announce(text, p.players); // screen readers hear the result
       updateScore();
       // tournament bookkeeping: the host (or the single phone) keeps the tally; the guest shows what the host sent
       const t = tournament && (!isOnline || p.self === 0) ? tournament : null;
@@ -999,7 +1013,7 @@ export function showOnline({ code: presetCode = '' } = {}) {
   let name = prefs.onlineName;
   const nameInput = el('input', {
     type: 'text', class: 'input', id: 'online-name', maxlength: 40, value: name, placeholder: 'Adın',
-    onInput: (e) => { name = fitNameInput(e.target); },
+    onBeforeinput: guardName, onInput: (e) => { name = fitNameInput(e.target); },
   });
   const codeInput = el('input', {
     type: 'text', class: 'input input-code', id: 'room-code', maxlength: 5, autocapitalize: 'characters', autocomplete: 'off',
@@ -1191,6 +1205,7 @@ function showReconnect() {
   app.inert = true;
   window.addEventListener('keydown', reconnectKeys, true);
   const status = el('p', { class: 'muted', style: { minHeight: '1.4em' } }, 'Bağlantı koptu.');
+  announce('Bağlantı koptu. Yeniden bağlanılıyor.'); // screen readers hear why the game stopped
   const retryBtn = el('button', { type: 'button', class: 'btn btn-primary btn-block' }, 'Yeniden bağlan');
   const exitBtn = el('button', { type: 'button', class: 'btn btn-secondary btn-block', onClick: exitReconnect }, 'Çık');
   // the window comes up whenever the link drops, under a finger that may be on its way to the board:

@@ -1186,7 +1186,7 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 
 /* ---- Mangala replay: the "hand" travels from pit to pit, each drop flashes */
 .mg-board { position: relative; }
-.mg-hand { position: absolute; left: 0; top: 0; width: 30px; height: 30px; margin: -15px 0 0 -15px; border-radius: 50%; background: var(--present); color: #fff; font-weight: 800; font-size: 0.95rem; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); pointer-events: none; opacity: 0; transform: scale(0.6); transition: left 0.22s ease, top 0.22s ease, opacity 0.15s, transform 0.15s; z-index: 2; }
+.mg-hand { position: absolute; left: 0; top: 0; width: 30px; height: 30px; margin: -15px 0 0 -15px; border-radius: 50%; background: var(--present-fill); color: #fff; font-weight: 800; font-size: 0.95rem; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); pointer-events: none; opacity: 0; transform: scale(0.6); transition: left 0.22s ease, top 0.22s ease, opacity 0.15s, transform 0.15s; z-index: 2; }
 .mg-hand.show { opacity: 1; transform: scale(1); }
 .mg-hand.no-move { transition: none; }
 .mg-pit.flash, .mg-store.flash { border-color: var(--present); background: color-mix(in srgb, var(--present) 22%, var(--card)); }

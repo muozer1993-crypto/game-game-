@@ -113,6 +113,19 @@ export class Session {
       requestNext: (opts) => this.requestNext(opts),
     };
     this.onEnd = opts.onEnd || (() => {});
+    this.onResult = opts.onResult || (() => {}); // the result as soon as it is known (onEnd may wait for the last move to play out)
+    // the tap guards hold for the keyboard too: while taps are ignored, Enter and Space press nothing
+    // in the game box, and a held key (auto-repeat) never presses the same button again and again
+    // (the focus comes back to it after every redraw)
+    if (this.container && typeof this.container.addEventListener === 'function') {
+      this.keyGuard = (e) => {
+        if (e.key !== 'Enter' && e.key !== ' ') return;
+        if (e.target && e.target.matches && e.target.matches('input, textarea, select')) return; // typing in a field
+        if (e.repeat || (this.tapsBlockedUntil && Date.now() < this.tapsBlockedUntil)) { e.preventDefault(); e.stopPropagation(); }
+      };
+      this.container.addEventListener('keydown', this.keyGuard, true);
+      this.container.addEventListener('keyup', this.keyGuard, true);
+    }
     this.onChange = opts.onChange || (() => {});
     this.state = null;
     this.log = [];
@@ -314,6 +327,7 @@ export class Session {
     if (result) {
       this.ended = true;
       this.result = result;
+      this.onResult(result, this.state);
       // a game whose last move still plays out on screen (Bilardo's balls rolling) asks for the end
       // panel to wait until it is over, so the winner is not named while the balls still roll
       const wait = typeof this.game.endDelay === 'function' ? Math.min(Number(this.game.endDelay(this.state)) || 0, 8000) : 0;
@@ -390,7 +404,7 @@ export class Session {
             onReady: () => { this.blockTaps(SWITCH_GUARD_MS, true); this.render(); },
           });
           const title = typeof this.container.querySelector === 'function' ? this.container.querySelector('.handoff h2') : null;
-          if (title) announce(`${title.textContent}. Telefonu ona ver.`);
+          if (title) announce(`${title.textContent}. Telefonu ona ver.`, this.players);
           this.onChange(this.state);
           return;
         }
@@ -408,12 +422,16 @@ export class Session {
     restoreFocus(this.container, mark);
     // the turn line, said by screen readers when it changes (whose turn, the last move, the result)
     const line = typeof this.container.querySelector === 'function' ? this.container.querySelector('.status-line') : null;
-    if (line) announce(line.textContent);
+    if (line) announce(line.textContent, this.players);
     this.onChange(this.state);
   }
 
   destroy() {
     clearTimeout(this.endTimer);
+    if (this.keyGuard && this.container && typeof this.container.removeEventListener === 'function') {
+      this.container.removeEventListener('keydown', this.keyGuard, true);
+      this.container.removeEventListener('keyup', this.keyGuard, true);
+    }
     if (this.cleanup) {
       try { this.cleanup(); } catch { /* ignore */ }
       this.cleanup = null;

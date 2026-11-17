@@ -216,7 +216,8 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
         type: 'button',
         class: `ms-cell ${open ? `open ${NUM_CLASS[n] || ''}` : ''} ${showMines && isMine && !flags.has(i) ? 'mine' : ''} ${showMines && flags.has(i) && !isMine ? 'wrong' : ''}`,
         disabled: !interactive || open,
-        'aria-label': open ? (n > 0 ? `${n}` : 'boş') : (flags.has(i) ? 'bayrak' : 'kapalı'),
+        // the place first: each cell has its own name (and the keyboard focus finds the same cell after a move)
+        'aria-label': `${Math.floor(i / state.size) + 1}. satır ${(i % state.size) + 1}. sütun, ${open ? (n > 0 ? `${n}` : 'boş') : (flags.has(i) ? 'bayrak' : 'kapalı')}`,
         onClick: () => {
           const ms = starts.has(key) ? activeSince(starts.get(key)) : 0;
           if (flagMode.get(key)) sendMove({ type: 'flag', cell: i });

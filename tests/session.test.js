@@ -334,10 +334,12 @@ test('oturum: oyun son hamlesini hâlâ gösteriyorsa (Bilardo topları) bitiş 
     endDelay: (s) => (s.over ? 60 : 0),
   };
   const ends = [];
-  const s = new Session({ game: once, options: {}, players: ['Ayşe', 'Ali'], container: fakeContainer(), mode: 'local', onEnd: (r) => ends.push(r) });
+  const known = [];
+  const s = new Session({ game: once, options: {}, players: ['Ayşe', 'Ali'], container: fakeContainer(), mode: 'local', onEnd: (r) => ends.push(r), onResult: (r) => known.push(r) });
   s.start();
   s.dispatch(0, { type: 'go' });
   assert.equal(ends.length, 0, 'not yet: the last move still plays out');
+  assert.deepEqual(known, [{ winner: 0 }], 'the result itself is known at once (the record is written even if the player leaves now)');
   await new Promise((r) => setTimeout(r, 120));
   assert.deepEqual(ends, [{ winner: 0 }]);
   s.destroy();
