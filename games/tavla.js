@@ -200,7 +200,7 @@ export function applyMove(state, player, move) {
       return { ...endTurn(state), skipped: { player, dice: state.rolled ? state.rolled.slice() : state.dice.slice() } };
     }
     case 'giveup': {
-      return { ...state, over: true, winner: 1 - player, points: 1, dice: [] };
+      return { ...state, over: true, winner: 1 - player, points: 1, dice: [], gaveUp: player };
     }
     default:
       fail(`Bilinmeyen hamle: ${move.type}`);
@@ -312,7 +312,8 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   else dice = el('div', { class: 'tv-dice muted' }, el('span', { class: 'tv-dice-note' }, 'Zar atılmadı'));
 
   let status;
-  if (state.over) status = `${players[state.winner]} kazandı${state.points === 2 ? ' (mars, 2 puan)' : ''}!`;
+  if (state.over && state.gaveUp != null) status = `${players[state.gaveUp]} pes etti: ${players[state.winner]} kazandı!`; // the board alone does not say why it stopped
+  else if (state.over) status = `${players[state.winner]} kazandı${state.points === 2 ? ' (mars, 2 puan)' : ''}!`;
   else if (!state.dice.length) status = mine ? `Sıra sende, ${players[viewer]}: zar at` : `${players[p]} zar atacak…`;
   else status = mine ? `Pul seç, sonra gideceği haneyi seç` : `${players[p]} oynuyor…`;
   draw(info, el('strong', {}, status));

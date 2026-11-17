@@ -300,7 +300,8 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     : el('div', { class: 'status-line' }, el('strong', {}, 'İlk kelime serbest'));
 
   draw(container,
-    el('div', { class: 'status-line' }, mine ? el('strong', {}, `Sıra sende, ${players[viewer]}!`) : el('span', { class: 'muted' }, `${players[state.turn]} düşünüyor…`)),
+    // one line of the bold size either way: the keyboard below stays put when the turn passes
+    el('div', { class: 'status-line one' }, mine ? el('strong', {}, `Sıra sende, ${players[viewer]}!`) : el('span', { class: 'muted' }, `${players[state.turn]} düşünüyor…`)),
     timerBox,
     chainView(state, { fixed: true }),
     requiredText,

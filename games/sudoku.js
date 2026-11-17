@@ -1,6 +1,6 @@
 // Sudoku Düellosu — both players solve the same seeded puzzle on their own; the faster
 // correct solution wins, otherwise the one with more conflict-free cells filled.
-import { el, render as draw, keysIntoView } from '../js/ui/dom.js';
+import { el, render as draw, keysIntoView, toast } from '../js/ui/dom.js';
 import { nameSuffix } from '../js/lib/tr.js';
 import { createTimer, activeSince } from '../js/ui/timer.js';
 import { createRng, shuffle } from '../js/lib/rng.js';
@@ -226,7 +226,8 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   }
   const set = (v) => {
     const i = selected.get(key);
-    if (i == null || state.givens[i]) return;
+    if (i == null) { toast('Önce bir kare seç', { kind: 'error' }); return; }
+    if (state.givens[i]) return;
     if (grid[i] === v) return;
     sendMove({ type: 'set', cell: i, value: v, ms: activeSince(startedAt) });
   };

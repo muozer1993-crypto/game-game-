@@ -2,7 +2,7 @@ import { test, assert } from './runner.js';
 import game, { canPlay, cardPoints, handPoints, topCard, HAND } from '../games/sekizler.js';
 
 test('sekizler: dağıtım, kart uyumu, puanlar', () => {
-  const s = game.setup({ target: 100, seed: 3 });
+  const s = game.setup({ target: 100, seed: 4 });
   assert.equal(s.hands[0].length, HAND);
   assert.equal(s.hands[1].length, HAND);
   assert.equal(s.pile.length, 1);
@@ -22,7 +22,7 @@ test('sekizler: dağıtım, kart uyumu, puanlar', () => {
 });
 
 test('sekizler: atma, sekiz, çekme, pas, deste karıştırma, el ve oyun sonu', () => {
-  let s = game.setup({ target: 100, seed: 3 });
+  let s = game.setup({ target: 100, seed: 4 });
   // rig a position: player 1 to move, pile 5♥, hands known
   s = { ...s, turn: 1, pile: [{ r: 5, s: 1 }], suit: 1, hands: [[{ r: 2, s: 0 }, { r: 8, s: 3 }], [{ r: 9, s: 1 }, { r: 9, s: 0 }, { r: 8, s: 2 }]] };
   assert.throws(() => game.applyMove(s, 0, { type: 'play', card: 0 }), 'Sıra sende değil');

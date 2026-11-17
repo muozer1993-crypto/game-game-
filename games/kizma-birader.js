@@ -59,7 +59,7 @@ export function setup(options = {}) {
     id: String(options.seed ?? ''),
     seed: Number(options.seed) || 1,
     pieces: [Array(n).fill(-1), Array(n).fill(-1)], // -1 base, 0..50 track, 51..55 home column, 56 home
-    turn: 0,
+    turn: (Number(options.seed) || 0) % 2, // who rolls first: from the seed, so it changes from game to game
     die: null,
     rollCount: 0,
     sixes: 0,

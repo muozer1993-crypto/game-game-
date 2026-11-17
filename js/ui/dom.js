@@ -104,14 +104,22 @@ export function render(container, ...children) {
 }
 
 let toastTimer = null;
-/** Is a key, button or field under the spot a bottom toast covers? (the toast itself takes no pointer events) */
-function controlsUnderToast() {
+let toastSeq = 0;
+/**
+ * Would the toast, in its spot at the bottom, lie over a key, button or field? The probes cover the
+ * toast's real size (a long message wraps to several lines); `spot` marks its lower edge, and the
+ * toast itself takes no pointer events, so the probes see what lies under it.
+ */
+function coversControls(host, spot) {
   try {
-    const w = window.innerWidth; const h = window.innerHeight;
-    for (const y of [h - 40, h - 70]) {
-      for (const f of [0.15, 0.5, 0.85]) {
-        const t = document.elementFromPoint(w * f, y);
-        if (t && t.closest('button, input, textarea, select, a, .key, [role="button"]')) return true;
+    const bottom = spot.getBoundingClientRect().top;
+    const height = host.offsetHeight;
+    const width = host.offsetWidth;
+    const left = (document.documentElement.clientWidth - width) / 2;
+    for (const y of [bottom - height * 0.75, bottom - height * 0.25]) {
+      for (const f of [0.1, 0.5, 0.9]) {
+        const hit = document.elementFromPoint(left + width * f, y);
+        if (hit && hit.closest('button, input, textarea, select, a, .key, [role="button"]')) return true;
       }
     }
   } catch { /* no layout (tests): keep the bottom */ }
@@ -125,12 +133,28 @@ export function toast(message, { duration = 2200, kind = '', top } = {}) {
     host = el('div', { id: 'toast', class: 'toast', role: 'status', 'aria-live': 'polite' });
     document.body.append(host);
   }
+  let spot = document.getElementById('toast-spot');
+  if (!spot) {
+    spot = el('div', { id: 'toast-spot', class: 'toast-spot', 'aria-hidden': 'true' });
+    document.body.append(spot);
+  }
+  const seq = ++toastSeq;
   // top: at the top of the screen, clear of a keypad at the bottom (kept while it fades out).
-  // Not given: an error goes to the top too when the bottom spot would cover a key or button (a
+  // Not given: an error goes to the top too when at the bottom it would hide a key or button (a
   // wrong entry is fixed with ⌫ or GİR right there, and the message must not hide them)
-  const place = (top === undefined ? kind === 'error' && controlsUnderToast() : top) ? ' top' : '';
+  const auto = top === undefined && kind === 'error';
   host.textContent = message;
+  let place = (auto ? coversControls(host, spot) : top) ? ' top' : '';
   host.className = `toast show ${kind}${place}`.replace(/\s+/g, ' ').trim();
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => { host.className = `toast${place}`; }, duration);
+  // a caller often shows the message and then draws the next screen ("Bağlantı koptu", then the
+  // menu): before that screen is painted, look again at what it has at the bottom
+  if (auto && typeof requestAnimationFrame === 'function') {
+    requestAnimationFrame(() => {
+      if (seq !== toastSeq || !host.classList.contains('show')) return;
+      const now = coversControls(host, spot) ? ' top' : '';
+      if (now !== place) { place = now; host.classList.toggle('top', !!now); }
+    });
+  }
 }

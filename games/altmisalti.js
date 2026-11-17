@@ -45,7 +45,7 @@ function dealHand(state, handNo) {
   // the face-up trump card sits at the bottom of the stock (index 0) and is drawn last
   const trumpCard = deck.shift();
   deck.unshift(trumpCard);
-  const dealer = handNo % 2;
+  const dealer = (handNo + state.seed) % 2; // alternates; the seed picks who deals first, so it changes from match to match
   return {
     ...state, handNo, deck, trump: trumpCard.s, hands, tricks: [[], []], points: [0, 0], marriages: [[], []],
     leader: 1 - dealer, turn: 1 - dealer, table: [], closed: null, lastTrick: null, phase: 'play', result: null,

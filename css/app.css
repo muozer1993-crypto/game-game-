@@ -258,6 +258,7 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 /* board games: the turn line keeps two lines' room, so a long name wrapping it does not move the board */
 .status-line.two.three { min-height: calc(3 * 1.4 * 1.15rem); }
 .status-line.two { min-height: calc(2 * 1.4 * 1.15rem); display: flex; flex-direction: column; justify-content: center; } /* two lines of the 1.15rem strong */
+.status-line.one { min-height: calc(1.4 * 1.15rem); display: flex; flex-direction: column; justify-content: center; } /* one line of the 1.15rem strong, whatever it holds */
 .hint.two-lines { min-height: calc(2 * 1.4em); } /* two lines of the hint's own text */
 .status-line .muted.two-lines { min-height: calc(2 * 1.4em); } /* the same for a status line's second line */
 .status-opp { font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -669,6 +670,8 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .toast.error { background: var(--danger); color: var(--danger-fg); }
 .toast.top { top: calc(12px + env(safe-area-inset-top)); bottom: auto; transform: translateX(-50%) translateY(-20px); }
 .toast.top.show { transform: translateX(-50%) translateY(0); }
+/* marks where the toast's lower edge sits (js/ui/dom.js measures what a toast there would cover) */
+.toast-spot { position: fixed; left: 0; bottom: calc(24px + env(safe-area-inset-bottom)); width: 0; height: 0; visibility: hidden; pointer-events: none; }
 
 /* reveal */
 .reveal { text-align: center; margin: 10px 0; }
@@ -918,7 +921,7 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .rt-pad:active { transform: scale(0.97); }
 
 /* ---- Hafıza Dizisi */
-.sm-pads { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; max-width: 340px; margin: 12px auto; }
+.sm-pads { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; max-width: min(340px, 44vh); margin: 12px auto; } /* a short phone keeps the round button below them on screen */
 .sm-pad { aspect-ratio: 1; border: 0; border-radius: 18px; cursor: pointer; touch-action: manipulation; opacity: 0.45; transition: opacity 80ms; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25); }
 .sm-pad:not(:disabled) { opacity: 0.8; }
 .sm-pad:not(:disabled):active, .sm-pad.lit { opacity: 1; box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.7), 0 0 18px rgba(255, 255, 255, 0.5); }

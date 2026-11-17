@@ -93,7 +93,7 @@ function dealHand(state, handNo) {
   const deck = makeDeck((state.seed + handNo * 7919) >>> 0);
   const hole = [[deck.pop(), deck.pop()], [deck.pop(), deck.pop()]];
   const community = [deck.pop(), deck.pop(), deck.pop(), deck.pop(), deck.pop()];
-  const dealer = handNo % 2;
+  const dealer = (handNo + state.seed) % 2; // alternates; the seed picks the first dealer, so it changes from match to match
   const stacks = state.stacks.slice();
   const bets = [0, 0];
   const post = (p, amount) => { const a = Math.min(amount, stacks[p]); stacks[p] -= a; bets[p] += a; };

@@ -1,6 +1,6 @@
 // Hesap Yarışı — both players get the same seeded arithmetic questions; most correct wins,
 // ties go to the faster player. One phone: one after the other; two phones: at once.
-import { el, render as draw, keysIntoView } from '../js/ui/dom.js';
+import { el, render as draw, keysIntoView, toast } from '../js/ui/dom.js';
 import { createTimer, activeSince } from '../js/ui/timer.js';
 import { createKeyboard } from '../js/ui/keyboard.js';
 import { createRng } from '../js/lib/rng.js';
@@ -162,7 +162,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       layout: 'digits',
       onKey: (k) => { if (typed.length < 6 && !(typed === '0')) { typed += k; drawAnswer(); } },
       onBackspace: () => { typed = typed.slice(0, -1); drawAnswer(); },
-      onEnter: () => { if (typed) send(Number(typed)); },
+      onEnter: () => { if (typed) send(Number(typed)); else toast('Önce cevabı yaz', { kind: 'error' }); },
     });
     const prev = i > 0 ? state.answers[viewer][i - 1] : null;
     const prevQ = i > 0 ? state.questions[i - 1] : null;

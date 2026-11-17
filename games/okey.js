@@ -121,7 +121,7 @@ function dealHand(state, handNo) {
   let indicator = deck.pop();
   while (isFake(indicator)) { deck.unshift(indicator); indicator = deck.pop(); }
   const okey = { c: indicator.c, n: (indicator.n % 13) + 1 };
-  const starter = handNo % 2;
+  const starter = (handNo + state.seed) % 2; // alternates; the seed picks who starts the first hand, so it changes from match to match
   const hands = [[], []];
   for (let i = 0; i < 14; i++) { hands[0].push(deck.pop()); hands[1].push(deck.pop()); }
   hands[starter].push(deck.pop());

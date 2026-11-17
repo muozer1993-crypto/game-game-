@@ -39,7 +39,7 @@ export const pips = (hand) => hand.reduce((s, t) => s + t.a + t.b, 0);
 function dealHand(state, handNo) {
   const deck = shuffle(createRng((state.seed + handNo * 7919) >>> 0), makeSet());
   const hands = [deck.splice(0, 7), deck.splice(0, 7)];
-  return { ...state, handNo, boneyard: deck, hands, line: [], passes: 0, turn: handNo % 2, phase: 'play', result: null };
+  return { ...state, handNo, boneyard: deck, hands, line: [], passes: 0, turn: (handNo + state.seed) % 2, phase: 'play', result: null };
 }
 
 export function setup(options = {}) {

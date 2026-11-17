@@ -19,7 +19,7 @@ test('66: el kazananı, zorunlu cevaplar, puanlar', () => {
 });
 
 test('66: dağıtım, açık deste serbestliği, çekme, evlilik, değişim, kapatma, el ve oyun puanı', () => {
-  let s = game.setup({ target: 7, seed: 5 });
+  let s = game.setup({ target: 7, seed: 6 });
   assert.equal(s.hands[0].length, 6);
   assert.equal(s.hands[1].length, 6);
   assert.equal(s.deck.length, 12);

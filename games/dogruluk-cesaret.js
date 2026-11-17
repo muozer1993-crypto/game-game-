@@ -1,7 +1,7 @@
 // Doğruluk mu Cesaret mi? — the party classic for two: on your turn pick truth or dare, the
 // other player judges whether you did it. A dare scores 2, a truth 1, a pass nothing. Nothing is
 // hidden, so the phone is simply shown around; online the other phone shows the judge buttons.
-import { el, render as draw } from '../js/ui/dom.js';
+import { el, render as draw, armAfter } from '../js/ui/dom.js';
 import { createRng, shuffle, freshFirst } from '../js/lib/rng.js';
 import { nameSuffix } from '../js/lib/tr.js';
 
@@ -131,6 +131,8 @@ export function getResult(state) {
 }
 
 // ----------------------------------------------------------------- render
+const seenCard = new WeakMap(); // container -> the card it showed last ({ at: cards judged so far, swapped })
+
 export function render(state, viewer, container, sendMove, ctx = {}) {
   const players = ctx.players || ['Oyuncu 1', 'Oyuncu 2'];
   const online = ctx.mode === 'online';
@@ -170,15 +172,20 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const judge = 1 - p;
   const amJudge = !online || viewer === judge;
   const amPlayer = !online || viewer === p;
+  // "Başka kart" (online tapped on the other phone) puts a new card above the judge's buttons: a
+  // verdict tapped right then was meant for the card before, so they ignore taps for a moment
+  const shown = seenCard.get(container);
+  seenCard.set(container, { at: state.history.length, swapped: cur.swapped });
+  const swappedNow = !!cur.swapped && !!shown && shown.at === state.history.length && !shown.swapped;
   draw(container,
     el('div', { class: 'status-line' }, el('strong', {}, `${players[p]} — ${cur.kind === 'dare' ? 'Cesaret 🔥' : 'Doğruluk 💬'}`)),
     el('div', { class: 'dc-card card' }, el('div', { class: 'dc-text' }, textOf(cur.kind, cur.index))),
     amPlayer && !cur.swapped ? el('button', { type: 'button', class: 'btn btn-small', onClick: () => sendMove({ type: 'swap' }) }, 'Başka kart (bir kez)') : null,
     el('p', { class: 'hint' }, amJudge ? `${players[judge]} hakem: ${cur.kind === 'dare' ? 'görev yapıldı mı?' : 'cevap verildi mi?'}` : `${players[judge]} karar verecek…`),
-    amJudge ? el('div', { class: 'row', style: { justifyContent: 'center', gap: '8px' } },
+    amJudge ? (swappedNow ? (row) => armAfter(row, 600) : (row) => row)(el('div', { class: 'row', style: { justifyContent: 'center', gap: '8px' } },
       el('button', { type: 'button', class: 'btn btn-primary btn-big', onClick: () => sendMove({ type: 'resolve', done: true, card: cur.index }) }, `Yaptı (+${SCORE[cur.kind]})`),
       el('button', { type: 'button', class: 'btn btn-secondary btn-big', onClick: () => sendMove({ type: 'resolve', done: false, card: cur.index }) }, 'Pas (0)'),
-    ) : null,
+    )) : null,
     legend, historyView,
   );
   return null;

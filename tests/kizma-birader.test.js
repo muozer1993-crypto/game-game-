@@ -26,7 +26,8 @@ test('kızma birader: pist 52 kare, bitişik ve tek; başlangıç ve güvenli ka
 });
 
 test('kızma birader: altıyla çıkış, ilerleme, ezme, tam giriş, üç altı, sıra', () => {
-  let s = game.setup({ pieces: 2, seed: 7 });
+  assert.equal(game.setup({ pieces: 2, seed: 7 }).turn, 1, 'the first roll follows the seed');
+  let s = game.setup({ pieces: 2, seed: 8 });
   assert.deepEqual(s.pieces, [[-1, -1], [-1, -1]]);
   assert.deepEqual(game.getTurn(s), { player: 0, private: false });
   assert.throws(() => game.applyMove(s, 0, { type: 'move', piece: 0 }), 'Önce zar at');

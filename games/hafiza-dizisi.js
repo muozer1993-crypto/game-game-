@@ -1,6 +1,6 @@
 // Hafıza Dizisi — a "Simon" duel: the same seeded sequence of pads lights up, one more each
 // round; repeat it by tapping. A mistake ends your run; the longer run wins.
-import { el, render as draw } from '../js/ui/dom.js';
+import { el, render as draw, keysIntoView } from '../js/ui/dom.js';
 import { createRng } from '../js/lib/rng.js';
 import { clockPause } from '../js/ui/timer.js';
 
@@ -162,6 +162,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     el('div', { class: 'sm-pads' }, padEls),
     pos === 0 && !shown.has(key) ? showBtn : null,
   );
+  if (showBtn.isConnected) keysIntoView(showBtn); // the button that starts the round, under the pads
   const startedAt = shown.get(key);
   if (pos === 0 && startedAt == null) setStatus(len === START_LEN ? 'Hazır olunca başla.' : `Doğru! Sıradaki dizi ${len} adım.`);
   else if (pos === 0 && Date.now() < startedAt + 400 + len * stepMs) playback(startedAt); // re-rendered mid-playback

@@ -39,7 +39,7 @@ test('okey: 106 taş; bitiş kontrolü — per, seri, joker, sahte okey, 12-13-1
 });
 
 test('okey: dağıtım, çekme, atma, bitirme, puan, sonraki el', () => {
-  let s = game.setup({ target: 6, seed: 3 });
+  let s = game.setup({ target: 6, seed: 4 });
   assert.equal(s.hands[0].length, 15);
   assert.equal(s.hands[1].length, 14);
   assert.ok(s.indicator.c !== FAKE);

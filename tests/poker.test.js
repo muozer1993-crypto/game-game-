@@ -31,7 +31,7 @@ test('poker: el değerleri ve karşılaştırma', () => {
 });
 
 test('poker: körler, bekle/gör/yükselt/pas, sokaklar, rest ve iade, bitiş', () => {
-  let s = game.setup({ stack: 1000, seed: 9 });
+  let s = game.setup({ stack: 1000, seed: 10 });
   assert.equal(s.dealer, 0);
   assert.deepEqual(s.bets, [SB, BB]);
   assert.deepEqual(s.stacks, [990, 980]);

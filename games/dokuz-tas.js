@@ -166,10 +166,21 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     const targets = new Set(state.mustRemove ? [] : (selected != null ? moves.filter((m) => m.from === selected).map((m) => m.to) : (placing ? moves.map((m) => m.to) : [])));
     const marked = new Set(selected != null ? targets : []);
     const movable = new Set(!placing && !state.mustRemove ? moves.map((m) => m.from) : []);
+    // the last turn on the empty points: a crossed-out ghost where a stone was taken (the other phone
+    // sees it vanish otherwise) and a faint ring where the moved stone came from
+    const last = state.last || {};
+    const victim = state.over ? 1 - state.winner : state.turn;
+    const mover = last.to != null && state.points[last.to] != null ? state.points[last.to] : null;
     for (let i = 0; i < 24; i++) {
       const [x, y] = pos(i);
       const v = state.points[i];
-      const isLast = state.last && (state.last.to === i);
+      const isLast = last.to === i;
+      if (v === null && last.removed === i) {
+        root.append(svg('circle', { cx: x, cy: y, r: 28, fill: 'none', stroke: COLORS[victim], 'stroke-width': 3, 'stroke-dasharray': '7 6', opacity: 0.8 }));
+        for (const [dx, dy] of [[1, 1], [1, -1]]) root.append(svg('line', { x1: x - 14 * dx, y1: y - 14 * dy, x2: x + 14 * dx, y2: y + 14 * dy, stroke: COLORS[victim], 'stroke-width': 4, 'stroke-linecap': 'round', opacity: 0.8 }));
+      } else if (v === null && last.from === i && mover != null) {
+        root.append(svg('circle', { cx: x, cy: y, r: 28, fill: 'none', stroke: COLORS[mover], 'stroke-width': 3, 'stroke-dasharray': '3 7', opacity: 0.6 }));
+      }
       if (v === null) {
         root.append(svg('circle', { cx: x, cy: y, r: marked.has(i) ? 14 : 8, fill: marked.has(i) ? COLORS[viewer] : 'currentColor', opacity: marked.has(i) ? 0.55 : 0.5 }));
       } else {

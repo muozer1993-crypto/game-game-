@@ -5,7 +5,7 @@ const at = (s, r, c) => r * s.size + c;
 const place = (s, p, r, c) => game.applyMove(s, p, { type: 'place', cell: at(s, r, c) });
 
 test('go: taş koyma, esir alma, intihar, ko', () => {
-  let s = game.setup({ size: 9, seed: 1 });
+  let s = game.setup({ size: 9, seed: 2 });
   assert.deepEqual(game.getTurn(s), { player: 0, private: false });
   assert.throws(() => place(s, 1, 0, 0), 'Sıra sende değil');
   s = place(s, 0, 4, 4);
@@ -23,14 +23,14 @@ test('go: taş koyma, esir alma, intihar, ko', () => {
   // suicide: white into the empty corner surrounded by black
   assert.throws(() => place({ ...s, turn: 1 }, 1, 0, 0), 'İntihar');
   // a capturing move into a last liberty is allowed: build a black stone at (8,8) with white around
-  let t = game.setup({ size: 9, seed: 1 });
+  let t = game.setup({ size: 9, seed: 2 });
   t = { ...t, board: t.board.slice() };
   t.board[at(t, 8, 8)] = 0; t.board[at(t, 7, 8)] = 1;
   const r = tryPlace({ ...t, turn: 1 }, 1, at(t, 8, 7));
   assert.ok(typeof r !== 'string' && r.captured.length === 1, 'white captures the corner stone');
   // ko: black (0,1),(1,0),(2,1) around a white stone at (1,1) whose only liberty is (1,2);
   // white (0,2),(2,2),(1,3) around (1,2). Black takes at (1,2); white may not retake at once.
-  let k = game.setup({ size: 9, seed: 1 });
+  let k = game.setup({ size: 9, seed: 2 });
   k = { ...k, board: k.board.slice() };
   [[0, 1], [1, 0], [2, 1]].forEach(([r, c]) => { k.board[at(k, r, c)] = 0; });
   [[0, 2], [2, 2], [1, 3], [1, 1]].forEach(([r, c]) => { k.board[at(k, r, c)] = 1; });
@@ -48,7 +48,7 @@ test('go: taş koyma, esir alma, intihar, ko', () => {
 });
 
 test('go: pas, sayım, ölü taş, onay, alan puanı ve komi', () => {
-  let s = game.setup({ size: 9, seed: 1 });
+  let s = game.setup({ size: 9, seed: 2 });
   s = { ...s, board: s.board.slice() };
   // black wall on column 4 splits the board; white stone at (0,0) will be marked dead
   for (let r = 0; r < 9; r++) s.board[at(s, r, 4)] = 0;
@@ -98,7 +98,7 @@ test('go: pas, sayım, ölü taş, onay, alan puanı ve komi', () => {
 
 test('go iki telefonda: sayımda çaprazlanan onay, ölü taş ve "Oyuna dön" iki telefonu ayrıştırmaz', () => {
   const start = () => {
-    let s = game.setup({ size: 9, seed: 3 });
+    let s = game.setup({ size: 9, seed: 4 });
     s = game.applyMove(s, s.turn, { type: 'place', cell: 40 });
     s = game.applyMove(s, s.turn, { type: 'place', cell: 80 });
     s = game.applyMove(s, s.turn, { type: 'pass' });
@@ -151,7 +151,7 @@ test('go iki telefonda: sayımda çaprazlanan onay, ölü taş ve "Oyuna dön" i
   assert.deepEqual(h, g, 'mark crossing "Oyuna dön": same state on both phones');
   // the guest goes back to play and places a stone while the host's phone ends the count: the
   // host's board stands on both phones
-  s = game.setup({ size: 9, seed: 3 });
+  s = game.setup({ size: 9, seed: 4 });
   for (const m of [{ type: 'place', cell: 40 }, { type: 'place', cell: 80 }, { type: 'place', cell: 10 }, { type: 'pass' }, { type: 'pass' }]) s = game.applyMove(s, s.turn, m);
   assert.equal(s.turn, 1, 'white plays after "Oyuna dön"');
   s = game.applyMove(s, 1, { type: 'agree', dead: [], marks: 0 });
@@ -160,4 +160,23 @@ test('go iki telefonda: sayımda çaprazlanan onay, ölü taş ve "Oyuna dön" i
   assert.equal(g.phase, 'over');
   assert.deepEqual(g.board, h.board, 'same final board');
   assert.deepEqual(g.result, h.result);
+});
+
+test('go: siyahı (ve ilk hamleyi) kimin oynayacağı tohuma göre değişir; komi beyaza', () => {
+  const blacks = new Set([1, 2, 3, 4, 5, 6].map((seed) => game.setup({ size: 9, seed }).black));
+  assert.deepEqual([...blacks].sort(), [0, 1], 'both players get black over a few rounds');
+  const s = game.setup({ size: 9, seed: 1 });
+  assert.equal(s.black, 1);
+  assert.equal(game.getTurn(s).player, 1, 'black moves first');
+  assert.throws(() => place(s, 0, 4, 4), /Sıra sende değil/);
+  // one black stone owns the board; the komi goes to player 0, who plays white here
+  const t = place(s, 1, 4, 4);
+  const R = score(t);
+  assert.deepEqual(R.area, [0, 81]);
+  assert.deepEqual(R.total, [KOMI, 81]);
+  assert.equal(R.winner, 1);
+  // a game saved before colours were drawn (no `black`) keeps player 0 as black
+  const old = { ...game.setup({ size: 9, seed: 2 }) };
+  delete old.black;
+  assert.deepEqual(score(place(old, 0, 4, 4)).total, [81, KOMI]);
 });

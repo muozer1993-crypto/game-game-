@@ -10,7 +10,7 @@ export const meta = {
   icon: '⚫',
   description: 'Taşlarınla alan çevir, nefessiz kalan taşları al; iki pas sonra sayım.',
   rules: [
-    'Siyah başlar, sırayla kesişimlere taş konur. Nefesi (bitişik boş noktası) kalmayan taş grubu alınır. Kendi grubunu nefessiz bırakan hamle yasaktır; ko: alınan tek taş hemen geri alınamaz.',
+    'Siyah başlar; siyahı kimin oynayacağı her turda rastgele belirlenir. Sırayla kesişimlere taş konur. Nefesi (bitişik boş noktası) kalmayan taş grubu alınır. Kendi grubunu nefessiz bırakan hamle yasaktır; ko: alınan tek taş hemen geri alınamaz.',
     'İkiniz de art arda pas geçince sayım başlar: ölü saydığınız gruplara dokunup işaretleyin, ikiniz de onaylayın. Alan sayımı: taşların + yalnızca kendi taşlarınla çevrili boş noktalar. Beyaz 6,5 komi alır.',
     'Sayımda anlaşamazsanız "Oyuna dön" ile devam edin. Puanı yüksek olan kazanır.',
   ].join('\n'),
@@ -28,11 +28,13 @@ function fail(msg) {
 
 export function setup(options = {}) {
   const size = [9, 13].includes(Number(options.size)) ? Number(options.size) : 9;
+  const black = (Number(options.seed) || 0) % 2; // the player who plays black and starts (from the seed: it changes from round to round)
   return {
     id: String(options.seed ?? ''),
     size,
-    board: new Array(size * size).fill(null), // null, 0 (black), 1 (white)
-    turn: 0,
+    black,
+    board: new Array(size * size).fill(null), // null or the player (0/1) whose stone it is
+    turn: black,
     passes: 0,
     ko: null,            // point that may not be played this turn (simple ko)
     captures: [0, 0],    // stones captured by each player
@@ -167,7 +169,7 @@ export function applyMove(state, player, move) {
   return state;
 }
 
-/** Area score with the dead stones removed: { area: [b, w], total: [b, w + komi], winner } */
+/** Area score with the dead stones removed, by player: { area, total (komi to the player who is not black), winner } */
 export function score(state) {
   const { size } = state;
   const dead = new Set(state.dead);
@@ -187,7 +189,8 @@ export function score(state) {
     }
     if (borders.size === 1) area[[...borders][0]] += region.length;
   }
-  const total = [area[0], area[1] + KOMI];
+  const black = state.black === 1 ? 1 : 0;
+  const total = area.map((a, p) => (p === black ? a : a + KOMI));
   return { area, total, winner: total[0] > total[1] ? 0 : 1 };
 }
 
@@ -220,6 +223,8 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const n = state.size;
   const mine = !online || viewer === state.turn;
   const counting = state.phase === 'count';
+  const black = state.black === 1 ? 1 : 0;
+  const white = 1 - black;
   const canMark = counting && (!online || !state.agree[viewer]);
   const dead = new Set(state.dead);
   const pad = 0.6;
@@ -243,7 +248,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     const clickable = counting ? (canMark && v !== null) : (mine && state.phase === 'play' && v === null);
     board.append(svg('rect', {
       x: x - 0.5, y: y - 0.5, width: 1, height: 1, fill: 'transparent', class: `go-cell ${clickable ? 'free' : ''} ${v === null ? 'empty' : ''}`,
-      role: 'gridcell', 'aria-label': `${r + 1}. satır ${c + 1}. sütun${v == null ? '' : `, ${v === 0 ? 'siyah' : 'beyaz'}${dead.has(i) ? ' (ölü)' : ''}`}`,
+      role: 'gridcell', 'aria-label': `${r + 1}. satır ${c + 1}. sütun${v == null ? '' : `, ${v === black ? 'siyah' : 'beyaz'}${dead.has(i) ? ' (ölü)' : ''}`}`,
       onClick: clickable ? () => sendMove({ type: counting ? 'dead' : 'place', cell: i }) : null,
     }));
   }
@@ -255,10 +260,10 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const g = layer.getContext && layer.getContext('2d');
   if (g) {
     stones.forEach(({ x, y, v, i }) => {
-      drawDisc(g, x * k, y * k, 0.46 * k, v === 0 ? '#151515' : '#f7f7f7', { alpha: dead.has(i) ? 0.35 : 1, rim: v === 0 ? '#000' : '#9a9a9a', lineWidth: 0.03 * k });
+      drawDisc(g, x * k, y * k, 0.46 * k, v === black ? '#151515' : '#f7f7f7', { alpha: dead.has(i) ? 0.35 : 1, rim: v === black ? '#000' : '#9a9a9a', lineWidth: 0.03 * k });
       if (state.last === i && !counting) {
         g.beginPath(); g.arc(x * k, y * k, 0.16 * k, 0, Math.PI * 2);
-        g.lineWidth = 0.06 * k; g.strokeStyle = v === 0 ? '#fff' : '#111'; g.stroke();
+        g.lineWidth = 0.06 * k; g.strokeStyle = v === black ? '#fff' : '#111'; g.stroke();
       }
       if (dead.has(i)) {
         g.fillStyle = '#c62828'; g.font = `700 ${Math.round(0.6 * k)}px system-ui, sans-serif`;
@@ -267,12 +272,12 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     });
   }
   const boardBox = el('div', { class: 'go-wrap' }, board, layer);
-  const caps = el('div', { class: 'c4-legend' }, el('span', {}, `⚫ ${players[0]}: ${state.captures[0]} esir`), el('span', {}, `⚪ ${players[1]}: ${state.captures[1]} esir`), el('span', { class: 'muted' }, `${n}×${n} · komi ${num(KOMI)}`));
+  const caps = el('div', { class: 'c4-legend' }, el('span', {}, `⚫ ${players[black]}: ${state.captures[black]} esir`), el('span', {}, `⚪ ${players[white]}: ${state.captures[white]} esir`), el('span', { class: 'muted' }, `${n}×${n} · komi ${num(KOMI)}`));
   if (state.phase === 'over') {
     const R = state.result;
     draw(container,
-      el('div', { class: 'status-line' }, el('strong', {}, `${players[R.winner]} kazandı: ${num(R.total[0])} – ${num(R.total[1])}`)),
-      el('p', { class: 'hint' }, `Alan: siyah ${R.area[0]}, beyaz ${R.area[1]} + komi ${num(KOMI)}.`),
+      el('div', { class: 'status-line' }, el('strong', {}, `${players[R.winner]} kazandı: ${num(R.total[black])} – ${num(R.total[white])}`)),
+      el('p', { class: 'hint' }, `Alan: siyah ${R.area[black]}, beyaz ${R.area[white]} + komi ${num(KOMI)}.`),
       boardBox, caps,
     );
     return null;
@@ -294,14 +299,14 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       el('div', { class: 'status-line two' }, el('strong', {}, 'Sayım: ölü grupları işaretleyin')),
       boardBox,
       phaseChanged ? armAfter(row) : row,
-      el('p', { class: 'hint two-lines' }, `Şu an: siyah ${num(est.total[0])} – beyaz ${num(est.total[1])} (komi dahil). ${state.agree[0] ? `${players[0]} onayladı. ` : ''}${state.agree[1] ? `${players[1]} onayladı. ` : ''}`),
+      el('p', { class: 'hint two-lines' }, `Şu an: siyah ${num(est.total[black])} – beyaz ${num(est.total[white])} (komi dahil). ${state.agree[0] ? `${players[0]} onayladı. ` : ''}${state.agree[1] ? `${players[1]} onayladı. ` : ''}`),
       caps,
     );
     // a short phone: "Onayla" on screen as the count begins
     if (phaseChanged) keysIntoView(row);
     return null;
   }
-  const who = state.turn === 0 ? '⚫' : '⚪';
+  const who = state.turn === black ? '⚫' : '⚪';
   // "Pas" stays in the layout (hidden) on the other player's turn: the page keeps its length, so a
   // page scrolled to its end does not move the board after every move (as satranc.js keeps "Pes")
   const passBtn = el('button', {

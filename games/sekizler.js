@@ -45,7 +45,7 @@ function deal(state, dealNo) {
   // the first open card must not be an eight (it would need a suit choice)
   let top = deck.shift();
   while (top.r === 8) { deck.push(top); top = deck.shift(); }
-  const dealer = dealNo % 2; // the non-dealer plays first; the deal alternates
+  const dealer = (dealNo + state.seed) % 2; // the non-dealer plays first; the deal alternates, and the seed picks who deals first
   return { ...state, dealNo, deck, hands, pile: [top], suit: top.s, turn: 1 - dealer, drew: false, shuffles: 0, phase: 'play', lastRound: null };
 }
 

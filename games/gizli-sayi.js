@@ -9,7 +9,7 @@ export const meta = {
   rules: [
     'Her oyuncu rakibi için rakamları birbirinden farklı, 0 ile başlamayan 4 haneli bir sayı tutar (kendisi yazar ya da ayara göre rastgele gelir; "Ortak rastgele sayı" seçilirse ikiniz aynı sayıyı ararsınız).',
     'Sırayla tahmin edilir. "+" doğru rakam doğru yerde, "−" doğru rakam yanlış yerde demektir. Örnek: gizli 4271, tahmin 4712 → +1 −3.',
-    'Önce bulan kazanır; aynı turda bulurlarsa berabere.',
+    'Önce bulan kazanır; aynı turda bulurlarsa berabere. Ortak sayıda ise ilk bulan hemen kazanır: ikiniz de bütün tahminleri gördüğünüz için diğerine son tahmin hakkı verilmez.',
   ].join('\n'),
   data: [],
   settings: [

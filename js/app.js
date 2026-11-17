@@ -1287,7 +1287,8 @@ async function handleOnlineMessage(msg) {
       for (const [k, h] of Object.entries(histories)) online.peerSeen[k] = h.fromPeer(seen[k], msg.clock);
       online.players = online.role === 'host' ? [online.myName, other] : [other, online.myName];
       // a stale cached build on one phone would desync the games: say so before anything starts
-      if (msg.v && msg.v !== APP_VERSION) versionMismatch(String(msg.v).slice(0, 12), other);
+      const mismatch = !!msg.v && msg.v !== APP_VERSION;
+      if (mismatch) versionMismatch(String(msg.v).slice(0, 12), other);
       const hadGame = !!(activeSession && !activeSession.destroyed);
       if (online.resuming) {
         closeReconnect();
@@ -1295,7 +1296,8 @@ async function handleOnlineMessage(msg) {
         online.session = null;
         if (!msg.reply) sendHello(online.transport, { reply: true }); // it may never have got our greeting
         // with a game running the other side evidently started over; from the lobby it is just the link coming back
-        toast(hadGame ? 'Rakip yeniden başladı; oyun baştan kurulacak' : 'Bağlantı yeniden kuruldu', { duration: hadGame ? 4000 : 2500 });
+        // (the version warning above says more, and stays)
+        if (!mismatch) toast(hadGame ? 'Rakip yeniden başladı; oyun baştan kurulacak' : 'Bağlantı yeniden kuruldu', { duration: hadGame ? 4000 : 2500 });
       } else if (msg.reply && before === other) {
         // the other phone's answer to our greeting: this phone already acted on the link coming back
         // (and may have started a game since; the answer must not send it to the lobby)

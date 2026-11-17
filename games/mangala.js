@@ -15,7 +15,7 @@ export const meta = {
     'Son taş kendi haznene düşerse bir daha oynarsın. Son taş rakibin kuyusuna düşer ve oradaki taş sayısını çift yaparsa o kuyudaki taşların hepsini alırsın. Son taş kendi boş kuyuna düşerse ve karşısındaki rakip kuyusu doluysa oradakileri ve kendi taşını alırsın.',
     'Bir oyuncunun kuyuları boşalınca oyun biter. Resmî kurala göre kuyuları ilk boşalan oyuncu, rakibin kuyularında kalan bütün taşları kendi haznesine alır (ayarlardan "Herkes kendi tarafını alır" seçilebilir). Haznesinde çok taşı olan kazanır; eşitlikte berabere.',
     'Varsayılanlar Türkiye Akıl ve Zekâ Oyunları Federasyonu (TAZOF) ve MEB zekâ oyunları kurallarıdır.',
-    'Bantumi türü (eski Nokia telefonlarındaki oyun): dağıtım her zaman aldığın kuyudan sonraki kuyudan başlar; rakibin kuyusunu çift yapınca alma yoktur. Son taş haznene düşerse bir hamle daha. Son taş kendi boş kuyuna düşerse o taş ve karşısındaki kuyunun taşları haznene gider (karşısı boşsa yalnız o taş). Oyun bitince herkes kendi tarafındaki taşları alır. Bantumi seçiliyken "İlk taş" ve "Kalan taşlar" ayarları kullanılmaz.',
+    'Bantumi türü (eski Nokia telefonlarındaki oyun): dağıtım her zaman aldığın kuyudan sonraki kuyudan başlar; rakibin kuyusunu çift yapınca alma yoktur. Son taş haznene düşerse bir hamle daha. Son taş kendi boş kuyuna düşerse o taş ve karşısındaki kuyunun taşları haznene gider (karşısı boşsa yalnız o taş). Oyun bitince herkes kendi tarafındaki taşları alır. Bantumi seçiliyken "İlk taş" ve "Oyun sonunda kalan taşlar" ayarları kullanılmaz.',
     'Taşların dağıtılışı adım adım gösterilir; tahtaya dokunarak animasyonu geçebilir, ayarlardan hızını değiştirebilir ya da kapatabilirsin.',
   ].join('\n'),
   data: [],
@@ -255,14 +255,14 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     : '';
   const variant = state.variant === 'bantumi'
     ? ['Bantumi']
-    : [state.firstStone === 'next' ? 'sonraki kuyudan başla' : null, state.leftovers === 'owner' ? 'kalan taşlar sahibine' : null].filter(Boolean);
+    : [state.firstStone === 'next' ? 'ilk taş sonraki kuyuya bırakılır' : null, state.leftovers === 'owner' ? 'oyun sonunda herkes kendi tarafını alır' : null].filter(Boolean);
   const lastText = state.last
     ? `${state.last.captured ? `${state.last.captured} taş alındı. ` : ''}${state.last.again && !state.over ? 'Son taş hazneye düştü: bir hamle daha. ' : ''}${endNote}`
     : `${players[0]} alt sıradaki kuyuları oynar, ${players[1]} üst sıradakileri.`;
   const statusEl = el('div', { class: 'status-line two' }, el('strong', {}, status));
   const note = el('p', { class: 'hint' }, lastText);
   // the house rules stay visible all game (the guest never saw the host's settings form)
-  const variantLine = variant.length ? el('p', { class: 'hint mg-variant' }, state.variant === 'bantumi' ? 'Oyun türü: Bantumi (Nokia).' : `Ev kuralı: ${variant.join(', ')}.`) : null;
+  const variantLine = variant.length ? el('p', { class: 'hint mg-variant' }, state.variant === 'bantumi' ? 'Oyun türü: Bantumi (Nokia).' : `${variant.length > 1 ? 'Ev kuralları' : 'Ev kuralı'}: ${variant.join(', ')}.`) : null;
   draw(container, statusEl, board, note, variantLine);
   if (!animating) return null;
 

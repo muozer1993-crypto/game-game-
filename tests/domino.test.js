@@ -78,3 +78,11 @@ test('domino: tek elde eli bitiren kazanır (0 puan alsa da); kilitli eşit el b
   const tie = { ...s, phase: 'over', scores: [0, 0], result: { winner: null, points: 0, how: 'blocked' } };
   assert.deepEqual(game.getResult(tie), { draw: true });
 });
+
+test('ilk el: Domino, Altmışaltı, Sekizler, Okey ve Poker maçında ilk eli kimin açacağı tohuma göre değişir', async () => {
+  const load = async (id) => (await import(`../games/${id}.js`)).default;
+  for (const [name, g] of [['domino', game], ['altmışaltı', await load('altmisalti')], ['sekizler', await load('sekizler')], ['okey', await load('okey')], ['poker', await load('poker')]]) {
+    const firsts = new Set([1, 2, 3, 4, 5, 6].map((seed) => g.setup({ seed }).turn));
+    assert.deepEqual([...firsts].sort(), [0, 1], `${name}: both players open a match over a few seeds`);
+  }
+});

@@ -629,7 +629,7 @@ export const meta = {
   description: 'Karşılıklı Wordle: rakibinin tuttuğu kelimeyi ondan önce bul.',
   rules: [
     'Her oyuncu rakibi için gizli bir kelime tutar: kendisi yazar ya da ayarlara göre liste rastgele seçer. "Ortak rastgele kelime" seçilirse ikiniz aynı rastgele kelimeyi ararsınız. Sırayla tahmin edilir; önce bulan kazanır.',
-    'İki oyuncu aynı turda bulursa berabere sayılır; ilk başlayanın avantajı yoktur.',
+    'İki oyuncu aynı turda bulursa berabere sayılır; ilk başlayanın avantajı yoktur. Ortak kelimede ise ilk bulan hemen kazanır: ikiniz de bütün tahminleri gördüğünüz için diğerine son tahmin hakkı verilmez.',
     'Renkli mod: yeşil doğru harf doğru yerde, sarı harf var ama yeri yanlış, gri harf yok. Tekrar eden harflerde Wordle kuralı uygulanır.',
     '"+ −" modu: yalnızca sayılar söylenir (+2 −1 gibi), hangi harfin doğru olduğu söylenmez. Daha zordur.',
     'Tahminler kelime listesiyle doğrulanır. Tahmin hakkı biten iki oyuncu da bulamazsa berabere.',
