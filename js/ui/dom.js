@@ -104,15 +104,31 @@ export function render(container, ...children) {
 }
 
 let toastTimer = null;
-/** Short non-blocking message at the bottom of the screen. */
-export function toast(message, { duration = 2200, kind = '', top = false } = {}) {
+/** Is a key, button or field under the spot a bottom toast covers? (the toast itself takes no pointer events) */
+function controlsUnderToast() {
+  try {
+    const w = window.innerWidth; const h = window.innerHeight;
+    for (const y of [h - 40, h - 70]) {
+      for (const f of [0.15, 0.5, 0.85]) {
+        const t = document.elementFromPoint(w * f, y);
+        if (t && t.closest('button, input, textarea, select, a, .key, [role="button"]')) return true;
+      }
+    }
+  } catch { /* no layout (tests): keep the bottom */ }
+  return false;
+}
+
+/** Short non-blocking message at the bottom of the screen (or the top, see below). */
+export function toast(message, { duration = 2200, kind = '', top } = {}) {
   let host = document.getElementById('toast');
   if (!host) {
     host = el('div', { id: 'toast', class: 'toast', role: 'status', 'aria-live': 'polite' });
     document.body.append(host);
   }
-  // top: at the top of the screen, clear of a keypad at the bottom (kept while it fades out)
-  const place = top ? ' top' : '';
+  // top: at the top of the screen, clear of a keypad at the bottom (kept while it fades out).
+  // Not given: an error goes to the top too when the bottom spot would cover a key or button (a
+  // wrong entry is fixed with ⌫ or GİR right there, and the message must not hide them)
+  const place = (top === undefined ? kind === 'error' && controlsUnderToast() : top) ? ' top' : '';
   host.textContent = message;
   host.className = `toast show ${kind}${place}`.replace(/\s+/g, ' ').trim();
   clearTimeout(toastTimer);

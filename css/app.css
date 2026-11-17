@@ -16,6 +16,9 @@
   --present: #9a6700;
   --absent: #5f6470;
   --danger: #c62828;
+  --danger-fg: #ffffff; /* text on a --danger fill */
+  --key-absent: #5f6470; /* a ruled-out key sits back from the untried ones */
+  --key-absent-fg: #ffffff;
   --tile-border: #b9c0cf;
   --radius: 14px;
   --shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
@@ -41,6 +44,9 @@
     --present: #a8761a;
     --absent: #4a4f5a;
     --danger: #ff6b6b;
+    --danger-fg: #0d1117; /* white on this light red is 2.8:1 */
+    --key-absent: #1f2229;
+    --key-absent-fg: #858a96;
     --tile-border: #3f4452;
     --shadow: none;
     color-scheme: dark;
@@ -63,6 +69,9 @@
   --present: #a8761a;
   --absent: #4a4f5a;
   --danger: #ff6b6b;
+  --danger-fg: #0d1117;
+  --key-absent: #1f2229;
+  --key-absent-fg: #858a96;
   --tile-border: #3f4452;
   --shadow: none;
   color-scheme: dark;
@@ -149,7 +158,7 @@ a { color: var(--primary); }
 .btn-primary { background: var(--primary); color: var(--primary-fg); border-color: transparent; }
 .btn-primary .muted { color: inherit; } /* a hint inside the blue button (Doğruluk mu Cesaret mi "2 puan") */
 .btn-secondary { background: var(--secondary); color: var(--secondary-fg); }
-.btn-danger { background: var(--danger); color: #fff; border-color: transparent; }
+.btn-danger { background: var(--danger); color: var(--danger-fg); border-color: transparent; }
 .btn-big { min-height: 56px; font-size: 1.1rem; }
 .btn-block { display: flex; width: 100%; }
 .btn-icon { width: 44px; min-height: 44px; padding: 0; font-size: 1.3rem; }
@@ -291,7 +300,7 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .key-wide { flex: 1.6 1 0; max-width: 72px; font-size: 0.85rem; }
 .key.correct { background: var(--correct); color: #fff; }
 .key.present { background: var(--present); color: #fff; }
-.key.absent { background: var(--absent); color: #fff; }
+.key.absent { background: var(--key-absent); color: var(--key-absent-fg); }
 .keyboard.disabled .key { opacity: 0.5; pointer-events: none; }
 .keyboard-digits .key { max-width: 64px; height: 56px; font-size: 1.2rem; }
 .keyboard-digits .key-wide { max-width: 140px; }
@@ -408,7 +417,7 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .sea-cell.ship { background: var(--absent); border-color: var(--absent); }
 .sea-cell.miss { background: var(--secondary); color: var(--muted); }
 .sea-cell.hit { background: var(--present); color: #fff; }
-.sea-cell.sunk { background: var(--danger); color: #fff; }
+.sea-cell.sunk { background: var(--danger); color: var(--danger-fg); }
 .sea-cell.pending { background: var(--secondary); }
 .tv-board {
   display: grid;
@@ -530,7 +539,11 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .rps-btn { flex-direction: column; min-height: 96px; font-size: 1rem; }
 .rps-icon { font-size: 2.2rem; }
 .rps-last { text-align: center; margin-top: 8px; }
-.rps-faces { display: flex; justify-content: center; gap: 12px; font-size: 1.6rem; margin: 4px 0; }
+/* each side: the hand above the name, so a name gets half the card and wraps between words */
+.rps-faces { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 8px; margin: 4px 0; }
+.rps-side { display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 0; text-align: center; }
+.rps-name { max-width: 100%; overflow-wrap: break-word; font-weight: 600; }
+.rps-hand { order: -1; font-size: 1.8rem; line-height: 1.2; }
 .mem-board { display: grid; gap: 8px; max-width: 420px; margin: 10px auto; }
 .mem-card {
   aspect-ratio: 1;
@@ -554,6 +567,12 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .dab-board { position: relative; width: 100%; height: auto; display: block; color: var(--fg); touch-action: manipulation; }
 .dab-hit { cursor: pointer; }
 .dab-key { font-weight: 700; }
+/* a box's initial on its 25% tint: the line colours alone are under 3:1 there (red in light, both in dark) */
+.dab-mark.p0 { fill: #b71c1c; }
+:root[data-theme="dark"] .dab-mark.p0 { fill: #ff8a80; } :root[data-theme="dark"] .dab-mark.p1 { fill: #8ab4ff; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .dab-mark.p0 { fill: #ff8a80; } :root:not([data-theme="light"]) .dab-mark.p1 { fill: #8ab4ff; }
+}
 .xox-board { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; max-width: 320px; margin: 12px auto; }
 .xox-cell {
   aspect-ratio: 1;
@@ -647,7 +666,7 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
   text-align: center;
 }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-.toast.error { background: var(--danger); color: #fff; }
+.toast.error { background: var(--danger); color: var(--danger-fg); }
 .toast.top { top: calc(12px + env(safe-area-inset-top)); bottom: auto; transform: translateX(-50%) translateY(-20px); }
 .toast.top.show { transform: translateX(-50%) translateY(0); }
 
@@ -750,14 +769,14 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .tb-no { display: block; padding: 6px 10px; border-radius: 8px; background: var(--secondary); color: var(--danger); font-weight: 700; text-decoration: line-through; text-decoration-color: var(--muted); font-size: 1.05rem; }
 .tb-actions { display: grid; grid-template-columns: 1fr 1.4fr 1fr; gap: 8px; margin-top: 6px; }
 .tb-actions .btn { padding: 16px 6px; font-size: 1.05rem; }
-.btn-danger { background: var(--danger); color: #fff; }
+.btn-danger { background: var(--danger); color: var(--danger-fg); }
 .tb-count.ok { color: var(--correct); font-weight: 700; }
 .tb-count.pass { color: var(--muted); font-weight: 700; }
 .tb-count.taboo { color: var(--danger); font-weight: 700; }
 .tb-list { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin: 8px 0; }
 .tb-chip { padding: 2px 10px; border-radius: 999px; background: var(--secondary); color: var(--secondary-fg); font-size: 0.9rem; font-weight: 600; }
 .tb-chip.ok { background: var(--correct); color: #fff; }
-.tb-chip.taboo { background: var(--danger); color: #fff; }
+.tb-chip.taboo { background: var(--danger); color: var(--danger-fg); }
 .tb-chip.time { opacity: 0.75; font-weight: 500; } /* the card on screen when time ran out: put aside */
 .tb-rounds { display: grid; gap: 8px; margin-top: 8px; }
 
@@ -815,7 +834,7 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .dk-pair { position: relative; width: 78px; height: 78px; }
 .dk-pair .pcard:first-child { position: absolute; left: 0; top: 0; }
 .dk-pair .pcard:last-child { position: absolute; left: 32px; top: 14px; }
-.phand .pcard:disabled { opacity: 0.4; }
+.phand .pcard:disabled { opacity: 0.55; } /* faded, but the ranks stay readable for planning */
 .pcard.trump { border-color: var(--present); box-shadow: 0 0 0 1px var(--present); }
 .dk-info .pcard.small { width: 32px; height: 44px; font-size: 0.85rem; vertical-align: middle; }
 .dk-info .pcard.small .suit { font-size: 0.85rem; }
@@ -835,10 +854,17 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .ms-grid.dense .ms-cell { font-size: 0.8rem; border-radius: 3px; }
 .ms-cell:disabled { cursor: default; }
 .ms-cell.open { background: var(--card); border: 1px solid var(--border); }
-.ms-cell.mine { background: var(--danger); color: #fff; }
+.ms-cell.mine { background: var(--danger); color: var(--danger-fg); }
 .ms-cell.wrong { background: var(--present); }
 .ms-cell.n1 { color: #1e88e5; } .ms-cell.n2 { color: #43a047; } .ms-cell.n3 { color: #e53935; } .ms-cell.n4 { color: #5e35b1; }
-.ms-cell.n5 { color: #8d6e63; } .ms-cell.n6 { color: #00acc1; } .ms-cell.n7 { color: #111; } .ms-cell.n8 { color: #777; }
+.ms-cell.n5 { color: #8d6e63; } .ms-cell.n6 { color: #00838f; } .ms-cell.n7 { color: #111; } .ms-cell.n8 { color: #777; }
+/* dark open cells: the deep purple, brown, black and grey counts need lighter shades */
+:root[data-theme="dark"] .ms-cell.n4 { color: #b39ddb; } :root[data-theme="dark"] .ms-cell.n5 { color: #bcaaa4; }
+:root[data-theme="dark"] .ms-cell.n6 { color: #26c6da; } :root[data-theme="dark"] .ms-cell.n7 { color: #e0e0e0; } :root[data-theme="dark"] .ms-cell.n8 { color: #9e9e9e; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .ms-cell.n4 { color: #b39ddb; } :root:not([data-theme="light"]) .ms-cell.n5 { color: #bcaaa4; }
+  :root:not([data-theme="light"]) .ms-cell.n6 { color: #26c6da; } :root:not([data-theme="light"]) .ms-cell.n7 { color: #e0e0e0; } :root:not([data-theme="light"]) .ms-cell.n8 { color: #9e9e9e; }
+}
 
 /* ---- Sudoku */
 .sd-grid { display: grid; grid-template-columns: repeat(9, 1fr); max-width: 380px; margin: 6px auto; border: 2px solid var(--fg); background: var(--border); gap: 1px; }
@@ -850,8 +876,15 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .sd-cell.same { background: #fff3cd; }
 .sd-cell.sel { background: #cfe0ff; outline: 2px solid var(--primary); outline-offset: -2px; }
 .sd-cell.bad { color: var(--danger); background: rgba(198, 40, 40, 0.15); }
-:root[data-theme="dark"] .sd-cell.same, :root:not([data-theme="light"]) .sd-cell.same { background: rgba(255, 213, 79, 0.25); }
-:root[data-theme="dark"] .sd-cell.sel, :root:not([data-theme="light"]) .sd-cell.sel { background: rgba(91, 140, 255, 0.35); }
+:root[data-theme="dark"] .sd-cell.same { background: rgba(255, 213, 79, 0.25); }
+:root[data-theme="dark"] .sd-cell.sel { background: rgba(91, 140, 255, 0.35); }
+/* a wrong digit keeps its red tint and a lighter red on the highlights (as in light mode, where .bad wins) */
+:root[data-theme="dark"] .sd-cell.bad { color: #ff9a9a; background: rgba(255, 107, 107, 0.2); }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .sd-cell.same { background: rgba(255, 213, 79, 0.25); }
+  :root:not([data-theme="light"]) .sd-cell.sel { background: rgba(91, 140, 255, 0.35); }
+  :root:not([data-theme="light"]) .sd-cell.bad { color: #ff9a9a; background: rgba(255, 107, 107, 0.2); }
+}
 .sd-pad { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; max-width: 380px; margin: 8px auto; }
 .sd-key { padding: 12px 0; font-size: 1.2rem; font-weight: 800; }
 
@@ -875,7 +908,8 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .gm-cell.win { background: #ffd54f; }
 
 /* ---- Renk Tuzağı */
-.rt-card { text-align: center; padding: 26px 10px; margin: 8px 0; }
+/* a dark slate card in both themes: all four inks (yellow too) read on it; yellow on white was 1.4:1 */
+.rt-card { text-align: center; padding: 26px 10px; margin: 8px 0; background: #2a2e38; border-color: transparent; }
 .rt-word { font-size: 2.4rem; font-weight: 900; letter-spacing: 0.06em; text-shadow: 0 0 1px rgba(0, 0, 0, 0.25); }
 .rt-demo { text-align: center; margin: 10px 0; }
 .rt-demo .rt-word { font-size: 1.6rem; }
@@ -920,7 +954,10 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .kb-tile.sel { outline: 3px solid var(--primary); transform: translateY(-4px); }
 .kb-tile.used, .kb-tile:disabled { opacity: 0.35; }
 .kb-tile.swap { outline: 3px solid var(--danger); }
-:root[data-theme="dark"] .kb-cell:not(.filled):not(.l2):not(.l3):not(.w2):not(.w3), :root:not([data-theme="light"]) .kb-cell:not(.filled):not(.l2):not(.l3):not(.w2):not(.w3) { background: var(--secondary); }
+:root[data-theme="dark"] .kb-cell:not(.filled):not(.l2):not(.l3):not(.w2):not(.w3) { background: var(--secondary); }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .kb-cell:not(.filled):not(.l2):not(.l3):not(.w2):not(.w3) { background: var(--secondary); }
+}
 
 .search-field { margin: 0 0 10px; }
 .game-card-wrap[hidden], section.section[hidden] { display: none; }
@@ -942,7 +979,9 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .is-pts { font-size: 0.78rem; color: var(--muted); }
 .is-veto { align-self: flex-start; font-size: 0.85rem; padding: 4px 10px; min-height: 40px; }
 .is-rounds { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
-.is-round { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; }
+.is-round { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 8px 12px; }
+.is-round > strong { flex: none; min-width: 2em; }
+.is-round > span { min-width: 0; text-align: right; overflow-wrap: anywhere; }
 
 /* ---- Yalancı Zar */
 .yz-dice { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; font-size: 2.4rem; line-height: 1; margin: 4px 0 10px; }
@@ -993,7 +1032,7 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .ce-suits { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 4px 0 8px; flex-wrap: wrap; }
 .ce-suit { font-size: 1.6rem; min-width: 52px; line-height: 1; padding: 6px 8px; }
 .ce-suit.red { color: #d32f2f; }
-.ce-hand .pcard:disabled { opacity: 0.4; } /* cards that do not fit the pile */
+.ce-hand .pcard:disabled { opacity: 0.55; } /* cards that do not fit the pile (still readable) */
 
 /* ---- Poker */
 .pk-table { padding: 10px 8px; text-align: center; margin: 6px 0; }
@@ -1049,7 +1088,7 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .ok-note { font-size: 0.72rem; color: var(--muted); }
 .ok-tile { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 38px; height: 52px; border-radius: 7px; background: #fbf4e3; color: #1b1d24; border: 1px solid #c9b995; box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.12); font: inherit; font-weight: 800; font-size: 1.15rem; padding: 0; cursor: pointer; touch-action: manipulation; }
 .ok-tile.small { width: 30px; height: 40px; font-size: 0.95rem; }
-.ok-tile.c0 { color: #c62828; } .ok-tile.c1 { color: #b8860b; } .ok-tile.c2 { color: #1565c0; } .ok-tile.c3 { color: #1b1d24; }
+.ok-tile.c0 { color: #c62828; } .ok-tile.c1 { color: #9a6b00; } .ok-tile.c2 { color: #1565c0; } .ok-tile.c3 { color: #1b1d24; }
 .ok-tile.c4 { color: #6a1b9a; }
 .ok-tile.back { background: var(--primary); color: var(--primary-fg); border-color: transparent; }
 .ok-tile.empty { background: var(--secondary); color: var(--muted); border-style: dashed; }
@@ -1120,6 +1159,8 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .bl-band-bg { position: absolute; inset: 0; width: 100%; height: 100%; }
 .bl-band span { position: relative; }
 .bl-name { font-weight: 700; padding: 2px 1px 0; overflow-wrap: anywhere; }
+/* narrow phones: a touch smaller, so Havalimanı or Kastamonu fit a square instead of leaving one letter below */
+@media (max-width: 380px) { .bl-name { font-size: 0.92em; letter-spacing: -0.02em; } }
 .bl-price { color: var(--muted); }
 .bl-tokens { position: absolute; left: 0; right: 0; bottom: 2px; display: flex; justify-content: center; gap: 2px; }
 .bl-token { width: 16px; height: 16px; border-radius: 50%; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.45); }
@@ -1144,7 +1185,10 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 /* ---- Pieces painted on canvas (js/ui/paint.js): forced dark modes leave canvas pixels alone */
 .piece-canvas { display: block; width: 100%; height: 100%; }
 .board-backdrop { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: 12px; }
-.key-dot { display: inline-block; width: 14px; height: 14px; margin-right: 6px; vertical-align: -2px; }
+.key-dot { display: inline-block; width: 14px; height: 14px; margin-right: 6px; vertical-align: -2px; border-radius: 50%; }
+/* dark pages: a light ring, or the black player's dot (#151515 with a dark rim) vanishes into the page */
+:root[data-theme="dark"] .key-dot { box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.55); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .key-dot { box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.55); } }
 .pool-hand { position: relative; z-index: 2; /* above the touch area that spills past the table */ display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; min-height: 0; margin: 4px 0; font-size: 0.85rem; }
 
 /* Şarkı Süresi */
@@ -1165,7 +1209,7 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .ss-time { font-size: 2.8rem; font-weight: 800; text-align: center; font-variant-numeric: tabular-nums; color: var(--primary); margin: 2px 0 4px; }
 .ss-time.empty { color: var(--muted); }
 .ss-real { font-size: 2.8rem; font-weight: 800; font-variant-numeric: tabular-nums; margin-top: 8px; line-height: 1.1; }
-.ss-guesses { display: grid; gap: 8px; margin-top: 12px; text-align: left; }
+.ss-guesses { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; margin-top: 12px; text-align: left; }
 .ss-guess { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: 10px; background: var(--secondary); color: var(--secondary-fg); font-variant-numeric: tabular-nums; }
 .ss-guess .ss-who { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ss-guess.win { outline: 2px solid var(--correct); }

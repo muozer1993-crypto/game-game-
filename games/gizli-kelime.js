@@ -628,7 +628,7 @@ export const meta = {
   icon: '🟩',
   description: 'Karşılıklı Wordle: rakibinin tuttuğu kelimeyi ondan önce bul.',
   rules: [
-    'Her oyuncu rakibi için gizli bir kelime tutar: kendisi yazar ya da ayarlara göre liste rastgele seçer. "Ortak kelime" seçilirse ikiniz aynı rastgele kelimeyi ararsınız. Sırayla tahmin edilir; önce bulan kazanır.',
+    'Her oyuncu rakibi için gizli bir kelime tutar: kendisi yazar ya da ayarlara göre liste rastgele seçer. "Ortak rastgele kelime" seçilirse ikiniz aynı rastgele kelimeyi ararsınız. Sırayla tahmin edilir; önce bulan kazanır.',
     'İki oyuncu aynı turda bulursa berabere sayılır; ilk başlayanın avantajı yoktur.',
     'Renkli mod: yeşil doğru harf doğru yerde, sarı harf var ama yeri yanlış, gri harf yok. Tekrar eden harflerde Wordle kuralı uygulanır.',
     '"+ −" modu: yalnızca sayılar söylenir (+2 −1 gibi), hangi harfin doğru olduğu söylenmez. Daha zordur.',
@@ -639,11 +639,11 @@ export const meta = {
   settings: [
     {
       key: 'secretMode', label: 'Gizli kelimeyi kim seçsin?', type: 'select', default: 'manual',
-      help: 'Kendiniz seçerseniz her oyuncu rakibi için bir kelime yazar; rastgelede liste seçer.',
+      help: 'Kendiniz seçerseniz her oyuncu rakibi için bir kelime yazar; rastgelede liste seçer. Ortakta ikiniz aynı kelimeyi ararsınız.',
       options: [
         { value: 'manual', label: 'Herkes rakibi için kendisi seçsin' },
         { value: 'random', label: 'Rastgele, herkese ayrı kelime' },
-        { value: 'shared', label: 'Ortak rastgele kelime (ikiniz aynı kelimeyi ararsınız)' },
+        { value: 'shared', label: 'Ortak rastgele kelime' },
       ],
     },
     { key: 'length', label: 'Harf sayısı', type: 'select', default: 5, options: [{ value: 4, label: '4 harf' }, { value: 5, label: '5 harf' }, { value: 6, label: '6 harf' }] },

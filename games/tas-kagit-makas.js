@@ -120,10 +120,11 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const lastView = last
     ? el('div', { class: 'rps-last card' },
       el('div', { class: 'muted' }, `${state.history.length}. el`),
+      // each side: the hand above the name (CSS order), in body size so that a long name wraps inside its half
       el('div', { class: 'rps-faces' },
-        el('span', {}, `${players[0]} ${ICON[last.picks[0]]}`),
+        el('span', { class: 'rps-side' }, el('span', { class: 'rps-name' }, players[0]), el('span', { class: 'rps-hand' }, ICON[last.picks[0]])),
         el('span', { class: 'muted' }, 'vs'),
-        el('span', {}, `${ICON[last.picks[1]]} ${players[1]}`)),
+        el('span', { class: 'rps-side' }, el('span', { class: 'rps-hand' }, ICON[last.picks[1]]), el('span', { class: 'rps-name' }, players[1]))),
       el('div', {}, last.winner == null ? 'Berabere' : `${players[last.winner]} aldı (${LABEL[last.picks[last.winner]]} ${ACC[last.picks[1 - last.winner]]} yener)`))
     : null;
   const score = el('div', { class: 'c4-legend' }, el('span', {}, `${players[0]}: ${state.scores[0]}`), el('span', {}, `${players[1]}: ${state.scores[1]}`), el('span', { class: 'muted' }, `hedef ${state.target}`));

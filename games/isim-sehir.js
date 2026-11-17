@@ -25,7 +25,7 @@ export const meta = {
   settings: [
     { key: 'rounds', label: 'Tur sayısı', type: 'select', default: 5, options: [{ value: 3, label: '3' }, { value: 5, label: '5' }, { value: 7, label: '7' }] },
     { key: 'seconds', label: 'Tur süresi', type: 'select', default: 90, options: [{ value: 60, label: '60 sn' }, { value: 90, label: '90 sn' }, { value: 120, label: '2 dk' }, { value: 0, label: 'Süresiz' }] },
-    { key: 'set', label: 'Kategoriler', type: 'select', default: 'klasik', options: [{ value: 'klasik', label: 'Klasik (isim, şehir, hayvan, bitki, eşya)' }, { value: 'genis', label: 'Geniş (+ ülke, meslek, yemek)' }] },
+    { key: 'set', label: 'Kategoriler', type: 'select', default: 'klasik', help: 'Klasik: isim, şehir, hayvan, bitki, eşya. Geniş: bunlara ülke, meslek ve yemek de eklenir.', options: [{ value: 'klasik', label: 'Klasik (5 kategori)' }, { value: 'genis', label: 'Geniş (8 kategori)' }] },
   ],
 };
 

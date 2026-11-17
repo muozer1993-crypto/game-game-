@@ -7,7 +7,7 @@ export const meta = {
   icon: '🔢',
   description: 'Rakamları farklı 4 haneli sayıyı "+ −" ipuçlarıyla rakibinden önce bul.',
   rules: [
-    'Her oyuncu rakibi için rakamları birbirinden farklı, 0 ile başlamayan 4 haneli bir sayı tutar (kendisi yazar ya da ayara göre rastgele gelir; "ortak sayı" seçilirse ikiniz aynı sayıyı ararsınız).',
+    'Her oyuncu rakibi için rakamları birbirinden farklı, 0 ile başlamayan 4 haneli bir sayı tutar (kendisi yazar ya da ayara göre rastgele gelir; "Ortak rastgele sayı" seçilirse ikiniz aynı sayıyı ararsınız).',
     'Sırayla tahmin edilir. "+" doğru rakam doğru yerde, "−" doğru rakam yanlış yerde demektir. Örnek: gizli 4271, tahmin 4712 → +1 −3.',
     'Önce bulan kazanır; aynı turda bulurlarsa berabere.',
   ].join('\n'),
@@ -15,10 +15,11 @@ export const meta = {
   settings: [
     {
       key: 'secretMode', label: 'Gizli sayıyı kim seçsin?', type: 'select', default: 'manual',
+      help: 'Ortakta ikiniz aynı rastgele sayıyı ararsınız.',
       options: [
         { value: 'manual', label: 'Herkes rakibi için kendisi seçsin' },
         { value: 'random', label: 'Rastgele, herkese ayrı sayı' },
-        { value: 'shared', label: 'Ortak rastgele sayı (ikiniz aynı sayıyı ararsınız)' },
+        { value: 'shared', label: 'Ortak rastgele sayı' },
       ],
     },
     { key: 'maxGuesses', label: 'Tahmin hakkı', type: 'select', default: 10, options: [{ value: 8, label: '8' }, { value: 10, label: '10' }, { value: 12, label: '12' }, { value: 0, label: 'Sınırsız' }] },

@@ -23,7 +23,7 @@ export const meta = {
   settings: [
     {
       key: 'mode', label: 'Oyun türü', type: 'select', default: 'tabu',
-      options: [{ value: 'tabu', label: 'Tabu (yasaklı kelimeler var)' }, { value: 'mime', label: 'Sessiz sinema (konuşmadan canlandır)' }],
+      options: [{ value: 'tabu', label: 'Tabu (yasaklı kelimeler var)' }, { value: 'mime', label: 'Sessiz sinema (konuşmadan)' }],
     },
     { key: 'rounds', label: 'Tur sayısı', type: 'select', default: 4, options: [{ value: 2, label: '2 (birer tur)' }, { value: 4, label: '4 (ikişer tur)' }, { value: 6, label: '6 (üçer tur)' }] },
     { key: 'seconds', label: 'Tur süresi', type: 'select', default: 60, options: [{ value: 45, label: '45 sn' }, { value: 60, label: '60 sn' }, { value: 90, label: '90 sn' }] },

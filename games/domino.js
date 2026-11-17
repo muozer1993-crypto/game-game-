@@ -226,7 +226,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     el('div', { class: 'col-title' }, `Taşların (${hand.length})`),
     handView,
     sideBtns,
-    el('p', { class: 'hint' }, playable ? (selTile ? 'Yönü seç.' : (e ? 'Uyan bir taşa dokun (koyu olanlar).' : 'İlk taşı sen koy: herhangi birine dokun.')) : (state.boneyard.length ? 'Uyan taşın yok: kapalıdan çek.' : 'Uyan taşın yok ve kapalı bitti: pas geç.')),
+    el('p', { class: 'hint' }, playable ? (selTile ? 'Yönü seç.' : (e ? 'Uyan bir taşa dokun (soluk olanlar uymuyor).' : 'İlk taşı sen koy: herhangi birine dokun.')) : (state.boneyard.length ? 'Uyan taşın yok: kapalıdan çek.' : 'Uyan taşın yok ve kapalı bitti: pas geç.')),
     !playable ? el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block', onClick: () => sendMove({ type: state.boneyard.length ? 'draw' : 'pass' }) }, state.boneyard.length ? `Kapalıdan çek (${state.boneyard.length})` : 'Pas') : null,
     legend,
   );

@@ -27,7 +27,7 @@ export const meta = {
     {
       key: 'customMode', label: 'Kendi sorularınız', type: 'select', default: 'first',
       options: [
-        { value: 'first', label: 'Önce kendi sorularımız, sonra havuz' },
+        { value: 'first', label: 'Önce bizimkiler, sonra havuz' },
         { value: 'mix', label: 'Havuzla karışık' },
         { value: 'none', label: 'Kullanma' },
       ],

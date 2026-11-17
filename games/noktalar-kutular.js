@@ -114,7 +114,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       const owner = state.boxes[r * n + c];
       if (owner === null) continue;
       root.append(svg('rect', { x: M + c * S + 4, y: M + r * S + 4, width: S - 8, height: S - 8, rx: 6, fill: COLORS[owner], opacity: 0.25 }));
-      root.append(svg('text', { x: M + c * S + S / 2, y: M + r * S + S / 2 + 7, 'text-anchor': 'middle', 'font-size': 20, 'font-weight': 700, fill: COLORS[owner], text: marks[owner] }));
+      root.append(svg('text', { x: M + c * S + S / 2, y: M + r * S + S / 2 + 7, 'text-anchor': 'middle', 'font-size': 20, 'font-weight': 700, fill: COLORS[owner], class: `dab-mark p${owner}`, text: marks[owner] }));
     }
   }
   // lines (taken + free hit areas)

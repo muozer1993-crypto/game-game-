@@ -26,3 +26,20 @@ test('çevrimdışı: uygulamanın her dosyası sw.js önbellek listesinde', asy
   assert.equal(missing.join(', '), '', 'add these to SHELL in sw.js');
   for (const f of shell) if (f) assert.ok(fs.existsSync(path.join(root, f)), `sw.js lists a missing file: ${f}`);
 });
+
+test('tema: "sistem karanlık" kuralları yalnızca karanlık medya sorgusunun içinde', async () => {
+  if (typeof process === 'undefined' || !process.versions || !process.versions.node) return; // browser: nothing to read
+  const fs = await import('node:fs');
+  // :root:not([data-theme="light"]) also matches a light phone on the default "Sistem" theme, so a rule
+  // with it outside @media (prefers-color-scheme: dark) paints dark colours in light mode
+  const css = fs.readFileSync(new URL('../css/app.css', import.meta.url), 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+  const stack = []; let start = 0; const leaks = [];
+  for (let i = 0; i < css.length; i++) {
+    if (css[i] === '{') {
+      const head = css.slice(start, i).trim();
+      if (head.includes(':root:not([data-theme="light"])') && !stack.some((h) => /prefers-color-scheme:\s*dark/.test(h))) leaks.push(head.slice(0, 80));
+      stack.push(head); start = i + 1;
+    } else if (css[i] === '}') { stack.pop(); start = i + 1; } else if (css[i] === ';' && !stack.length) start = i + 1;
+  }
+  assert.deepEqual(leaks, []);
+});
