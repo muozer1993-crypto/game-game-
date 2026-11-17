@@ -195,7 +195,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       board.append(svg('circle', {
         cx: (pc.x + off).toFixed(2), cy: pc.y.toFixed(2), r: 0.38, fill: COLOURS[pc.q], stroke: movable ? '#111' : lastMoved ? '#fff' : 'rgba(0,0,0,0.35)', 'stroke-width': movable ? 0.12 : 0.06,
         class: `ld-piece p${pc.q} ${movable ? 'movable' : ''}`, role: movable ? 'button' : null, tabindex: movable ? '0' : null,
-        'aria-label': `${players[pc.q]} taş ${pc.i + 1}${pc.rel === -1 ? ' (kalede)' : pc.rel === HOME ? ' (bitirdi)' : ''}`,
+        'aria-label': `${nameSuffix(players[pc.q], 'in')} ${pc.i + 1}. taşı${pc.rel === -1 ? ' (kalede)' : pc.rel === HOME ? ' (bitirdi)' : ''}`,
         onClick: movable ? () => sendMove({ type: 'move', piece: pc.i }) : null,
       }));
     });

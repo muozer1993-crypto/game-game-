@@ -37,7 +37,7 @@ function runAuto(s) {
   return s;
 }
 
-test('amiral battı: atış, sonuç (iska/vurdu/batırdı) ve sıra', () => {
+test('amiral battı: atış, sonuç (ıska/vurdu/batırdı) ve sıra', () => {
   let s = ready();
   assert.equal(whoseTurn(s), 0);
   assert.throws(() => game.applyMove(s, 1, { type: 'shot', idx: 0 }), 'Sıra sende değil');

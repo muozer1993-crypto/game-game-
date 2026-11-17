@@ -76,3 +76,27 @@ test('tr: ilgi eki (-in/-ın/-un/-ün, -nin...)', () => {
   assert.equal(nameSuffix('Umut', 'in'), "Umut'un");
   assert.equal(nameSuffix('Gül', 'in'), "Gül'ün");
 });
+
+test('tr: sayıyla, işaretle ya da yabancı harfle biten isimler', () => {
+  // a number is read aloud: on, yirmi, kırk, yüz, bin
+  assert.equal(nameSuffix('Oyuncu 10', 'de'), "Oyuncu 10'da");
+  assert.equal(nameSuffix('Oyuncu 10', 'in'), "Oyuncu 10'un");
+  assert.equal(nameSuffix('Oyuncu 20', 'e'), "Oyuncu 20'ye");
+  assert.equal(nameSuffix('Oyuncu 40', 'de'), "Oyuncu 40'ta");
+  assert.equal(nameSuffix('Oyuncu 50', 'in'), "Oyuncu 50'nin");
+  assert.equal(nameSuffix('Oyuncu 60', 'i'), "Oyuncu 60'ı");
+  assert.equal(nameSuffix('Oyuncu 100', 'in'), "Oyuncu 100'ün");
+  assert.equal(nameSuffix('Oyuncu 1000', 'de'), "Oyuncu 1000'de");
+  assert.equal(nameSuffix('Oyuncu 12', 'de'), "Oyuncu 12'de");
+  assert.equal(nameSuffix('Oyuncu 0', 'e'), "Oyuncu 0'a");
+  // a trailing emoji or mark is skipped for the sound
+  assert.equal(nameSuffix('Beyza 💜', 'e'), "Beyza 💜'ya");
+  assert.equal(nameSuffix('Beyza 💜', 'in'), "Beyza 💜'nın");
+  assert.equal(nameSuffix('Ece ✨', 'de'), "Ece ✨'de");
+  assert.equal(nameSuffix('💜', 'de'), "💜'de");
+  // x is voiceless; the last word of a two-word name decides
+  assert.equal(nameSuffix('Max', 'de'), "Max'ta");
+  assert.equal(nameSuffix('Alex', 'in'), "Alex'in");
+  assert.equal(nameSuffix('Ayşe Nur', 'in'), "Ayşe Nur'un");
+  assert.equal(nameSuffix('Nâzım', 'e'), "Nâzım'a");
+});

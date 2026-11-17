@@ -75,6 +75,13 @@ test('satranç: mat, pat, yetersiz materyal, elli hamle, tekrar, pes', () => {
   assert.equal(lone.over, false, 'B vs N stays on');
   const bxn = mv(fromFen('7k/8/8/8/8/8/5n2/K5B1 w - - 0 1', { seed: 2 }), 'g1', 'f2');
   assert.equal(bxn.reason, 'material', 'K+B vs K cannot mate');
+  // bishops all on one square colour cannot mate, however many and whoever owns them
+  const twoLight = mv(fromFen('4k3/8/8/8/8/1B6/3r4/4KB2 w - - 0 1', { seed: 2 }), 'e1', 'd2');
+  assert.equal(twoLight.reason, 'material', 'K+B+B (both light) vs K');
+  const threeLight = mv(fromFen('4k3/8/2b5/8/8/1B6/3r4/4KB2 w - - 0 1', { seed: 2 }), 'e1', 'd2');
+  assert.equal(threeLight.reason, 'material', 'K+B+B vs K+B, all light');
+  const mixed = mv(fromFen('4k3/8/8/8/8/1B6/3r4/4K1B1 w - - 0 1', { seed: 2 }), 'e1', 'd2');
+  assert.equal(mixed.over, false, 'bishops on both colours can still mate');
   const fifty = mv(fromFen('7k/8/8/8/8/8/8/K5R1 w - - 99 80', { seed: 2 }), 'g1', 'g2');
   assert.equal(fifty.reason, 'fifty');
   // threefold repetition by shuffling kings

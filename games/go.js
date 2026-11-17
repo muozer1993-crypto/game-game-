@@ -119,7 +119,7 @@ export function applyMove(state, player, move) {
         return { ...state, agree };
       }
       case 'finish': {
-        if (player !== 0) fail('Sayımı ev sahibi bitirir');
+        if (player !== 0) fail('Sayımı odayı kuran bitirir');
         const dead = Array.isArray(move.dead) ? move.dead.map(Number) : state.dead;
         const settled = { ...state, dead };
         return { ...settled, phase: 'over', result: move.result && typeof move.result === 'object' ? move.result : score(settled) };
@@ -137,7 +137,7 @@ export function applyMove(state, player, move) {
   // host's end stands, with the board, marking and result it settled on (stones played here after
   // "Oyuna dön" never reached the host's game)
   if (move.type === 'finish') {
-    if (player !== 0) fail('Sayımı ev sahibi bitirir');
+    if (player !== 0) fail('Sayımı odayı kuran bitirir');
     const dead = Array.isArray(move.dead) ? move.dead.map(Number) : [];
     const board = Array.isArray(move.board) && move.board.length === state.size * state.size ? move.board.map((v) => (v === 0 || v === 1 ? v : null)) : state.board;
     const captures = Array.isArray(move.captures) && move.captures.length === 2 ? move.captures.map(Number) : state.captures;

@@ -760,7 +760,7 @@ export function showPlay(p) {
           },
         }, last ? 'Turnuva sonucu' : `Sonraki oyun: ${nextGame ? nextGame.meta.name : '?'}`);
       } else if (isOnline && p.self === 1 && online.tournament) {
-        again = el('span', { class: 'muted' }, tally && tally.index >= tally.total ? 'Turnuva bitti.' : 'Ev sahibi sonraki oyunu başlatacak…');
+        again = el('span', { class: 'muted' }, tally && tally.index >= tally.total ? 'Turnuva bitti.' : `${online.players ? online.players[0] : 'Odayı kuran'} sonraki oyunu başlatacak…`);
       } else {
         // end-pair: "Yeni tur" and the button beside it keep equal widths, whatever the first one says
         again = el('button', { type: 'button', class: `btn btn-primary btn-big end-pair${isOnline && p.self === 0 ? ' rematch-btn' : ''}` }, el('span', { class: 'next-label' }, 'Yeni tur'));
@@ -1209,7 +1209,7 @@ function showOnlineWaiting(code) {
       el('div', { class: 'room-code' }, code),
       isHost
         ? el('p', {}, 'Kodu arkadaşına söyle ya da davet bağlantısını gönder. Katılınca oyun seçimi açılacak. Bu ekranı açık tut.')
-        : el('p', {}, 'Bağlanıldı, ev sahibinin oyun seçmesi bekleniyor…'),
+        : el('p', {}, 'Bağlanıldı, odayı kuranın oyun seçmesi bekleniyor…'),
       isHost ? el('button', { type: 'button', class: 'btn btn-primary btn-block', onClick: () => shareInvite(code) }, 'Davet bağlantısını gönder') : null,
       isHost ? el('div', { class: 'invite-link muted' }, inviteLink(code)) : null,
       el('div', { class: 'spinner', 'aria-hidden': 'true' }),

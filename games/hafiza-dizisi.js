@@ -8,7 +8,7 @@ export const meta = {
   group: 'zeka',
   name: 'Hafıza Dizisi',
   icon: '🎵',
-  description: 'Yanan renk dizisini ezberle ve aynısını dokun; her turda bir uzar. Daha uzun diziyi hatırlayan kazanır.',
+  description: 'Yanan renk dizisini ezberle, aynı sırayla dokunarak tekrarla; her turda bir uzar. Daha uzun diziyi hatırlayan kazanır.',
   rules: [
     'Dört renkli düğme sırayla yanar; sonra aynı sırayla dokunursun. Her turda dizi bir uzar (3\'ten başlar).',
     'Yanlış dokununca senin turun biter; ulaştığın uzunluk puanındır. Dizi ikiniz için aynıdır; uzun hatırlayan kazanır, eşitlikte berabere.',
@@ -140,7 +140,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       timers.push(setTimeout(() => pad.classList.add('lit'), Math.max(0, on)));
       timers.push(setTimeout(() => pad.classList.remove('lit'), off));
     }
-    timers.push(setTimeout(() => { stopOnPause(); setStatus(`Şimdi sen: ${len} adımı aynı sırayla dokun`); enable(true); }, Math.max(0, startedAt + 400 + len * stepMs - now)));
+    timers.push(setTimeout(() => { stopOnPause(); setStatus(`Şimdi sen: ${len} adımlık diziyi aynı sırayla tekrarla`); enable(true); }, Math.max(0, startedAt + 400 + len * stepMs - now)));
     // "Bağlantı koptu" hides the pads and nobody can play: the show stops and is offered again
     stopOnPause();
     stopOnPause = clockPause.onBegin(() => {
@@ -165,7 +165,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const startedAt = shown.get(key);
   if (pos === 0 && startedAt == null) setStatus(len === START_LEN ? 'Hazır olunca başla.' : `Doğru! Sıradaki dizi ${len} adım.`);
   else if (pos === 0 && Date.now() < startedAt + 400 + len * stepMs) playback(startedAt); // re-rendered mid-playback
-  else { setStatus(pos ? `Devam et: ${pos}/${len} dokunuldu` : `Şimdi sen: ${len} adımı aynı sırayla dokun`); enable(true); }
+  else { setStatus(pos ? `Devam et: ${pos}/${len} dokunuldu` : `Şimdi sen: ${len} adımlık diziyi aynı sırayla tekrarla`); enable(true); }
   return () => { stopOnPause(); timers.forEach((t) => clearTimeout(t)); };
 }
 

@@ -9,7 +9,7 @@ export const meta = {
   icon: '♞',
   description: 'Klasik satranç: rok, geçerken alma, piyon terfisi, şah mat, pat.',
   rules: [
-    'Beyaz başlar; ilk oyuncunun rengi her turda rastgele belirlenir. Taşına dokun, gidebileceği kareler işaretlenir, karesine dokun.',
+    'Beyaz başlar; ilk oyuncunun rengi her turda rastgele belirlenir. Taşına dokun, gidebileceği kareler işaretlenir; sonra gitmek istediğin kareye dokun.',
     'Rok, geçerken alma ve terfi (vezir/kale/fil/at seçimi) uygulanır. Şahı tehdit altındayken onu kurtarmayan hamle yapılamaz.',
     'Şah mat kazandırır. Pat, yetersiz materyal, elli hamle kuralı ve üç kez tekrar beraberliktir. "Pes" ile oyun bırakılabilir.',
   ].join('\n'),
@@ -249,11 +249,11 @@ function insufficient(cells) {
   const pieces = cells.filter((p) => p && p[1] !== 'k');
   if (!pieces.length) return true;
   if (pieces.length === 1 && 'bn'.includes(pieces[0][1])) return true;
-  if (pieces.length === 2 && pieces.every((p) => p[1] === 'b')) {
-    // two bishops of opposite colours on same-coloured squares cannot mate
+  if (pieces.every((p) => p[1] === 'b')) {
+    // bishops that all stand on one square colour can never mate, however many and whoever owns them
     const squares = cells.map((p, i) => (p && p[1] === 'b' ? i : -1)).filter((i) => i >= 0);
     const colours = new Set(squares.map((i) => (rowOf(i) + colOf(i)) % 2));
-    if (pieces[0][0] !== pieces[1][0] && colours.size === 1) return true;
+    if (colours.size === 1) return true;
   }
   return false;
 }

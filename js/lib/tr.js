@@ -9,7 +9,7 @@ export const LETTERS = 'abcçdefgğhıijklmnoöprsştuüvyz';
 export const VOWELS = 'aeıioöuü';
 export const BACK_VOWELS = 'aıou';
 // Voiceless consonants (for consonant harmony of suffixes: -de/-te).
-const VOICELESS = 'fstkçşhp';
+const VOICELESS = 'fstkçşhpxq'; // x and q as in Max, Tariq: Max'ta
 
 const LETTER_RE = /^[abcçdefgğhıijklmnoöprsştuüvyz]+$/;
 
@@ -38,19 +38,23 @@ export function capitalizeTR(s) {
   return upperTR(str[0]) + str.slice(1);
 }
 
-function lastVowelIsBack(word) {
-  const w = lowerTR(word);
-  for (let i = w.length - 1; i >= 0; i--) {
-    if (VOWELS.includes(w[i])) return BACK_VOWELS.includes(w[i]);
-  }
-  return null; // no vowel at all
+// A name that ends in a number takes its suffixes from the number's last spoken word:
+// Oyuncu 3 -> üç'te, Oyuncu 10 -> on'da, Oyuncu 20 -> yirmi'de, Oyuncu 100 -> yüz'de.
+const ONES = ['sıfır', 'bir', 'iki', 'üç', 'dört', 'beş', 'altı', 'yedi', 'sekiz', 'dokuz'];
+const TENS = ['', 'on', 'yirmi', 'otuz', 'kırk', 'elli', 'altmış', 'yetmiş', 'seksen', 'doksan'];
+function spokenTail(digits) {
+  const d = digits.replace(/^0+(?=\d)/, '');
+  if (/^0+$/.test(d)) return 'sıfır';
+  const last = Number(d[d.length - 1]);
+  if (last) return ONES[last];
+  const ten = Number(d[d.length - 2] || 0);
+  if (ten) return TENS[ten];
+  const zeros = d.length - d.replace(/0+$/, '').length; // trailing zeros
+  if (zeros === 2) return 'yüz';
+  if (zeros <= 5) return 'bin';
+  if (zeros <= 8) return 'milyon';
+  return 'milyar';
 }
-
-// Locative/dative suffix for names ending with a digit, by the digit's Turkish name.
-// 1 bir, 2 iki, 3 üç, 4 dört, 5 beş, 6 altı, 7 yedi, 8 sekiz, 9 dokuz, 0 sıfır
-const DIGIT_BACK = { 0: true, 1: false, 2: false, 3: false, 4: true, 5: false, 6: true, 7: false, 8: false, 9: true };
-const DIGIT_VOICELESS = { 3: true, 4: true, 5: true };
-const DIGIT_ENDS_WITH_VOWEL = { 2: true, 6: true, 7: true };
 
 /**
  * Proper-noun suffix with apostrophe.
@@ -59,44 +63,34 @@ const DIGIT_ENDS_WITH_VOWEL = { 2: true, 6: true, 7: true };
  *   nameSuffix('Ayşe', 'e')   -> "Ayşe'ye"      (dative: -e/-a/-ye/-ya)
  *   nameSuffix('Ali', 'in')   -> "Ali'nin"      (genitive: -in/-ın/-un/-ün/-nin...)
  *   nameSuffix('Ali', 'i')    -> "Ali'yi"       (accusative: -i/-ı/-u/-ü/-yi...)
+ * The sound comes from the last letter or number: a trailing emoji or mark is skipped (Beyza 💜'ya).
  */
 export function nameSuffix(name, kind) {
   const n = String(name).trim();
   if (!n) return n;
-  const last = lowerTR(n[n.length - 1]);
-  const isDigit = /[0-9]/.test(last);
+  const core = n.replace(/[^\p{L}\p{N}]+$/u, ''); // an emoji-only name takes front suffixes: 💜'de
+  const digits = (core.match(/\d+$/) || [''])[0];
+  // the word whose sound decides the suffix: the last word of the name, or the number said aloud
+  const tail = digits ? spokenTail(digits) : lowerTR(core.split(/[^\p{L}\p{N}]+/u).pop()).replace(/â/g, 'a').replace(/î/g, 'i').replace(/û/g, 'u');
+  const lastCh = tail[tail.length - 1];
   // names with a soft final l take front suffixes against the vowel harmony: Kemal'de, Meral'in
-  const softL = !isDigit && SOFT_L_NAMES.has(lowerTR(n.split(/\s+/).pop()).replace(/â/g, 'a'));
-  let back, voiceless, endsWithVowel;
-  if (softL) {
-    back = false;
-    voiceless = false;
-    endsWithVowel = false;
-  } else if (isDigit) {
-    back = DIGIT_BACK[last];
-    voiceless = !!DIGIT_VOICELESS[last];
-    endsWithVowel = !!DIGIT_ENDS_WITH_VOWEL[last];
-  } else {
-    back = lastVowelIsBack(n);
-    if (back === null) back = false;
-    voiceless = VOICELESS.includes(last);
-    endsWithVowel = VOWELS.includes(last);
-  }
+  const softL = !digits && SOFT_L_NAMES.has(tail);
+  const endsWithVowel = !softL && VOWELS.includes(lastCh);
+  const voiceless = !softL && VOICELESS.includes(lastCh);
+  const lv = softL ? 'e' : lastVowel(tail);
+  const back = BACK_VOWELS.includes(lv);
   if (kind === 'de') {
     return `${n}'${voiceless ? 't' : 'd'}${back ? 'a' : 'e'}`;
   }
   if (kind === 'e') {
     return `${n}'${endsWithVowel ? 'y' : ''}${back ? 'a' : 'e'}`;
   }
+  const v = ({ a: 'ı', ı: 'ı', o: 'u', u: 'u', e: 'i', i: 'i', ö: 'ü', ü: 'ü' })[lv] || 'i';
   if (kind === 'in') {
     // four-way harmony for genitive
-    const lv = softL ? 'e' : lastVowel(n, isDigit, last);
-    const v = ({ a: 'ı', ı: 'ı', o: 'u', u: 'u', e: 'i', i: 'i', ö: 'ü', ü: 'ü' })[lv] || 'i';
     return `${n}'${endsWithVowel ? 'n' : ''}${v}n`;
   }
   if (kind === 'i') {
-    const lv = softL ? 'e' : lastVowel(n, isDigit, last);
-    const v = ({ a: 'ı', ı: 'ı', o: 'u', u: 'u', e: 'i', i: 'i', ö: 'ü', ü: 'ü' })[lv] || 'i';
     return `${n}'${endsWithVowel ? 'y' : ''}${v}`;
   }
   return n;
@@ -104,10 +98,8 @@ export function nameSuffix(name, kind) {
 
 const SOFT_L_NAMES = new Set(['kemal', 'cemal', 'celal', 'bilal', 'hilal', 'nihal', 'meral', 'hayal', 'zülal', 'visal', 'ikbal', 'iqbal', 'lal']);
 
-const DIGIT_LAST_VOWEL = { 0: 'ı', 1: 'i', 2: 'i', 3: 'ü', 4: 'ö', 5: 'e', 6: 'ı', 7: 'i', 8: 'i', 9: 'u' };
-function lastVowel(n, isDigit, last) {
-  if (isDigit) return DIGIT_LAST_VOWEL[last];
-  const w = lowerTR(n);
+/** The last vowel of a word ('e' when it has none, as in "Bğ"). */
+function lastVowel(w) {
   for (let i = w.length - 1; i >= 0; i--) if (VOWELS.includes(w[i])) return w[i];
-  return 'i';
+  return 'e';
 }

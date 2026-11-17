@@ -11,7 +11,7 @@ export const meta = {
   description: 'Saldır, savun ya da kartları al; deste bitince elinde kart kalan "durak" olur.',
   rules: [
     '36 kart (6–As), destenin altındaki kart kozu gösterir. Altışar kart dağıtılır; en küçük kozu olan başlar.',
-    'Saldıran bir kart atar. Savunan onu aynı renkten daha büyük bir kartla ya da bir kozla kırar; kıramazsa (ya da istemezse) "Al" der. Saldıran, masadaki kartlarla aynı değerde kartlar ekleyebilir (en çok 6 ve savunanın kart sayısı kadar).',
+    'Saldıran bir kart atar. Savunan onu aynı renkten daha büyük bir kartla ya da bir kozla kırar; kıramazsa (ya da istemezse) "Kartları al" ile masadakileri eline alır. Saldıran, masadaki kartlarla aynı değerde kartlar ekleyebilir (en çok 6 ve savunanın kart sayısı kadar).',
     'Bütün kartlar kırılırsa masa atılır ve roller değişir; alan oyuncu yeniden savunur. Her elden sonra önce saldıran, sonra savunan desteden 6\'ya tamamlar. Deste bitince kartı biten oyundan çıkar; elinde kart kalan durak olur.',
   ].join('\n'),
   data: [],
@@ -208,7 +208,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
 
   let status;
   if (state.over) status = state.loser == null ? 'Berabere: ikinizin de kartı bitti.' : `${players[state.loser]} durak oldu! ${players[1 - state.loser]} kazandı.`;
-  else if (mine && state.phase === 'defend') status = `Savun, ${players[viewer]}: kıracak bir kart seç ya da "Al"`;
+  else if (mine && state.phase === 'defend') status = `Savun, ${players[viewer]}: kıracak bir kart seç ya da "Kartları al"`;
   else if (mine && state.taking) status = `${players[opp]} alıyor: istersen aynı değerde kart ekle, sonra "Bitti"`;
   else if (mine) status = state.table.length ? `Saldırmaya devam et, ${players[viewer]} (aynı değerde kart) ya da "Bitti"` : `Saldır, ${players[viewer]}: bir kart at`;
   else status = `${players[turn]} ${state.phase === 'defend' ? 'savunuyor' : 'saldırıyor'}…`;
@@ -229,7 +229,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     el('span', {}, `${players[opp]}: ${state.hands[opp].length} kart`),
   );
   const actions = [];
-  if (mine && state.phase === 'defend' && undefendedIdx >= 0) actions.push(el('button', { type: 'button', class: 'btn btn-secondary', onClick: () => sendMove({ type: 'take' }) }, 'Al (kartları üstlen)'));
+  if (mine && state.phase === 'defend' && undefendedIdx >= 0) actions.push(el('button', { type: 'button', class: 'btn btn-secondary', onClick: () => sendMove({ type: 'take' }) }, 'Kartları al'));
   if (mine && state.phase === 'attack' && state.table.length && (state.taking || undefendedIdx < 0)) actions.push(el('button', { type: 'button', class: 'btn btn-primary', onClick: () => sendMove({ type: 'done' }) }, state.taking ? 'Bitti (kartları alsın)' : 'Bitti (masa atılsın)'));
   draw(container,
     el('div', { class: 'status-line' }, el('strong', {}, status)),

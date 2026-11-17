@@ -29,6 +29,7 @@ export const RACK = 7;
 export const TILES = { a: 12, b: 2, c: 2, ç: 2, d: 2, e: 8, f: 1, g: 1, ğ: 1, h: 1, ı: 4, i: 7, j: 1, k: 7, l: 7, m: 4, n: 5, o: 3, ö: 1, p: 1, r: 6, s: 3, ş: 2, t: 5, u: 3, ü: 2, v: 1, y: 2, z: 2 };
 export const VALUES = { a: 1, b: 3, c: 4, ç: 4, d: 3, e: 1, f: 7, g: 5, ğ: 8, h: 5, ı: 2, i: 1, j: 10, k: 1, l: 1, m: 2, n: 1, o: 2, ö: 7, p: 5, r: 1, s: 2, ş: 4, t: 1, u: 2, ü: 3, v: 7, y: 3, z: 4 };
 // premium squares, symmetric: 'W3' 'W2' 'L3' 'L2'
+const PREMIUM_NAME = { W3: 'kelime puanı 3 kat', W2: 'kelime puanı 2 kat', L3: 'harf puanı 3 kat', L2: 'harf puanı 2 kat' }; // read aloud
 export const PREMIUM = (() => {
   const p = {};
   const set = (r, c, k) => { p[r * SIZE + c] = k; };
@@ -331,7 +332,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
         type: 'button',
         class: `kb-cell ${prem ? prem.toLowerCase() : ''} ${letter ? 'filled' : ''} ${pending.has(i) ? 'pending' : ''} ${lastSet.has(i) ? 'last' : ''} ${i === CENTER && !letter ? 'star' : ''} ${disputedCells.has(i) ? `disputed${disputedCells.get(i) ? ' objected' : ''}` : ''}`,
         disabled: !mine || (state.board[i] !== null) || (!pending.has(i) && draft.selected == null),
-        'aria-label': `${rowOf(i) + 1}. satır ${colOf(i) + 1}. sütun${letter ? `, ${upperTR(letter)}` : prem ? `, ${prem}` : ''}`,
+        'aria-label': `${rowOf(i) + 1}. satır ${colOf(i) + 1}. sütun${letter ? `, ${upperTR(letter)}` : prem ? `, ${PREMIUM_NAME[prem]}` : ''}`,
         onClick: () => {
           if (pending.has(i)) { draft.tiles = draft.tiles.filter((t) => t.cell !== i); redraw(); return; }
           if (!canDrop) return;

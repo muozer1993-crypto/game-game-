@@ -223,14 +223,14 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       type: 'button',
       class: `mg-pit ${legal.has(i) ? 'legal' : ''} ${!animating && state.last && state.last.to === i ? 'last' : ''} ${!animating && state.last && state.last.from === i ? 'from' : ''}`,
       disabled: !legal.has(i),
-      'aria-label': `${i < 6 ? players[0] : players[1]} kuyusu ${(i < 6 ? i : i - 7) + 1}: ${state.pits[i]} taş`,
+      'aria-label': `${nameSuffix(i < 6 ? players[0] : players[1], 'in')} ${(i < 6 ? i : i - 7) + 1}. kuyusu: ${state.pits[i]} taş`,
       onClick: () => { if (Date.now() >= skipGuardUntil) sendMove({ type: 'sow', pit: i }); }, // not the tap that skipped the replay
     }, el('span', { class: 'mg-count' }, String(state.pits[i])), el('span', { class: 'mg-stones' }, '●'.repeat(Math.min(state.pits[i], 12))));
     pitEls[i] = b;
     return b;
   };
   const store = (p) => {
-    const s = el('div', { class: `mg-store p${p}`, 'aria-label': `${players[p]} haznesi: ${state.pits[storeOf(p)]} taş` }, el('span', { class: 'mg-count' }, String(state.pits[storeOf(p)])), el('span', { class: 'muted' }, players[p]));
+    const s = el('div', { class: `mg-store p${p}`, 'aria-label': `${nameSuffix(players[p], 'in')} haznesi: ${state.pits[storeOf(p)]} taş` }, el('span', { class: 'mg-count' }, String(state.pits[storeOf(p)])), el('span', { class: 'muted' }, players[p]));
     pitEls[storeOf(p)] = s;
     return s;
   };

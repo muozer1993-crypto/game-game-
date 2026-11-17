@@ -12,7 +12,7 @@ export const meta = {
   description: 'Gemilerini gizle, rakibin denizine ateş et. Bütün gemileri önce batıran kazanır.',
   rules: [
     'Her oyuncu gemilerini kendi denizine yerleştirir (düz, birbirine değmeden). Rakip bunları görmez.',
-    'Sırayla rakibin denizinde bir kareye ateş edilir: İska, Vurdu ya da Batırdı. Önce bütün gemileri batıran kazanır.',
+    'Sırayla rakibin denizinde bir kareye ateş edilir: Iska, Vurdu ya da Batırdı. Önce bütün gemileri batıran kazanır.',
     'İlk oyuncunun avantajı olmasın diye ikisi de aynı sayıda atış yapar; ikisi de aynı turda bitirirse berabere.',
     'Tek telefonda: gemilerin gizli durur; "Gemilerimi göster" düğmesine basılı tuttukça görünür, bırakınca yine gizlenir.',
   ].join('\n'),
@@ -252,7 +252,7 @@ export function getResult(state) {
 const LETTERS = 'ABCDEFGHIJ';
 const drafts = new Map(); // placement in progress per viewer: survives re-renders caused by remote moves
 let draftsFor = null;     // state.id the drafts belong to
-const RESULT_TEXT = { miss: 'İska', hit: 'Vurdu!', sunk: 'Batırdı!' };
+const RESULT_TEXT = { miss: 'Iska', hit: 'Vurdu!', sunk: 'Batırdı!' };
 
 function grid(size, cellFn, opts = {}) {
   const board = el('div', { class: `sea ${opts.small ? 'sea-small' : ''}`, style: { gridTemplateColumns: `auto repeat(${size}, 1fr)` }, role: 'grid', 'aria-label': opts.label || 'Deniz' });

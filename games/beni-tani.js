@@ -307,10 +307,12 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       return null;
     }
     const i = state.guessed[viewer];
+    // the clitic follows the suffixed name's last vowel: Kemal'e de, Beyza'ya da
+    const toOpp = nameSuffix(players[opp], 'e');
     draw(container,
       el('div', { class: 'status-line' }, el('strong', {}, `${players[viewer]}, ${nameSuffix(players[opp], 'in')} cevabını tahmin et`)),
       el('p', { class: 'hint' }, `2. adım: tahminler (${i + 1}/${total})`),
-      questionCard(state.questions[i], i + 1, total, categories, `${nameSuffix(players[opp], 'e')} de bu soru soruldu — sence ne cevap verdi?`),
+      questionCard(state.questions[i], i + 1, total, categories, `${toOpp} ${toOpp.endsWith('a') ? 'da' : 'de'} bu soru soruldu — sence ne cevap verdi?`),
       answerInput(state.questions[i], (value) => sendMove({ type: 'guess', index: i, value }), `${viewer}:guess:${i}`, settled),
     );
     return null;

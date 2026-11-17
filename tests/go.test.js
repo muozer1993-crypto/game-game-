@@ -138,7 +138,7 @@ test('go iki telefonda: sayımda çaprazlanan onay, ölü taş ve "Oyuna dön" i
   assert.equal(h.phase, 'over');
   assert.equal(g.phase, 'over');
   assert.deepEqual(h.result, g.result);
-  assert.throws(() => game.applyMove(s, 1, { type: 'finish' }), 'ev sahibi');
+  assert.throws(() => game.applyMove(s, 1, { type: 'finish' }), 'odayı kuran');
   // the guest marks and unmarks a stone while the host's agreement is on the wire: the marking is
   // the same again, but the agreement was for the first one, so it counts on neither phone
   s = start();

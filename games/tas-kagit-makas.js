@@ -7,7 +7,7 @@ export const meta = {
   group: 'kart',
   name: 'Taş Kağıt Makas',
   icon: '✊',
-  description: 'Gizlice seç, birlikte aç. Beşte üç alan kazanır.',
+  description: 'Gizlice seç, birlikte aç. Ellerin çoğunu alan kazanır (beşte üç, ayarlardan değişir).',
   rules: [
     'İkiniz de gizlice taş, kağıt ya da makas seçersiniz; ikiniz de seçince seçimler açılır.',
     'Taş makası, makas kağıdı, kağıt taşı yener. Aynı seçim berabere sayılır ve el tekrarlanmaz, yeni ele geçilir.',

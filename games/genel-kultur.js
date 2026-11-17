@@ -11,7 +11,7 @@ export const meta = {
   description: 'Aynı sorulara ikiniz de cevap verin; doğru sayısı, eşitlikte hız kazandırır.',
   rules: [
     'İkinize de aynı sorular gelir (varsayılan 10, 4 seçenekli). Her soru için süre vardır; süre dolarsa yanlış sayılır.',
-    'Tek telefonda önce biri bütün soruları cevaplar, sonra telefonu verir; iki telefonda ikiniz aynı anda oynarsınız. İkiniz de bitince sonuç ekranı gelir.',
+    'Tek telefonda önce biri bütün soruları cevaplar, sonra telefonu verir; iki telefonda ikiniz aynı anda oynarsınız. İkiniz de bitirince sonuç ekranı gelir.',
     'Doğru sayısı fazla olan kazanır; eşitlikte toplam süresi az olan kazanır.',
   ].join('\n'),
   data: ['trivia'],
