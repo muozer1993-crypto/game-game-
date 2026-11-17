@@ -2,6 +2,7 @@
 // round; repeat it by tapping. A mistake ends your run; the longer run wins.
 import { el, render as draw } from '../js/ui/dom.js';
 import { createRng } from '../js/lib/rng.js';
+import { clockPause } from '../js/ui/timer.js';
 
 export const meta = {
   group: 'zeka',
@@ -139,8 +140,21 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       timers.push(setTimeout(() => pad.classList.add('lit'), Math.max(0, on)));
       timers.push(setTimeout(() => pad.classList.remove('lit'), off));
     }
-    timers.push(setTimeout(() => { setStatus(`Şimdi sen: ${len} adımı aynı sırayla dokun`); enable(true); }, Math.max(0, startedAt + 400 + len * stepMs - now)));
+    timers.push(setTimeout(() => { stopOnPause(); setStatus(`Şimdi sen: ${len} adımı aynı sırayla dokun`); enable(true); }, Math.max(0, startedAt + 400 + len * stepMs - now)));
+    // "Bağlantı koptu" hides the pads and nobody can play: the show stops and is offered again
+    stopOnPause();
+    stopOnPause = clockPause.onBegin(() => {
+      stopOnPause();
+      timers.splice(0).forEach((t) => clearTimeout(t));
+      padEls.forEach((b) => b.classList.remove('lit'));
+      shown.delete(key);
+      enable(false);
+      setStatus(`Dizi yarıda kaldı: ${len} adımlık diziyi yeniden izle.`);
+      showBtn.textContent = `${len} adımlık diziyi göster`;
+      container.append(showBtn);
+    });
   };
+  let stopOnPause = () => {};
   const showBtn = el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block', onClick: () => { showBtn.remove(); const t = Date.now(); shown.set(key, t); playback(t); } }, pos === 0 && len === START_LEN ? 'Başla' : `${len} adımlık diziyi göster`);
   draw(container,
     status,
@@ -152,7 +166,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   if (pos === 0 && startedAt == null) setStatus(len === START_LEN ? 'Hazır olunca başla.' : `Doğru! Sıradaki dizi ${len} adım.`);
   else if (pos === 0 && Date.now() < startedAt + 400 + len * stepMs) playback(startedAt); // re-rendered mid-playback
   else { setStatus(pos ? `Devam et: ${pos}/${len} dokunuldu` : `Şimdi sen: ${len} adımı aynı sırayla dokun`); enable(true); }
-  return () => timers.forEach((t) => clearTimeout(t));
+  return () => { stopOnPause(); timers.forEach((t) => clearTimeout(t)); };
 }
 
 export default { id: 'hafiza-dizisi', meta, setup, applyMove, render, getTurn, getResult };

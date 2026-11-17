@@ -4,6 +4,7 @@
 import { el, render as draw } from '../js/ui/dom.js';
 import { nextButton } from '../js/ui/next.js';
 import { createRng } from '../js/lib/rng.js';
+import { clockPause, pausedBetween } from '../js/ui/timer.js';
 
 export const meta = {
   group: 'zeka',
@@ -161,18 +162,19 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
 
   // ---- wait: red, then green; one zone per player on one phone, one zone online
   const key = `${state.id}:${state.round}`;
-  if (!goAt.has(key)) goAt.set(key, Date.now() + state.delays[state.round % state.delays.length]);
-  const go = goAt.get(key);
-  const redAt = go - state.delays[state.round % state.delays.length]; // when this screen turned red
+  const delay = state.delays[state.round % state.delays.length];
+  if (!goAt.has(key)) goAt.set(key, Date.now() + delay);
+  const redAt = goAt.get(key) - delay; // when this screen turned red
+  // two phones: behind "Bağlantı koptu" nobody can tap, so the round's clock stands still there
+  const elapsed = () => Date.now() - redAt - pausedBetween(redAt);
   const zones = online ? [viewer] : [0, 1];
   const reported = new Set();
   const tap = (who) => {
     if (reported.has(who) || state.times[who] != null) return;
-    const now = Date.now();
-    if (now - redAt < RED_GUARD_MS) return;
-    if (now < go) { reported.add(who); sendMove({ type: 'tap', who, time: 'early' }); return; }
+    const ms = elapsed();
+    if (ms < RED_GUARD_MS) return;
     reported.add(who);
-    sendMove({ type: 'tap', who, time: now - go });
+    sendMove({ type: 'tap', who, time: ms < delay ? 'early' : ms - delay });
   };
   const zoneEls = zones.map((p) => el('button', {
     type: 'button', class: `rf-zone ${online ? 'single' : ''} ${p === 0 && !online ? 'flip' : ''}`,
@@ -188,16 +190,24 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     reported.add(viewer);
     timers.push(setTimeout(() => sendMove({ type: 'tap', who: viewer, time: 'none' }), 0));
   }
-  const wait = go - Date.now();
-  if (wait <= 0) setGo(); else timers.push(setTimeout(setGo, wait));
-  // nobody reacted: report it so the round can end (the opponent may have tapped)
-  timers.push(setTimeout(() => { zones.forEach((p) => { if (!reported.has(p) && state.times[p] == null) { reported.add(p); sendMove({ type: 'tap', who: p, time: 'none' }); } }); }, Math.max(0, wait) + NO_TAP_MS));
+  const noTapAt = Math.max(delay, elapsed()) + NO_TAP_MS; // 3 s after green (or after this redraw)
+  let tick = null;
+  const step = (first = false) => {
+    const ms = elapsed();
+    if (ms >= delay) setGo();
+    // while the window is up the clock does not run: look again shortly
+    const due = clockPause.active() ? 100 : (ms < delay ? delay : noTapAt) - ms;
+    if (due > 0 || first) { tick = setTimeout(step, Math.max(0, due)); return; }
+    // nobody reacted: report it so the round can end (the opponent may have tapped)
+    zones.forEach((p) => { if (!reported.has(p) && state.times[p] == null) { reported.add(p); sendMove({ type: 'tap', who: p, time: 'none' }); } });
+  };
+  step(true);
   draw(container,
     el('div', { class: 'rf-board' }, zoneEls),
     online && state.times[1 - viewer] === 'early' ? el('p', { class: 'hint' }, `${players[1 - viewer]} erken dokundu!`) : (online && state.times[1 - viewer] != null ? el('p', { class: 'hint' }, `${players[1 - viewer]} dokundu, senin dokunman bekleniyor…`) : null),
     online && state.times[viewer] != null ? el('p', { class: 'hint' }, `Senin süren: ${fmt(state.times[viewer])}. ${players[1 - viewer]} bekleniyor…`) : null,
   );
-  return () => timers.forEach((t) => clearTimeout(t));
+  return () => { timers.forEach((t) => clearTimeout(t)); clearTimeout(tick); };
 }
 
 export default { id: 'refleks', meta, setup, applyMove, render, getTurn, getResult };

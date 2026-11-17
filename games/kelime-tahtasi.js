@@ -400,10 +400,12 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   } else if (reviewing) status = 'Oyun bitti: itiraz zamanı';
   else if (mine) status = `Sıra sende, ${players[viewer]}`;
   else status = `${players[state.turn]} kelime diziyor…`;
-  const lastLine = state.lastWords.length && !reviewing
-    ? el('p', { class: 'hint' }, `Son hamle (${players[opp === state.turn ? viewer : opp]}): `,
-      state.lastWords.map((w, k) => [k ? ', ' : '', `${upperTR(w.word)} ${w.points}`, w.unlisted ? unlistedMark() : null]))
-    : null;
+  // always there and one line high (empty after a pass or an exchange, cut with an ellipsis when long):
+  // the turn coming with or without a word must not move the board and the rack
+  const lastLine = reviewing ? null : el('p', { class: 'hint kt-last' }, state.lastWords.length
+    ? [`Son hamle (${players[opp === state.turn ? viewer : opp]}): `,
+      state.lastWords.map((w, k) => [k ? ', ' : '', `${upperTR(w.word)} ${w.points}`, w.unlisted ? unlistedMark() : null])]
+    : null);
   const objectedCount = disputes.filter((d) => objectedSet.has(d.id)).length;
   let disputeBox = null;
   if (reviewing) {

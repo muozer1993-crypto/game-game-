@@ -142,6 +142,7 @@ let updateReady = false; // a new version took over while another screen was ope
 let tournament = null; // { ids, index, wins, draws, results, players, onlineHost } while a tournament runs
 
 function setScreen(name, cleanupFn) {
+  if (closeRules) closeRules(); // the rules window belongs to the screen being left
   if (teardown) { try { teardown(); } catch (err) { console.warn(err); } }
   teardown = cleanupFn || null;
   currentScreen = name;
@@ -158,6 +159,7 @@ function setScreen(name, cleanupFn) {
   window.scrollTo(0, 0);
 }
 let ignorePop = false; // a popstate we caused ourselves (history.back() from setScreen)
+let closeRules = null; // closes the open rules window ("?"), if any
 
 /**
  * Asked before leaving the play screen: a game under way, or a tournament with games still to play
@@ -183,6 +185,12 @@ window.addEventListener('popstate', () => {
   if (reconnectOverlay) {
     // under "Bağlantı koptu" the back gesture is that window's "Çık": the same question, the same leave
     if (!exitReconnect()) history.pushState({ app: true }, '', `#${currentScreen}`);
+    return;
+  }
+  if (closeRules) {
+    // the back gesture closes the rules window, as its "Tamam" does; the game stays
+    closeRules();
+    history.pushState({ app: true }, '', `#${currentScreen}`);
     return;
   }
   if (currentScreen === 'play') {
@@ -829,8 +837,10 @@ function showReaction(e, name) {
 }
 
 function showRulesOverlay(game) {
+  if (closeRules) closeRules(); // one window at a time
   const opener = document.activeElement;
   const close = () => {
+    if (closeRules === close) closeRules = null;
     overlay.remove();
     window.removeEventListener('keydown', onKey, true);
     if (opener && opener.focus) opener.focus({ preventScroll: true }); // the "?" may sit half off screen: no scroll on close
@@ -850,6 +860,7 @@ function showRulesOverlay(game) {
   );
   window.addEventListener('keydown', onKey, true);
   document.body.append(overlay);
+  closeRules = close;
   okBtn.focus({ preventScroll: true }); // the button sits below long rules: focusing it must not scroll the title away
 }
 
@@ -1167,6 +1178,8 @@ function exitReconnect() {
   reconnectFocus = null; closeReconnect(); leaveOnline({ silent: true }); showMenu();
   return true;
 }
+/** The host is choosing a game or a tournament (a link coming back must not send it to the lobby). */
+const choosingScreen = () => currentScreen.startsWith('setup-') || currentScreen === 'tournament' || currentScreen === 'tournament-result';
 function closeReconnect() {
   clockPause.end();
   app.inert = false;
@@ -1273,8 +1286,8 @@ async function handleOnlineMessage(msg) {
       online.players = online.role === 'host' ? [online.myName, other] : [other, online.myName];
       // a stale cached build on one phone would desync the games: say so before anything starts
       if (msg.v && msg.v !== APP_VERSION) versionMismatch(String(msg.v).slice(0, 12), other);
+      const hadGame = !!(activeSession && !activeSession.destroyed);
       if (online.resuming) {
-        const hadGame = !!(activeSession && !activeSession.destroyed);
         closeReconnect();
         if (activeSession) { activeSession.destroy(); activeSession = null; }
         online.session = null;
@@ -1282,6 +1295,9 @@ async function handleOnlineMessage(msg) {
         // with a game running the other side evidently started over; from the lobby it is just the link coming back
         toast(hadGame ? 'Rakip yeniden başladı; oyun baştan kurulacak' : 'Bağlantı yeniden kuruldu', { duration: hadGame ? 4000 : 2500 });
       }
+      // the link came back while the host was choosing a game or a tournament (this greeting, or the
+      // other phone's answer to ours): the choices stay on screen; the guest waits in the lobby
+      if (online.role === 'host' && !hadGame && choosingScreen()) return;
       showOnlineLobby();
       return;
     }
@@ -1297,6 +1313,7 @@ async function handleOnlineMessage(msg) {
         const other = String(msg.name || 'Oyuncu').slice(0, 20);
         online.players = online.role === 'host' ? [online.myName, other] : [other, online.myName];
         sendHello(online.transport);
+        if (online.role === 'host' && choosingScreen()) return; // the choices stay (see 'hello')
         showOnlineLobby();
         return;
       }

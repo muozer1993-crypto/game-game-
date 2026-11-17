@@ -314,7 +314,10 @@ function applyEightBall(state, player, move, shot) {
     if (!state.ballInHand) fail('Beyaz topu şimdi elle koyamazsın');
     const x = Number(move.cue.x);
     const y = Number(move.cue.y);
-    if (!canPlaceCue(state.balls, x, y)) fail('Beyaz top oraya konamaz');
+    // leaving the ball where it stopped is always allowed, even against another ball or by a pocket
+    const rest = state.balls.find((b) => b.id === 0);
+    const stays = rest && !rest.pocketed && x === rest.x && y === rest.y;
+    if (!stays && !canPlaceCue(state.balls, x, y)) fail('Beyaz top oraya konamaz');
     start = state.balls.map((b) => (b.id === 0 ? { ...b, x, y, pocketed: false } : b));
   }
   const before = start.map((b) => ({ ...b }));

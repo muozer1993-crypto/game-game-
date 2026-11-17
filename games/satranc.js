@@ -1,6 +1,6 @@
 // Satranç — full chess: castling, en passant, promotion, check/checkmate, stalemate,
 // insufficient material, fifty-move rule and threefold repetition.
-import { el, render as draw } from '../js/ui/dom.js';
+import { el, render as draw, keysIntoViewOnce } from '../js/ui/dom.js';
 import { nameSuffix } from '../js/lib/tr.js';
 
 export const meta = {
@@ -427,10 +427,15 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     boardBox,
     tag(topColour === 'w' ? 'b' : 'w'),
     promoBox,
-    mine ? el('div', { class: 'row', style: { justifyContent: 'center', marginTop: '10px' } },
-      el('button', { type: 'button', class: 'btn btn-secondary btn-small', onClick: () => { if (confirm('Pes ediyor musun?')) sendMove({ type: 'resign' }); } }, 'Pes')) : null,
+    // hidden, not removed, on the other player's turn: the page keeps its length, so a page scrolled
+    // to the end does not move the board after every move
+    state.over ? null : el('div', { class: 'row', style: { justifyContent: 'center', marginTop: '10px', visibility: mine ? '' : 'hidden' }, 'aria-hidden': mine ? null : 'true' },
+      el('button', { type: 'button', class: 'btn btn-secondary btn-small', disabled: !mine, onClick: () => { if (mine && confirm('Pes ediyor musun?')) sendMove({ type: 'resign' }); } }, 'Pes')),
     el('p', { class: 'hint' }, `${state.full}. hamle · ${nameSuffix(players[playerOf(state, 'w')], 'in')} rengi beyaz`),
   );
+  // a short phone (two phones add the reaction row above): once per game, scroll just enough that
+  // the whole board is on screen
+  keysIntoViewOnce(boardBox, container, state.id);
   return null;
 }
 

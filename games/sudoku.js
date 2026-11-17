@@ -240,7 +240,8 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   draw(container,
     timerBox,
     el('div', { class: 'status-line' }, el('strong', {}, `${players[viewer]}: ${goodCount(grid)}/81${bad.size ? ` · ${bad.size} çakışma` : ''}`)),
-    ctx.mode === 'online' ? el('p', { class: 'hint' }, `${players[opp]}: ${summary(opp)}`) : null,
+    // two lines of room: ", bıraktı" / ", süre doldu" wraps the line, and the grid must not move mid-entry
+    ctx.mode === 'online' ? el('p', { class: 'hint two-lines' }, `${players[opp]}: ${summary(opp)}`) : null,
     boardBox,
     pad,
     giveUp,

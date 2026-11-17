@@ -585,7 +585,9 @@ export function createGame(cfg) {
     );
 
     draw(container,
-      el('div', { class: 'status-line' }, status),
+      // two lines of room: "Sıra sende, <name>: …" wraps on a narrow phone, "… tahmin ediyor…" does not,
+      // and the keyboard must not drop when the turn comes back
+      el('div', { class: 'status-line two' }, status),
       state.shared ? el('p', { class: 'hint' }, `İkiniz de aynı ${isNumber ? 'sayıyı' : 'kelimeyi'} arıyorsunuz; önce bulan kazanır.`) : null,
       notices,
       lastOppView,
@@ -598,11 +600,14 @@ export function createGame(cfg) {
       kbBox,
       warn.note,
       oppDetails,
-      mine && !myPending ? el('div', { class: 'row', style: { marginTop: '10px' } },
-        el('button', { type: 'button', class: 'btn btn-secondary btn-small', onClick: () => { if (confirm('Pes ediyor musun? Bu turu kaybedersin.')) sendMove({ type: 'giveup' }); } }, 'Pes'),
-      ) : null,
+      // hidden, not removed, while waiting: the page keeps its length, so a page scrolled to the end does not move
+      el('div', { class: 'row', style: { marginTop: '10px', visibility: mine && !myPending ? '' : 'hidden' }, 'aria-hidden': mine && !myPending ? null : 'true' },
+        el('button', { type: 'button', class: 'btn btn-secondary btn-small', disabled: !mine || myPending, onClick: () => { if (mine && !myPending && confirm('Pes ediyor musun? Bu turu kaybedersin.')) sendMove({ type: 'giveup' }); } }, 'Pes'),
+      ),
     );
-    if (mine && !myPending) keysIntoView(kbBox); // the guess list grows above the keyboard: keep GİR on screen
+    // the guess list grows above the keyboard: keep GİR on screen, also while waiting, so the page
+    // scrolls right after your own guess and not when the turn comes back
+    keysIntoView(kbBox);
     return () => cleanups.forEach((fn) => fn());
   }
 

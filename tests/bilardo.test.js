@@ -187,6 +187,12 @@ test('bilardo 8 top: rakibin topuna önce değmek, hiçbir topa değmemek ve bey
   const t = game.applyMove(s, 1, { type: 'shot', dx: 1, dy: 0, power: 0.2, cue: { x: 30, y: 350 } });
   assert.equal(t.last.before.find((b) => b.id === 0).x, 30, 'the shot starts from the placed spot');
   assert.equal(t.ballInHand, t.last.foul !== null);
+  // the cue ball stopped against a ball (not a free spot to put it down): it may stay where it is
+  const touching = { ...eightState({ 0: [100, 300], 3: [100 + 2 * R, 300], 8: [100, 100], 11: [180, 380] }), groups: ['duz', 'cizgili'], turn: 1, ballInHand: true };
+  assert.ok(!canPlaceCue(touching.balls, 100, 300), 'not a spot to put the ball down');
+  const kept = game.applyMove(touching, 1, { type: 'shot', dx: 1, dy: 0, power: 0.2, cue: { x: 100, y: 300 } });
+  assert.equal(kept.last.before.find((b) => b.id === 0).x, 100, '"Top burada kalsın" shoots from where it stopped');
+  assert.throws(() => game.applyMove(touching, 1, { type: 'shot', dx: 1, dy: 0, power: 0.2, cue: { x: 101, y: 300 } }), 'Beyaz top oraya konamaz');
   // no ball hit at all
   let n = { ...eightState({ 0: [100, 300], 3: [20, 100], 8: [180, 100], 11: [180, 380] }), groups: ['duz', 'cizgili'] };
   n = game.applyMove(n, 0, { type: 'shot', dx: 0, dy: -1, power: 0.05 });

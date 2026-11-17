@@ -238,7 +238,7 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 }
 @keyframes next-ready-pulse { 50% { box-shadow: 0 0 0 6px var(--correct); } }
 .next-ask { text-align: center; }
-.next-ask .next-ask-note { margin: 6px 0 0; }
+.next-ask .next-ask-note { margin: 6px 0 0; min-height: calc(2 * 1.4em); } /* the two notes (before and after "Hazırım") take the same room */
 @media (prefers-reduced-motion: reduce) {
   .game-box.screen-new > *, .next-btn.next-ready, .rematch-btn.next-ready { animation: none; }
 }
@@ -262,6 +262,13 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .timer.urgent .timer-fill { background: var(--danger); }
 .timer.urgent .timer-text { color: var(--danger); }
 .timer.paused .timer-fill { background: var(--muted); }
+/* a short phone: the countdown and its bar share one row, so the last option or a keyboard's last row
+   stays on screen (two phones' reaction row included) */
+@media (max-height: 700px) {
+  .timer { display: flex; align-items: center; gap: 10px; margin: 4px 0 6px; }
+  .timer-text { flex: none; min-width: 4.6em; text-align: left; }
+  .timer-bar { flex: 1; margin-top: 0; }
+}
 
 /* keyboard */
 .keyboard { margin: 10px -10px 0; user-select: none; -webkit-user-select: none; } /* bleeds into the gutter for wider keys */
@@ -368,6 +375,8 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .kt-who { display: flex; min-width: 0; }
 .kt-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .kt-score, .kt-bag { flex: none; font-variant-numeric: tabular-nums; }
+.kt-who > .key-dot { flex: none; align-self: center; }
+.kt-last { height: 1.4em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } /* the last move: one line, always */
 .kt-info { min-height: 2.9em; }
 /* and never more than those two lines: a preview with many cross words (and their "listede yok" list) is cut
    with an ellipsis instead of pushing the buttons down; "Yine de oyna" names every unlisted word anyway */
@@ -574,6 +583,13 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .options { display: grid; gap: 10px; }
 .options .btn { justify-content: flex-start; text-align: left; white-space: normal; min-height: 52px; }
 .options .btn.selected { outline: 3px solid var(--primary); }
+/* a short phone: the quiz card and its options close up, so the last option stays on screen */
+@media (max-height: 700px) {
+  .question-card { margin: 4px 0 8px; padding-top: 10px; padding-bottom: 10px; }
+  .question-text { font-size: 1.1rem; margin-bottom: 2px; }
+  .options { gap: 8px; }
+  .options .btn { min-height: 44px; padding-top: 7px; padding-bottom: 7px; }
+}
 .compare-list { display: grid; gap: 10px; }
 .compare-item { padding: 10px 12px; }
 .compare-item .q { font-weight: 600; margin-bottom: 4px; }
@@ -584,6 +600,8 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 .btn-stack { display: inline-grid; place-items: center; }
 .btn-stack > * { grid-area: 1 / 1; }
 .btn-stack-sizer { visibility: hidden; }
+.text-stack { display: grid; } /* a text that changes: the hidden sizer holds the room of the other text */
+.text-stack > * { grid-area: 1 / 1; }
 .badge { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 0.85rem; font-weight: 700; }
 .bt-pts { display: inline-block; min-width: 2.2em; text-align: center; font-variant-numeric: tabular-nums; } /* "0" and "4,5" take one width */
 .compare-item .badge { margin-top: 4px; }
@@ -683,6 +701,8 @@ details.rules summary { cursor: pointer; font-weight: 600; padding: 8px 0; }
 
 /* ---- Dokuz Taş */
 .nm-wrap { position: relative; max-width: 420px; margin: 6px auto; }
+/* two phones: the reaction row sits above too, so on a short screen (360x640) the board takes the height left */
+.emoji-bar ~ .game-box .nm-wrap { max-width: min(420px, max(260px, calc(100vh - 345px))); }
 .nm-board { position: relative; width: 100%; display: block; color: var(--fg); touch-action: manipulation; }
 .nm-hit { cursor: pointer; }
 .nm-key::before { content: ''; display: inline-block; width: 14px; height: 14px; border-radius: 50%; margin-right: 6px; vertical-align: -2px; }

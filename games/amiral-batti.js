@@ -297,7 +297,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     };
     const occupied = () => new Set(fleet.flat());
     const boardBox = el('div');
-    const info = el('div', { class: 'status-line' });
+    const info = el('div', { class: 'status-line two' }); // two lines of room: the last ship placed must not move the sea
     const orientBtn = el('button', { type: 'button', class: 'btn btn-small', onClick: () => { horizontal = !horizontal; redraw(); } });
     const tryPlace = (idx) => {
       const left = remaining();

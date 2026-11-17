@@ -404,11 +404,15 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const modeRow = modeButton ? el('div', { class: 'row', style: { marginTop: '10px', justifyContent: 'center' } }, modeButton) : null;
   const shown = result && state.word ? [...state.word] : state.revealed;
   // the word is out and the list does not have it: the guesser may object (full points for this word)
+  const objectionText = (on) => (on
+    ? `${players[guesser]} itiraz etti: bu kelimeden tam puan (+${state.lives}) alacak.`
+    : `${players[guesser]} kelimeyi geçersiz bulursa itiraz edebilir; itiraz ederse bu kelimeden tam puan (+${state.lives}) alır.`);
   const objectionBox = () => el('div', { class: 'card objections' },
     el('div', { class: 'objections-title' }, upperTR(state.word || ''), unlistedMark(), ' listede yok'),
-    el('p', { class: 'hint' }, state.objected
-      ? `${players[guesser]} itiraz etti: bu kelimeden tam puan (+${state.lives}) alacak.`
-      : `${players[guesser]} kelimeyi geçersiz bulursa itiraz edebilir; itiraz ederse bu kelimeden tam puan (+${state.lives}) alır.`),
+    // both texts take the room of the longer one: "İtiraz et" / "İtirazı geri al" must not move the buttons
+    el('p', { class: 'hint text-stack' },
+      el('span', {}, objectionText(state.objected)),
+      el('span', { class: 'btn-stack-sizer', 'aria-hidden': 'true' }, objectionText(!state.objected))),
     ctx.mode !== 'online' || viewer === guesser
       ? el('button', { type: 'button', class: `btn btn-small ${state.objected ? 'btn-secondary' : 'btn-danger'}`, onClick: () => sendMove({ type: 'object', on: !state.objected }) },
         state.objected ? 'İtirazı geri al' : 'İtiraz et: kelime geçersiz')

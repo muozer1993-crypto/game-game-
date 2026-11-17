@@ -247,9 +247,10 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   else status = `${players[state.turn]} düşünüyor…`;
   draw(container,
     el('div', { class: 'status-line two' }, el('strong', {}, status)),
-    el('div', { class: 'c4-legend' },
-      el('span', { class: 'dama-key' }, keyDot(DAMA_COLOUR[0]), `${players[0]}: ${a.total}${a.kings ? ` (${a.kings} dama)` : ''}`),
-      el('span', { class: 'dama-key' }, keyDot(DAMA_COLOUR[1]), `${players[1]}: ${b.total}${b.kings ? ` (${b.kings} dama)` : ''}`),
+    // one line whatever the counts (a long name is cut): the first kings must not push the board down
+    el('div', { class: 'c4-legend kt-legend' },
+      el('span', { class: 'kt-who dama-key' }, keyDot(DAMA_COLOUR[0]), el('span', { class: 'kt-name' }, players[0]), el('span', { class: 'kt-score' }, `: ${a.total}${a.kings ? ` (${a.kings} dama)` : ''}`)),
+      el('span', { class: 'kt-who dama-key' }, keyDot(DAMA_COLOUR[1]), el('span', { class: 'kt-name' }, players[1]), el('span', { class: 'kt-score' }, `: ${b.total}${b.kings ? ` (${b.kings} dama)` : ''}`)),
     ),
     boardBox,
     el('p', { class: 'hint' }, flip ? 'Taşların yukarı doğru ilerler.' : `${players[0]} yukarı, ${players[1]} aşağı ilerler.`),
