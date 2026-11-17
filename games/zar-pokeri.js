@@ -85,7 +85,7 @@ export function setup(options = {}) {
     id: String(options.seed ?? ''),
     seed: Number(options.seed) || 1,
     sheets: [{}, {}],      // category id -> score
-    turn: 0,
+    turn: (Number(options.seed) || 1) % 2, // who rolls first alternates with the seed
     dice: [0, 0, 0, 0, 0], // 0 = not rolled yet this turn
     held: [false, false, false, false, false],
     rollsLeft: 3,
@@ -225,8 +225,10 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     el('div', { class: 'zp-dice' }, dieBtns),
     // the hint's place is kept before the first roll too, so "Tekrar at" comes up where "Zar at" was;
     // it ignores taps for a moment after a roll, so a double tap does not spend two rolls
-    mine ? el('p', { class: 'hint', style: rolled && state.rollsLeft > 0 ? null : { visibility: 'hidden' } }, 'Tutmak istediğin zara dokun.') : null,
-    rollBtn && rolled ? armAfter(rollBtn) : rollBtn || spentBtn,
+    el('p', { class: 'hint', style: mine && rolled && state.rollsLeft > 0 ? null : { visibility: 'hidden' } }, 'Tutmak istediğin zara dokun.'),
+    // the waiting phone keeps the button's place too (hidden), so the sheet does not jump when the turn passes
+    rollBtn && rolled ? armAfter(rollBtn) : rollBtn || spentBtn
+      || el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block', disabled: true, tabindex: '-1', 'aria-hidden': 'true', style: { visibility: 'hidden' } }, 'Zar at'),
     el('p', { class: 'hint' }, `${filled[p] + 1}. el / ${CATS.length}`),
     // the sheet, too, ignores a tap that comes right after a roll
     mine && rolled ? armAfter(sheet()) : sheet(),

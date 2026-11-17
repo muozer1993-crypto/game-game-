@@ -276,7 +276,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   if (state.phase === 'over') {
     const R = state.result;
     draw(container,
-      el('div', { class: 'status-line' }, el('strong', {}, `${players[R.winner]} kazandı: ${num(R.total[black])} – ${num(R.total[white])}`)),
+      el('div', { class: 'status-line' }, el('strong', {}, `${players[R.winner]} kazandı (${R.winner === black ? 'siyah' : 'beyaz'}): ${num(R.total[R.winner])} – ${num(R.total[1 - R.winner])}`)),
       el('p', { class: 'hint' }, `Alan: siyah ${R.area[black]}, beyaz ${R.area[white]} + komi ${num(KOMI)}.`),
       boardBox, caps,
     );

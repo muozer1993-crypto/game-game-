@@ -305,7 +305,8 @@ export function getTurn(state) {
 export function getResult(state) {
   if (!state.over) return null;
   if (state.result.draw) return { draw: true };
-  return { winner: playerOf(state, state.result.winner) };
+  const winner = playerOf(state, state.result.winner);
+  return state.reason === 'resign' ? { winner, gaveUp: 1 - winner } : { winner }; // the end panel says who gave up
 }
 
 // ------------------------------------------------------------------ rendering
@@ -392,6 +393,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
           pendingPromo = null;
           drawPromo();
           boardBox.replaceChildren(drawBoard());
+          drawStatus(); // ": nereye?" while a piece is picked
         },
       }, pieceCanvasCell(p, dark)));
     }
@@ -411,17 +413,22 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   drawPromo();
 
   const colourName = (c) => (c === 'w' ? 'Beyaz' : 'Siyah');
-  let status;
-  if (state.over) {
-    status = state.result.draw ? `Berabere (${REASON[state.reason]}).` : `${players[playerOf(state, state.result.winner)]} kazandı (${REASON[state.reason]})!`;
-  } else if (mine) status = `${state.check ? 'Şah! ' : ''}Sıra sende, ${players[viewer]} (${colourName(myColour)})${selected != null ? ': nereye?' : ''}`;
-  else status = `${state.check ? 'Şah! ' : ''}${players[playerOf(state, state.turn)]} (${colourName(state.turn)}) düşünüyor…`;
+  const statusLine = el('div', { class: 'status-line two' });
+  function drawStatus() {
+    let status;
+    if (state.over) {
+      status = state.result.draw ? `Berabere (${REASON[state.reason]}).` : `${players[playerOf(state, state.result.winner)]} kazandı (${REASON[state.reason]})!`;
+    } else if (mine) status = `${state.check ? 'Şah! ' : ''}Sıra sende, ${players[viewer]} (${colourName(myColour)})${selected != null ? ': nereye?' : ''}`;
+    else status = `${state.check ? 'Şah! ' : ''}${players[playerOf(state, state.turn)]} (${colourName(state.turn)}) düşünüyor…`;
+    draw(statusLine, el('strong', {}, status));
+  }
+  drawStatus();
   const material = (c) => state.captured[c].reduce((s, t) => s + PIECE_VALUE[t], 0);
   const capLine = (c) => el('span', { class: 'ch-cap' }, el('span', { class: 'ch-cap-name' }, players[playerOf(state, c)]), '\u00a0aldı:\u00a0', state.captured[c].length ? state.captured[c].map((t) => pieceImg(`${other(c)}${t}`, 'ch-mini')) : '—', material(c) > material(other(c)) ? ` (+${material(c) - material(other(c))})` : '');
   const tag = (c) => el('div', { class: `ch-side ${c}` }, pieceImg(`${c}k`, 'ch-mini'), ` ${colourName(c)}: ${players[playerOf(state, c)]}${!state.over && state.turn === c ? ' · sırada' : ''}`);
   const topColour = flip ? 'w' : 'b';
   draw(container,
-    el('div', { class: 'status-line two' }, el('strong', {}, status)),
+    statusLine,
     el('div', { class: 'c4-legend ch-legend' }, capLine('w'), capLine('b')),
     tag(topColour),
     boardBox,

@@ -224,7 +224,7 @@ test('gizli kelime: pes eden kaybeder, yalnızca sırası gelen pes edebilir', (
   let s = playReady();
   assert.throws(() => game.applyMove(s, 1, { type: 'giveup' }, ctx), 'Sıra sende değil');
   s = game.applyMove(s, 0, { type: 'giveup' }, ctx);
-  assert.deepEqual(game.getResult(s), { winner: 1 });
+  assert.deepEqual(game.getResult(s), { winner: 1, gaveUp: 0 }, 'the end panel says who gave up');
 });
 
 test('gizli kelime: rakibin tahmini puanlanmadan tahmin yapılamaz, hak bitince tahmin yok', () => {

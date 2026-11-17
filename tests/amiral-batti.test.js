@@ -1,5 +1,5 @@
 import { test, assert } from './runner.js';
-import game, { validateFleet, randomFleet, whoseTurn } from '../games/amiral-batti.js';
+import game, { validateFleet, randomFleet, whoseTurn, drawInReach } from '../games/amiral-batti.js';
 import { createRng } from '../js/lib/rng.js';
 
 const SHIPS = [4, 3, 3, 2, 2];
@@ -101,5 +101,18 @@ test('amiral battı: pes', () => {
   let s = ready();
   assert.throws(() => game.applyMove(s, 1, { type: 'giveup' }), 'Sıra sende değil');
   s = game.applyMove(s, 0, { type: 'giveup' });
-  assert.deepEqual(game.getResult(s), { winner: 1 });
+  assert.deepEqual(game.getResult(s), { winner: 1, gaveUp: 0 }, 'the end panel says who gave up');
+});
+
+test('amiral battı: son atışta berabere ancak tek kare kalmışsa vaat edilir', () => {
+  // player 1 sank 4 of player 0's ships and hit 3 cells of the 4-ship: one cell from a draw
+  const shot = (idx, result, ship) => (ship ? { idx, result, ship } : { idx, result });
+  const base = { ships: SHIPS.slice(), sunk: [0, 4] };
+  const sunkFour = [shot(17, 'hit'), shot(16, 'hit'), shot(18, 'sunk', [16, 17, 18]), shot(32, 'hit'), shot(33, 'hit'), shot(34, 'sunk', [32, 33, 34]),
+    shot(48, 'hit'), shot(49, 'sunk', [48, 49]), shot(6, 'hit'), shot(14, 'sunk', [6, 14])];
+  const near = { ...base, shots: [[], sunkFour.concat([shot(0, 'hit'), shot(1, 'hit'), shot(2, 'hit'), shot(40, 'miss')])] };
+  assert.equal(drawInReach(near, 1), true);
+  const far = { ...base, shots: [[], sunkFour.concat([shot(0, 'hit')])] };
+  assert.equal(drawInReach(far, 1), false, 'three cells of the last ship are left');
+  assert.equal(drawInReach({ ...base, sunk: [0, 3], shots: [[], sunkFour.slice(0, 8)] }, 1), false, 'two ships are left');
 });

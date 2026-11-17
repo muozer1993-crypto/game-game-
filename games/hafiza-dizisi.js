@@ -1,6 +1,6 @@
 // Hafıza Dizisi — a "Simon" duel: the same seeded sequence of pads lights up, one more each
 // round; repeat it by tapping. A mistake ends your run; the longer run wins.
-import { el, render as draw, keysIntoView } from '../js/ui/dom.js';
+import { el, render as draw, keysIntoViewOnce } from '../js/ui/dom.js';
 import { createRng } from '../js/lib/rng.js';
 import { clockPause } from '../js/ui/timer.js';
 
@@ -119,7 +119,8 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const key = `${state.id}:${viewer}:${len}`;
   const stepMs = STEP_MS[state.speed] || 550;
   const padEls = PADS.map((p, k) => el('button', { type: 'button', class: 'sm-pad', style: { background: p.css }, 'aria-label': p.name, disabled: true, onClick: () => sendMove({ type: 'tap', pad: k }) }));
-  const status = el('div', { class: 'status-line' });
+  // two lines of room: "Şimdi sen: … tekrarla" wraps on a phone, and the pads must not move as they come alive
+  const status = el('div', { class: 'status-line two' });
   const setStatus = (t) => draw(status, el('strong', {}, t));
   const enable = (on) => padEls.forEach((b) => { b.disabled = !on; });
 
@@ -151,18 +152,29 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       enable(false);
       setStatus(`Dizi yarıda kaldı: ${len} adımlık diziyi yeniden izle.`);
       showBtn.textContent = `${len} adımlık diziyi göster`;
-      container.append(showBtn);
+      slot(true);
     });
   };
   let stopOnPause = () => {};
-  const showBtn = el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block', onClick: () => { showBtn.remove(); const t = Date.now(); shown.set(key, t); playback(t); } }, pos === 0 && len === START_LEN ? 'Başla' : `${len} adımlık diziyi göster`);
+  const showBtn = el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block', onClick: () => { slot(false); const t = Date.now(); shown.set(key, t); playback(t); } }, pos === 0 && len === START_LEN ? 'Başla' : `${len} adımlık diziyi göster`);
+  // the button keeps its place (hidden) once the round is under way: the page does not get shorter,
+  // so a page scrolled down to it does not pull the pads down as the sequence starts
+  const slot = (on) => {
+    showBtn.style.visibility = on ? '' : 'hidden';
+    showBtn.disabled = !on;
+    if (on) showBtn.removeAttribute('aria-hidden'); else showBtn.setAttribute('aria-hidden', 'true');
+  };
+  const offer = pos === 0 && !shown.has(key);
+  slot(offer);
   draw(container,
     status,
     el('p', { class: 'hint' }, `${players[viewer]} · tur ${len - START_LEN + 1} · ulaşılan: ${state.reached[viewer]}${pos ? ` · ${pos}/${len} dokunuldu` : ''}`),
     el('div', { class: 'sm-pads' }, padEls),
-    pos === 0 && !shown.has(key) ? showBtn : null,
+    showBtn,
   );
-  if (showBtn.isConnected) keysIntoView(showBtn); // the button that starts the round, under the pads
+  // the button that starts the round, under the pads: once per round, so the opponent's taps
+  // (online, each one redraws this screen) do not pull the page back down
+  if (offer) keysIntoViewOnce(showBtn, container, key);
   const startedAt = shown.get(key);
   if (pos === 0 && startedAt == null) setStatus(len === START_LEN ? 'Hazır olunca başla.' : `Doğru! Sıradaki dizi ${len} adım.`);
   else if (pos === 0 && Date.now() < startedAt + 400 + len * stepMs) playback(startedAt); // re-rendered mid-playback

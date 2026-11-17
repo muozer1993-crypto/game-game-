@@ -278,8 +278,10 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   if (!mine) {
     draw(container,
       el('div', { class: 'status-line' }, el('strong', {}, `${players[opp]} düşünüyor… (${streetName})`)),
+      // the spinner sits where the buttons are on your turn: the table and your cards keep their place
+      tableView, myCards,
       el('div', { class: 'spinner', 'aria-hidden': 'true' }),
-      tableView, myCards, stacksLine,
+      stacksLine,
     );
     return null;
   }

@@ -580,11 +580,11 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   };
   const setStatus = () => {
     let text;
-    if (state.over) {
+    if (animating) text = 'Toplar yuvarlanıyor…'; // the last shot too: the result once the balls stop, with the numbers
+    else if (state.over) {
       if (eight) text = `${players[state.winner]} kazandı!`;
       else text = state.scores[0] === state.scores[1] ? 'Berabere!' : `${players[state.scores[0] > state.scores[1] ? 0 : 1]} daha çok top cepledi!`;
-    } else if (animating) text = 'Toplar yuvarlanıyor…';
-    else if (mine && inHand) text = `${players[viewer]}, beyaz top elinde: istediğin yere koy, sonra vur`;
+    } else if (mine && inHand) text = `${players[viewer]}, beyaz top elinde: istediğin yere koy, sonra vur`;
     else if (mine && eight) {
       const t = targetsOf(state, viewer);
       const what = state.shots === 0 ? 'açılış vuruşu' : !state.groups[viewer] ? 'masa açık' : t[0] === 8 ? 'hedef 8 numara!' : `hedef ${GROUP_NAME[state.groups[viewer]]}`;

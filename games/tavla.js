@@ -220,7 +220,8 @@ export function getTurn(state) {
 
 export function getResult(state) {
   if (!state.over) return null;
-  return { winner: state.winner, points: state.points };
+  // gaveUp: the end panel says who gave up (the status line above it may be scrolled away)
+  return state.gaveUp != null ? { winner: state.winner, points: state.points, gaveUp: state.gaveUp } : { winner: state.winner, points: state.points };
 }
 
 // ----------------------------------------------------------------- render

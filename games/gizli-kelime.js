@@ -317,7 +317,7 @@ export function createGame(cfg) {
     const faults = [0, 1].map((p) => (state.objected || []).some((id) => ownerOfItem(id) === p));
     if (faults[0] && faults[1]) return { draw: true };
     if (faults[0] || faults[1]) return { winner: faults[0] ? 1 : 0 };
-    if (state.gaveUp != null) return { winner: 1 - state.gaveUp };
+    if (state.gaveUp != null) return { winner: 1 - state.gaveUp, gaveUp: state.gaveUp }; // the end panel says who gave up
     const [a, b] = state.solved;
     if (a != null && b != null) return { draw: true };
     if (a != null) return { winner: 0 };

@@ -115,3 +115,11 @@ test('tavla: iki zar da oynanabiliyorsa oynanmalı, tek oynanıyorsa büyük zar
   const steps = legalSteps(t);
   assert.deepEqual(steps.map((x) => x.die), [2], 'only the larger die may be played');
 });
+
+test('tavla: pes edenin adı bitiş ekranına sonuçla gider', () => {
+  let s = game.setup({ seed: 3 });
+  s = game.applyMove(s, 1, { type: 'giveup' });
+  const r = game.getResult(s);
+  assert.equal(r.winner, 0);
+  assert.equal(r.gaveUp, 1);
+});

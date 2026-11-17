@@ -91,5 +91,5 @@ test('satranç: mat, pat, yetersiz materyal, elli hamle, tekrar, pes', () => {
   assert.deepEqual(game.getResult(r), { draw: true });
   const res = game.applyMove(game.setup({ seed: 2 }), 1, { type: 'resign' });
   assert.equal(res.reason, 'resign');
-  assert.deepEqual(game.getResult(res), { winner: 0 });
+  assert.deepEqual(game.getResult(res), { winner: 0, gaveUp: 1 }, 'the end panel says who gave up');
 });

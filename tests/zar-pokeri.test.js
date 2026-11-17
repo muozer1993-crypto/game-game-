@@ -28,14 +28,14 @@ test('zar pokeri: hane puanları', () => {
 });
 
 test('zar pokeri: atış, tutma, hane yazma, sıra, bitiş', () => {
-  let s = game.setup({ seed: 11 });
+  let s = game.setup({ seed: 12 });
   assert.deepEqual(game.getTurn(s), { player: 0, private: false });
   assert.throws(() => game.applyMove(s, 1, { type: 'roll' }), 'Sıra sende değil');
   assert.throws(() => game.applyMove(s, 0, { type: 'score', cat: 'chance' }), 'Önce zar at');
   s = game.applyMove(s, 0, { type: 'roll', held: [true, true, true, true, true] }); // held ignored on the first roll
   assert.equal(s.rollsLeft, 2);
   assert.ok(s.dice.every((d) => d >= 1 && d <= 6));
-  assert.deepEqual(s.dice, rollDice(11, 1, [0, 0, 0, 0, 0], [false, false, false, false, false]));
+  assert.deepEqual(s.dice, rollDice(12, 1, [0, 0, 0, 0, 0], [false, false, false, false, false]));
   const first = s.dice.slice();
   assert.throws(() => game.applyMove(s, 0, { type: 'roll', held: [true, true, true, true, true] }), 'Bütün zarları tutarak');
   s = game.applyMove(s, 0, { type: 'roll', held: [true, false, true, false, false] });
@@ -71,4 +71,16 @@ test('zar pokeri: atış, tutma, hane yazma, sıra, bitiş', () => {
   const [a, b] = s.sheets.map(totalOf);
   assert.ok(r && (a === b ? r.draw : r.winner === (a > b ? 0 : 1)));
   assert.throws(() => game.applyMove(s, 0, { type: 'roll' }), 'Oyun bitti');
+});
+
+test('ilk oynayan: Zar Pokeri ve Yalancı Zar maçında ilk atışı / ilk teklifi kimin yapacağı tohuma göre değişir', async () => {
+  const yz = (await import('../games/yalanci-zar.js')).default;
+  const firstRoll = [1, 2, 3, 4, 5, 6].map((seed) => game.getTurn(game.setup({ seed })).player);
+  const firstBid = [1, 2, 3, 4, 5, 6].map((seed) => yz.getTurn(yz.setup({ seed })).player);
+  assert.ok(firstRoll.includes(0) && firstRoll.includes(1), `zar pokeri: ${firstRoll}`);
+  assert.ok(firstBid.includes(0) && firstBid.includes(1), `yalancı zar: ${firstBid}`);
+  // the one who does not start cannot move first
+  const s = game.setup({ seed: 7 });
+  assert.equal(s.turn, 1);
+  assert.throws(() => game.applyMove(s, 0, { type: 'roll' }), 'Sıra sende değil');
 });

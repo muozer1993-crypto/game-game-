@@ -430,6 +430,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     });
   }
   redraw(); // the board and rack first: the page has its full height when draw() restores the scroll
+  const actionRow = state.over || reviewing ? null : el('div', { class: 'row', style: { justifyContent: 'center', gap: '8px', marginTop: '8px', flexWrap: 'wrap' } }, btnPlay, btnClear, btnSwap, btnPass);
   draw(container,
     el('div', { class: 'status-line' }, el('strong', {}, status)),
     // one line whatever the names and scores (an objection changes a score: nothing below may move)
@@ -442,12 +443,13 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     state.over || reviewing ? null : el('div', { class: 'col-title active' }, `${players[viewer]} — rafın${mine ? '' : ' (bekle)'}`),
     state.over || reviewing ? null : rackBox,
     state.over || reviewing ? null : infoBox,
-    state.over || reviewing ? null : el('div', { class: 'row', style: { justifyContent: 'center', gap: '8px', marginTop: '8px', flexWrap: 'wrap' } }, btnPlay, btnClear, btnSwap, btnPass),
+    actionRow,
     reviewing ? null : disputeBox,
   );
   // a short phone: once per game, when it opens (no finger is aiming at the board yet), scroll so the
-  // rack is on screen under the board; later turns leave the page where the player put it
-  if (!state.over && !reviewing) keysIntoViewOnce(rackBox, container, `kt:${state.id}`);
+  // rack, the score preview and "Oyna" are on screen under the board; later turns leave the page
+  // where the player put it
+  if (actionRow) keysIntoViewOnce(actionRow, container, `kt:${state.id}`);
   return null;
 }
 

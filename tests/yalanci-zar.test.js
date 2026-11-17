@@ -25,7 +25,7 @@ test('yalancı zar: zarlar tohuma göre aynı, 1–6 arası, sıralı; sayım ve
 });
 
 test('yalancı zar: teklif, yalan, zar kaybı, yeni el, bitiş', () => {
-  let s = game.setup({ dice: 3, wild: true, seed: 5 });
+  let s = game.setup({ dice: 3, wild: true, seed: 6 });
   assert.deepEqual(s.counts, [3, 3]);
   assert.deepEqual(game.getTurn(s), { player: 0, private: true });
   assert.throws(() => game.applyMove(s, 1, { type: 'bid', q: 1, f: 2 }), 'Sıra sende değil');

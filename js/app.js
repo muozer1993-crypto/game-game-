@@ -720,7 +720,8 @@ export function showPlay(p) {
       else {
         const pts = Number(result.points) > 0 ? Number(result.points) : 1;
         scores[result.winner] += pts;
-        text = `${p.players[result.winner]} kazandı!${pts > 1 ? ` (+${pts} puan)` : ''}`;
+        const gaveUp = result.gaveUp === 0 || result.gaveUp === 1 ? `${p.players[result.gaveUp]} pes etti: ` : '';
+        text = `${gaveUp}${p.players[result.winner]} kazandı!${pts > 1 ? ` (+${pts} puan)` : ''}`;
       }
       updateScore();
       // tournament bookkeeping: the host (or the single phone) keeps the tally; the guest shows what the host sent
@@ -1264,14 +1265,16 @@ function flushOnlineQueue() {
  * each phone is told which of the two has to refresh.
  */
 function versionMismatch(theirs, other) {
+  // a long note for 9 s: it stays at the bottom (over the game list in the lobby), never over the
+  // header, the lobby line and "Turnuva" at the top
   const num = (v) => parseInt(String(v).replace(/\D/g, ''), 10) || 0;
   if (num(theirs) > num(APP_VERSION)) {
     try { navigator.serviceWorker.getRegistration().then((r) => r && r.update()).catch(() => {}); } catch { /* no service worker */ }
-    toast(`Uygulaman eski (${APP_VERSION}, ${nameSuffix(other, 'de')} ${theirs}): yeni sürüm iniyor, ana menüye dönünce sayfa yenilenecek (olmazsa uygulamayı kapatıp aç)`, { kind: 'error', duration: 9000 });
+    toast(`Uygulaman eski (${APP_VERSION}, ${nameSuffix(other, 'de')} ${theirs}): yeni sürüm iniyor, ana menüye dönünce sayfa yenilenecek (olmazsa uygulamayı kapatıp aç)`, { kind: 'error', duration: 9000, top: false });
   } else if (num(theirs) >= 110) { // from v110 on the older phone fetches the update itself (above)
-    toast(`${other} eski sürümde (${theirs}, sende ${APP_VERSION}): ana menüye dönünce onun sayfası yenilenecek, sonra yeniden bağlanın`, { kind: 'error', duration: 9000 });
+    toast(`${other} eski sürümde (${theirs}, sende ${APP_VERSION}): ana menüye dönünce onun sayfası yenilenecek, sonra yeniden bağlanın`, { kind: 'error', duration: 9000, top: false });
   } else {
-    toast(`${other} eski sürümde (${theirs}, sende ${APP_VERSION}): uygulamayı kapatıp yeniden açsın (ya da sayfayı yenilesin), sonra yeniden bağlanın`, { kind: 'error', duration: 9000 });
+    toast(`${other} eski sürümde (${theirs}, sende ${APP_VERSION}): uygulamayı kapatıp yeniden açsın (ya da sayfayı yenilesin), sonra yeniden bağlanın`, { kind: 'error', duration: 9000, top: false });
   }
 }
 

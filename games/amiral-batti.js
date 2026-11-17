@@ -240,12 +240,23 @@ export function getTurn(state) {
 
 export function getResult(state) {
   if (state.phase !== 'over') return null;
-  if (state.gaveUp != null) return { winner: 1 - state.gaveUp };
+  if (state.gaveUp != null) return { winner: 1 - state.gaveUp, gaveUp: state.gaveUp }; // the end panel says who gave up
   const n = state.ships.length;
   const a = state.sunk[0] >= n;
   const b = state.sunk[1] >= n;
   if (a && b) return { draw: true };
   return { winner: a ? 0 : 1 };
+}
+
+/** One shot can still sink this player's last missing ship: every other ship is down and that one has a single cell left. */
+export function drawInReach(state, p) {
+  const n = state.ships.length;
+  if (state.sunk[p] !== n - 1) return false;
+  const sunkCells = new Set(state.shots[p].filter((s) => s.result === 'sunk' && s.ship).flatMap((s) => s.ship));
+  const sunkLen = state.shots[p].filter((s) => s.result === 'sunk' && s.ship).reduce((a, s) => a + s.ship.length, 0);
+  const left = state.ships.reduce((a, b) => a + b, 0) - sunkLen;
+  const hitsOnLast = state.shots[p].filter((s) => s.result === 'hit' && !sunkCells.has(s.idx)).length;
+  return left - hitsOnLast === 1;
 }
 
 // ----------------------------------------------------------------- render
@@ -357,6 +368,8 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       boardBox,
       readyBtn,
     );
+    // a short phone: the whole sea on screen when placement starts (once; later taps leave the page be)
+    keysIntoViewOnce(boardBox, container, `place:${state.id}:${viewer}`);
     return null;
   }
   drafts.delete(`${viewer}:${state.size}`);
@@ -406,7 +419,11 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   } else if (myPending) status = 'Atış değerlendiriliyor…';
   // the other player sank everything: this is the last shot (said in the status line, which has two
   // lines' room, so the seas below do not move on the shot that decides the game)
-  else if (mine && state.sunk[opp] >= state.ships.length) status = `Son atışın, ${players[viewer]}: son gemiyi batırırsan berabere`;
+  else if (mine && state.sunk[opp] >= state.ships.length) {
+    status = drawInReach(state, viewer)
+      ? `Son atışın, ${players[viewer]}: son gemiyi batırırsan berabere`
+      : `Son atışın, ${players[viewer]}: ${players[opp]} senin bütün gemilerini batırdı`;
+  }
   else if (mine) status = `Sıra sende, ${players[viewer]}: bir kare seç`; // the target sea has its own title
   else status = `${players[turn]} ateş ediyor…`;
   const notes = [];

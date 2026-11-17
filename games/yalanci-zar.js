@@ -2,7 +2,7 @@
 // raising the bid ("there are at least 3 fives on the table, ones count as any face") until
 // one calls the other a liar. All dice are revealed: if the bid holds, the challenger loses a
 // die, otherwise the bidder does. Whoever runs out of dice loses.
-import { el, render as draw } from '../js/ui/dom.js';
+import { el, render as draw, keysIntoViewOnce } from '../js/ui/dom.js';
 import { nextButton } from '../js/ui/next.js';
 import { diceOnce } from '../js/lib/sfx.js';
 import { createRng } from '../js/lib/rng.js';
@@ -52,7 +52,7 @@ export function setup(options = {}) {
     counts,            // dice left per player
     dice: rollDice(seed, 0, counts),
     round: 0,
-    turn: 0,           // who bids next
+    turn: seed % 2,    // who bids next: the first bid of a game alternates with the seed
     bid: null,         // { q, f, by }
     phase: 'bid',      // bid | reveal | over
     last: null,        // { bid, count, loser, dice } after a challenge
@@ -182,8 +182,10 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   if (state.turn !== viewer) {
     draw(container,
       el('div', { class: 'status-line' }, el('strong', {}, `${players[opp]} düşünüyor…`)),
+      // the spinner sits where the bid controls are on your turn: the bid and the dice keep their place
+      current, ...myDice,
       el('div', { class: 'spinner', 'aria-hidden': 'true' }),
-      current, ...myDice, legend,
+      legend,
     );
     return null;
   }
@@ -203,6 +205,10 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     bidBtn.textContent = min ? `Teklif: en az ${draft.q} × ${FACES[draft.f]}` : 'Teklif yükseltilemez';
   };
   update();
+  const actions = el('div', { class: 'yz-actions' },
+    bidBtn,
+    state.bid ? el('button', { type: 'button', class: 'btn btn-danger btn-big', onClick: () => sendMove({ type: 'challenge' }) }, 'Yalan!') : null,
+  );
   draw(container,
     el('div', { class: 'status-line' }, el('strong', {}, `${players[viewer]}, sıra sende`)),
     current,
@@ -216,12 +222,12 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       ),
       el('div', { class: 'yz-faces' }, faceBtns),
     ),
-    el('div', { class: 'yz-actions' },
-      bidBtn,
-      state.bid ? el('button', { type: 'button', class: 'btn btn-danger btn-big', onClick: () => sendMove({ type: 'challenge' }) }, 'Yalan!') : null,
-    ),
+    actions,
     legend,
   );
+  // a short phone: the bid button and "Yalan!" on screen when the turn starts (once per turn, so a
+  // redraw of the same turn leaves the page where the player scrolled it)
+  keysIntoViewOnce(actions, container, key);
   return null;
 }
 

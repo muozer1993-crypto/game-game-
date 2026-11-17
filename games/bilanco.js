@@ -17,7 +17,7 @@ export const meta = {
     'Sırayla iki zar atıp tahtada ilerlersiniz. Boştaki bir şehre ya da ulaşım karesine gelirsen satın alabilirsin; rakibinin mülküne gelirsen kira ödersin. Başla\'dan geçince 100 alırsın.',
     'Aynı renkteki iki şehir de sendeyse kira iki katına çıkar ve sıran geldiğinde bu şehirlere ev kurabilirsin (en çok 3). Ev kira getirisini çok artırır. İki ulaşım karesi birlikte daha çok kira getirir.',
     'Bölünmüş çift: rakibinin şehrine geldiğinde o rengin öbür şehri sendeyse, kirayı ödedikten sonra o şehri rakipten iki katı fiyatına satın alıp çifti tamamlayabilirsin.',
-    'Çift atan bir daha atar; üst üste üç çift kodese götürür. Kodesteyken 50 ödeyip çıkabilir ya da çift atmayı deneyebilirsin; üçüncü denemede 50 ödenir. Şans kartları para, ceza ya da yer değişikliği getirir.',
+    'Çift atan bir daha atar; üst üste üç çift kodese götürür. Kodesteyken (🔒) 50 ödeyip çıkabilir ya da çift atmayı deneyebilirsin; üçüncü denemede 50 ödenir. Şans kartları para, ceza ya da yer değişikliği getirir.',
     'Parası yetmeyen oyuncunun önce evleri, sonra mülkleri yarı fiyatına bankaya satılır; yine yetmezse iflas eder ve rakip kazanır. Seçilen tur sayısı dolunca ("İflasa kadar" seçiliyse en geç 40 turda) varlığı (para + mülkler + evler) çok olan kazanır.',
   ].join('\n'),
   data: [],
@@ -489,10 +489,15 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   board.append(center);
   placeTokens(state.pos);
 
+  // two fixed lines per player (a long name is cut, jail is a mark on the first line): going to or
+  // leaving jail, or a richer player, never makes the row taller and moves the board below
   const money = el('div', { class: 'bl-money' }, [0, 1].map((q) => el('div', { class: `bl-player ${state.turn === q && state.phase !== 'over' ? 'active' : ''}` },
-    keyDot(TOKEN[q]),
-    el('strong', {}, players[q]), ` ₺${state.cash[q]}`,
-    el('span', { class: 'muted' }, ` · varlık ₺${netWorth(state, q)}${state.jail[q] != null ? ' · kodeste' : ''}`))));
+    el('div', { class: 'bl-pl-top' },
+      keyDot(TOKEN[q]),
+      el('strong', { class: 'bl-pl-name' }, players[q]),
+      el('span', { class: 'bl-pl-cash' }, `₺${state.cash[q]}`),
+      state.jail[q] != null ? el('span', { class: 'bl-pl-jail', title: 'kodeste', 'aria-label': 'kodeste' }, '🔒') : null),
+    el('div', { class: 'muted bl-pl-sub' }, `varlık ₺${netWorth(state, q)}`))));
 
   let status;
   if (state.phase === 'over') {

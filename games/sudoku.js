@@ -226,7 +226,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   }
   const set = (v) => {
     const i = selected.get(key);
-    if (i == null) { toast('Önce bir kare seç', { kind: 'error' }); return; }
+    if (i == null) { toast('Önce bir kare seç', { kind: 'error', top: false }); /* over the pad that was tapped, never over the grid */ return; }
     if (state.givens[i]) return;
     if (grid[i] === v) return;
     sendMove({ type: 'set', cell: i, value: v, ms: activeSince(startedAt) });

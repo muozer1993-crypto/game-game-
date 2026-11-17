@@ -1,6 +1,6 @@
 // Durak — two-player: 36 cards, a trump suit; the attacker lays cards, the defender beats
 // them or picks them up. Whoever is left holding cards when the deck is gone is the durak.
-import { el, render as draw, armAfter } from '../js/ui/dom.js';
+import { el, render as draw, armAfter, keysIntoViewOnce } from '../js/ui/dom.js';
 import { createRng, shuffle } from '../js/lib/rng.js';
 import { nameSuffix } from '../js/lib/tr.js';
 
@@ -231,20 +231,27 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const actions = [];
   if (mine && state.phase === 'defend' && undefendedIdx >= 0) actions.push(el('button', { type: 'button', class: 'btn btn-secondary', onClick: () => sendMove({ type: 'take' }) }, 'Kartları al'));
   if (mine && state.phase === 'attack' && state.table.length && (state.taking || undefendedIdx < 0)) actions.push(el('button', { type: 'button', class: 'btn btn-primary', onClick: () => sendMove({ type: 'done' }) }, state.taking ? 'Bitti (kartları alsın)' : 'Bitti (masa atılsın)'));
+  // the row keeps its place (hidden) when there is nothing to press: the hand does not drop when the turn comes
+  const actionRow = state.over ? null : el('div', { class: 'row', style: { justifyContent: 'center', gap: '8px', marginTop: '8px', visibility: actions.length ? '' : 'hidden' }, 'aria-hidden': actions.length ? null : 'true' },
+    actions.length ? actions : el('button', { type: 'button', class: 'btn btn-secondary', disabled: true, tabindex: '-1' }, '\u00a0'));
+  // a new bout and this player attacks again (after "Bitti (kartları alsın)"): no hand-off or turn
+  // switch guard runs, and the refilled hand has just moved up under the finger, so a double tap
+  // must not also attack with a card the player has not seen yet
+  const handBox = (mine && state.phase === 'attack' && !state.table.length ? armAfter : (x) => x)(
+    el('div', { class: 'phand' }, hand.map((c) => cardEl(c, { button: true, trump: c.s === state.trump, disabled: !canPlay(c), onClick: () => play(c) }))));
   draw(container,
-    el('div', { class: 'status-line' }, el('strong', {}, status)),
+    el('div', { class: 'status-line two' }, el('strong', {}, status)), // "Savun, <name>: …" wraps: two lines of room
     info,
     el('div', { class: 'col-title' }, `Masa — ${players[attacker]} saldırıyor, ${players[defender]} savunuyor${state.taking ? ' (alıyor)' : ''}`),
     tableView,
-    actions.length ? el('div', { class: 'row', style: { justifyContent: 'center', gap: '8px', marginTop: '8px' } }, actions) : null,
+    actionRow,
     el('div', { class: 'col-title active', style: { marginTop: '10px' } }, `${players[viewer]} — elin (${hand.length})${isAttacker && mine && state.table.length ? `, en çok ${state.limit - state.table.length} kart daha` : ''}`),
-    // a new bout and this player attacks again (after "Bitti (kartları alsın)"): no hand-off or turn
-    // switch guard runs, and the refilled hand has just moved up under the finger, so a double tap
-    // must not also attack with a card the player has not seen yet
-    (mine && state.phase === 'attack' && !state.table.length ? armAfter : (x) => x)(
-      el('div', { class: 'phand' }, hand.map((c) => cardEl(c, { button: true, trump: c.s === state.trump, disabled: !canPlay(c), onClick: () => play(c) })))),
+    handBox,
     state.over ? null : el('p', { class: 'hint' }, `Atılan: ${state.discard} kart`),
   );
+  // a short phone: the hand on screen when the turn comes (every move changes the key; a redraw of
+  // the same turn leaves the page where the player scrolled it)
+  if (mine) keysIntoViewOnce(handBox, container, `dk:${state.id}:${viewer}:${state.deck.length}:${state.discard}:${state.hands[0].length}:${state.hands[1].length}:${state.phase}:${state.taking}`);
   return null;
 }
 
