@@ -1,7 +1,7 @@
 // Kızma Birader — Ludo for two (opposite corners). Roll a six to leave the base, race round the
 // 52-square loop, land on an opponent to send them home, exact roll into the centre. A six, a
 // capture or a piece reaching home gives another roll; three sixes in a row lose the turn.
-import { el, svg, render as draw } from '../js/ui/dom.js';
+import { el, svg, render as draw, keysIntoViewOnce } from '../js/ui/dom.js';
 import { diceOnce } from '../js/lib/sfx.js';
 import { createRng } from '../js/lib/rng.js';
 import { nameSuffix } from '../js/lib/tr.js';
@@ -218,19 +218,28 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     draw(container, el('div', { class: 'status-line' }, el('strong', {}, `${players[state.winner]} bütün taşlarını eve soktu!`)), legend, el('div', { class: 'ld-wrap' }, board));
     return null;
   }
-  const dieView = state.die != null || (L && L.event === 'noMove') ? el('span', { class: 'ld-die', 'aria-label': `zar ${state.die ?? L.die}` }, DIE_FACES[state.die ?? L.die]) : null;
+  // the die, the note and the "Zar at" slot keep their places (hidden or empty when there is nothing
+  // to show): a roll or the turn coming back never moves the board under the finger
+  const face = state.die ?? (L && L.event === 'noMove' ? L.die : null);
+  const dieView = face != null ? el('span', { class: 'ld-die', 'aria-label': `zar ${face}` }, DIE_FACES[face])
+    : el('span', { class: 'ld-die', style: { visibility: 'hidden' }, 'aria-hidden': 'true' }, DIE_FACES[1]);
   let status;
   if (!mine) status = `${players[p]} oynuyor…`;
   else if (state.die == null) status = `${players[p]}, zar at`;
   else status = `${players[p]}: ${state.die} attın, bir taş seç`;
+  const act = el('div', { class: 'ld-act' },
+    mine && state.die == null ? el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block', onClick: () => sendMove({ type: 'roll' }) }, 'Zar at') : null,
+    mine && state.die != null ? el('p', { class: 'hint' }, 'Koyu çerçeveli taşlardan birine dokun.') : null);
   draw(container,
     el('div', { class: 'status-line' }, el('strong', {}, status), dieView),
-    note ? el('p', { class: 'hint' }, note) : null,
+    el('p', { class: 'hint two-lines' }, note || ''),
     el('div', { class: 'ld-wrap' }, board),
-    mine && state.die == null ? el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block', onClick: () => sendMove({ type: 'roll' }) }, 'Zar at') : null,
-    mine && state.die != null ? el('p', { class: 'hint' }, 'Koyu çerçeveli taşlardan birine dokun.') : null,
+    act,
     legend,
   );
+  // a short phone: once per game, scroll just enough that "Zar at" is on screen (the page keeps its
+  // length from then on)
+  keysIntoViewOnce(act, container, `kb:${state.id}`);
   return null;
 }
 

@@ -139,6 +139,8 @@ export function getResult(state) {
 const drafts = new Map(); // `${id}:${rollCount}` -> held[] being chosen for the next roll
 let draftsFor = null;
 
+const turnTops = new WeakMap(); // container -> the turn whose start was last brought on screen
+
 export function render(state, viewer, container, sendMove, ctx = {}) {
   if (state.rollCount) diceOnce(`zp:${state.id}:${state.rollCount}`);
   const players = ctx.players || ['Oyuncu 1', 'Oyuncu 2'];
@@ -210,8 +212,16 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     rollBtn.textContent = all ? 'En az bir zarı bırak' : rolled ? `Tekrar at (${state.rollsLeft} hak)` : 'Zar at';
   };
   syncRoll();
+  const head = el('div', { class: 'status-line two' }, el('strong', {}, mine ? (rolled ? (state.rollsLeft > 0 ? `${players[p]}: zarları tut, tekrar at ya da bir hane seç` : `${players[p]}: bir hane seç`) : `${players[p]}, zar at`) : `${players[p]} oynuyor…`));
+  // a short phone left scrolled down the sheet (a score written low on it): when a turn begins, the
+  // turn line, the dice and "Zar at" come back on screen, once per turn
+  const turnKey = `${state.id}:${filled[0] + filled[1]}:${p}`;
+  if (mine && !rolled && turnTops.get(container) !== turnKey) {
+    turnTops.set(container, turnKey);
+    if (typeof requestAnimationFrame === 'function') requestAnimationFrame(() => { if (head.isConnected && head.getBoundingClientRect().top < 0) head.scrollIntoView({ block: 'start' }); });
+  }
   draw(container,
-    el('div', { class: 'status-line two' }, el('strong', {}, mine ? (rolled ? (state.rollsLeft > 0 ? `${players[p]}: zarları tut, tekrar at ya da bir hane seç` : `${players[p]}: bir hane seç`) : `${players[p]}, zar at`) : `${players[p]} oynuyor…`)),
+    head,
     el('div', { class: 'zp-dice' }, dieBtns),
     // the hint's place is kept before the first roll too, so "Tekrar at" comes up where "Zar at" was;
     // it ignores taps for a moment after a roll, so a double tap does not spend two rolls

@@ -1,7 +1,7 @@
 // Amiral Battı — each player hides a fleet; players take turns firing at the other sea.
 // Fleets never leave the owner's device: the `place` move carries the fleet in its
 // `secret` field, and shots are resolved on the owner's device by autoMove().
-import { el, render as draw, toast } from '../js/ui/dom.js';
+import { el, render as draw, toast, keysIntoView, keysIntoViewOnce } from '../js/ui/dom.js';
 import { createRng, randomSeed } from '../js/lib/rng.js';
 import { nameSuffix } from '../js/lib/tr.js';
 
@@ -321,9 +321,13 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       keep();
       redraw();
     };
+    let hadLeft = null;
     const redraw = () => {
       keep();
       const left = remaining();
+      // the last ship placed (or "Rastgele yerleştir"): on a short phone "Hazır" comes on screen
+      if (hadLeft && !left.length) keysIntoView(readyBtn);
+      hadLeft = left.length > 0;
       const occ = occupied();
       orientBtn.textContent = horizontal ? 'Yön: yatay ↔' : 'Yön: dikey ↕';
       draw(info, left.length
@@ -340,6 +344,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
         },
       }), { label: 'Senin denizin' }));
     };
+    const readyBtn = el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block', style: { marginTop: '10px' }, onClick: () => sendMove({ type: 'place', secret: { fleet } }) }, 'Hazır'); // a rejected placement keeps the draft
     redraw();
     draw(container,
       info,
@@ -350,7 +355,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
         el('button', { type: 'button', class: 'btn btn-small', onClick: () => { fleet = []; redraw(); } }, 'Temizle'),
       ),
       boardBox,
-      el('button', { type: 'button', class: 'btn btn-primary btn-big btn-block', style: { marginTop: '10px' }, onClick: () => sendMove({ type: 'place', secret: { fleet } }) }, 'Hazır'), // a rejected placement keeps the draft
+      readyBtn,
     );
     return null;
   }
@@ -429,10 +434,14 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
       }, 'Gemilerimi göster (basılı tut)')
       : null,
     ownBox,
-    mine && !myPending ? el('div', { class: 'row', style: { marginTop: '10px' } },
-      el('button', { type: 'button', class: 'btn btn-secondary btn-small', onClick: () => { if (confirm('Pes ediyor musun?')) sendMove({ type: 'giveup' }); } }, 'Pes'),
+    // "Pes" stays in the layout (hidden) while it cannot be pressed: the page keeps its length, so a
+    // page scrolled to its end does not move the target sea when the turn changes
+    state.phase === 'play' ? el('div', { class: 'row', style: { marginTop: '10px', visibility: mine && !myPending ? '' : 'hidden' }, 'aria-hidden': mine && !myPending ? null : 'true' },
+      el('button', { type: 'button', class: 'btn btn-secondary btn-small', disabled: !mine || myPending, onClick: () => { if (mine && !myPending && confirm('Pes ediyor musun?')) sendMove({ type: 'giveup' }); } }, 'Pes'),
     ) : null,
   );
+  // a short phone: once per game, the whole target sea on screen
+  if (state.phase === 'play') keysIntoViewOnce(targetGrid, container, `ab:${state.id}`);
   return null;
 }
 

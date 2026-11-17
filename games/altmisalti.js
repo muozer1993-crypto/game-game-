@@ -1,7 +1,7 @@
 // Altmışaltı (66) — the classic two-player trick game: 24 cards, six each, a face-up trump.
 // While the stock is open anything goes; once it is closed or empty you must follow suit, head
 // the trick if you can, or trump. Marriages score 20 (40 in trumps); first to 66 wins the hand.
-import { el, render as draw } from '../js/ui/dom.js';
+import { el, render as draw, armAfter } from '../js/ui/dom.js';
 import { nextButton } from '../js/ui/next.js';
 import { createRng, shuffle } from '../js/lib/rng.js';
 import { nameSuffix } from '../js/lib/tr.js';
@@ -272,7 +272,9 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     el('div', { class: 'status-line' }, el('strong', {}, leading ? `${players[viewer]}, sen aç` : `${players[viewer]}, cevap ver`)),
     table, declared, lastLine, myPts,
     el('div', { class: 'col-title' }, `Kartların (${hand.length})`),
-    el('div', { class: 'ce-hand' }, hand.map((c) => cardEl(c, { button: true, disabled: !legal.some((x) => sameCard(x, c)), onClick: () => sendMove({ type: 'play', r: c.r, s: c.s }) }))),
+    // after a trick its winner leads: a reply that won keeps the turn (no hand-off, no turn switch)
+    // and the hand redraws under the finger, so a double tap on the reply must not also lead
+    (leading && state.lastTrick ? armAfter : (x) => x)(el('div', { class: 'ce-hand' }, hand.map((c) => cardEl(c, { button: true, disabled: !legal.some((x) => sameCard(x, c)), onClick: () => sendMove({ type: 'play', r: c.r, s: c.s }) })))),
     marriageSuits.length ? el('p', { class: 'hint notice' }, `Evlilik hazır: ${marriageSuits.map((s) => `${SUITS[s]} K+Q (${s === state.trump ? 40 : 20})`).join(', ')} — K ya da Q ile aç.`) : null,
     el('p', { class: 'hint' }, stockOpen(state) ? 'Deste açık: istediğin kartı atabilirsin.' : 'Deste kapalı/bitti: renk uy, büyüğünü at, renk yoksa koz at.'),
     canExchange || canClose ? el('div', { class: 'row', style: { justifyContent: 'center', gap: '8px' } },

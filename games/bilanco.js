@@ -426,6 +426,10 @@ let replayedFor = null;
 // taps in the first moments after a step are ignored so a double tap cannot act twice.
 const TAP_GUARD_MS = 350;
 let armed = { key: '', at: 0 };
+// the end of the token replay (a tap on the board skips it) brings the buttons back right where the
+// finger was: they ignore taps for a moment as well, so a double tap to skip buys nothing (as in Mangala)
+const SKIP_GUARD_MS = 400;
+let skipGuardUntil = 0;
 
 /** Grid cell (row, col) of a square on the 6×6 ring: Başla bottom-right, clockwise. */
 export function cellOf(i) {
@@ -451,7 +455,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const stepMs = STEP_MS[anim] || STEP_MS.normal;
   const stepKey = `${state.id}:${state.rollCount}:${state.phase}:${state.turn}:${state.played.join()}:${state.jail.join()}`;
   if (armed.key !== stepKey) armed = { key: stepKey, at: Date.now() };
-  const act = (move) => { if (Date.now() - armed.at >= TAP_GUARD_MS) sendMove(move); };
+  const act = (move) => { if (Date.now() - armed.at >= TAP_GUARD_MS && Date.now() >= skipGuardUntil) sendMove(move); };
 
   const board = el('div', { class: `bl-board${animating ? ' animating' : ''}` });
   const cells = [];
@@ -555,11 +559,14 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const due = Math.min(L.path.length, Math.floor((Date.now() - start) / stepMs));
   const show = (k) => { const pos = startPos.slice(); pos[L.player] = k === 0 ? L.from : L.path[k - 1]; placeTokens(pos); };
   show(due);
-  statusEl.replaceChildren(el('strong', {}, `${players[L.player]} ilerliyor…`), el('span', { class: 'muted' }, ' (geçmek için dokun)'));
+  // one line (cut short if need be): the board does not move when the replay starts or ends
+  statusEl.classList.add('bl-replay');
+  statusEl.replaceChildren(el('strong', {}, `${players[L.player]} ilerliyor…`), el('span', { class: 'muted' }, ' (dokunarak geç)'));
   let done = false;
   const finish = () => {
     if (done) return;
     done = true;
+    skipGuardUntil = Date.now() + SKIP_GUARD_MS;
     timers.forEach((t) => clearTimeout(t));
     replayed.set(key, 'done');
     if (container.isConnected) render(state, viewer, container, sendMove, ctx);

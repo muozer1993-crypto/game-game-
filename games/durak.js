@@ -1,6 +1,6 @@
 // Durak — two-player: 36 cards, a trump suit; the attacker lays cards, the defender beats
 // them or picks them up. Whoever is left holding cards when the deck is gone is the durak.
-import { el, render as draw } from '../js/ui/dom.js';
+import { el, render as draw, armAfter } from '../js/ui/dom.js';
 import { createRng, shuffle } from '../js/lib/rng.js';
 import { nameSuffix } from '../js/lib/tr.js';
 
@@ -238,7 +238,11 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     tableView,
     actions.length ? el('div', { class: 'row', style: { justifyContent: 'center', gap: '8px', marginTop: '8px' } }, actions) : null,
     el('div', { class: 'col-title active', style: { marginTop: '10px' } }, `${players[viewer]} — elin (${hand.length})${isAttacker && mine && state.table.length ? `, en çok ${state.limit - state.table.length} kart daha` : ''}`),
-    el('div', { class: 'phand' }, hand.map((c) => cardEl(c, { button: true, trump: c.s === state.trump, disabled: !canPlay(c), onClick: () => play(c) }))),
+    // a new bout and this player attacks again (after "Bitti (kartları alsın)"): no hand-off or turn
+    // switch guard runs, and the refilled hand has just moved up under the finger, so a double tap
+    // must not also attack with a card the player has not seen yet
+    (mine && state.phase === 'attack' && !state.table.length ? armAfter : (x) => x)(
+      el('div', { class: 'phand' }, hand.map((c) => cardEl(c, { button: true, trump: c.s === state.trump, disabled: !canPlay(c), onClick: () => play(c) })))),
     state.over ? null : el('p', { class: 'hint' }, `Atılan: ${state.discard} kart`),
   );
   return null;

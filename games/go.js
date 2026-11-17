@@ -1,6 +1,6 @@
 // Go — 9×9 (or 13×13) with area scoring. Captures, suicide forbidden, simple ko. Two passes
 // open the counting phase: tap groups to mark them dead, both confirm, komi 6.5 to white.
-import { el, svg, render as draw } from '../js/ui/dom.js';
+import { el, svg, render as draw, armAfter, keysIntoView } from '../js/ui/dom.js';
 import { nameSuffix } from '../js/lib/tr.js';
 import { drawDisc } from '../js/ui/paint.js';
 
@@ -212,6 +212,8 @@ export function getResult(state) {
 // ----------------------------------------------------------------- render
 const num = (x) => String(x).replace('.', ','); // 6,5 in Turkish
 
+const seenPhase = new WeakMap(); // container -> the phase it last showed
+
 export function render(state, viewer, container, sendMove, ctx = {}) {
   const players = ctx.players || ['Oyuncu 1', 'Oyuncu 2'];
   const online = ctx.mode === 'online';
@@ -275,26 +277,41 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     );
     return null;
   }
+  // the counting row comes up where "Pas (sayıma geç)" was tapped, and "Pas" where "Oyuna dön" was:
+  // right after the phase changes they ignore taps for a moment, so a double tap presses neither
+  const before = seenPhase.get(container);
+  seenPhase.set(container, state.phase);
+  const phaseChanged = before != null && before !== state.phase;
   if (counting) {
     const est = score(state);
+    const row = el('div', { class: 'row', style: { justifyContent: 'center', gap: '8px' } },
+      el('button', { type: 'button', class: 'btn btn-primary', disabled: online && state.agree[viewer], onClick: () => sendMove({ type: 'agree', dead: state.dead, marks: state.marks || 0 }) }, online ? (state.agree[viewer] ? 'Onayladın' : 'Onayla') : `Onayla (${players[state.agree[0] ? 1 : 0]})`),
+      el('button', { type: 'button', class: 'btn btn-secondary', onClick: () => sendMove({ type: 'resume' }) }, 'Oyuna dön'),
+    );
+    // the same header as in play (the board stays where it was) and the row where "Pas" was; the
+    // score below keeps two lines' room, so an agreement appearing or reset moves nothing
     draw(container,
-      el('div', { class: 'status-line' }, el('strong', {}, 'Sayım: ölü grupları işaretleyin')),
-      // two lines' room from the start: an agreement appearing or reset never moves the board
-      el('p', { class: 'hint two-lines' }, `Şu an: siyah ${num(est.total[0])} – beyaz ${num(est.total[1])} (komi dahil). ${state.agree[0] ? `${players[0]} onayladı. ` : ''}${state.agree[1] ? `${players[1]} onayladı. ` : ''}`),
+      el('div', { class: 'status-line two' }, el('strong', {}, 'Sayım: ölü grupları işaretleyin')),
       boardBox,
-      el('div', { class: 'row', style: { justifyContent: 'center', gap: '8px' } },
-        el('button', { type: 'button', class: 'btn btn-primary', disabled: online && state.agree[viewer], onClick: () => sendMove({ type: 'agree', dead: state.dead, marks: state.marks || 0 }) }, online ? (state.agree[viewer] ? 'Onayladın' : 'Onayla') : `Onayla (${players[state.agree[0] ? 1 : 0]})`),
-        el('button', { type: 'button', class: 'btn btn-secondary', onClick: () => sendMove({ type: 'resume' }) }, 'Oyuna dön'),
-      ),
+      phaseChanged ? armAfter(row) : row,
+      el('p', { class: 'hint two-lines' }, `Şu an: siyah ${num(est.total[0])} – beyaz ${num(est.total[1])} (komi dahil). ${state.agree[0] ? `${players[0]} onayladı. ` : ''}${state.agree[1] ? `${players[1]} onayladı. ` : ''}`),
       caps,
     );
+    // a short phone: "Onayla" on screen as the count begins
+    if (phaseChanged) keysIntoView(row);
     return null;
   }
   const who = state.turn === 0 ? '⚫' : '⚪';
+  // "Pas" stays in the layout (hidden) on the other player's turn: the page keeps its length, so a
+  // page scrolled to its end does not move the board after every move (as satranc.js keeps "Pes")
+  const passBtn = el('button', {
+    type: 'button', class: 'btn btn-secondary btn-block', disabled: !mine, style: { visibility: mine ? '' : 'hidden' }, 'aria-hidden': mine ? null : 'true',
+    onClick: () => { if (mine) sendMove({ type: 'pass' }); },
+  }, state.passes ? 'Pas (sayıma geç)' : 'Pas');
   draw(container,
     el('div', { class: 'status-line two' }, el('strong', {}, mine ? `${who} ${players[state.turn]}, sıra sende${state.passes ? ' (rakip pas geçti)' : ''}` : `${who} ${players[state.turn]} düşünüyor…`)),
     boardBox,
-    mine ? el('button', { type: 'button', class: 'btn btn-secondary btn-block', onClick: () => sendMove({ type: 'pass' }) }, state.passes ? 'Pas (sayıma geç)' : 'Pas') : null,
+    phaseChanged ? armAfter(passBtn) : passBtn,
     caps,
   );
   return null;

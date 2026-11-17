@@ -1,7 +1,7 @@
 // Mayın Tarlası — both players sweep the same seeded minefield on their own; the one who
 // clears it (or, failing that, uncovers more safe cells) wins. A zero region around a
 // seeded start cell is opened for both, so nobody dies on the first tap.
-import { el, render as draw, armAfter } from '../js/ui/dom.js';
+import { el, render as draw, armAfter, keysIntoViewOnce } from '../js/ui/dom.js';
 import { nameSuffix } from '../js/lib/tr.js';
 import { createTimer, activeSince } from '../js/ui/timer.js';
 import { createRng, shuffle } from '../js/lib/rng.js';
@@ -265,6 +265,7 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     type: 'button', class: `btn btn-small ${flagMode.get(key) ? 'btn-primary' : 'btn-secondary'}`, 'aria-pressed': flagMode.get(key) ? 'true' : 'false',
     onClick: () => { flagMode.set(key, !flagMode.get(key)); flagBtn.className = `btn btn-small ${flagMode.get(key) ? 'btn-primary' : 'btn-secondary'}`; flagBtn.setAttribute('aria-pressed', flagMode.get(key) ? 'true' : 'false'); flagBtn.textContent = flagMode.get(key) ? '🚩 Bayrak modu açık' : '🚩 Bayrak modu'; },
   }, flagMode.get(key) ? '🚩 Bayrak modu açık' : '🚩 Bayrak modu');
+  const field = grid(viewer, { interactive: true });
   draw(container,
     timerBox,
     // two lines' room: the counts change with every tap, and a line that wraps on some of them moved the field a row
@@ -273,8 +274,11 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
     ctx.mode === 'online' ? el('p', { class: 'hint two-lines' }, `${players[opp]}: ${statusText(opp)}`) : null,
     el('div', { class: 'row', style: { justifyContent: 'center', marginBottom: '6px', gap: '8px' } }, flagBtn,
       el('button', { type: 'button', class: 'btn btn-small', onClick: () => { if (confirm('Tarlayı bırakıp bitirilsin mi? Açtığın güvenli kareler puanın olur.')) sendMove({ type: 'finish', reason: 'quit', ms: activeSince(startedAt) }); } }, 'Bitir')),
-    grid(viewer, { interactive: true }),
+    field,
   );
+  // a short phone (two phones add a line and the emoji bar): once per run, scroll just enough that the
+  // last rows are on screen; the page keeps its length from then on, and the clock stays in view
+  keysIntoViewOnce(field, container, `mt:${key}`);
   return () => { if (timer) timer.stop(); };
 }
 

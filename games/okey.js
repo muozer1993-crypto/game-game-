@@ -1,7 +1,7 @@
 // İkili Okey — two-player okey. 106 tiles (1–13 in four colours twice, plus two fake jokers);
 // the indicator decides the okey (joker). Draw from the pile or take the opponent's last discard,
 // discard one; finish by showing 14 tiles in runs/sets (or seven pairs) and throwing the 15th.
-import { el, render as draw } from '../js/ui/dom.js';
+import { el, render as draw, armAfter } from '../js/ui/dom.js';
 import { nextButton } from '../js/ui/next.js';
 import { createRng, shuffle } from '../js/lib/rng.js';
 import { nameSuffix } from '../js/lib/tr.js';
@@ -267,12 +267,18 @@ export function render(state, viewer, container, sendMove, ctx = {}) {
   const key = `${state.id}:${state.handNo}:${viewer}`;
   const draft = drafts.get(key) || { order: [], sel: null };
   drafts.set(key, draft);
+  // the discard row comes up where "Ortadan çek" / "Rakibin attığını al" was just tapped: right after
+  // the draw it ignores taps for a moment, so a double tap does not also throw a tile selected before
+  // the draw (or press "Bitir") before the drawn tile is seen
+  const justDrew = mine && state.phase === 'discard' && draft.phase === 'draw';
+  draft.phase = mine ? state.phase : null;
   const ids = new Set(hand.map((t) => t.id));
   draft.order = draft.order.filter((id) => ids.has(id)).concat(hand.filter((t) => !draft.order.includes(t.id)).map((t) => t.id));
   if (draft.sel != null && !ids.has(draft.sel)) draft.sel = null;
   const byId = new Map(hand.map((t) => [t.id, t]));
   const rackBox = el('div', { class: 'ok-rack' });
   const actionBox = el('div', { class: 'ok-actions' });
+  if (justDrew) armAfter(actionBox);
   const hintBox = el('p', { class: 'hint two-lines' }); // one or two lines: the buttons below stay put
   const canFinish = () => draft.sel != null && state.phase === 'discard' && mine && isWinning(hand.filter((t) => t.id !== draft.sel), okey);
   const redraw = () => {
